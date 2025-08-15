@@ -14,6 +14,7 @@ func (r *Router) setupUserRoutes(rg *gin.RouterGroup) {
 	users := rg.Group("/users")
 	{
 		users.GET("", userHandler.GetUsers)
+		users.GET("/paginated", userHandler.GetUsersWithPagination) // 新增分页查询路由
 		users.GET("/:id", userHandler.GetUser)
 		users.POST("", userHandler.CreateUser)
 		users.PUT("/:id", userHandler.UpdateUser)

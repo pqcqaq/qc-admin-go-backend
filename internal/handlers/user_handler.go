@@ -36,6 +36,36 @@ func (h *UserHandler) GetUsers(c *gin.Context) {
 	})
 }
 
+// GetUsersWithPagination 分页获取用户列表
+func (h *UserHandler) GetUsersWithPagination(c *gin.Context) {
+	var req models.GetUsersRequest
+
+	// 设置默认值
+	req.Page = 1
+	req.PageSize = 10
+	req.Order = "desc"
+	req.OrderBy = "create_time"
+
+	// 绑定查询参数
+	if err := c.ShouldBindQuery(&req); err != nil {
+		middleware.ThrowError(c, middleware.ValidationError("查询参数格式错误", err.Error()))
+		return
+	}
+
+	// 调用服务层方法
+	result, err := funcs.GetUsersWithPagination(context.Background(), &req)
+	if err != nil {
+		middleware.ThrowError(c, middleware.DatabaseError("获取用户列表失败", err.Error()))
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success":    true,
+		"data":       result.Data,
+		"pagination": result.Pagination,
+	})
+}
+
 // GetUser 根据ID获取用户
 func (h *UserHandler) GetUser(c *gin.Context) {
 	idStr := c.Param("id")

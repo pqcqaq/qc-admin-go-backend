@@ -24,3 +24,16 @@ type UserResponse struct {
 	Age   *int   `json:"age,omitempty"`
 	Phone string `json:"phone,omitempty"`
 }
+
+// GetUsersRequest 获取用户列表请求结构
+type GetUsersRequest struct {
+	PaginationRequest
+	Name  string `form:"name" json:"name"`   // 按姓名模糊搜索
+	Email string `form:"email" json:"email"` // 按邮箱模糊搜索
+}
+
+// UsersListResponse 用户列表响应结构
+type UsersListResponse struct {
+	Data       []*UserResponse `json:"data"`
+	Pagination Pagination      `json:"pagination"`
+}
