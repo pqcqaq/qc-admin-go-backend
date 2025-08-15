@@ -16,35 +16,6 @@ type AppConfig struct {
 	Redis    RedisConfig    `mapstructure:"redis"`
 }
 
-// ServerConfig 服务器配置
-type ServerConfig struct {
-	Port string `mapstructure:"port"`
-	Mode string `mapstructure:"mode"` // gin模式: debug, release, test
-}
-
-// LoggingConfig 日志配置
-type LoggingConfig struct {
-	Level  string `mapstructure:"level"`  // 日志级别: debug, info, warn, error, fatal
-	Prefix string `mapstructure:"prefix"` // 日志前缀
-}
-
-type DatabaseConfig struct {
-	Driver string `mapstructure:"driver"`
-	DSN    string `mapstructure:"dsn"`
-}
-
-// RedisConfig Redis配置
-type RedisConfig struct {
-	Addr         string `mapstructure:"addr"`
-	Password     string `mapstructure:"password"`
-	DB           int    `mapstructure:"db"`
-	PoolSize     int    `mapstructure:"pool_size"`
-	MinIdleConns int    `mapstructure:"min_idle_conns"`
-	ReadTimeout  int    `mapstructure:"read_timeout"`
-	WriteTimeout int    `mapstructure:"write_timeout"`
-	IdleTimeout  int    `mapstructure:"idle_timeout"`
-}
-
 var config *AppConfig
 
 // LoadConfig 从YAML文件加载配置
@@ -87,24 +58,14 @@ func GetConfig() *AppConfig {
 // setDefaults 设置默认配置值
 func setDefaults() {
 	// 服务器默认配置
-	viper.SetDefault("server.port", ":8080")
-	viper.SetDefault("server.mode", "debug")
+	setServerConfigDefaults()
 
 	// 数据库默认配置
-	viper.SetDefault("database.driver", "sqlite3")
-	viper.SetDefault("database.dsn", "file:ent.db?cache=shared&_fk=1")
+	setDatabaseConfigDefaults()
 
 	// 日志默认配置
-	viper.SetDefault("logging.level", "info")
-	viper.SetDefault("logging.prefix", "APP")
+	setLoggingConfigDefaults()
 
 	// Redis默认配置
-	viper.SetDefault("redis.addr", "localhost:6379")
-	viper.SetDefault("redis.password", "")
-	viper.SetDefault("redis.db", 0)
-	viper.SetDefault("redis.pool_size", 10)
-	viper.SetDefault("redis.min_idle_conns", 5)
-	viper.SetDefault("redis.read_timeout", 3)
-	viper.SetDefault("redis.write_timeout", 3)
-	viper.SetDefault("redis.idle_timeout", 300)
+	setRedisConfigDefaults()
 }
