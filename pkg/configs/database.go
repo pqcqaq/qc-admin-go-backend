@@ -9,6 +9,7 @@ type DatabaseConfig struct {
 }
 
 func setDatabaseConfigDefaults() {
+	// 	数据库默认配置
 	viper.SetDefault("database.driver", "sqlite3")
 	viper.SetDefault("database.dsn", "file:ent.db?cache=shared&_fk=1")
 }

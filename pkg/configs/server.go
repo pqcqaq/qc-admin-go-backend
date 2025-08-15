@@ -9,6 +9,7 @@ type ServerConfig struct {
 }
 
 func setServerConfigDefaults() {
+	// 服务器默认配置
 	viper.SetDefault("server.port", ":8080")
 	viper.SetDefault("server.mode", "debug")
 }
