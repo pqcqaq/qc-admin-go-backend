@@ -17,6 +17,7 @@ import (
 	"go-backend/pkg/configs"
 	"go-backend/pkg/database"
 	"go-backend/pkg/logging"
+	"go-backend/pkg/s3"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -62,6 +63,12 @@ func main() {
 	// 设置数据库包的logger
 	database.SetLogger(logging.GetInstance())
 
+	// 设置缓存包的logger
+	caching.SetLogger(logging.GetInstance())
+
+	// 设置S3包的logger
+	s3.SetLogger(logging.GetInstance())
+
 	logging.Info("Config loaded successfully from: %s", resolvedConfigPath)
 	logging.Info("Log level set to: %s", config.Logging.Level)
 
@@ -72,6 +79,14 @@ func main() {
 	// 创建数据库连接
 	dbClient := database.InitInstance(&config.Database)
 	redisClient := caching.InitInstance(&config.Redis)
+
+	// 初始化S3客户端
+	if err := s3.InitClient(&config.S3); err != nil {
+		logging.Warn("Failed to initialize S3 client: %v", err)
+	} else {
+		logging.Info("S3 client initialized successfully")
+	}
+
 	logging.Info("Database connection established")
 
 	// 创建Gin引擎

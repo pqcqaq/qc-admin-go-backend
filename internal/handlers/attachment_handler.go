@@ -3,9 +3,11 @@ package handlers
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"go-backend/internal/funcs"
 	"go-backend/internal/middleware"
+	"go-backend/pkg/s3"
 	"go-backend/shared/models"
 
 	"github.com/gin-gonic/gin"
@@ -222,5 +224,55 @@ func (h *AttachmentHandler) DeleteAttachment(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"success": true,
 		"message": "附件删除成功",
+	})
+}
+
+// GetAttachmentURL 获取附件的预签名URL
+func (h *AttachmentHandler) GetAttachmentURL(c *gin.Context) {
+	idStr := c.Param("id")
+
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]interface{}{
+			"provided_id": idStr,
+		}))
+		return
+	}
+
+	// 获取附件信息
+	attachment, err := funcs.GetAttachmentByID(context.Background(), id)
+	if err != nil {
+		if err.Error() == "attachment not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]interface{}{
+				"id": id,
+			}))
+		} else {
+			middleware.ThrowError(c, middleware.DatabaseError("查询附件失败", err.Error()))
+		}
+		return
+	}
+
+	// 获取S3客户端
+	s3Client := s3.GetClient()
+	if s3Client == nil {
+		middleware.ThrowError(c, middleware.InternalServerError("S3服务不可用", nil))
+		return
+	}
+
+	// 生成预签名URL（有效期1小时）
+	url, err := s3Client.GetFileURL(attachment.Bucket, attachment.Path, time.Hour)
+	if err != nil {
+		middleware.ThrowError(c, middleware.InternalServerError("生成文件URL失败", err.Error()))
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"data": gin.H{
+			"id":       attachment.ID,
+			"filename": attachment.Filename,
+			"url":      url,
+			"expires":  time.Now().Add(time.Hour).Unix(),
+		},
 	})
 }

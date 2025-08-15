@@ -14,6 +14,7 @@ type AppConfig struct {
 	Database DatabaseConfig `mapstructure:"database"`
 	Logging  LoggingConfig  `mapstructure:"logging"`
 	Redis    RedisConfig    `mapstructure:"redis"`
+	S3       S3Config       `mapstructure:"s3"`
 }
 
 var config *AppConfig
@@ -68,4 +69,7 @@ func setDefaults() {
 
 	// Redis默认配置
 	setRedisConfigDefaults()
+
+	// S3默认配置
+	setS3ConfigDefaults()
 }
