@@ -5,6 +5,7 @@ import (
 
 	"go-backend/pkg/caching"
 	"go-backend/pkg/database"
+	"go-backend/pkg/s3"
 	"go-backend/shared/models"
 
 	"github.com/gin-gonic/gin"
@@ -22,25 +23,32 @@ func NewHealthHandler() *HealthHandler {
 func (h *HealthHandler) Health(c *gin.Context) {
 	var dbStatus string
 	if database.IsInstanceInitialized() {
-		dbStatus = "Database Connected"
+		dbStatus = "Alive"
 	} else {
-		dbStatus = "Database Not Connected"
+		dbStatus = "Dead"
 	}
 
 	var cacheStatus string
 	if caching.IsAlive() {
-		cacheStatus = "Cache Alive"
+		cacheStatus = "Alive"
 	} else {
-		cacheStatus = "Cache Not Alive"
+		cacheStatus = "Dead"
+	}
+
+	var s3Status string
+	if err := s3.Client.TestConnection(); err == nil {
+		s3Status = "Alive"
+	} else {
+		s3Status = "Dead"
 	}
 
 	response := &models.HealthResponse{
 		Status:  "ok",
 		Message: "Server is running",
-		Components: []string{
-			dbStatus,
-			cacheStatus,
-			"Message Queue",
+		Components: map[string]string{
+			"database": dbStatus,
+			"cache":    cacheStatus,
+			"s3":       s3Status,
 		},
 	}
 	c.JSON(http.StatusOK, response)

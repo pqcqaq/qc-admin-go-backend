@@ -10,9 +10,9 @@ type ApiResponse struct {
 
 // HealthResponse 健康检查响应
 type HealthResponse struct {
-	Status     string   `json:"status"`
-	Message    string   `json:"message"`
-	Components []string `json:"components,omitempty"`
+	Status     string            `json:"status"`
+	Message    string            `json:"message"`
+	Components map[string]string `json:"components,omitempty"`
 }
 
 // PaginationRequest 分页请求结构
