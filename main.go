@@ -18,6 +18,7 @@ import (
 	"go-backend/pkg/database"
 	"go-backend/pkg/logging"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -75,6 +76,54 @@ func main() {
 
 	// 创建Gin引擎
 	engine := gin.Default()
+
+	// 配置CORS跨域中间件
+	if config.Server.CORS.Enabled {
+		var corsConfig cors.Config
+
+		// 如果是debug模式，允许所有来源
+		if config.Server.Debug {
+			corsConfig = cors.Config{
+				AllowAllOrigins:  true,
+				AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"},
+				AllowHeaders:     []string{"*"},
+				ExposeHeaders:    []string{"*"},
+				AllowCredentials: true,
+				MaxAge:           12 * time.Hour,
+			}
+			logging.Warn("CORS enabled with allow all origins (debug mode)")
+		} else {
+			// 生产环境使用配置文件中的设置
+			corsConfig = cors.Config{
+				AllowAllOrigins:  config.Server.CORS.AllowAllOrigins,
+				AllowOrigins:     config.Server.CORS.AllowOrigins,
+				AllowMethods:     config.Server.CORS.AllowMethods,
+				AllowHeaders:     config.Server.CORS.AllowHeaders,
+				ExposeHeaders:    config.Server.CORS.ExposeHeaders,
+				AllowCredentials: config.Server.CORS.AllowCredentials,
+				MaxAge:           time.Duration(config.Server.CORS.MaxAge) * time.Second,
+			}
+			logging.Info("CORS enabled with configured origins: %v", config.Server.CORS.AllowOrigins)
+		}
+
+		engine.Use(cors.New(corsConfig))
+	} else {
+		logging.Info("CORS disabled")
+	}
+
+	// 配置静态文件服务
+	if config.Server.Static.Enabled {
+		// 解析静态文件根目录的绝对路径
+		staticRoot, err := resolveStaticPath(config.Server.Static.Root)
+		if err != nil {
+			logging.Warn("Failed to resolve static root path: %v, static file service disabled", err)
+		} else {
+			engine.Static(config.Server.Static.Path, staticRoot)
+			logging.Info("Static file service enabled - Path: %s, Root: %s", config.Server.Static.Path, staticRoot)
+		}
+	} else {
+		logging.Info("Static file service disabled")
+	}
 
 	// 设置路由
 	router := routes.NewRouter()
@@ -152,6 +201,36 @@ func resolveConfigPath(configPath string) (string, error) {
 	// 检查文件是否存在（可选，因为Viper会处理文件不存在的情况）
 	if _, err := os.Stat(resolvedPath); os.IsNotExist(err) {
 		log.Printf("Warning: Config file not found at %s, will use defaults", resolvedPath)
+	}
+
+	return resolvedPath, nil
+}
+
+// resolveStaticPath 解析静态文件目录路径，支持相对路径和绝对路径
+func resolveStaticPath(staticPath string) (string, error) {
+	// 如果是绝对路径，直接返回
+	if filepath.IsAbs(staticPath) {
+		// 检查目录是否存在
+		if _, err := os.Stat(staticPath); os.IsNotExist(err) {
+			return "", fmt.Errorf("static directory not found: %s", staticPath)
+		}
+		return staticPath, nil
+	}
+
+	// 相对路径：相对于当前工作目录
+	workDir, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("failed to get working directory: %w", err)
+	}
+
+	resolvedPath := filepath.Join(workDir, staticPath)
+
+	// 检查目录是否存在，如果不存在则创建
+	if _, err := os.Stat(resolvedPath); os.IsNotExist(err) {
+		logging.Info("Static directory not found, creating: %s", resolvedPath)
+		if err := os.MkdirAll(resolvedPath, 0755); err != nil {
+			return "", fmt.Errorf("failed to create static directory: %w", err)
+		}
 	}
 
 	return resolvedPath, nil

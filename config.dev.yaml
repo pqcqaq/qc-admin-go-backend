@@ -2,6 +2,24 @@
 server:
   port: ":8080"
   mode: "debug"  # gin模式: debug, release, test
+  debug: true    # 开发环境启用debug模式，允许所有跨域
+  cors:
+    enabled: true
+    allow_all_origins: true  # 开发环境允许所有来源
+    allow_methods:
+      - "GET"
+      - "POST" 
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"
+      - "HEAD"
+      - "PATCH"
+    allow_headers:
+      - "*"  # 开发环境允许所有请求头
+    expose_headers: 
+      - "*"  # 开发环境暴露所有响应头
+    allow_credentials: true
+    max_age: 86400
 
 database:
   driver: "sqlite3"

@@ -2,6 +2,28 @@
 server:
   port: ":8080"
   mode: "release"  # gin模式: debug, release, test
+  debug: false     # 生产环境关闭debug模式
+  cors:
+    enabled: true
+    allow_all_origins: false  # 生产环境不允许所有来源
+    allow_origins:
+      - "https://yourdomain.com"
+      - "https://www.yourdomain.com"
+    allow_methods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"
+    allow_headers:
+      - "Origin"
+      - "Content-Type"
+      - "Accept"
+      - "Authorization"
+      - "X-Requested-With"
+    expose_headers: []
+    allow_credentials: true
+    max_age: 86400
 
 database:
   driver: "sqlite3"

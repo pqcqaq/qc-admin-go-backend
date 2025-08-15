@@ -1,6 +1,37 @@
 server:
   port: "localhost:8080"
   mode: "release"  # gin模式: debug, release, test
+  debug: true
+  static: 
+    enabled: true
+    root: "../app/dist/build/h5"
+    path: "/static"
+  cors:
+    enabled: true
+    allow_all_origins: false
+    allow_origins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"
+      - "http://127.0.0.1:3000"
+      - "http://127.0.0.1:8080"
+    allow_methods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"
+      - "HEAD"
+      - "PATCH"
+    allow_headers:
+      - "Origin"
+      - "Content-Type"
+      - "Accept"
+      - "Authorization"
+      - "X-Requested-With"
+      - "Cache-Control"
+    expose_headers: []
+    allow_credentials: true
+    max_age: 86400  # 24小时
 
 database:
   driver: "sqlite3"

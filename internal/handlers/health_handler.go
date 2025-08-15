@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"go-backend/pkg/caching"
 	"go-backend/pkg/database"
 	"go-backend/shared/models"
 
@@ -25,13 +26,20 @@ func (h *HealthHandler) Health(c *gin.Context) {
 	} else {
 		dbStatus = "Database Not Connected"
 	}
-	
+
+	var cacheStatus string
+	if caching.IsAlive() {
+		cacheStatus = "Cache Alive"
+	} else {
+		cacheStatus = "Cache Not Alive"
+	}
+
 	response := &models.HealthResponse{
 		Status:  "ok",
 		Message: "Server is running",
 		Components: []string{
 			dbStatus,
-			"Cache",
+			cacheStatus,
 			"Message Queue",
 		},
 	}
