@@ -100,16 +100,31 @@ func (Attachment) Indexes() []ent.Index {
 }
 
 // BaseMixin 包含所有基础字段的mixin
-type AttachmentsMixin struct {
+type MultiAttachmentsMixin struct {
 	mixin.Schema
 }
 
-func (AttachmentsMixin) Fields() []ent.Field {
+func (MultiAttachmentsMixin) Fields() []ent.Field {
 	return []ent.Field{}
 }
 
-func (AttachmentsMixin) Edges() []ent.Edge {
+func (MultiAttachmentsMixin) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("attachments", Attachment.Type),
+	}
+}
+
+type SingleAttachmentMixin struct {
+	mixin.Schema
+}
+
+func (SingleAttachmentMixin) Fields() []ent.Field {
+	return []ent.Field{}
+}
+
+func (SingleAttachmentMixin) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("attachment", Attachment.Type).
+			Unique(),
 	}
 }
