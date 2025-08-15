@@ -1,4 +1,4 @@
-package cacheing
+package caching
 
 import (
 	"context"

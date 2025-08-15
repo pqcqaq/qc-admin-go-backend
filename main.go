@@ -1,13 +1,19 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
+	"time"
 
 	"go-backend/internal/routes"
+	"go-backend/pkg/caching"
 	"go-backend/pkg/configs"
 	"go-backend/pkg/database"
 	"go-backend/pkg/logging"
@@ -63,8 +69,8 @@ func main() {
 	logging.Info("Gin mode set to: %s", config.Server.Mode)
 
 	// 创建数据库连接
-	client := database.InitInstance(&config.Database)
-	defer client.Close()
+	dbClient := database.InitInstance(&config.Database)
+	redisClient := caching.InitInstance(&config.Redis)
 	logging.Info("Database connection established")
 
 	// 创建Gin引擎
@@ -75,9 +81,53 @@ func main() {
 	router.SetupRoutes(engine)
 	logging.Info("Routes configured")
 
-	// 启动服务器
-	logging.Info("Server starting on %s", config.Server.Port)
-	logging.Fatal("Server failed to start: %v", engine.Run(config.Server.Port))
+	// 创建HTTP服务器
+	srv := &http.Server{
+		Addr:    config.Server.Port,
+		Handler: engine,
+	}
+
+	// 在goroutine中启动服务器
+	go func() {
+		logging.Info("Server starting on %s", config.Server.Port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logging.Fatal("Server failed to start: %v", err)
+		}
+	}()
+
+	// 等待中断信号以优雅地关闭服务器
+	quit := make(chan os.Signal, 1)
+	// kill (no param) 默认发送 syscall.SIGTERM
+	// kill -2 发送 syscall.SIGINT Ctrl+C
+	// kill -9 发送 syscall.SIGKILL 但不能被捕获，所以不需要添加它
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	logging.Info("Shutting down server...")
+
+	// 上下文用于通知服务器它有5秒的时间完成当前正在处理的请求
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// 关闭HTTP服务器
+	if err := srv.Shutdown(ctx); err != nil {
+		logging.Fatal("Server forced to shutdown: %v", err)
+	}
+
+	// 关闭数据库连接
+	if err := dbClient.Close(); err != nil {
+		logging.Error("Failed to close database connection: %v", err)
+	} else {
+		logging.Info("Database connection closed")
+	}
+
+	// 关闭Redis连接
+	if err := redisClient.Close(); err != nil {
+		logging.Error("Failed to close Redis connection: %v", err)
+	} else {
+		logging.Info("Redis connection closed")
+	}
+
+	logging.Info("Server exiting")
 }
 
 // resolveConfigPath 解析配置文件路径，支持相对路径和绝对路径
