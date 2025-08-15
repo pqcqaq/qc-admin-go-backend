@@ -31,6 +31,7 @@ func (r *Router) SetupRoutes(engine *gin.Engine) {
 	{
 		r.setupUserRoutes(api)
 		r.setupAttachmentRoutes(api)
+		r.setupScanRoutes(api)
 		r.setupDemoRoutes(api)
 	}
 }
