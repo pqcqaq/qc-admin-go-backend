@@ -18,7 +18,7 @@ type Logging struct {
 	config `json:"-"`
 	// ID of the ent.
 	// 主键ID
-	ID int64 `json:"id,omitempty"`
+	ID uint64 `json:"id,omitempty"`
 	// 创建时间
 	CreateTime time.Time `json:"create_time,omitempty"`
 	// 创建人ID
@@ -85,11 +85,11 @@ func (_m *Logging) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case logging.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value.Valid {
+				_m.ID = uint64(value.Int64)
 			}
-			_m.ID = int64(value.Int64)
 		case logging.FieldCreateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field create_time", values[i])

@@ -13,6 +13,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/redis/go-redis/v9 v9.12.1
+	github.com/sony/sonyflake v1.3.0
 	github.com/spf13/viper v1.20.1
 )
 

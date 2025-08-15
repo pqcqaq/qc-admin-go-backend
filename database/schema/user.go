@@ -17,6 +17,8 @@ func (User) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixins.BaseMixin{},
 		mixins.SoftDeleteMixin{},
+		// 用户对象所包含的图片
+		AttachmentsMixin{},
 	}
 }
 

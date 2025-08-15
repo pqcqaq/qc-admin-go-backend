@@ -17,7 +17,7 @@ type User struct {
 	config `json:"-"`
 	// ID of the ent.
 	// 主键ID
-	ID int64 `json:"id,omitempty"`
+	ID uint64 `json:"id,omitempty"`
 	// 创建时间
 	CreateTime time.Time `json:"create_time,omitempty"`
 	// 创建人ID
@@ -37,8 +37,29 @@ type User struct {
 	// Age holds the value of the "age" field.
 	Age int `json:"age,omitempty"`
 	// Phone holds the value of the "phone" field.
-	Phone        string `json:"phone,omitempty"`
+	Phone string `json:"phone,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges        UserEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// Attachments holds the value of the attachments edge.
+	Attachments []*Attachment `json:"attachments,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// AttachmentsOrErr returns the Attachments value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) AttachmentsOrErr() ([]*Attachment, error) {
+	if e.loadedTypes[0] {
+		return e.Attachments, nil
+	}
+	return nil, &NotLoadedError{edge: "attachments"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -68,11 +89,11 @@ func (_m *User) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case user.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value.Valid {
+				_m.ID = uint64(value.Int64)
 			}
-			_m.ID = int64(value.Int64)
 		case user.FieldCreateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field create_time", values[i])
@@ -144,6 +165,11 @@ func (_m *User) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *User) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryAttachments queries the "attachments" edge of the User entity.
+func (_m *User) QueryAttachments() *AttachmentQuery {
+	return NewUserClient(_m.config).QueryAttachments(_m)
 }
 
 // Update returns a builder for updating this User.

@@ -18,7 +18,7 @@ func GetAllUsers(ctx context.Context) ([]*ent.User, error) {
 }
 
 // GetUserByID 根据ID获取用户
-func GetUserByID(ctx context.Context, id int64) (*ent.User, error) {
+func GetUserByID(ctx context.Context, id uint64) (*ent.User, error) {
 	user, err := database.Client.User.Query().Where(user.ID(id)).Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -47,7 +47,7 @@ func CreateUser(ctx context.Context, req *models.CreateUserRequest) (*ent.User, 
 }
 
 // UpdateUser 更新用户
-func UpdateUser(ctx context.Context, id int64, req *models.UpdateUserRequest) (*ent.User, error) {
+func UpdateUser(ctx context.Context, id uint64, req *models.UpdateUserRequest) (*ent.User, error) {
 	// 首先检查用户是否存在
 	exists, err := database.Client.User.Query().Where(user.ID(id)).Exist(ctx)
 	if err != nil {
@@ -76,7 +76,7 @@ func UpdateUser(ctx context.Context, id int64, req *models.UpdateUserRequest) (*
 }
 
 // DeleteUser 删除用户
-func DeleteUser(ctx context.Context, id int64) error {
+func DeleteUser(ctx context.Context, id uint64) error {
 	// 首先检查用户是否存在
 	exists, err := database.Client.User.Query().Where(user.ID(id)).Exist(ctx)
 	if err != nil {

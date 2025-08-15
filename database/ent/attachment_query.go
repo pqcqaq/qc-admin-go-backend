@@ -5,7 +5,7 @@ package ent
 import (
 	"context"
 	"fmt"
-	"go-backend/database/ent/logging"
+	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/predicate"
 	"math"
 
@@ -15,64 +15,65 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// LoggingQuery is the builder for querying Logging entities.
-type LoggingQuery struct {
+// AttachmentQuery is the builder for querying Attachment entities.
+type AttachmentQuery struct {
 	config
 	ctx        *QueryContext
-	order      []logging.OrderOption
+	order      []attachment.OrderOption
 	inters     []Interceptor
-	predicates []predicate.Logging
+	predicates []predicate.Attachment
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the LoggingQuery builder.
-func (_q *LoggingQuery) Where(ps ...predicate.Logging) *LoggingQuery {
+// Where adds a new predicate for the AttachmentQuery builder.
+func (_q *AttachmentQuery) Where(ps ...predicate.Attachment) *AttachmentQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *LoggingQuery) Limit(limit int) *LoggingQuery {
+func (_q *AttachmentQuery) Limit(limit int) *AttachmentQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *LoggingQuery) Offset(offset int) *LoggingQuery {
+func (_q *AttachmentQuery) Offset(offset int) *AttachmentQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *LoggingQuery) Unique(unique bool) *LoggingQuery {
+func (_q *AttachmentQuery) Unique(unique bool) *AttachmentQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *LoggingQuery) Order(o ...logging.OrderOption) *LoggingQuery {
+func (_q *AttachmentQuery) Order(o ...attachment.OrderOption) *AttachmentQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
-// First returns the first Logging entity from the query.
-// Returns a *NotFoundError when no Logging was found.
-func (_q *LoggingQuery) First(ctx context.Context) (*Logging, error) {
+// First returns the first Attachment entity from the query.
+// Returns a *NotFoundError when no Attachment was found.
+func (_q *AttachmentQuery) First(ctx context.Context) (*Attachment, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{logging.Label}
+		return nil, &NotFoundError{attachment.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *LoggingQuery) FirstX(ctx context.Context) *Logging {
+func (_q *AttachmentQuery) FirstX(ctx context.Context) *Attachment {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -80,22 +81,22 @@ func (_q *LoggingQuery) FirstX(ctx context.Context) *Logging {
 	return node
 }
 
-// FirstID returns the first Logging ID from the query.
-// Returns a *NotFoundError when no Logging ID was found.
-func (_q *LoggingQuery) FirstID(ctx context.Context) (id uint64, err error) {
+// FirstID returns the first Attachment ID from the query.
+// Returns a *NotFoundError when no Attachment ID was found.
+func (_q *AttachmentQuery) FirstID(ctx context.Context) (id uint64, err error) {
 	var ids []uint64
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{logging.Label}
+		err = &NotFoundError{attachment.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *LoggingQuery) FirstIDX(ctx context.Context) uint64 {
+func (_q *AttachmentQuery) FirstIDX(ctx context.Context) uint64 {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -103,10 +104,10 @@ func (_q *LoggingQuery) FirstIDX(ctx context.Context) uint64 {
 	return id
 }
 
-// Only returns a single Logging entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one Logging entity is found.
-// Returns a *NotFoundError when no Logging entities are found.
-func (_q *LoggingQuery) Only(ctx context.Context) (*Logging, error) {
+// Only returns a single Attachment entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one Attachment entity is found.
+// Returns a *NotFoundError when no Attachment entities are found.
+func (_q *AttachmentQuery) Only(ctx context.Context) (*Attachment, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -115,14 +116,14 @@ func (_q *LoggingQuery) Only(ctx context.Context) (*Logging, error) {
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{logging.Label}
+		return nil, &NotFoundError{attachment.Label}
 	default:
-		return nil, &NotSingularError{logging.Label}
+		return nil, &NotSingularError{attachment.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *LoggingQuery) OnlyX(ctx context.Context) *Logging {
+func (_q *AttachmentQuery) OnlyX(ctx context.Context) *Attachment {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -130,10 +131,10 @@ func (_q *LoggingQuery) OnlyX(ctx context.Context) *Logging {
 	return node
 }
 
-// OnlyID is like Only, but returns the only Logging ID in the query.
-// Returns a *NotSingularError when more than one Logging ID is found.
+// OnlyID is like Only, but returns the only Attachment ID in the query.
+// Returns a *NotSingularError when more than one Attachment ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *LoggingQuery) OnlyID(ctx context.Context) (id uint64, err error) {
+func (_q *AttachmentQuery) OnlyID(ctx context.Context) (id uint64, err error) {
 	var ids []uint64
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -142,15 +143,15 @@ func (_q *LoggingQuery) OnlyID(ctx context.Context) (id uint64, err error) {
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{logging.Label}
+		err = &NotFoundError{attachment.Label}
 	default:
-		err = &NotSingularError{logging.Label}
+		err = &NotSingularError{attachment.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *LoggingQuery) OnlyIDX(ctx context.Context) uint64 {
+func (_q *AttachmentQuery) OnlyIDX(ctx context.Context) uint64 {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -158,18 +159,18 @@ func (_q *LoggingQuery) OnlyIDX(ctx context.Context) uint64 {
 	return id
 }
 
-// All executes the query and returns a list of Loggings.
-func (_q *LoggingQuery) All(ctx context.Context) ([]*Logging, error) {
+// All executes the query and returns a list of Attachments.
+func (_q *AttachmentQuery) All(ctx context.Context) ([]*Attachment, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*Logging, *LoggingQuery]()
-	return withInterceptors[[]*Logging](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*Attachment, *AttachmentQuery]()
+	return withInterceptors[[]*Attachment](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *LoggingQuery) AllX(ctx context.Context) []*Logging {
+func (_q *AttachmentQuery) AllX(ctx context.Context) []*Attachment {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -177,20 +178,20 @@ func (_q *LoggingQuery) AllX(ctx context.Context) []*Logging {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Logging IDs.
-func (_q *LoggingQuery) IDs(ctx context.Context) (ids []uint64, err error) {
+// IDs executes the query and returns a list of Attachment IDs.
+func (_q *AttachmentQuery) IDs(ctx context.Context) (ids []uint64, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(logging.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(attachment.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *LoggingQuery) IDsX(ctx context.Context) []uint64 {
+func (_q *AttachmentQuery) IDsX(ctx context.Context) []uint64 {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -199,16 +200,16 @@ func (_q *LoggingQuery) IDsX(ctx context.Context) []uint64 {
 }
 
 // Count returns the count of the given query.
-func (_q *LoggingQuery) Count(ctx context.Context) (int, error) {
+func (_q *AttachmentQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*LoggingQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*AttachmentQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *LoggingQuery) CountX(ctx context.Context) int {
+func (_q *AttachmentQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -217,7 +218,7 @@ func (_q *LoggingQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *LoggingQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *AttachmentQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -230,7 +231,7 @@ func (_q *LoggingQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *LoggingQuery) ExistX(ctx context.Context) bool {
+func (_q *AttachmentQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -238,18 +239,18 @@ func (_q *LoggingQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the LoggingQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the AttachmentQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *LoggingQuery) Clone() *LoggingQuery {
+func (_q *AttachmentQuery) Clone() *AttachmentQuery {
 	if _q == nil {
 		return nil
 	}
-	return &LoggingQuery{
+	return &AttachmentQuery{
 		config:     _q.config,
 		ctx:        _q.ctx.Clone(),
-		order:      append([]logging.OrderOption{}, _q.order...),
+		order:      append([]attachment.OrderOption{}, _q.order...),
 		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.Logging{}, _q.predicates...),
+		predicates: append([]predicate.Attachment{}, _q.predicates...),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -266,15 +267,15 @@ func (_q *LoggingQuery) Clone() *LoggingQuery {
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.Logging.Query().
-//		GroupBy(logging.FieldCreateTime).
+//	client.Attachment.Query().
+//		GroupBy(attachment.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *LoggingQuery) GroupBy(field string, fields ...string) *LoggingGroupBy {
+func (_q *AttachmentQuery) GroupBy(field string, fields ...string) *AttachmentGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &LoggingGroupBy{build: _q}
+	grbuild := &AttachmentGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = logging.Label
+	grbuild.label = attachment.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -288,23 +289,23 @@ func (_q *LoggingQuery) GroupBy(field string, fields ...string) *LoggingGroupBy 
 //		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
-//	client.Logging.Query().
-//		Select(logging.FieldCreateTime).
+//	client.Attachment.Query().
+//		Select(attachment.FieldCreateTime).
 //		Scan(ctx, &v)
-func (_q *LoggingQuery) Select(fields ...string) *LoggingSelect {
+func (_q *AttachmentQuery) Select(fields ...string) *AttachmentSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &LoggingSelect{LoggingQuery: _q}
-	sbuild.label = logging.Label
+	sbuild := &AttachmentSelect{AttachmentQuery: _q}
+	sbuild.label = attachment.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a LoggingSelect configured with the given aggregations.
-func (_q *LoggingQuery) Aggregate(fns ...AggregateFunc) *LoggingSelect {
+// Aggregate returns a AttachmentSelect configured with the given aggregations.
+func (_q *AttachmentQuery) Aggregate(fns ...AggregateFunc) *AttachmentSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *LoggingQuery) prepareQuery(ctx context.Context) error {
+func (_q *AttachmentQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -316,7 +317,7 @@ func (_q *LoggingQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !logging.ValidColumn(f) {
+		if !attachment.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -330,16 +331,20 @@ func (_q *LoggingQuery) prepareQuery(ctx context.Context) error {
 	return nil
 }
 
-func (_q *LoggingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Logging, error) {
+func (_q *AttachmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Attachment, error) {
 	var (
-		nodes = []*Logging{}
-		_spec = _q.querySpec()
+		nodes   = []*Attachment{}
+		withFKs = _q.withFKs
+		_spec   = _q.querySpec()
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, attachment.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*Logging).scanValues(nil, columns)
+		return (*Attachment).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Logging{config: _q.config}
+		node := &Attachment{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
@@ -355,7 +360,7 @@ func (_q *LoggingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Logg
 	return nodes, nil
 }
 
-func (_q *LoggingQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *AttachmentQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
 	_spec.Node.Columns = _q.ctx.Fields
 	if len(_q.ctx.Fields) > 0 {
@@ -364,8 +369,8 @@ func (_q *LoggingQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *LoggingQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(logging.Table, logging.Columns, sqlgraph.NewFieldSpec(logging.FieldID, field.TypeUint64))
+func (_q *AttachmentQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(attachment.Table, attachment.Columns, sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -374,9 +379,9 @@ func (_q *LoggingQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, logging.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, attachment.FieldID)
 		for i := range fields {
-			if fields[i] != logging.FieldID {
+			if fields[i] != attachment.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
@@ -404,12 +409,12 @@ func (_q *LoggingQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *LoggingQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *AttachmentQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(logging.Table)
+	t1 := builder.Table(attachment.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = logging.Columns
+		columns = attachment.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -436,28 +441,28 @@ func (_q *LoggingQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// LoggingGroupBy is the group-by builder for Logging entities.
-type LoggingGroupBy struct {
+// AttachmentGroupBy is the group-by builder for Attachment entities.
+type AttachmentGroupBy struct {
 	selector
-	build *LoggingQuery
+	build *AttachmentQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *LoggingGroupBy) Aggregate(fns ...AggregateFunc) *LoggingGroupBy {
+func (_g *AttachmentGroupBy) Aggregate(fns ...AggregateFunc) *AttachmentGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *LoggingGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *AttachmentGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*LoggingQuery, *LoggingGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*AttachmentQuery, *AttachmentGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *LoggingGroupBy) sqlScan(ctx context.Context, root *LoggingQuery, v any) error {
+func (_g *AttachmentGroupBy) sqlScan(ctx context.Context, root *AttachmentQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -484,28 +489,28 @@ func (_g *LoggingGroupBy) sqlScan(ctx context.Context, root *LoggingQuery, v any
 	return sql.ScanSlice(rows, v)
 }
 
-// LoggingSelect is the builder for selecting fields of Logging entities.
-type LoggingSelect struct {
-	*LoggingQuery
+// AttachmentSelect is the builder for selecting fields of Attachment entities.
+type AttachmentSelect struct {
+	*AttachmentQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *LoggingSelect) Aggregate(fns ...AggregateFunc) *LoggingSelect {
+func (_s *AttachmentSelect) Aggregate(fns ...AggregateFunc) *AttachmentSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *LoggingSelect) Scan(ctx context.Context, v any) error {
+func (_s *AttachmentSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*LoggingQuery, *LoggingSelect](ctx, _s.LoggingQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*AttachmentQuery, *AttachmentSelect](ctx, _s.AttachmentQuery, _s, _s.inters, v)
 }
 
-func (_s *LoggingSelect) sqlScan(ctx context.Context, root *LoggingQuery, v any) error {
+func (_s *AttachmentSelect) sqlScan(ctx context.Context, root *AttachmentQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {

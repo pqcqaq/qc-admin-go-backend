@@ -91,7 +91,7 @@ func ValidColumn(column string) bool {
 //
 //	import _ "go-backend/database/ent/runtime"
 var (
-	Hooks        [2]ent.Hook
+	Hooks        [3]ent.Hook
 	Interceptors [1]ent.Interceptor
 	// DefaultCreateTime holds the default value on creation for the "create_time" field.
 	DefaultCreateTime func() time.Time
@@ -115,8 +115,6 @@ var (
 	UserAgentValidator func(string) error
 	// StackValidator is a validator for the "stack" field. It is called by the builders before save.
 	StackValidator func(string) error
-	// IDValidator is a validator for the "id" field. It is called by the builders before save.
-	IDValidator func(int64) error
 )
 
 // Level defines the type for the "level" enum field.

@@ -3,6 +3,7 @@
 package runtime
 
 import (
+	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/user"
 	"go-backend/database/schema"
@@ -13,11 +14,80 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	attachmentMixin := schema.Attachment{}.Mixin()
+	attachmentMixinHooks0 := attachmentMixin[0].Hooks()
+	attachmentMixinHooks1 := attachmentMixin[1].Hooks()
+	attachment.Hooks[0] = attachmentMixinHooks0[0]
+	attachment.Hooks[1] = attachmentMixinHooks0[1]
+	attachment.Hooks[2] = attachmentMixinHooks1[0]
+	attachmentMixinInters1 := attachmentMixin[1].Interceptors()
+	attachment.Interceptors[0] = attachmentMixinInters1[0]
+	attachmentMixinFields0 := attachmentMixin[0].Fields()
+	_ = attachmentMixinFields0
+	attachmentFields := schema.Attachment{}.Fields()
+	_ = attachmentFields
+	// attachmentDescCreateTime is the schema descriptor for create_time field.
+	attachmentDescCreateTime := attachmentMixinFields0[1].Descriptor()
+	// attachment.DefaultCreateTime holds the default value on creation for the create_time field.
+	attachment.DefaultCreateTime = attachmentDescCreateTime.Default.(func() time.Time)
+	// attachmentDescUpdateTime is the schema descriptor for update_time field.
+	attachmentDescUpdateTime := attachmentMixinFields0[3].Descriptor()
+	// attachment.DefaultUpdateTime holds the default value on creation for the update_time field.
+	attachment.DefaultUpdateTime = attachmentDescUpdateTime.Default.(func() time.Time)
+	// attachment.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	attachment.UpdateDefaultUpdateTime = attachmentDescUpdateTime.UpdateDefault.(func() time.Time)
+	// attachmentDescFilename is the schema descriptor for filename field.
+	attachmentDescFilename := attachmentFields[0].Descriptor()
+	// attachment.FilenameValidator is a validator for the "filename" field. It is called by the builders before save.
+	attachment.FilenameValidator = attachmentDescFilename.Validators[0].(func(string) error)
+	// attachmentDescPath is the schema descriptor for path field.
+	attachmentDescPath := attachmentFields[1].Descriptor()
+	// attachment.PathValidator is a validator for the "path" field. It is called by the builders before save.
+	attachment.PathValidator = attachmentDescPath.Validators[0].(func(string) error)
+	// attachmentDescURL is the schema descriptor for url field.
+	attachmentDescURL := attachmentFields[2].Descriptor()
+	// attachment.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	attachment.URLValidator = attachmentDescURL.Validators[0].(func(string) error)
+	// attachmentDescContentType is the schema descriptor for content_type field.
+	attachmentDescContentType := attachmentFields[3].Descriptor()
+	// attachment.ContentTypeValidator is a validator for the "content_type" field. It is called by the builders before save.
+	attachment.ContentTypeValidator = attachmentDescContentType.Validators[0].(func(string) error)
+	// attachmentDescEtag is the schema descriptor for etag field.
+	attachmentDescEtag := attachmentFields[5].Descriptor()
+	// attachment.EtagValidator is a validator for the "etag" field. It is called by the builders before save.
+	attachment.EtagValidator = attachmentDescEtag.Validators[0].(func(string) error)
+	// attachmentDescBucket is the schema descriptor for bucket field.
+	attachmentDescBucket := attachmentFields[6].Descriptor()
+	// attachment.BucketValidator is a validator for the "bucket" field. It is called by the builders before save.
+	attachment.BucketValidator = attachmentDescBucket.Validators[0].(func(string) error)
+	// attachmentDescStorageProvider is the schema descriptor for storage_provider field.
+	attachmentDescStorageProvider := attachmentFields[7].Descriptor()
+	// attachment.DefaultStorageProvider holds the default value on creation for the storage_provider field.
+	attachment.DefaultStorageProvider = attachmentDescStorageProvider.Default.(string)
+	// attachment.StorageProviderValidator is a validator for the "storage_provider" field. It is called by the builders before save.
+	attachment.StorageProviderValidator = attachmentDescStorageProvider.Validators[0].(func(string) error)
+	// attachmentDescUploadSessionID is the schema descriptor for upload_session_id field.
+	attachmentDescUploadSessionID := attachmentFields[10].Descriptor()
+	// attachment.UploadSessionIDValidator is a validator for the "upload_session_id" field. It is called by the builders before save.
+	attachment.UploadSessionIDValidator = attachmentDescUploadSessionID.Validators[0].(func(string) error)
+	// attachmentDescTag1 is the schema descriptor for tag1 field.
+	attachmentDescTag1 := attachmentFields[11].Descriptor()
+	// attachment.Tag1Validator is a validator for the "tag1" field. It is called by the builders before save.
+	attachment.Tag1Validator = attachmentDescTag1.Validators[0].(func(string) error)
+	// attachmentDescTag2 is the schema descriptor for tag2 field.
+	attachmentDescTag2 := attachmentFields[12].Descriptor()
+	// attachment.Tag2Validator is a validator for the "tag2" field. It is called by the builders before save.
+	attachment.Tag2Validator = attachmentDescTag2.Validators[0].(func(string) error)
+	// attachmentDescTag3 is the schema descriptor for tag3 field.
+	attachmentDescTag3 := attachmentFields[13].Descriptor()
+	// attachment.Tag3Validator is a validator for the "tag3" field. It is called by the builders before save.
+	attachment.Tag3Validator = attachmentDescTag3.Validators[0].(func(string) error)
 	loggingMixin := schema.Logging{}.Mixin()
 	loggingMixinHooks0 := loggingMixin[0].Hooks()
 	loggingMixinHooks1 := loggingMixin[1].Hooks()
 	logging.Hooks[0] = loggingMixinHooks0[0]
-	logging.Hooks[1] = loggingMixinHooks1[0]
+	logging.Hooks[1] = loggingMixinHooks0[1]
+	logging.Hooks[2] = loggingMixinHooks1[0]
 	loggingMixinInters1 := loggingMixin[1].Interceptors()
 	logging.Interceptors[0] = loggingMixinInters1[0]
 	loggingMixinFields0 := loggingMixin[0].Fields()
@@ -80,15 +150,12 @@ func init() {
 	loggingDescStack := loggingFields[10].Descriptor()
 	// logging.StackValidator is a validator for the "stack" field. It is called by the builders before save.
 	logging.StackValidator = loggingDescStack.Validators[0].(func(string) error)
-	// loggingDescID is the schema descriptor for id field.
-	loggingDescID := loggingMixinFields0[0].Descriptor()
-	// logging.IDValidator is a validator for the "id" field. It is called by the builders before save.
-	logging.IDValidator = loggingDescID.Validators[0].(func(int64) error)
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks0 := userMixin[0].Hooks()
 	userMixinHooks1 := userMixin[1].Hooks()
 	user.Hooks[0] = userMixinHooks0[0]
-	user.Hooks[1] = userMixinHooks1[0]
+	user.Hooks[1] = userMixinHooks0[1]
+	user.Hooks[2] = userMixinHooks1[0]
 	userMixinInters1 := userMixin[1].Interceptors()
 	user.Interceptors[0] = userMixinInters1[0]
 	userMixinFields0 := userMixin[0].Fields()
@@ -149,10 +216,6 @@ func init() {
 	userDescPhone := userFields[3].Descriptor()
 	// user.PhoneValidator is a validator for the "phone" field. It is called by the builders before save.
 	user.PhoneValidator = userDescPhone.Validators[0].(func(string) error)
-	// userDescID is the schema descriptor for id field.
-	userDescID := userMixinFields0[0].Descriptor()
-	// user.IDValidator is a validator for the "id" field. It is called by the builders before save.
-	user.IDValidator = userDescID.Validators[0].(func(int64) error)
 }
 
 const (

@@ -8,9 +8,100 @@ import (
 )
 
 var (
+	// AttachmentsColumns holds the columns for the "attachments" table.
+	AttachmentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "filename", Type: field.TypeString, Size: 255},
+		{Name: "path", Type: field.TypeString, Size: 500},
+		{Name: "url", Type: field.TypeString, Nullable: true, Size: 500},
+		{Name: "content_type", Type: field.TypeString, Size: 100},
+		{Name: "size", Type: field.TypeInt64},
+		{Name: "etag", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "bucket", Type: field.TypeString, Size: 100},
+		{Name: "storage_provider", Type: field.TypeString, Size: 50, Default: "s3"},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"uploading", "uploaded", "failed", "deleted"}, Default: "uploading"},
+		{Name: "upload_session_id", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "tag1", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "tag2", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "tag3", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "user_attachments", Type: field.TypeUint64, Nullable: true},
+	}
+	// AttachmentsTable holds the schema information for the "attachments" table.
+	AttachmentsTable = &schema.Table{
+		Name:       "attachments",
+		Columns:    AttachmentsColumns,
+		PrimaryKey: []*schema.Column{AttachmentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "attachments_users_attachments",
+				Columns:    []*schema.Column{AttachmentsColumns[21]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "idx_attachment_path",
+				Unique:  true,
+				Columns: []*schema.Column{AttachmentsColumns[8]},
+			},
+			{
+				Name:    "idx_attachment_filename",
+				Unique:  false,
+				Columns: []*schema.Column{AttachmentsColumns[7]},
+			},
+			{
+				Name:    "idx_attachment_content_type",
+				Unique:  false,
+				Columns: []*schema.Column{AttachmentsColumns[10]},
+			},
+			{
+				Name:    "idx_attachment_status",
+				Unique:  false,
+				Columns: []*schema.Column{AttachmentsColumns[16]},
+			},
+			{
+				Name:    "idx_attachment_bucket",
+				Unique:  false,
+				Columns: []*schema.Column{AttachmentsColumns[13]},
+			},
+			{
+				Name:    "idx_attachment_deleted_created",
+				Unique:  false,
+				Columns: []*schema.Column{AttachmentsColumns[5], AttachmentsColumns[1]},
+			},
+			{
+				Name:    "idx_attachment_session",
+				Unique:  false,
+				Columns: []*schema.Column{AttachmentsColumns[17]},
+			},
+			{
+				Name:    "idx_attachment_tag1",
+				Unique:  false,
+				Columns: []*schema.Column{AttachmentsColumns[18]},
+			},
+			{
+				Name:    "idx_attachment_tag2",
+				Unique:  false,
+				Columns: []*schema.Column{AttachmentsColumns[19]},
+			},
+			{
+				Name:    "idx_attachment_tag3",
+				Unique:  false,
+				Columns: []*schema.Column{AttachmentsColumns[20]},
+			},
+		},
+	}
 	// LoggingsColumns holds the columns for the "loggings" table.
 	LoggingsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
 		{Name: "update_time", Type: field.TypeTime},
@@ -37,7 +128,7 @@ var (
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
 		{Name: "update_time", Type: field.TypeTime},
@@ -57,10 +148,12 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AttachmentsTable,
 		LoggingsTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	AttachmentsTable.ForeignKeys[0].RefTable = UsersTable
 }

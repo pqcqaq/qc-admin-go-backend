@@ -3,7 +3,9 @@
 package ent
 
 import (
+	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/logging"
+	"go-backend/database/ent/predicate"
 	"go-backend/database/ent/user"
 
 	"entgo.io/ent/dialect/sql"
@@ -14,13 +16,46 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 2)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 3)}
 	graph.Nodes[0] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   attachment.Table,
+			Columns: attachment.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: attachment.FieldID,
+			},
+		},
+		Type: "Attachment",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			attachment.FieldCreateTime:      {Type: field.TypeTime, Column: attachment.FieldCreateTime},
+			attachment.FieldCreateBy:        {Type: field.TypeInt64, Column: attachment.FieldCreateBy},
+			attachment.FieldUpdateTime:      {Type: field.TypeTime, Column: attachment.FieldUpdateTime},
+			attachment.FieldUpdateBy:        {Type: field.TypeInt64, Column: attachment.FieldUpdateBy},
+			attachment.FieldDeleteTime:      {Type: field.TypeTime, Column: attachment.FieldDeleteTime},
+			attachment.FieldDeleteBy:        {Type: field.TypeInt64, Column: attachment.FieldDeleteBy},
+			attachment.FieldFilename:        {Type: field.TypeString, Column: attachment.FieldFilename},
+			attachment.FieldPath:            {Type: field.TypeString, Column: attachment.FieldPath},
+			attachment.FieldURL:             {Type: field.TypeString, Column: attachment.FieldURL},
+			attachment.FieldContentType:     {Type: field.TypeString, Column: attachment.FieldContentType},
+			attachment.FieldSize:            {Type: field.TypeInt64, Column: attachment.FieldSize},
+			attachment.FieldEtag:            {Type: field.TypeString, Column: attachment.FieldEtag},
+			attachment.FieldBucket:          {Type: field.TypeString, Column: attachment.FieldBucket},
+			attachment.FieldStorageProvider: {Type: field.TypeString, Column: attachment.FieldStorageProvider},
+			attachment.FieldMetadata:        {Type: field.TypeJSON, Column: attachment.FieldMetadata},
+			attachment.FieldStatus:          {Type: field.TypeEnum, Column: attachment.FieldStatus},
+			attachment.FieldUploadSessionID: {Type: field.TypeString, Column: attachment.FieldUploadSessionID},
+			attachment.FieldTag1:            {Type: field.TypeString, Column: attachment.FieldTag1},
+			attachment.FieldTag2:            {Type: field.TypeString, Column: attachment.FieldTag2},
+			attachment.FieldTag3:            {Type: field.TypeString, Column: attachment.FieldTag3},
+		},
+	}
+	graph.Nodes[1] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   logging.Table,
 			Columns: logging.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt64,
+				Type:   field.TypeUint64,
 				Column: logging.FieldID,
 			},
 		},
@@ -45,12 +80,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 			logging.FieldStack:      {Type: field.TypeString, Column: logging.FieldStack},
 		},
 	}
-	graph.Nodes[1] = &sqlgraph.Node{
+	graph.Nodes[2] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt64,
+				Type:   field.TypeUint64,
 				Column: user.FieldID,
 			},
 		},
@@ -68,6 +103,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldPhone:      {Type: field.TypeString, Column: user.FieldPhone},
 		},
 	}
+	graph.MustAddE(
+		"attachments",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AttachmentsTable,
+			Columns: []string{user.AttachmentsColumn},
+			Bidi:    false,
+		},
+		"User",
+		"Attachment",
+	)
 	return graph
 }()
 
@@ -75,6 +122,146 @@ var schemaGraph = func() *sqlgraph.Schema {
 // All update, update-one and query builders implement this interface.
 type predicateAdder interface {
 	addPredicate(func(s *sql.Selector))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *AttachmentQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the AttachmentQuery builder.
+func (_q *AttachmentQuery) Filter() *AttachmentFilter {
+	return &AttachmentFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *AttachmentMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the AttachmentMutation builder.
+func (m *AttachmentMutation) Filter() *AttachmentFilter {
+	return &AttachmentFilter{config: m.config, predicateAdder: m}
+}
+
+// AttachmentFilter provides a generic filtering capability at runtime for AttachmentQuery.
+type AttachmentFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *AttachmentFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *AttachmentFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(attachment.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *AttachmentFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(attachment.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql int64 predicate on the create_by field.
+func (f *AttachmentFilter) WhereCreateBy(p entql.Int64P) {
+	f.Where(p.Field(attachment.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *AttachmentFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(attachment.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql int64 predicate on the update_by field.
+func (f *AttachmentFilter) WhereUpdateBy(p entql.Int64P) {
+	f.Where(p.Field(attachment.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *AttachmentFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(attachment.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
+func (f *AttachmentFilter) WhereDeleteBy(p entql.Int64P) {
+	f.Where(p.Field(attachment.FieldDeleteBy))
+}
+
+// WhereFilename applies the entql string predicate on the filename field.
+func (f *AttachmentFilter) WhereFilename(p entql.StringP) {
+	f.Where(p.Field(attachment.FieldFilename))
+}
+
+// WherePath applies the entql string predicate on the path field.
+func (f *AttachmentFilter) WherePath(p entql.StringP) {
+	f.Where(p.Field(attachment.FieldPath))
+}
+
+// WhereURL applies the entql string predicate on the url field.
+func (f *AttachmentFilter) WhereURL(p entql.StringP) {
+	f.Where(p.Field(attachment.FieldURL))
+}
+
+// WhereContentType applies the entql string predicate on the content_type field.
+func (f *AttachmentFilter) WhereContentType(p entql.StringP) {
+	f.Where(p.Field(attachment.FieldContentType))
+}
+
+// WhereSize applies the entql int64 predicate on the size field.
+func (f *AttachmentFilter) WhereSize(p entql.Int64P) {
+	f.Where(p.Field(attachment.FieldSize))
+}
+
+// WhereEtag applies the entql string predicate on the etag field.
+func (f *AttachmentFilter) WhereEtag(p entql.StringP) {
+	f.Where(p.Field(attachment.FieldEtag))
+}
+
+// WhereBucket applies the entql string predicate on the bucket field.
+func (f *AttachmentFilter) WhereBucket(p entql.StringP) {
+	f.Where(p.Field(attachment.FieldBucket))
+}
+
+// WhereStorageProvider applies the entql string predicate on the storage_provider field.
+func (f *AttachmentFilter) WhereStorageProvider(p entql.StringP) {
+	f.Where(p.Field(attachment.FieldStorageProvider))
+}
+
+// WhereMetadata applies the entql json.RawMessage predicate on the metadata field.
+func (f *AttachmentFilter) WhereMetadata(p entql.BytesP) {
+	f.Where(p.Field(attachment.FieldMetadata))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *AttachmentFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(attachment.FieldStatus))
+}
+
+// WhereUploadSessionID applies the entql string predicate on the upload_session_id field.
+func (f *AttachmentFilter) WhereUploadSessionID(p entql.StringP) {
+	f.Where(p.Field(attachment.FieldUploadSessionID))
+}
+
+// WhereTag1 applies the entql string predicate on the tag1 field.
+func (f *AttachmentFilter) WhereTag1(p entql.StringP) {
+	f.Where(p.Field(attachment.FieldTag1))
+}
+
+// WhereTag2 applies the entql string predicate on the tag2 field.
+func (f *AttachmentFilter) WhereTag2(p entql.StringP) {
+	f.Where(p.Field(attachment.FieldTag2))
+}
+
+// WhereTag3 applies the entql string predicate on the tag3 field.
+func (f *AttachmentFilter) WhereTag3(p entql.StringP) {
+	f.Where(p.Field(attachment.FieldTag3))
 }
 
 // addPredicate implements the predicateAdder interface.
@@ -106,14 +293,14 @@ type LoggingFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *LoggingFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
 }
 
-// WhereID applies the entql int64 predicate on the id field.
-func (f *LoggingFilter) WhereID(p entql.Int64P) {
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *LoggingFilter) WhereID(p entql.Uint64P) {
 	f.Where(p.Field(logging.FieldID))
 }
 
@@ -231,14 +418,14 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
 }
 
-// WhereID applies the entql int64 predicate on the id field.
-func (f *UserFilter) WhereID(p entql.Int64P) {
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *UserFilter) WhereID(p entql.Uint64P) {
 	f.Where(p.Field(user.FieldID))
 }
 
@@ -290,4 +477,18 @@ func (f *UserFilter) WhereAge(p entql.IntP) {
 // WherePhone applies the entql string predicate on the phone field.
 func (f *UserFilter) WherePhone(p entql.StringP) {
 	f.Where(p.Field(user.FieldPhone))
+}
+
+// WhereHasAttachments applies a predicate to check if query has an edge attachments.
+func (f *UserFilter) WhereHasAttachments() {
+	f.Where(entql.HasEdge("attachments"))
+}
+
+// WhereHasAttachmentsWith applies a predicate to check if query has an edge attachments with a given conditions (other predicates).
+func (f *UserFilter) WhereHasAttachmentsWith(preds ...predicate.Attachment) {
+	f.Where(entql.HasEdgeWith("attachments", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
 }

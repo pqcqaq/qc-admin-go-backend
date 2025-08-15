@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/user"
 	"time"
 
@@ -145,9 +146,24 @@ func (_c *UserCreate) SetNillablePhone(v *string) *UserCreate {
 }
 
 // SetID sets the "id" field.
-func (_c *UserCreate) SetID(v int64) *UserCreate {
+func (_c *UserCreate) SetID(v uint64) *UserCreate {
 	_c.mutation.SetID(v)
 	return _c
+}
+
+// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
+func (_c *UserCreate) AddAttachmentIDs(ids ...uint64) *UserCreate {
+	_c.mutation.AddAttachmentIDs(ids...)
+	return _c
+}
+
+// AddAttachments adds the "attachments" edges to the Attachment entity.
+func (_c *UserCreate) AddAttachments(v ...*Attachment) *UserCreate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAttachmentIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -238,11 +254,6 @@ func (_c *UserCreate) check() error {
 			return &ValidationError{Name: "phone", err: fmt.Errorf(`ent: validator failed for field "User.phone": %w`, err)}
 		}
 	}
-	if v, ok := _c.mutation.ID(); ok {
-		if err := user.IDValidator(v); err != nil {
-			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "User.id": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -259,7 +270,7 @@ func (_c *UserCreate) sqlSave(ctx context.Context) (*User, error) {
 	}
 	if _spec.ID.Value != _node.ID {
 		id := _spec.ID.Value.(int64)
-		_node.ID = int64(id)
+		_node.ID = uint64(id)
 	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
@@ -269,7 +280,7 @@ func (_c *UserCreate) sqlSave(ctx context.Context) (*User, error) {
 func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	var (
 		_node = &User{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(user.Table, sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64))
+		_spec = sqlgraph.NewCreateSpec(user.Table, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUint64))
 	)
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -314,6 +325,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Phone(); ok {
 		_spec.SetField(user.FieldPhone, field.TypeString, value)
 		_node.Phone = value
+	}
+	if nodes := _c.mutation.AttachmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AttachmentsTable,
+			Columns: []string{user.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
@@ -365,7 +392,7 @@ func (_c *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 				mutation.id = &nodes[i].ID
 				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int64(id)
+					nodes[i].ID = uint64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

@@ -46,7 +46,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 		return
 	}
 
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		middleware.ThrowError(c, middleware.BadRequestError("用户ID格式无效", map[string]interface{}{
 			"provided_id": idStr,
@@ -118,7 +118,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 func (h *UserHandler) UpdateUser(c *gin.Context) {
 	idStr := c.Param("id")
 
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		middleware.ThrowError(c, middleware.BadRequestError("用户ID格式无效", map[string]interface{}{
 			"provided_id": idStr,
@@ -155,7 +155,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 	idStr := c.Param("id")
 
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		middleware.ThrowError(c, middleware.BadRequestError("用户ID格式无效", map[string]interface{}{
 			"provided_id": idStr,

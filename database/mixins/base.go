@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
+	"github.com/sony/sonyflake"
 )
 
 // BaseMixin 包含所有基础字段的mixin
@@ -20,10 +21,32 @@ type BaseMixin struct {
 	mixin.Schema
 }
 
+func IDHook() ent.Hook {
+	sf := sonyflake.NewSonyflake(sonyflake.Settings{})
+	type IDSetter interface {
+		SetID(uint64)
+	}
+	return func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			is, ok := m.(IDSetter)
+			if !ok {
+				return nil, fmt.Errorf("unexpected mutation %T", m)
+			}
+			id, err := sf.NextID()
+			if err != nil {
+				return nil, err
+			}
+			is.SetID(id)
+			return next.Mutate(ctx, m)
+		})
+	}
+}
+
 func (BaseMixin) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int64("id").
-			Positive().
+		field.Uint64("id").
+			GoType(uint64(0)).
+			Unique().
 			Immutable().
 			Comment("主键ID"),
 		field.Time("create_time").
@@ -47,6 +70,7 @@ func (BaseMixin) Fields() []ent.Field {
 func (BaseMixin) Hooks() []ent.Hook {
 	return []ent.Hook{
 		AuditHook,
+		IDHook(),
 	}
 }
 

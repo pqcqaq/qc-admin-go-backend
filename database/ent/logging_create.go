@@ -243,7 +243,7 @@ func (_c *LoggingCreate) SetNillableStack(v *string) *LoggingCreate {
 }
 
 // SetID sets the "id" field.
-func (_c *LoggingCreate) SetID(v int64) *LoggingCreate {
+func (_c *LoggingCreate) SetID(v uint64) *LoggingCreate {
 	_c.mutation.SetID(v)
 	return _c
 }
@@ -377,11 +377,6 @@ func (_c *LoggingCreate) check() error {
 			return &ValidationError{Name: "stack", err: fmt.Errorf(`ent: validator failed for field "Logging.stack": %w`, err)}
 		}
 	}
-	if v, ok := _c.mutation.ID(); ok {
-		if err := logging.IDValidator(v); err != nil {
-			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "Logging.id": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -398,7 +393,7 @@ func (_c *LoggingCreate) sqlSave(ctx context.Context) (*Logging, error) {
 	}
 	if _spec.ID.Value != _node.ID {
 		id := _spec.ID.Value.(int64)
-		_node.ID = int64(id)
+		_node.ID = uint64(id)
 	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
@@ -408,7 +403,7 @@ func (_c *LoggingCreate) sqlSave(ctx context.Context) (*Logging, error) {
 func (_c *LoggingCreate) createSpec() (*Logging, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Logging{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(logging.Table, sqlgraph.NewFieldSpec(logging.FieldID, field.TypeInt64))
+		_spec = sqlgraph.NewCreateSpec(logging.Table, sqlgraph.NewFieldSpec(logging.FieldID, field.TypeUint64))
 	)
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -532,7 +527,7 @@ func (_c *LoggingCreateBulk) Save(ctx context.Context) ([]*Logging, error) {
 				mutation.id = &nodes[i].ID
 				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int64(id)
+					nodes[i].ID = uint64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

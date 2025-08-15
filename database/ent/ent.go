@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/user"
 	"reflect"
@@ -74,8 +75,9 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			logging.Table: logging.ValidColumn,
-			user.Table:    user.ValidColumn,
+			attachment.Table: attachment.ValidColumn,
+			logging.Table:    logging.ValidColumn,
+			user.Table:       user.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)
