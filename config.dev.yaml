@@ -1,0 +1,22 @@
+# 开发环境配置示例
+server:
+  port: ":8080"
+  mode: "debug"  # gin模式: debug, release, test
+
+database:
+  driver: "sqlite3"
+  dsn: "file:ent.db?cache=shared&_fk=1"
+
+logging:
+  level: "debug"   # 开发环境使用debug级别
+  prefix: "DEV"    # 开发环境前缀
+
+redis:
+  addr: "localhost:6379"        # Redis服务器地址
+  password: ""                  # Redis密码（如果有的话）
+  db: 0                        # Redis数据库索引
+  pool_size: 10                # 连接池大小
+  min_idle_conns: 5            # 最小空闲连接数
+  read_timeout: 3              # 读超时（秒）
+  write_timeout: 3             # 写超时（秒）
+  idle_timeout: 300            # 空闲超时（秒）
