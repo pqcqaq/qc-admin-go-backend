@@ -7,6 +7,7 @@ import (
 	"go-backend/pkg/logging"
 )
 
+// CreateAsyncLoggingFunc 异步创建日志记录
 func CreateAsyncLoggingFunc(level string, logType string, message string, method, path, ip, query string, code int, user_agent string, data map[string]interface{}, stack string) {
 
 	ctx := context.Background()
