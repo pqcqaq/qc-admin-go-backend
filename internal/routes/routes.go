@@ -30,6 +30,7 @@ func (r *Router) SetupRoutes(engine *gin.Engine) {
 	api := engine.Group("/api/v1")
 	{
 		r.setupUserRoutes(api)
+		r.setupAttachmentRoutes(api)
 		r.setupDemoRoutes(api)
 	}
 }
