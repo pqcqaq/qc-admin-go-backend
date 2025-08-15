@@ -32,6 +32,18 @@ func (f LoggingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LoggingMutation", m)
 }
 
+// The ScanFunc type is an adapter to allow the use of ordinary
+// function as Scan mutator.
+type ScanFunc func(context.Context, *ent.ScanMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ScanFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ScanMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ScanMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

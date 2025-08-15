@@ -34,8 +34,8 @@ server:
     max_age: 86400  # 24小时
 
 database:
-  driver: "sqlite3"
-  dsn: "file:ent.db?cache=shared&_fk=1"
+  driver: "mysql"
+  dsn: "qcqcqc:qcqcqc@tcp(localhost:33060)/go-backend-app-pure?charset=utf8mb4&parseTime=True&loc=Local"
 
 logging:
   level: "debug"    # 日志级别: debug, info, warn, error, fatal

@@ -5,6 +5,7 @@ package runtime
 import (
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/logging"
+	"go-backend/database/ent/scan"
 	"go-backend/database/ent/user"
 	"go-backend/database/schema"
 	"time"
@@ -150,6 +151,50 @@ func init() {
 	loggingDescStack := loggingFields[10].Descriptor()
 	// logging.StackValidator is a validator for the "stack" field. It is called by the builders before save.
 	logging.StackValidator = loggingDescStack.Validators[0].(func(string) error)
+	scanMixin := schema.Scan{}.Mixin()
+	scanMixinHooks0 := scanMixin[0].Hooks()
+	scanMixinHooks1 := scanMixin[1].Hooks()
+	scan.Hooks[0] = scanMixinHooks0[0]
+	scan.Hooks[1] = scanMixinHooks0[1]
+	scan.Hooks[2] = scanMixinHooks1[0]
+	scanMixinInters1 := scanMixin[1].Interceptors()
+	scan.Interceptors[0] = scanMixinInters1[0]
+	scanMixinFields0 := scanMixin[0].Fields()
+	_ = scanMixinFields0
+	scanFields := schema.Scan{}.Fields()
+	_ = scanFields
+	// scanDescCreateTime is the schema descriptor for create_time field.
+	scanDescCreateTime := scanMixinFields0[1].Descriptor()
+	// scan.DefaultCreateTime holds the default value on creation for the create_time field.
+	scan.DefaultCreateTime = scanDescCreateTime.Default.(func() time.Time)
+	// scanDescUpdateTime is the schema descriptor for update_time field.
+	scanDescUpdateTime := scanMixinFields0[3].Descriptor()
+	// scan.DefaultUpdateTime holds the default value on creation for the update_time field.
+	scan.DefaultUpdateTime = scanDescUpdateTime.Default.(func() time.Time)
+	// scan.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	scan.UpdateDefaultUpdateTime = scanDescUpdateTime.UpdateDefault.(func() time.Time)
+	// scanDescContent is the schema descriptor for content field.
+	scanDescContent := scanFields[0].Descriptor()
+	// scan.ContentValidator is a validator for the "content" field. It is called by the builders before save.
+	scan.ContentValidator = func() func(string) error {
+		validators := scanDescContent.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(content string) error {
+			for _, fn := range fns {
+				if err := fn(content); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// scanDescLength is the schema descriptor for length field.
+	scanDescLength := scanFields[1].Descriptor()
+	// scan.LengthValidator is a validator for the "length" field. It is called by the builders before save.
+	scan.LengthValidator = scanDescLength.Validators[0].(func(int) error)
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks0 := userMixin[0].Hooks()
 	userMixinHooks1 := userMixin[1].Hooks()

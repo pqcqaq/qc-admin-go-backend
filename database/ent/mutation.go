@@ -9,6 +9,7 @@ import (
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/predicate"
+	"go-backend/database/ent/scan"
 	"go-backend/database/ent/user"
 	"sync"
 	"time"
@@ -28,6 +29,7 @@ const (
 	// Node types.
 	TypeAttachment = "Attachment"
 	TypeLogging    = "Logging"
+	TypeScan       = "Scan"
 	TypeUser       = "User"
 )
 
@@ -3303,6 +3305,1054 @@ func (m *LoggingMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *LoggingMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Logging edge %s", name)
+}
+
+// ScanMutation represents an operation that mutates the Scan nodes in the graph.
+type ScanMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *uint64
+	create_time       *time.Time
+	create_by         *int64
+	addcreate_by      *int64
+	update_time       *time.Time
+	update_by         *int64
+	addupdate_by      *int64
+	delete_time       *time.Time
+	delete_by         *int64
+	adddelete_by      *int64
+	content           *string
+	length            *int
+	addlength         *int
+	success           *bool
+	clearedFields     map[string]struct{}
+	attachment        *uint64
+	clearedattachment bool
+	done              bool
+	oldValue          func(context.Context) (*Scan, error)
+	predicates        []predicate.Scan
+}
+
+var _ ent.Mutation = (*ScanMutation)(nil)
+
+// scanOption allows management of the mutation configuration using functional options.
+type scanOption func(*ScanMutation)
+
+// newScanMutation creates new mutation for the Scan entity.
+func newScanMutation(c config, op Op, opts ...scanOption) *ScanMutation {
+	m := &ScanMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeScan,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withScanID sets the ID field of the mutation.
+func withScanID(id uint64) scanOption {
+	return func(m *ScanMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Scan
+		)
+		m.oldValue = func(ctx context.Context) (*Scan, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Scan.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withScan sets the old Scan of the mutation.
+func withScan(node *Scan) scanOption {
+	return func(m *ScanMutation) {
+		m.oldValue = func(context.Context) (*Scan, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ScanMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ScanMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Scan entities.
+func (m *ScanMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ScanMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ScanMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Scan.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *ScanMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *ScanMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the Scan entity.
+// If the Scan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *ScanMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *ScanMutation) SetCreateBy(i int64) {
+	m.create_by = &i
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *ScanMutation) CreateBy() (r int64, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the Scan entity.
+// If the Scan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanMutation) OldCreateBy(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds i to the "create_by" field.
+func (m *ScanMutation) AddCreateBy(i int64) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += i
+	} else {
+		m.addcreate_by = &i
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *ScanMutation) AddedCreateBy() (r int64, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *ScanMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[scan.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *ScanMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[scan.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *ScanMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, scan.FieldCreateBy)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *ScanMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *ScanMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the Scan entity.
+// If the Scan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *ScanMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (m *ScanMutation) SetUpdateBy(i int64) {
+	m.update_by = &i
+	m.addupdate_by = nil
+}
+
+// UpdateBy returns the value of the "update_by" field in the mutation.
+func (m *ScanMutation) UpdateBy() (r int64, exists bool) {
+	v := m.update_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateBy returns the old "update_by" field's value of the Scan entity.
+// If the Scan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanMutation) OldUpdateBy(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateBy: %w", err)
+	}
+	return oldValue.UpdateBy, nil
+}
+
+// AddUpdateBy adds i to the "update_by" field.
+func (m *ScanMutation) AddUpdateBy(i int64) {
+	if m.addupdate_by != nil {
+		*m.addupdate_by += i
+	} else {
+		m.addupdate_by = &i
+	}
+}
+
+// AddedUpdateBy returns the value that was added to the "update_by" field in this mutation.
+func (m *ScanMutation) AddedUpdateBy() (r int64, exists bool) {
+	v := m.addupdate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (m *ScanMutation) ClearUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	m.clearedFields[scan.FieldUpdateBy] = struct{}{}
+}
+
+// UpdateByCleared returns if the "update_by" field was cleared in this mutation.
+func (m *ScanMutation) UpdateByCleared() bool {
+	_, ok := m.clearedFields[scan.FieldUpdateBy]
+	return ok
+}
+
+// ResetUpdateBy resets all changes to the "update_by" field.
+func (m *ScanMutation) ResetUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	delete(m.clearedFields, scan.FieldUpdateBy)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *ScanMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *ScanMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the Scan entity.
+// If the Scan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *ScanMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[scan.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *ScanMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[scan.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *ScanMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, scan.FieldDeleteTime)
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (m *ScanMutation) SetDeleteBy(i int64) {
+	m.delete_by = &i
+	m.adddelete_by = nil
+}
+
+// DeleteBy returns the value of the "delete_by" field in the mutation.
+func (m *ScanMutation) DeleteBy() (r int64, exists bool) {
+	v := m.delete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteBy returns the old "delete_by" field's value of the Scan entity.
+// If the Scan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanMutation) OldDeleteBy(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteBy: %w", err)
+	}
+	return oldValue.DeleteBy, nil
+}
+
+// AddDeleteBy adds i to the "delete_by" field.
+func (m *ScanMutation) AddDeleteBy(i int64) {
+	if m.adddelete_by != nil {
+		*m.adddelete_by += i
+	} else {
+		m.adddelete_by = &i
+	}
+}
+
+// AddedDeleteBy returns the value that was added to the "delete_by" field in this mutation.
+func (m *ScanMutation) AddedDeleteBy() (r int64, exists bool) {
+	v := m.adddelete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (m *ScanMutation) ClearDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	m.clearedFields[scan.FieldDeleteBy] = struct{}{}
+}
+
+// DeleteByCleared returns if the "delete_by" field was cleared in this mutation.
+func (m *ScanMutation) DeleteByCleared() bool {
+	_, ok := m.clearedFields[scan.FieldDeleteBy]
+	return ok
+}
+
+// ResetDeleteBy resets all changes to the "delete_by" field.
+func (m *ScanMutation) ResetDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	delete(m.clearedFields, scan.FieldDeleteBy)
+}
+
+// SetContent sets the "content" field.
+func (m *ScanMutation) SetContent(s string) {
+	m.content = &s
+}
+
+// Content returns the value of the "content" field in the mutation.
+func (m *ScanMutation) Content() (r string, exists bool) {
+	v := m.content
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContent returns the old "content" field's value of the Scan entity.
+// If the Scan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanMutation) OldContent(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContent: %w", err)
+	}
+	return oldValue.Content, nil
+}
+
+// ResetContent resets all changes to the "content" field.
+func (m *ScanMutation) ResetContent() {
+	m.content = nil
+}
+
+// SetLength sets the "length" field.
+func (m *ScanMutation) SetLength(i int) {
+	m.length = &i
+	m.addlength = nil
+}
+
+// Length returns the value of the "length" field in the mutation.
+func (m *ScanMutation) Length() (r int, exists bool) {
+	v := m.length
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLength returns the old "length" field's value of the Scan entity.
+// If the Scan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanMutation) OldLength(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLength is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLength requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLength: %w", err)
+	}
+	return oldValue.Length, nil
+}
+
+// AddLength adds i to the "length" field.
+func (m *ScanMutation) AddLength(i int) {
+	if m.addlength != nil {
+		*m.addlength += i
+	} else {
+		m.addlength = &i
+	}
+}
+
+// AddedLength returns the value that was added to the "length" field in this mutation.
+func (m *ScanMutation) AddedLength() (r int, exists bool) {
+	v := m.addlength
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetLength resets all changes to the "length" field.
+func (m *ScanMutation) ResetLength() {
+	m.length = nil
+	m.addlength = nil
+}
+
+// SetSuccess sets the "success" field.
+func (m *ScanMutation) SetSuccess(b bool) {
+	m.success = &b
+}
+
+// Success returns the value of the "success" field in the mutation.
+func (m *ScanMutation) Success() (r bool, exists bool) {
+	v := m.success
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSuccess returns the old "success" field's value of the Scan entity.
+// If the Scan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanMutation) OldSuccess(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSuccess is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSuccess requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSuccess: %w", err)
+	}
+	return oldValue.Success, nil
+}
+
+// ResetSuccess resets all changes to the "success" field.
+func (m *ScanMutation) ResetSuccess() {
+	m.success = nil
+}
+
+// SetAttachmentID sets the "attachment" edge to the Attachment entity by id.
+func (m *ScanMutation) SetAttachmentID(id uint64) {
+	m.attachment = &id
+}
+
+// ClearAttachment clears the "attachment" edge to the Attachment entity.
+func (m *ScanMutation) ClearAttachment() {
+	m.clearedattachment = true
+}
+
+// AttachmentCleared reports if the "attachment" edge to the Attachment entity was cleared.
+func (m *ScanMutation) AttachmentCleared() bool {
+	return m.clearedattachment
+}
+
+// AttachmentID returns the "attachment" edge ID in the mutation.
+func (m *ScanMutation) AttachmentID() (id uint64, exists bool) {
+	if m.attachment != nil {
+		return *m.attachment, true
+	}
+	return
+}
+
+// AttachmentIDs returns the "attachment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AttachmentID instead. It exists only for internal usage by the builders.
+func (m *ScanMutation) AttachmentIDs() (ids []uint64) {
+	if id := m.attachment; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAttachment resets all changes to the "attachment" edge.
+func (m *ScanMutation) ResetAttachment() {
+	m.attachment = nil
+	m.clearedattachment = false
+}
+
+// Where appends a list predicates to the ScanMutation builder.
+func (m *ScanMutation) Where(ps ...predicate.Scan) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ScanMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ScanMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Scan, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ScanMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ScanMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Scan).
+func (m *ScanMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ScanMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.create_time != nil {
+		fields = append(fields, scan.FieldCreateTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, scan.FieldCreateBy)
+	}
+	if m.update_time != nil {
+		fields = append(fields, scan.FieldUpdateTime)
+	}
+	if m.update_by != nil {
+		fields = append(fields, scan.FieldUpdateBy)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, scan.FieldDeleteTime)
+	}
+	if m.delete_by != nil {
+		fields = append(fields, scan.FieldDeleteBy)
+	}
+	if m.content != nil {
+		fields = append(fields, scan.FieldContent)
+	}
+	if m.length != nil {
+		fields = append(fields, scan.FieldLength)
+	}
+	if m.success != nil {
+		fields = append(fields, scan.FieldSuccess)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ScanMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case scan.FieldCreateTime:
+		return m.CreateTime()
+	case scan.FieldCreateBy:
+		return m.CreateBy()
+	case scan.FieldUpdateTime:
+		return m.UpdateTime()
+	case scan.FieldUpdateBy:
+		return m.UpdateBy()
+	case scan.FieldDeleteTime:
+		return m.DeleteTime()
+	case scan.FieldDeleteBy:
+		return m.DeleteBy()
+	case scan.FieldContent:
+		return m.Content()
+	case scan.FieldLength:
+		return m.Length()
+	case scan.FieldSuccess:
+		return m.Success()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ScanMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case scan.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case scan.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case scan.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case scan.FieldUpdateBy:
+		return m.OldUpdateBy(ctx)
+	case scan.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case scan.FieldDeleteBy:
+		return m.OldDeleteBy(ctx)
+	case scan.FieldContent:
+		return m.OldContent(ctx)
+	case scan.FieldLength:
+		return m.OldLength(ctx)
+	case scan.FieldSuccess:
+		return m.OldSuccess(ctx)
+	}
+	return nil, fmt.Errorf("unknown Scan field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ScanMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case scan.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case scan.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case scan.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case scan.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateBy(v)
+		return nil
+	case scan.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case scan.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteBy(v)
+		return nil
+	case scan.FieldContent:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContent(v)
+		return nil
+	case scan.FieldLength:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLength(v)
+		return nil
+	case scan.FieldSuccess:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSuccess(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Scan field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ScanMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, scan.FieldCreateBy)
+	}
+	if m.addupdate_by != nil {
+		fields = append(fields, scan.FieldUpdateBy)
+	}
+	if m.adddelete_by != nil {
+		fields = append(fields, scan.FieldDeleteBy)
+	}
+	if m.addlength != nil {
+		fields = append(fields, scan.FieldLength)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ScanMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case scan.FieldCreateBy:
+		return m.AddedCreateBy()
+	case scan.FieldUpdateBy:
+		return m.AddedUpdateBy()
+	case scan.FieldDeleteBy:
+		return m.AddedDeleteBy()
+	case scan.FieldLength:
+		return m.AddedLength()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ScanMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case scan.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case scan.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdateBy(v)
+		return nil
+	case scan.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeleteBy(v)
+		return nil
+	case scan.FieldLength:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLength(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Scan numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ScanMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(scan.FieldCreateBy) {
+		fields = append(fields, scan.FieldCreateBy)
+	}
+	if m.FieldCleared(scan.FieldUpdateBy) {
+		fields = append(fields, scan.FieldUpdateBy)
+	}
+	if m.FieldCleared(scan.FieldDeleteTime) {
+		fields = append(fields, scan.FieldDeleteTime)
+	}
+	if m.FieldCleared(scan.FieldDeleteBy) {
+		fields = append(fields, scan.FieldDeleteBy)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ScanMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ScanMutation) ClearField(name string) error {
+	switch name {
+	case scan.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case scan.FieldUpdateBy:
+		m.ClearUpdateBy()
+		return nil
+	case scan.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case scan.FieldDeleteBy:
+		m.ClearDeleteBy()
+		return nil
+	}
+	return fmt.Errorf("unknown Scan nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ScanMutation) ResetField(name string) error {
+	switch name {
+	case scan.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case scan.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case scan.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case scan.FieldUpdateBy:
+		m.ResetUpdateBy()
+		return nil
+	case scan.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case scan.FieldDeleteBy:
+		m.ResetDeleteBy()
+		return nil
+	case scan.FieldContent:
+		m.ResetContent()
+		return nil
+	case scan.FieldLength:
+		m.ResetLength()
+		return nil
+	case scan.FieldSuccess:
+		m.ResetSuccess()
+		return nil
+	}
+	return fmt.Errorf("unknown Scan field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ScanMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.attachment != nil {
+		edges = append(edges, scan.EdgeAttachment)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ScanMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case scan.EdgeAttachment:
+		if id := m.attachment; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ScanMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ScanMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ScanMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedattachment {
+		edges = append(edges, scan.EdgeAttachment)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ScanMutation) EdgeCleared(name string) bool {
+	switch name {
+	case scan.EdgeAttachment:
+		return m.clearedattachment
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ScanMutation) ClearEdge(name string) error {
+	switch name {
+	case scan.EdgeAttachment:
+		m.ClearAttachment()
+		return nil
+	}
+	return fmt.Errorf("unknown Scan unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ScanMutation) ResetEdge(name string) error {
+	switch name {
+	case scan.EdgeAttachment:
+		m.ResetAttachment()
+		return nil
+	}
+	return fmt.Errorf("unknown Scan edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.

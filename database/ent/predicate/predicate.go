@@ -12,5 +12,8 @@ type Attachment func(*sql.Selector)
 // Logging is the predicate function for logging builders.
 type Logging func(*sql.Selector)
 
+// Scan is the predicate function for scan builders.
+type Scan func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

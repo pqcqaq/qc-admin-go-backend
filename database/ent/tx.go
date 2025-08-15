@@ -16,6 +16,8 @@ type Tx struct {
 	Attachment *AttachmentClient
 	// Logging is the client for interacting with the Logging builders.
 	Logging *LoggingClient
+	// Scan is the client for interacting with the Scan builders.
+	Scan *ScanClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -151,6 +153,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Attachment = NewAttachmentClient(tx.config)
 	tx.Logging = NewLoggingClient(tx.config)
+	tx.Scan = NewScanClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

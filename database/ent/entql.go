@@ -6,6 +6,7 @@ import (
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/predicate"
+	"go-backend/database/ent/scan"
 	"go-backend/database/ent/user"
 
 	"entgo.io/ent/dialect/sql"
@@ -16,7 +17,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 3)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 4)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   attachment.Table,
@@ -82,6 +83,28 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[2] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   scan.Table,
+			Columns: scan.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: scan.FieldID,
+			},
+		},
+		Type: "Scan",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			scan.FieldCreateTime: {Type: field.TypeTime, Column: scan.FieldCreateTime},
+			scan.FieldCreateBy:   {Type: field.TypeInt64, Column: scan.FieldCreateBy},
+			scan.FieldUpdateTime: {Type: field.TypeTime, Column: scan.FieldUpdateTime},
+			scan.FieldUpdateBy:   {Type: field.TypeInt64, Column: scan.FieldUpdateBy},
+			scan.FieldDeleteTime: {Type: field.TypeTime, Column: scan.FieldDeleteTime},
+			scan.FieldDeleteBy:   {Type: field.TypeInt64, Column: scan.FieldDeleteBy},
+			scan.FieldContent:    {Type: field.TypeString, Column: scan.FieldContent},
+			scan.FieldLength:     {Type: field.TypeInt, Column: scan.FieldLength},
+			scan.FieldSuccess:    {Type: field.TypeBool, Column: scan.FieldSuccess},
+		},
+	}
+	graph.Nodes[3] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -103,6 +126,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldPhone:      {Type: field.TypeString, Column: user.FieldPhone},
 		},
 	}
+	graph.MustAddE(
+		"attachment",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   scan.AttachmentTable,
+			Columns: []string{scan.AttachmentColumn},
+			Bidi:    false,
+		},
+		"Scan",
+		"Attachment",
+	)
 	graph.MustAddE(
 		"attachments",
 		&sqlgraph.EdgeSpec{
@@ -390,6 +425,105 @@ func (f *LoggingFilter) WhereStack(p entql.StringP) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *ScanQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the ScanQuery builder.
+func (_q *ScanQuery) Filter() *ScanFilter {
+	return &ScanFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *ScanMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the ScanMutation builder.
+func (m *ScanMutation) Filter() *ScanFilter {
+	return &ScanFilter{config: m.config, predicateAdder: m}
+}
+
+// ScanFilter provides a generic filtering capability at runtime for ScanQuery.
+type ScanFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *ScanFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *ScanFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(scan.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *ScanFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(scan.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql int64 predicate on the create_by field.
+func (f *ScanFilter) WhereCreateBy(p entql.Int64P) {
+	f.Where(p.Field(scan.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *ScanFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(scan.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql int64 predicate on the update_by field.
+func (f *ScanFilter) WhereUpdateBy(p entql.Int64P) {
+	f.Where(p.Field(scan.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *ScanFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(scan.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
+func (f *ScanFilter) WhereDeleteBy(p entql.Int64P) {
+	f.Where(p.Field(scan.FieldDeleteBy))
+}
+
+// WhereContent applies the entql string predicate on the content field.
+func (f *ScanFilter) WhereContent(p entql.StringP) {
+	f.Where(p.Field(scan.FieldContent))
+}
+
+// WhereLength applies the entql int predicate on the length field.
+func (f *ScanFilter) WhereLength(p entql.IntP) {
+	f.Where(p.Field(scan.FieldLength))
+}
+
+// WhereSuccess applies the entql bool predicate on the success field.
+func (f *ScanFilter) WhereSuccess(p entql.BoolP) {
+	f.Where(p.Field(scan.FieldSuccess))
+}
+
+// WhereHasAttachment applies a predicate to check if query has an edge attachment.
+func (f *ScanFilter) WhereHasAttachment() {
+	f.Where(entql.HasEdge("attachment"))
+}
+
+// WhereHasAttachmentWith applies a predicate to check if query has an edge attachment with a given conditions (other predicates).
+func (f *ScanFilter) WhereHasAttachmentWith(preds ...predicate.Attachment) {
+	f.Where(entql.HasEdgeWith("attachment", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *UserQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -418,7 +552,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

@@ -126,6 +126,34 @@ var (
 		Columns:    LoggingsColumns,
 		PrimaryKey: []*schema.Column{LoggingsColumns[0]},
 	}
+	// ScansColumns holds the columns for the "scans" table.
+	ScansColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "content", Type: field.TypeString, Size: 255},
+		{Name: "length", Type: field.TypeInt},
+		{Name: "success", Type: field.TypeBool},
+		{Name: "scan_attachment", Type: field.TypeUint64, Nullable: true},
+	}
+	// ScansTable holds the schema information for the "scans" table.
+	ScansTable = &schema.Table{
+		Name:       "scans",
+		Columns:    ScansColumns,
+		PrimaryKey: []*schema.Column{ScansColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "scans_attachments_attachment",
+				Columns:    []*schema.Column{ScansColumns[10]},
+				RefColumns: []*schema.Column{AttachmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -150,10 +178,12 @@ var (
 	Tables = []*schema.Table{
 		AttachmentsTable,
 		LoggingsTable,
+		ScansTable,
 		UsersTable,
 	}
 )
 
 func init() {
 	AttachmentsTable.ForeignKeys[0].RefTable = UsersTable
+	ScansTable.ForeignKeys[0].RefTable = AttachmentsTable
 }

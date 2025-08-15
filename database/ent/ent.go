@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/logging"
+	"go-backend/database/ent/scan"
 	"go-backend/database/ent/user"
 	"reflect"
 	"sync"
@@ -77,6 +78,7 @@ func checkColumn(t, c string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			attachment.Table: attachment.ValidColumn,
 			logging.Table:    logging.ValidColumn,
+			scan.Table:       scan.ValidColumn,
 			user.Table:       user.ValidColumn,
 		})
 	})

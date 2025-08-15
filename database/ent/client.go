@@ -13,6 +13,7 @@ import (
 
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/logging"
+	"go-backend/database/ent/scan"
 	"go-backend/database/ent/user"
 
 	"entgo.io/ent"
@@ -30,6 +31,8 @@ type Client struct {
 	Attachment *AttachmentClient
 	// Logging is the client for interacting with the Logging builders.
 	Logging *LoggingClient
+	// Scan is the client for interacting with the Scan builders.
+	Scan *ScanClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -45,6 +48,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Attachment = NewAttachmentClient(c.config)
 	c.Logging = NewLoggingClient(c.config)
+	c.Scan = NewScanClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -140,6 +144,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:     cfg,
 		Attachment: NewAttachmentClient(cfg),
 		Logging:    NewLoggingClient(cfg),
+		Scan:       NewScanClient(cfg),
 		User:       NewUserClient(cfg),
 	}, nil
 }
@@ -162,6 +167,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:     cfg,
 		Attachment: NewAttachmentClient(cfg),
 		Logging:    NewLoggingClient(cfg),
+		Scan:       NewScanClient(cfg),
 		User:       NewUserClient(cfg),
 	}, nil
 }
@@ -193,6 +199,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	c.Attachment.Use(hooks...)
 	c.Logging.Use(hooks...)
+	c.Scan.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -201,6 +208,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.Attachment.Intercept(interceptors...)
 	c.Logging.Intercept(interceptors...)
+	c.Scan.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
 
@@ -211,6 +219,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Attachment.mutate(ctx, m)
 	case *LoggingMutation:
 		return c.Logging.mutate(ctx, m)
+	case *ScanMutation:
+		return c.Scan.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -488,6 +498,157 @@ func (c *LoggingClient) mutate(ctx context.Context, m *LoggingMutation) (Value, 
 	}
 }
 
+// ScanClient is a client for the Scan schema.
+type ScanClient struct {
+	config
+}
+
+// NewScanClient returns a client for the Scan from the given config.
+func NewScanClient(c config) *ScanClient {
+	return &ScanClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `scan.Hooks(f(g(h())))`.
+func (c *ScanClient) Use(hooks ...Hook) {
+	c.hooks.Scan = append(c.hooks.Scan, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `scan.Intercept(f(g(h())))`.
+func (c *ScanClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Scan = append(c.inters.Scan, interceptors...)
+}
+
+// Create returns a builder for creating a Scan entity.
+func (c *ScanClient) Create() *ScanCreate {
+	mutation := newScanMutation(c.config, OpCreate)
+	return &ScanCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Scan entities.
+func (c *ScanClient) CreateBulk(builders ...*ScanCreate) *ScanCreateBulk {
+	return &ScanCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ScanClient) MapCreateBulk(slice any, setFunc func(*ScanCreate, int)) *ScanCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ScanCreateBulk{err: fmt.Errorf("calling to ScanClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ScanCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ScanCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Scan.
+func (c *ScanClient) Update() *ScanUpdate {
+	mutation := newScanMutation(c.config, OpUpdate)
+	return &ScanUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ScanClient) UpdateOne(_m *Scan) *ScanUpdateOne {
+	mutation := newScanMutation(c.config, OpUpdateOne, withScan(_m))
+	return &ScanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ScanClient) UpdateOneID(id uint64) *ScanUpdateOne {
+	mutation := newScanMutation(c.config, OpUpdateOne, withScanID(id))
+	return &ScanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Scan.
+func (c *ScanClient) Delete() *ScanDelete {
+	mutation := newScanMutation(c.config, OpDelete)
+	return &ScanDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ScanClient) DeleteOne(_m *Scan) *ScanDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ScanClient) DeleteOneID(id uint64) *ScanDeleteOne {
+	builder := c.Delete().Where(scan.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ScanDeleteOne{builder}
+}
+
+// Query returns a query builder for Scan.
+func (c *ScanClient) Query() *ScanQuery {
+	return &ScanQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeScan},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Scan entity by its id.
+func (c *ScanClient) Get(ctx context.Context, id uint64) (*Scan, error) {
+	return c.Query().Where(scan.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ScanClient) GetX(ctx context.Context, id uint64) *Scan {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAttachment queries the attachment edge of a Scan.
+func (c *ScanClient) QueryAttachment(_m *Scan) *AttachmentQuery {
+	query := (&AttachmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(scan.Table, scan.FieldID, id),
+			sqlgraph.To(attachment.Table, attachment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, scan.AttachmentTable, scan.AttachmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ScanClient) Hooks() []Hook {
+	hooks := c.hooks.Scan
+	return append(hooks[:len(hooks):len(hooks)], scan.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *ScanClient) Interceptors() []Interceptor {
+	inters := c.inters.Scan
+	return append(inters[:len(inters):len(inters)], scan.Interceptors[:]...)
+}
+
+func (c *ScanClient) mutate(ctx context.Context, m *ScanMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ScanCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ScanUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ScanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ScanDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Scan mutation op: %q", m.Op())
+	}
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -642,9 +803,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Attachment, Logging, User []ent.Hook
+		Attachment, Logging, Scan, User []ent.Hook
 	}
 	inters struct {
-		Attachment, Logging, User []ent.Interceptor
+		Attachment, Logging, Scan, User []ent.Interceptor
 	}
 )
