@@ -40,7 +40,7 @@ services:
       sleep 10;
       /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin123;
       /usr/bin/mc mb myminio/default-bucket --ignore-existing;
-      /usr/bin/mc policy set public myminio/default-bucket;
+      /usr/bin/mc anonymous set download myminio/default-bucket;
       echo 'MinIO初始化完成';
       "
     networks:
