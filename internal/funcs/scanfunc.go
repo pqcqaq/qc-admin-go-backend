@@ -67,7 +67,8 @@ func GetScanById(ctx context.Context, id uint64) (*models.ScanResponse, error) {
 func CreateScan(ctx context.Context, req *models.CreateScanRequest) (*ent.Scan, error) {
 	builder := database.Client.Scan.Create().
 		SetContent(req.Content).
-		SetSuccess(req.Success)
+		SetLength(len(req.Content)).
+		SetSuccess(*req.Success)
 
 	if req.ImageId != 0 {
 		builder = builder.SetAttachmentID(req.ImageId)
@@ -107,7 +108,7 @@ func UpdateScan(ctx context.Context, id uint64, req *models.UpdateScanRequest) (
 
 	builder := tx.Scan.UpdateOneID(id).
 		SetContent(req.Content).
-		SetSuccess(req.Success)
+		SetSuccess(*req.Success)
 
 	if req.ImageId != 0 {
 		builder = builder.SetAttachmentID(req.ImageId)
@@ -220,6 +221,10 @@ func GetScanWithPagination(ctx context.Context, req *models.PageScansRequest) (*
 		}
 
 		scanResponses = append(scanResponses, scanResponse)
+	}
+
+	if scanResponses == nil {
+		scanResponses = make([]*models.ScanResponse, 0)
 	}
 
 	return &models.PageScansResponse{

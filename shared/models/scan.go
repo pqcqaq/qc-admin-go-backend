@@ -13,13 +13,13 @@ type ScanResponse struct {
 
 type CreateScanRequest struct {
 	Content string `json:"content" binding:"required"` // 扫描内容
-	Success bool   `json:"success" binding:"required"` // 扫描是否成功
+	Success *bool  `json:"success" binding:"required"` // 扫描是否成功
 	ImageId uint64 `json:"image_id,omitempty"`         // 关联的图片ID
 }
 
 type UpdateScanRequest struct {
 	Content string `json:"content" binding:"required"` // 扫描内容
-	Success bool   `json:"success" binding:"required"` // 扫描是否成功
+	Success *bool  `json:"success" binding:"required"` // 扫描是否成功
 	ImageId uint64 `json:"image_id,omitempty"`         // 关联的图片ID
 }
 
