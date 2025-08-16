@@ -52,7 +52,7 @@ func (Attachment) Fields() []ent.Field {
 			MaxLen(50).
 			Default("s3").
 			Comment("存储提供商"),
-		field.JSON("metadata", map[string]interface{}{}).
+		field.JSON("metadata", map[string]any{}).
 			Optional().
 			Comment("附加元数据"),
 		field.Enum("status").

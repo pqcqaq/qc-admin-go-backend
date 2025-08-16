@@ -14,7 +14,7 @@ package middleware
 //
 //        user, err := h.userService.GetUser(id)
 //        if err != nil {
-//            middleware.ThrowError(c, middleware.UserNotFoundError(map[string]interface{}{"id": id}))
+//            middleware.ThrowError(c, middleware.UserNotFoundError(map[string]any{"id": id}))
 //            return
 //        }
 //
@@ -39,7 +39,7 @@ package middleware
 //            middleware.PanicWithError(middleware.DatabaseError("查询用户失败", err.Error()))
 //        }
 //        if user == nil {
-//            return nil, middleware.UserNotFoundError(map[string]interface{}{"id": id})
+//            return nil, middleware.UserNotFoundError(map[string]any{"id": id})
 //        }
 //        return user, nil
 //    }

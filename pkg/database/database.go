@@ -2,24 +2,24 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 	"sync"
 
 	database "go-backend/database/ent"
 	_ "go-backend/database/ent/runtime"
 
 	"go-backend/pkg/configs"
-
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
+	"go-backend/pkg/database/drivers"
+	"go-backend/pkg/logging"
 )
 
 // LoggerInterface 定义日志接口，避免循环依赖
 type LoggerInterface interface {
-	Info(format string, args ...interface{})
-	Error(format string, args ...interface{})
-	Fatal(format string, args ...interface{})
+	Info(format string, args ...any)
+	Error(format string, args ...any)
+	Fatal(format string, args ...any)
 }
 
 // DatabaseConfig 数据库配置结构
@@ -42,15 +42,21 @@ func SetLogger(l LoggerInterface) {
 
 // NewClient 创建新的数据库客户端
 func NewClient(config *configs.DatabaseConfig) (*database.Client, error) {
+	// 验证驱动是否被支持
+	if !drivers.IsDriverSupported(config.Driver) {
+		supportedDrivers := drivers.GetSupportedDrivers()
+		return nil, fmt.Errorf("unsupported database driver: %s. Supported drivers: %v", config.Driver, supportedDrivers)
+	}
+
 	client, err := database.Open(config.Driver, config.DSN)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
 
 	// 运行自动迁移
 	if err := client.Schema.Create(context.Background()); err != nil {
 		client.Close()
-		return nil, err
+		return nil, fmt.Errorf("failed to create database schema: %w", err)
 	}
 
 	if logger != nil {
@@ -78,6 +84,14 @@ func MustNewClient(config *configs.DatabaseConfig) *database.Client {
 // InitInstance 初始化数据库客户端单例实例（只执行一次）
 func InitInstance(config *configs.DatabaseConfig) *database.Client {
 	once.Do(func() {
+		supports := GetSupportedDrivers()
+		logging.Info(
+			`
+===========Build Dependencies============
+Supported database drivers:
+	%v`,
+			strings.Join(supports, ", "),
+		)
 		Client = MustNewClient(config)
 	})
 	return Client
@@ -140,4 +154,23 @@ func IsAlive() bool {
 		log.Println("Database connection is alive")
 	}
 	return true
+}
+
+// GetSupportedDrivers 获取支持的数据库驱动列表
+func GetSupportedDrivers() []string {
+	return drivers.GetSupportedDrivers()
+}
+
+// ListLoadedDrivers 列出已加载的数据库驱动
+func ListLoadedDrivers() string {
+	return drivers.ListDrivers()
+}
+
+// ValidateDriver 验证给定的驱动是否被支持
+func ValidateDriver(driverName string) error {
+	if !drivers.IsDriverSupported(driverName) {
+		supportedDrivers := drivers.GetSupportedDrivers()
+		return fmt.Errorf("unsupported database driver: %s. Supported drivers: %v", driverName, supportedDrivers)
+	}
+	return nil
 }

@@ -14,9 +14,9 @@ import (
 
 // LoggerInterface 定义日志接口，避免循环依赖
 type LoggerInterface interface {
-	Info(format string, args ...interface{})
-	Error(format string, args ...interface{})
-	Fatal(format string, args ...interface{})
+	Info(format string, args ...any)
+	Error(format string, args ...any)
+	Fatal(format string, args ...any)
 }
 
 // 单例相关变量

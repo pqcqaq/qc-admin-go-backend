@@ -437,7 +437,7 @@ func ConfirmUpload(ctx context.Context, req *models.ConfirmUploadRequest) (*ent.
 		// 可以将S3的最后修改时间存储到元数据中
 		metadata := attachmentRecord.Metadata
 		if metadata == nil {
-			metadata = make(map[string]interface{})
+			metadata = make(map[string]any)
 		}
 		metadata["s3_last_modified"] = fileInfo.LastModified.Format(time.RFC3339)
 		builder = builder.SetMetadata(metadata)

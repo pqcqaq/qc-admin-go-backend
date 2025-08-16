@@ -57,7 +57,7 @@ type AttachmentMutation struct {
 	etag              *string
 	bucket            *string
 	storage_provider  *string
-	metadata          *map[string]interface{}
+	metadata          *map[string]any
 	status            *attachment.Status
 	upload_session_id *string
 	tag1              *string
@@ -839,12 +839,12 @@ func (m *AttachmentMutation) ResetStorageProvider() {
 }
 
 // SetMetadata sets the "metadata" field.
-func (m *AttachmentMutation) SetMetadata(value map[string]interface{}) {
+func (m *AttachmentMutation) SetMetadata(value map[string]any) {
 	m.metadata = &value
 }
 
 // Metadata returns the value of the "metadata" field in the mutation.
-func (m *AttachmentMutation) Metadata() (r map[string]interface{}, exists bool) {
+func (m *AttachmentMutation) Metadata() (r map[string]any, exists bool) {
 	v := m.metadata
 	if v == nil {
 		return
@@ -855,7 +855,7 @@ func (m *AttachmentMutation) Metadata() (r map[string]interface{}, exists bool) 
 // OldMetadata returns the old "metadata" field's value of the Attachment entity.
 // If the Attachment object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AttachmentMutation) OldMetadata(ctx context.Context) (v map[string]interface{}, err error) {
+func (m *AttachmentMutation) OldMetadata(ctx context.Context) (v map[string]any, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
 	}
@@ -1419,7 +1419,7 @@ func (m *AttachmentMutation) SetField(name string, value ent.Value) error {
 		m.SetStorageProvider(v)
 		return nil
 	case attachment.FieldMetadata:
-		v, ok := value.(map[string]interface{})
+		v, ok := value.(map[string]any)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1766,7 +1766,7 @@ type LoggingMutation struct {
 	code          *int
 	addcode       *int
 	user_agent    *string
-	data          *map[string]interface{}
+	data          *map[string]any
 	stack         *string
 	clearedFields map[string]struct{}
 	done          bool
@@ -2633,12 +2633,12 @@ func (m *LoggingMutation) ResetUserAgent() {
 }
 
 // SetData sets the "data" field.
-func (m *LoggingMutation) SetData(value map[string]interface{}) {
+func (m *LoggingMutation) SetData(value map[string]any) {
 	m.data = &value
 }
 
 // Data returns the value of the "data" field in the mutation.
-func (m *LoggingMutation) Data() (r map[string]interface{}, exists bool) {
+func (m *LoggingMutation) Data() (r map[string]any, exists bool) {
 	v := m.data
 	if v == nil {
 		return
@@ -2649,7 +2649,7 @@ func (m *LoggingMutation) Data() (r map[string]interface{}, exists bool) {
 // OldData returns the old "data" field's value of the Logging entity.
 // If the Logging object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LoggingMutation) OldData(ctx context.Context) (v map[string]interface{}, err error) {
+func (m *LoggingMutation) OldData(ctx context.Context) (v map[string]any, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldData is only allowed on UpdateOne operations")
 	}
@@ -3016,7 +3016,7 @@ func (m *LoggingMutation) SetField(name string, value ent.Value) error {
 		m.SetUserAgent(v)
 		return nil
 	case logging.FieldData:
-		v, ok := value.(map[string]interface{})
+		v, ok := value.(map[string]any)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

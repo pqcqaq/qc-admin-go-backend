@@ -11,10 +11,10 @@ import (
 
 // ColumnConfig 列配置
 type ColumnConfig struct {
-	Header    string                   // 列标题
-	Width     float64                  // 列宽度
-	Formatter func(interface{}) string // 格式化函数
-	FieldName string                   // 对应的字段名
+	Header    string           // 列标题
+	Width     float64          // 列宽度
+	Formatter func(any) string // 格式化函数
+	FieldName string           // 对应的字段名
 }
 
 // ExcelProcessor Excel处理器
@@ -32,7 +32,7 @@ func NewExcelProcessor(sheetName string, columns []ColumnConfig) *ExcelProcessor
 }
 
 // GenerateExcelStream 生成Excel流
-func (p *ExcelProcessor) GenerateExcelStream(data interface{}) (*excelize.File, error) {
+func (p *ExcelProcessor) GenerateExcelStream(data any) (*excelize.File, error) {
 	f := excelize.NewFile()
 	defer func() {
 		if err := f.Close(); err != nil {
@@ -95,7 +95,7 @@ func (p *ExcelProcessor) GenerateExcelStream(data interface{}) (*excelize.File, 
 }
 
 // writeData 写入数据
-func (p *ExcelProcessor) writeData(f *excelize.File, data interface{}) error {
+func (p *ExcelProcessor) writeData(f *excelize.File, data any) error {
 	val := reflect.ValueOf(data)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -135,7 +135,7 @@ func (p *ExcelProcessor) writeData(f *excelize.File, data interface{}) error {
 }
 
 // getFieldValue 获取字段值
-func (p *ExcelProcessor) getFieldValue(data reflect.Value, fieldName string) interface{} {
+func (p *ExcelProcessor) getFieldValue(data reflect.Value, fieldName string) any {
 	if data.Kind() != reflect.Struct {
 		return nil
 	}
@@ -149,7 +149,7 @@ func (p *ExcelProcessor) getFieldValue(data reflect.Value, fieldName string) int
 }
 
 // defaultFormatter 默认格式化器
-func (p *ExcelProcessor) defaultFormatter(value interface{}) string {
+func (p *ExcelProcessor) defaultFormatter(value any) string {
 	if value == nil {
 		return ""
 	}
@@ -199,8 +199,8 @@ func GenerateFilename(prefix string) string {
 }
 
 // TimeFormatter 时间格式化器
-func TimeFormatter(layout string) func(interface{}) string {
-	return func(value interface{}) string {
+func TimeFormatter(layout string) func(any) string {
+	return func(value any) string {
 		if t, ok := value.(time.Time); ok {
 			return t.Format(layout)
 		}
@@ -209,8 +209,8 @@ func TimeFormatter(layout string) func(interface{}) string {
 }
 
 // BoolFormatter 布尔值格式化器
-func BoolFormatter(trueText, falseText string) func(interface{}) string {
-	return func(value interface{}) string {
+func BoolFormatter(trueText, falseText string) func(any) string {
+	return func(value any) string {
 		if b, ok := value.(bool); ok {
 			if b {
 				return trueText
@@ -222,8 +222,8 @@ func BoolFormatter(trueText, falseText string) func(interface{}) string {
 }
 
 // NumberFormatter 数字格式化器
-func NumberFormatter(precision int) func(interface{}) string {
-	return func(value interface{}) string {
+func NumberFormatter(precision int) func(any) string {
+	return func(value any) string {
 		switch v := value.(type) {
 		case float32:
 			return strconv.FormatFloat(float64(v), 'f', precision, 32)

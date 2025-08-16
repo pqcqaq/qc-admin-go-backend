@@ -192,7 +192,7 @@ func JWTAuth() gin.HandlerFunc {
         tokenString := strings.TrimPrefix(authHeader, "Bearer ")
         
         // 验证JWT token
-        token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+        token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
             return []byte("your-secret-key"), nil
         })
 
@@ -318,7 +318,7 @@ func NewTaskQueue() (*TaskQueue, error) {
     return &TaskQueue{conn: conn, channel: ch}, nil
 }
 
-func (tq *TaskQueue) PublishTask(queueName string, task interface{}) error {
+func (tq *TaskQueue) PublishTask(queueName string, task any) error {
     data, err := json.Marshal(task)
     if err != nil {
         return err
@@ -375,7 +375,7 @@ type CacheService struct {
     redis  *redis.Client      // 分布式缓存
 }
 
-func (cs *CacheService) Get(key string) (interface{}, bool) {
+func (cs *CacheService) Get(key string) (any, bool) {
     // 先查本地缓存
     if value, ok := cs.local.Load(key); ok {
         return value, true

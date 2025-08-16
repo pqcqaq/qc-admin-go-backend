@@ -223,7 +223,7 @@ func (_c *LoggingCreate) SetNillableUserAgent(v *string) *LoggingCreate {
 }
 
 // SetData sets the "data" field.
-func (_c *LoggingCreate) SetData(v map[string]interface{}) *LoggingCreate {
+func (_c *LoggingCreate) SetData(v map[string]any) *LoggingCreate {
 	_c.mutation.SetData(v)
 	return _c
 }

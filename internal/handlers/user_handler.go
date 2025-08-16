@@ -78,7 +78,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("用户ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("用户ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -88,7 +88,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 	if err != nil {
 		// 根据错误类型抛出不同的自定义错误
 		if err.Error() == "user not found" {
-			middleware.ThrowError(c, middleware.UserNotFoundError(map[string]interface{}{
+			middleware.ThrowError(c, middleware.UserNotFoundError(map[string]any{
 				"id": id,
 			}))
 		} else {
@@ -128,7 +128,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	if err != nil {
 		// 根据错误内容判断错误类型
 		if err.Error() == "user already exists" {
-			middleware.ThrowError(c, middleware.UserExistsError(map[string]interface{}{
+			middleware.ThrowError(c, middleware.UserExistsError(map[string]any{
 				"email": req.Email,
 			}))
 		} else {
@@ -150,7 +150,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("用户ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("用户ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -165,7 +165,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	user, err := funcs.UpdateUser(context.Background(), id, &req)
 	if err != nil {
 		if err.Error() == "user not found" {
-			middleware.ThrowError(c, middleware.UserNotFoundError(map[string]interface{}{
+			middleware.ThrowError(c, middleware.UserNotFoundError(map[string]any{
 				"id": id,
 			}))
 		} else {
@@ -187,7 +187,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("用户ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("用户ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -196,7 +196,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	err = funcs.DeleteUser(context.Background(), id)
 	if err != nil {
 		if err.Error() == "user not found" {
-			middleware.ThrowError(c, middleware.UserNotFoundError(map[string]interface{}{
+			middleware.ThrowError(c, middleware.UserNotFoundError(map[string]any{
 				"id": id,
 			}))
 		} else {

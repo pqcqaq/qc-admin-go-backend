@@ -57,7 +57,7 @@ func (Logging) Fields() []ent.Field {
 			Optional().
 			MaxLen(512),
 		// data
-		field.JSON("data", map[string]interface{}{}).
+		field.JSON("data", map[string]any{}).
 			Optional(),
 		// stack
 		field.String("stack").

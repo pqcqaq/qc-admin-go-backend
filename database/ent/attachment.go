@@ -48,7 +48,7 @@ type Attachment struct {
 	// 存储提供商
 	StorageProvider string `json:"storage_provider,omitempty"`
 	// 附加元数据
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	Metadata map[string]any `json:"metadata,omitempty"`
 	// 文件状态
 	Status attachment.Status `json:"status,omitempty"`
 	// 上传会话ID

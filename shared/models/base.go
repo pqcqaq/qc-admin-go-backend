@@ -2,10 +2,10 @@ package models
 
 // ApiResponse 通用API响应结构
 type ApiResponse struct {
-	Data    interface{} `json:"data,omitempty"`
-	Message string      `json:"message,omitempty"`
-	Error   string      `json:"error,omitempty"`
-	Count   int         `json:"count,omitempty"`
+	Data    any    `json:"data,omitempty"`
+	Message string `json:"message,omitempty"`
+	Error   string `json:"error,omitempty"`
+	Count   int    `json:"count,omitempty"`
 }
 
 // HealthResponse 健康检查响应
@@ -25,8 +25,8 @@ type PaginationRequest struct {
 
 // PaginationResponse 分页响应结构
 type PaginationResponse struct {
-	Data       interface{} `json:"data"`       // 数据列表
-	Pagination Pagination  `json:"pagination"` // 分页信息
+	Data       any        `json:"data"`       // 数据列表
+	Pagination Pagination `json:"pagination"` // 分页信息
 }
 
 // Pagination 分页信息

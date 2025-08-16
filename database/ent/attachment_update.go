@@ -267,7 +267,7 @@ func (_u *AttachmentUpdate) SetNillableStorageProvider(v *string) *AttachmentUpd
 }
 
 // SetMetadata sets the "metadata" field.
-func (_u *AttachmentUpdate) SetMetadata(v map[string]interface{}) *AttachmentUpdate {
+func (_u *AttachmentUpdate) SetMetadata(v map[string]any) *AttachmentUpdate {
 	_u.mutation.SetMetadata(v)
 	return _u
 }
@@ -857,7 +857,7 @@ func (_u *AttachmentUpdateOne) SetNillableStorageProvider(v *string) *Attachment
 }
 
 // SetMetadata sets the "metadata" field.
-func (_u *AttachmentUpdateOne) SetMetadata(v map[string]interface{}) *AttachmentUpdateOne {
+func (_u *AttachmentUpdateOne) SetMetadata(v map[string]any) *AttachmentUpdateOne {
 	_u.mutation.SetMetadata(v)
 	return _u
 }

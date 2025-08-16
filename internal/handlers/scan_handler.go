@@ -79,7 +79,7 @@ func (h *ScanHandler) GetScan(c *gin.Context) {
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("扫描记录ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("扫描记录ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -90,7 +90,7 @@ func (h *ScanHandler) GetScan(c *gin.Context) {
 		// 根据错误类型抛出不同的自定义错误
 		if err.Error() == "scan not found" ||
 			err.Error() == "scan with id "+strconv.FormatUint(id, 10)+" not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("扫描记录未找到", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("扫描记录未找到", map[string]any{
 				"id": id,
 			}))
 		} else {
@@ -140,7 +140,7 @@ func (h *ScanHandler) UpdateScan(c *gin.Context) {
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("扫描记录ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("扫描记录ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -162,7 +162,7 @@ func (h *ScanHandler) UpdateScan(c *gin.Context) {
 	if err != nil {
 		if err.Error() == "scan not found" ||
 			err.Error() == "scan with id "+strconv.FormatUint(id, 10)+" not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("扫描记录未找到", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("扫描记录未找到", map[string]any{
 				"id": id,
 			}))
 		} else {
@@ -184,7 +184,7 @@ func (h *ScanHandler) DeleteScan(c *gin.Context) {
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("扫描记录ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("扫描记录ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -194,7 +194,7 @@ func (h *ScanHandler) DeleteScan(c *gin.Context) {
 	if err != nil {
 		if err.Error() == "scan not found" ||
 			err.Error() == "scan with id "+strconv.FormatUint(id, 10)+" not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("扫描记录未找到", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("扫描记录未找到", map[string]any{
 				"id": id,
 			}))
 		} else {

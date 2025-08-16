@@ -14,7 +14,7 @@ import (
 // String operations 字符串操作
 
 // Set 设置字符串值
-func Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
+func Set(ctx context.Context, key string, value any, expiration time.Duration) error {
 	return caching.Client.Set(ctx, key, value, expiration).Err()
 }
 
@@ -59,7 +59,7 @@ func GetTTL(ctx context.Context, key string) (time.Duration, error) {
 // JSON operations JSON操作
 
 // SetJSON 设置JSON值
-func SetJSON(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
+func SetJSON(ctx context.Context, key string, value any, expiration time.Duration) error {
 	jsonData, err := json.Marshal(value)
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON: %w", err)
@@ -68,7 +68,7 @@ func SetJSON(ctx context.Context, key string, value interface{}, expiration time
 }
 
 // GetJSON 获取JSON值并反序列化
-func GetJSON(ctx context.Context, key string, dest interface{}) error {
+func GetJSON(ctx context.Context, key string, dest any) error {
 	val, err := caching.Client.Get(ctx, key).Result()
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func GetJSON(ctx context.Context, key string, dest interface{}) error {
 // Hash operations 哈希操作
 
 // HSet 设置哈希字段
-func HSet(ctx context.Context, key string, field string, value interface{}) error {
+func HSet(ctx context.Context, key string, field string, value any) error {
 	return caching.Client.HSet(ctx, key, field, value).Err()
 }
 
@@ -112,12 +112,12 @@ func HLen(ctx context.Context, key string) (int64, error) {
 // List operations 列表操作
 
 // LPush 从左侧推入列表
-func LPush(ctx context.Context, key string, values ...interface{}) error {
+func LPush(ctx context.Context, key string, values ...any) error {
 	return caching.Client.LPush(ctx, key, values...).Err()
 }
 
 // RPush 从右侧推入列表
-func RPush(ctx context.Context, key string, values ...interface{}) error {
+func RPush(ctx context.Context, key string, values ...any) error {
 	return caching.Client.RPush(ctx, key, values...).Err()
 }
 
@@ -144,7 +144,7 @@ func LRange(ctx context.Context, key string, start, stop int64) ([]string, error
 // Set operations 集合操作
 
 // SAdd 添加元素到集合
-func SAdd(ctx context.Context, key string, members ...interface{}) error {
+func SAdd(ctx context.Context, key string, members ...any) error {
 	return caching.Client.SAdd(ctx, key, members...).Err()
 }
 
@@ -154,13 +154,13 @@ func SMembers(ctx context.Context, key string) ([]string, error) {
 }
 
 // SIsMember 检查元素是否在集合中
-func SIsMember(ctx context.Context, key string, member interface{}) bool {
+func SIsMember(ctx context.Context, key string, member any) bool {
 	isMember, err := caching.Client.SIsMember(ctx, key, member).Result()
 	return err == nil && isMember
 }
 
 // SRem 从集合中移除元素
-func SRem(ctx context.Context, key string, members ...interface{}) error {
+func SRem(ctx context.Context, key string, members ...any) error {
 	return caching.Client.SRem(ctx, key, members...).Err()
 }
 
@@ -172,7 +172,7 @@ func SCard(ctx context.Context, key string) (int64, error) {
 // Sorted Set operations 有序集合操作
 
 // ZAdd 添加元素到有序集合
-func ZAdd(ctx context.Context, key string, score float64, member interface{}) error {
+func ZAdd(ctx context.Context, key string, score float64, member any) error {
 	return caching.Client.ZAdd(ctx, key, redis.Z{Score: score, Member: member}).Err()
 }
 
@@ -190,7 +190,7 @@ func ZRangeByScore(ctx context.Context, key string, min, max string) ([]string, 
 }
 
 // ZRem 从有序集合中移除元素
-func ZRem(ctx context.Context, key string, members ...interface{}) error {
+func ZRem(ctx context.Context, key string, members ...any) error {
 	return caching.Client.ZRem(ctx, key, members...).Err()
 }
 
@@ -222,12 +222,12 @@ func Subscribe(ctx context.Context, channels ...string) *redis.PubSub {
 }
 
 // Publish 发布消息到频道
-func Publish(ctx context.Context, channel string, message interface{}) error {
+func Publish(ctx context.Context, channel string, message any) error {
 	return caching.Client.Publish(ctx, channel, message).Err()
 }
 
 // SetNX 只有键不存在时才设置（分布式锁）
-func SetNX(ctx context.Context, key string, value interface{}, expiration time.Duration) (bool, error) {
+func SetNX(ctx context.Context, key string, value any, expiration time.Duration) (bool, error) {
 	return caching.Client.SetNX(ctx, key, value, expiration).Result()
 }
 

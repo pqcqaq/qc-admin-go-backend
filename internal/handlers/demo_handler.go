@@ -20,12 +20,12 @@ func (h *DemoHandler) DemoErrorHandling(c *gin.Context) {
 	switch errorType {
 	case "panic":
 		// 演示使用panic抛出错误
-		middleware.PanicWithError(middleware.InternalServerError("演示panic错误", map[string]interface{}{
+		middleware.PanicWithError(middleware.InternalServerError("演示panic错误", map[string]any{
 			"demo": true,
 		}))
 	case "validation":
 		// 演示验证错误
-		middleware.ThrowError(c, middleware.ValidationError("演示验证错误", map[string]interface{}{
+		middleware.ThrowError(c, middleware.ValidationError("演示验证错误", map[string]any{
 			"field": "demo_field",
 			"value": "invalid_value",
 		}))
@@ -36,7 +36,7 @@ func (h *DemoHandler) DemoErrorHandling(c *gin.Context) {
 		return
 	case "business":
 		// 演示业务逻辑错误
-		middleware.ThrowError(c, middleware.NewCustomError(5001, "演示业务逻辑错误", map[string]interface{}{
+		middleware.ThrowError(c, middleware.NewCustomError(5001, "演示业务逻辑错误", map[string]any{
 			"business_rule": "demo_rule_violation",
 		}))
 		return

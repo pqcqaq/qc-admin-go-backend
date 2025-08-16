@@ -82,7 +82,7 @@ func (h *AttachmentHandler) GetAttachment(c *gin.Context) {
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -92,7 +92,7 @@ func (h *AttachmentHandler) GetAttachment(c *gin.Context) {
 	if err != nil {
 		// 根据错误类型抛出不同的自定义错误
 		if err.Error() == "attachment not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]any{
 				"id": id,
 			}))
 		} else {
@@ -147,7 +147,7 @@ func (h *AttachmentHandler) CreateAttachment(c *gin.Context) {
 	if err != nil {
 		// 根据错误内容判断错误类型
 		if err.Error() == "attachment already exists" {
-			middleware.ThrowError(c, middleware.NewCustomError(middleware.ErrCodeConflict, "附件已存在", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NewCustomError(middleware.ErrCodeConflict, "附件已存在", map[string]any{
 				"path": req.Path,
 			}))
 		} else {
@@ -169,7 +169,7 @@ func (h *AttachmentHandler) UpdateAttachment(c *gin.Context) {
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -184,7 +184,7 @@ func (h *AttachmentHandler) UpdateAttachment(c *gin.Context) {
 	attachment, err := funcs.UpdateAttachment(context.Background(), id, &req)
 	if err != nil {
 		if err.Error() == "attachment not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]any{
 				"id": id,
 			}))
 		} else {
@@ -206,7 +206,7 @@ func (h *AttachmentHandler) DeleteAttachment(c *gin.Context) {
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -215,7 +215,7 @@ func (h *AttachmentHandler) DeleteAttachment(c *gin.Context) {
 	err = funcs.DeleteAttachment(context.Background(), id)
 	if err != nil {
 		if err.Error() == "attachment not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]any{
 				"id": id,
 			}))
 		} else {
@@ -236,7 +236,7 @@ func (h *AttachmentHandler) GetAttachmentURL(c *gin.Context) {
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -246,7 +246,7 @@ func (h *AttachmentHandler) GetAttachmentURL(c *gin.Context) {
 	attachment, err := funcs.GetAttachmentByID(context.Background(), id)
 	if err != nil {
 		if err.Error() == "attachment not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]any{
 				"id": id,
 			}))
 		} else {
@@ -340,11 +340,11 @@ func (h *AttachmentHandler) ConfirmUpload(c *gin.Context) {
 	attachment, err := funcs.ConfirmUpload(context.Background(), &req)
 	if err != nil {
 		if err.Error() == "upload session not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("上传会话不存在", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("上传会话不存在", map[string]any{
 				"upload_session_id": req.UploadSessionID,
 			}))
 		} else if err.Error() == "invalid upload session status" {
-			middleware.ThrowError(c, middleware.BadRequestError("无效的上传会话状态", map[string]interface{}{
+			middleware.ThrowError(c, middleware.BadRequestError("无效的上传会话状态", map[string]any{
 				"upload_session_id": req.UploadSessionID,
 			}))
 		} else {

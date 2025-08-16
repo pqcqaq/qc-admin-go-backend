@@ -20,7 +20,7 @@
 type ColumnConfig struct {
     Header    string                      // 列标题
     Width     float64                     // 列宽度
-    Formatter func(interface{}) string    // 格式化函数
+    Formatter func(any) string    // 格式化函数
     FieldName string                      // 对应的字段名
 }
 

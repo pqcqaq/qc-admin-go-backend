@@ -305,7 +305,7 @@ func (_u *LoggingUpdate) ClearUserAgent() *LoggingUpdate {
 }
 
 // SetData sets the "data" field.
-func (_u *LoggingUpdate) SetData(v map[string]interface{}) *LoggingUpdate {
+func (_u *LoggingUpdate) SetData(v map[string]any) *LoggingUpdate {
 	_u.mutation.SetData(v)
 	return _u
 }
@@ -843,7 +843,7 @@ func (_u *LoggingUpdateOne) ClearUserAgent() *LoggingUpdateOne {
 }
 
 // SetData sets the "data" field.
-func (_u *LoggingUpdateOne) SetData(v map[string]interface{}) *LoggingUpdateOne {
+func (_u *LoggingUpdateOne) SetData(v map[string]any) *LoggingUpdateOne {
 	_u.mutation.SetData(v)
 	return _u
 }
