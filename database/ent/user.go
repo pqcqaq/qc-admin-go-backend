@@ -50,7 +50,8 @@ type UserEdges struct {
 	Attachments []*Attachment `json:"attachments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes      [1]bool
+	namedAttachments map[string][]*Attachment
 }
 
 // AttachmentsOrErr returns the Attachments value or an error if the edge
@@ -226,6 +227,30 @@ func (_m *User) String() string {
 	builder.WriteString(_m.Phone)
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedAttachments returns the Attachments named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *User) NamedAttachments(name string) ([]*Attachment, error) {
+	if _m.Edges.namedAttachments == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedAttachments[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *User) appendNamedAttachments(name string, edges ...*Attachment) {
+	if _m.Edges.namedAttachments == nil {
+		_m.Edges.namedAttachments = make(map[string][]*Attachment)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedAttachments[name] = []*Attachment{}
+	} else {
+		_m.Edges.namedAttachments[name] = append(_m.Edges.namedAttachments[name], edges...)
+	}
 }
 
 // Users is a parsable slice of User.

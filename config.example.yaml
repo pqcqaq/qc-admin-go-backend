@@ -1,0 +1,73 @@
+# 数据库配置示例文件
+# 这个文件展示了如何配置不同类型的数据库
+
+# =======================
+# SQLite 配置
+# =======================
+database:
+  driver: "sqlite3"
+  dsn: "file:ent.db?cache=shared&_fk=1"
+
+# =======================
+# MySQL 配置
+# =======================
+# database:
+#   driver: "mysql"
+#   dsn: "user:password@tcp(localhost:3306)/database_name?charset=utf8mb4&parseTime=True&loc=Local"
+
+# =======================
+# PostgreSQL 配置
+# =======================
+# database:
+#   driver: "postgres"
+#   dsn: "host=localhost user=username password=password dbname=database_name port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+
+# =======================
+# ClickHouse 配置
+# =======================
+# database:
+#   driver: "clickhouse"
+#   dsn: "tcp://localhost:9000?database=default&username=default&password="
+
+# =======================
+# SQL Server 配置
+# =======================
+# database:
+#   driver: "sqlserver"
+#   dsn: "sqlserver://username:password@localhost:1433?database=database_name"
+
+# =======================
+# Oracle 配置
+# =======================
+# database:
+#   driver: "godror"
+#   dsn: "oracle://username:password@localhost:1521/XE"
+
+# 服务器配置
+server:
+  port: ":8080"
+  timeout_read: "10s"
+  timeout_write: "10s"
+  timeout_idle: "60s"
+
+# Redis 配置
+redis:
+  host: "localhost"
+  port: "6379"
+  password: ""
+  database: 0
+
+# 日志配置
+logging:
+  level: "info"
+  format: "json"
+  output: "stdout"
+
+# S3 配置
+s3:
+  access_key: "your-access-key"
+  secret_key: "your-secret-key"
+  region: "us-east-1"
+  endpoint: "http://localhost:9000"
+  bucket: "your-bucket"
+  use_ssl: false
