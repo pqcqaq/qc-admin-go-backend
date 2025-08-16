@@ -28,6 +28,9 @@ func main() {
 	var configPath string
 	flag.StringVar(&configPath, "config", "config.yaml", "配置文件路径")
 	flag.StringVar(&configPath, "c", "config.yaml", "配置文件路径（简写）")
+	var autoMigrate string
+	flag.StringVar(&autoMigrate, "migrate", "none", "是否自动迁移数据库模式")
+	flag.StringVar(&autoMigrate, "m", "none", "是否自动迁移数据库模式（简写）")
 
 	// 自定义帮助信息
 	flag.Usage = func() {
@@ -39,6 +42,10 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  %s -c config.dev.yaml        # 使用开发环境配置\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "  %s --config config.prod.yaml # 使用生产环境配置\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "  %s -c /path/to/config.yaml   # 使用绝对路径配置\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -m          (skip|auto)   # 启动时自动迁移数据库模式\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s --migrate   (skip|auto)   # 启动时自动迁移数据库模式（长选项）\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "\n")
+		os.Exit(0)
 	}
 
 	// 解析命令行参数
@@ -54,6 +61,23 @@ func main() {
 	config, err := configs.LoadConfig(resolvedConfigPath)
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	// 通过命令行传入的配置项也合并到配置中
+	{
+		// 是否自动迁移，这个选项优先读取main.go中的命令行参数，否则就配置文件
+		switch autoMigrate {
+		case "skip":
+			config.Database.SkipMigrateCheck = true
+			config.Database.AutoMigrate = false
+		case "auto":
+			config.Database.SkipMigrateCheck = false
+			config.Database.AutoMigrate = true
+		default:
+			// 默认不自动迁移，有不适配直接报错
+			config.Database.SkipMigrateCheck = false
+			config.Database.AutoMigrate = false
+		}
 	}
 
 	// 初始化日志系统

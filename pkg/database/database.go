@@ -1,11 +1,14 @@
 package database
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"log"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	database "go-backend/database/ent"
 	_ "go-backend/database/ent/runtime"
@@ -18,6 +21,7 @@ import (
 // LoggerInterface 定义日志接口，避免循环依赖
 type LoggerInterface interface {
 	Info(format string, args ...any)
+	Warn(format string, args ...any)
 	Error(format string, args ...any)
 	Fatal(format string, args ...any)
 }
@@ -53,17 +57,29 @@ func NewClient(config *configs.DatabaseConfig) (*database.Client, error) {
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
 
-	// 运行自动迁移
-	if err := client.Schema.Create(context.Background()); err != nil {
-		client.Close()
-		return nil, fmt.Errorf("failed to create database schema: %w", err)
+	// 如果配置了自动迁移，则创建数据库模式
+	if !config.SkipMigrateCheck {
+		if config.AutoMigrate {
+			if err := client.Schema.Create(context.Background()); err != nil {
+				client.Close()
+				return nil, fmt.Errorf("failed to create database schema: %w", err)
+			}
+		} else {
+			// 如果没有配置自动迁移，则检查是否需要迁移
+			need, err := checkMigrationNeeded(client)
+			if err != nil {
+				logger.Error("Migration check failed: %v", err)
+				panic("Migration check failed")
+			}
+			if need != nil && *need {
+				panic("Database schema is not up to date, please run migrations, set `auto_migrate` to true or set `skip_migrate` to true in config")
+			}
+		}
+	} else {
+		logger.Warn("Skipping migration check as per configuration")
 	}
 
-	if logger != nil {
-		logger.Info("Database connected successfully with driver: %s", config.Driver)
-	} else {
-		log.Printf("Database connected successfully with driver: %s", config.Driver)
-	}
+	logger.Info("Database connected successfully with driver: %s", config.Driver)
 
 	return client, nil
 }
@@ -72,11 +88,7 @@ func NewClient(config *configs.DatabaseConfig) (*database.Client, error) {
 func MustNewClient(config *configs.DatabaseConfig) *database.Client {
 	client, err := NewClient(config)
 	if err != nil {
-		if logger != nil {
-			logger.Fatal("failed to create database client: %v", err)
-		} else {
-			log.Fatalf("failed to create database client: %v", err)
-		}
+		logger.Fatal("failed to create database client: %v", err)
 	}
 	return client
 }
@@ -115,11 +127,7 @@ func CloseInstance() error {
 		Client = nil
 		// 重置 once，允许重新初始化
 		once = sync.Once{}
-		if logger != nil {
-			logger.Info("Database connection closed and instance reset")
-		} else {
-			log.Println("Database connection closed and instance reset")
-		}
+		logger.Info("Database connection closed and instance reset")
 		return err
 	}
 	return nil
@@ -140,19 +148,11 @@ func IsAlive() bool {
 	ctx := context.Background()
 	tx, err := Client.BeginTx(ctx, nil)
 	if err != nil {
-		if logger != nil {
-			logger.Error("Database connection is not alive: %v", err)
-		} else {
-			log.Printf("Database connection is not alive: %v", err)
-		}
+		logger.Error("Database connection is not alive: %v", err)
 		return false
 	}
 	tx.Rollback() // 回滚事务以释放连接
-	if logger != nil {
-		logger.Info("Database connection is alive")
-	} else {
-		log.Println("Database connection is alive")
-	}
+	logger.Info("Database connection is alive")
 	return true
 }
 
@@ -173,4 +173,50 @@ func ValidateDriver(driverName string) error {
 		return fmt.Errorf("unsupported database driver: %s. Supported drivers: %v", driverName, supportedDrivers)
 	}
 	return nil
+}
+
+// checkMigrationNeeded 检查数据库是否需要迁移
+// 如果需要迁移，将输出迁移SQL语句到文件
+func checkMigrationNeeded(client *database.Client) (*bool, error) {
+	ctx := context.Background()
+
+	var needMigration bool
+	// 使用WriteTo方法检查是否有待执行的迁移
+	var buf bytes.Buffer
+	if err := client.Schema.WriteTo(ctx, &buf); err != nil {
+		return nil, fmt.Errorf("failed to check migration status: %w", err)
+	}
+
+	migrationSQL := buf.String()
+	if migrationSQL != "" {
+		needMigration = true
+
+		// 创建migration目录
+		migrationDir := "migration"
+		if err := os.MkdirAll(migrationDir, 0755); err != nil {
+			return nil, fmt.Errorf("failed to create migration directory: %w", err)
+		}
+
+		// 生成文件名，格式：migration_YYYYMMDD_HHMMSS.sql
+		timestamp := time.Now().Format("20060102_150405")
+		fileName := fmt.Sprintf("migration_%s.sql", timestamp)
+		filePath := filepath.Join(migrationDir, fileName)
+
+		// 写入SQL文件
+		if err := os.WriteFile(filePath, []byte(migrationSQL), 0644); err != nil {
+			return nil, fmt.Errorf("failed to write migration file: %w", err)
+		}
+
+		if logger != nil {
+			logger.Error("Database migration needed. Migration SQL saved to: %s", filePath)
+		}
+	} else {
+		needMigration = false
+		// 如果没有迁移SQL，说明数据库是最新的
+		if logger != nil {
+			logger.Info("Database schema is up to date, no migration needed")
+		}
+	}
+
+	return &needMigration, nil
 }
