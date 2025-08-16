@@ -138,20 +138,13 @@ func IsAlive() bool {
 		return false
 	}
 	ctx := context.Background()
-	tx, err := Client.BeginTx(ctx, nil)
+	res, err := Client.ExecContext(ctx, "SELECT 1")
 	if err != nil {
-		if logger != nil {
-			logger.Error("Database connection is not alive: %v", err)
-		} else {
-			log.Printf("Database connection is not alive: %v", err)
-		}
+		logger.Error("Database connection is dead: %v", err)
 		return false
 	}
-	tx.Rollback() // 回滚事务以释放连接
-	if logger != nil {
-		logger.Info("Database connection is alive")
-	} else {
-		log.Println("Database connection is alive")
+	if res == nil {
+		return false
 	}
 	return true
 }

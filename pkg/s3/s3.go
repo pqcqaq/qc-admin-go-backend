@@ -131,6 +131,11 @@ func InitClient(config *configs.S3Config) error {
 
 // TestConnection 测试S3连接
 func (c *S3Client) TestConnection() error {
+
+	if c == nil || c.client == nil {
+		return errors.New("S3 client is not initialized")
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

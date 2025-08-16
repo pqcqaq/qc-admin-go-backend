@@ -139,17 +139,10 @@ func IsAlive() bool {
 	ctx := context.Background()
 	_, err := Client.Ping(ctx).Result()
 	if err != nil {
-		if logger != nil {
-			logger.Error("Redis connection is not alive: %v", err)
-		} else {
-			log.Printf("Redis connection is not alive: %v", err)
-		}
+		logger.Error("Redis connection is not alive: %v", err)
 		return false
 	}
-	if logger != nil {
-		logger.Info("Redis connection is alive")
-	} else {
-		log.Println("Redis connection is alive")
-	}
+	logger.Info("Redis connection is alive")
+
 	return true
 }

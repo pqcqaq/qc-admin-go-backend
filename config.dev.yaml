@@ -1,6 +1,6 @@
 # 开发环境配置示例
 server:
-  port: ":8080"
+  port: "localhost:8080"
   mode: "debug"  # gin模式: debug, release, test
   debug: true    # 开发环境启用debug模式，允许所有跨域
   cors:
