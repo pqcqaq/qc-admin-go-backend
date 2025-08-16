@@ -21,7 +21,7 @@ func GetAllScans(ctx context.Context) ([]*models.ScanResponse, error) {
 	var scans []*models.ScanResponse
 	for _, record := range records {
 		scanResponse := &models.ScanResponse{
-			ID:         record.ID,
+			ID:         utils.Uint64ToString(record.ID),
 			Content:    record.Content,
 			Success:    record.Success,
 			CreateTime: record.CreateTime,
@@ -29,7 +29,7 @@ func GetAllScans(ctx context.Context) ([]*models.ScanResponse, error) {
 
 		// 由于使用了 WithAttachment()，关联数据已经在 Edges 中了
 		if record.Edges.Attachment != nil {
-			scanResponse.ImageId = record.Edges.Attachment.ID
+			scanResponse.ImageId = utils.Uint64ToString(record.Edges.Attachment.ID)
 			scanResponse.ImageUrl = record.Edges.Attachment.URL
 		}
 
@@ -51,13 +51,13 @@ func GetScanById(ctx context.Context, id uint64) (*models.ScanResponse, error) {
 		return nil, err
 	}
 	scanResponse := &models.ScanResponse{
-		ID:         scan.ID,
+		ID:         utils.Uint64ToString(scan.ID),
 		Content:    scan.Content,
 		Success:    scan.Success,
 		CreateTime: scan.CreateTime,
 	}
 	if scan.Edges.Attachment != nil {
-		scanResponse.ImageId = scan.Edges.Attachment.ID
+		scanResponse.ImageId = utils.Uint64ToString(scan.Edges.Attachment.ID)
 		scanResponse.ImageUrl = scan.Edges.Attachment.URL
 	}
 	return scanResponse, nil
@@ -70,8 +70,8 @@ func CreateScan(ctx context.Context, req *models.CreateScanRequest) (*ent.Scan, 
 		SetLength(len(req.Content)).
 		SetSuccess(*req.Success)
 
-	if req.ImageId != 0 {
-		builder = builder.SetAttachmentID(req.ImageId)
+	if req.ImageId != "" {
+		builder = builder.SetAttachmentID(utils.StringToUint64(req.ImageId))
 	}
 
 	return builder.Save(ctx)
@@ -110,8 +110,8 @@ func UpdateScan(ctx context.Context, id uint64, req *models.UpdateScanRequest) (
 		SetContent(req.Content).
 		SetSuccess(*req.Success)
 
-	if req.ImageId != 0 {
-		builder = builder.SetAttachmentID(req.ImageId)
+	if req.ImageId != "" {
+		builder = builder.SetAttachmentID(utils.StringToUint64(req.ImageId))
 	}
 
 	return builder.Save(ctx)
@@ -208,7 +208,7 @@ func GetScanWithPagination(ctx context.Context, req *models.PageScansRequest) (*
 	var scanResponses []*models.ScanResponse
 	for _, scan := range scans {
 		scanResponse := &models.ScanResponse{
-			ID:         scan.ID,
+			ID:         utils.Uint64ToString(scan.ID),
 			Content:    scan.Content,
 			Success:    scan.Success,
 			CreateTime: scan.CreateTime,
@@ -216,7 +216,7 @@ func GetScanWithPagination(ctx context.Context, req *models.PageScansRequest) (*
 
 		// 正确处理可能为空的 attachment 关联
 		if scan.Edges.Attachment != nil {
-			scanResponse.ImageId = scan.Edges.Attachment.ID
+			scanResponse.ImageId = utils.Uint64ToString(scan.Edges.Attachment.ID)
 			scanResponse.ImageUrl = scan.Edges.Attachment.URL
 		}
 

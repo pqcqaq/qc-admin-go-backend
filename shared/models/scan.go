@@ -3,24 +3,24 @@ package models
 import "time"
 
 type ScanResponse struct {
-	ID         uint64    `json:"id"`
+	ID         string    `json:"id"`
 	CreateTime time.Time `json:"create_time"`
 	Content    string    `json:"content"`
 	Success    bool      `json:"success"`
-	ImageId    uint64    `json:"image_id,omitempty"`  // 关联的图片ID
+	ImageId    string    `json:"image_id,omitempty"`  // 关联的图片ID
 	ImageUrl   string    `json:"image_url,omitempty"` // 图片URL
 }
 
 type CreateScanRequest struct {
 	Content string `json:"content" binding:"required"` // 扫描内容
 	Success *bool  `json:"success" binding:"required"` // 扫描是否成功
-	ImageId uint64 `json:"image_id,omitempty"`         // 关联的图片ID
+	ImageId string `json:"image_id,omitempty"`         // 关联的图片ID
 }
 
 type UpdateScanRequest struct {
 	Content string `json:"content" binding:"required"` // 扫描内容
 	Success *bool  `json:"success" binding:"required"` // 扫描是否成功
-	ImageId uint64 `json:"image_id,omitempty"`         // 关联的图片ID
+	ImageId string `json:"image_id,omitempty"`         // 关联的图片ID
 }
 
 type PageScansRequest struct {

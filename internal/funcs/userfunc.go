@@ -9,6 +9,7 @@ import (
 	"go-backend/database/ent"
 	"go-backend/database/ent/user"
 	"go-backend/pkg/database"
+	"go-backend/pkg/utils"
 	"go-backend/shared/models"
 )
 
@@ -192,7 +193,7 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 		}
 
 		userResponses[i] = &models.UserResponse{
-			ID:    int(u.ID),
+			ID:    utils.Uint64ToString(u.ID),
 			Name:  u.Name,
 			Email: u.Email,
 			Age:   age,

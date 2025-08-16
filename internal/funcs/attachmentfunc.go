@@ -14,6 +14,7 @@ import (
 	"go-backend/pkg/configs"
 	"go-backend/pkg/database"
 	"go-backend/pkg/s3"
+	"go-backend/pkg/utils"
 	"go-backend/shared/models"
 )
 
@@ -269,7 +270,7 @@ func GetAttachmentsWithPagination(ctx context.Context, req *models.GetAttachment
 	attachmentResponses := make([]*models.AttachmentResponse, len(attachments))
 	for i, a := range attachments {
 		attachmentResponses[i] = &models.AttachmentResponse{
-			ID:              a.ID,
+			ID:              utils.Uint64ToString(a.ID),
 			CreateTime:      a.CreateTime.Format(time.RFC3339),
 			UpdateTime:      a.UpdateTime.Format(time.RFC3339),
 			Filename:        a.Filename,

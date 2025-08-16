@@ -10,6 +10,7 @@ import (
 	"go-backend/internal/middleware"
 	"go-backend/pkg/configs"
 	"go-backend/pkg/s3"
+	"go-backend/pkg/utils"
 	"go-backend/shared/models"
 
 	"github.com/gin-gonic/gin"
@@ -354,7 +355,7 @@ func (h *AttachmentHandler) ConfirmUpload(c *gin.Context) {
 
 	// 转换为响应格式
 	attachmentResponse := &models.AttachmentResponse{
-		ID:              attachment.ID,
+		ID:              utils.Uint64ToString(attachment.ID),
 		CreateTime:      attachment.CreateTime.Format(time.RFC3339),
 		UpdateTime:      attachment.UpdateTime.Format(time.RFC3339),
 		Filename:        attachment.Filename,
@@ -466,7 +467,7 @@ func (h *AttachmentHandler) DirectUpload(c *gin.Context) {
 
 	// 转换为响应格式
 	attachmentResponse := &models.AttachmentResponse{
-		ID:              attachment.ID,
+		ID:              utils.Uint64ToString(attachment.ID),
 		CreateTime:      attachment.CreateTime.Format(time.RFC3339),
 		UpdateTime:      attachment.UpdateTime.Format(time.RFC3339),
 		Filename:        attachment.Filename,

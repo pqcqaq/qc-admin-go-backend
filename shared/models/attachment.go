@@ -38,7 +38,7 @@ type UpdateAttachmentRequest struct {
 
 // AttachmentResponse 附件响应结构
 type AttachmentResponse struct {
-	ID              uint64                 `json:"id"`
+	ID              string                 `json:"id"`
 	CreateTime      string                 `json:"create_time"`
 	UpdateTime      string                 `json:"update_time"`
 	Filename        string                 `json:"filename"`

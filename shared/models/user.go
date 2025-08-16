@@ -18,7 +18,7 @@ type UpdateUserRequest struct {
 
 // UserResponse 用户响应结构
 type UserResponse struct {
-	ID    int    `json:"id"`
+	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
 	Age   *int   `json:"age,omitempty"`
