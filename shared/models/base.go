@@ -18,8 +18,8 @@ type HealthResponse struct {
 // PaginationRequest 分页请求结构
 type PaginationRequest struct {
 	Page     int    `form:"page" json:"page" binding:"min=1"`                   // 页码，从1开始
-	PageSize int    `form:"page_size" json:"page_size" binding:"min=1,max=100"` // 每页数量，最大100
-	OrderBy  string `form:"order_by" json:"order_by"`                           // 排序字段
+	PageSize int    `form:"pageSize" json:"pageSize" binding:"min=1,max=10000"` // 每页数量，最大100
+	OrderBy  string `form:"orderBy" json:"orderBy"`                             // 排序字段
 	Order    string `form:"order" json:"order" binding:"oneof=asc desc"`        // 排序方向：asc 或 desc
 }
 
@@ -31,10 +31,10 @@ type PaginationResponse struct {
 
 // Pagination 分页信息
 type Pagination struct {
-	Page       int   `json:"page"`        // 当前页码
-	PageSize   int   `json:"page_size"`   // 每页数量
-	Total      int64 `json:"total"`       // 总记录数
-	TotalPages int   `json:"total_pages"` // 总页数
-	HasNext    bool  `json:"has_next"`    // 是否有下一页
-	HasPrev    bool  `json:"has_prev"`    // 是否有上一页
+	Page       int   `json:"page"`       // 当前页码
+	PageSize   int   `json:"pageSize"`   // 每页数量
+	Total      int64 `json:"total"`      // 总记录数
+	TotalPages int   `json:"totalPages"` // 总页数
+	HasNext    bool  `json:"hasNext"`    // 是否有下一页
+	HasPrev    bool  `json:"hasPrev"`    // 是否有上一页
 }

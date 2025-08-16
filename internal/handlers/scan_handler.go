@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 
 	"go-backend/internal/funcs"
 	"go-backend/internal/middleware"
+	"go-backend/pkg/excel"
 	"go-backend/shared/models"
 
 	"github.com/gin-gonic/gin"
@@ -205,4 +207,90 @@ func (h *ScanHandler) DeleteScan(c *gin.Context) {
 		"success": true,
 		"message": "扫描记录删除成功",
 	})
+}
+
+// ExportScansToExcel 导出扫描记录为Excel
+func (h *ScanHandler) ExportScansToExcel(c *gin.Context) {
+	var req models.PageScansRequest
+
+	// 设置默认值，但不限制数量（用于导出）
+	req.Page = 1
+	req.PageSize = 10000 // 设置一个较大的值来获取所有数据
+	req.Order = "desc"
+	req.OrderBy = "create_time"
+
+	// 绑定查询参数
+	if err := c.ShouldBindQuery(&req); err != nil {
+		middleware.ThrowError(c, middleware.ValidationError("查询参数格式错误", err.Error()))
+		return
+	}
+
+	// 获取数据
+	result, err := funcs.GetScanWithPagination(context.Background(), &req)
+	if err != nil {
+		middleware.ThrowError(c, middleware.DatabaseError("获取扫描记录失败", err.Error()))
+		return
+	}
+
+	// 配置Excel列
+	columns := []excel.ColumnConfig{
+		{
+			Header:    "ID",
+			Width:     15,
+			FieldName: "ID",
+		},
+		{
+			Header:    "扫描内容",
+			Width:     40,
+			FieldName: "Content",
+		},
+		{
+			Header:    "是否成功",
+			Width:     15,
+			FieldName: "Success",
+			Formatter: excel.BoolFormatter("成功", "失败"),
+		},
+		{
+			Header:    "创建时间",
+			Width:     25,
+			FieldName: "CreateTime",
+			Formatter: excel.TimeFormatter("2006-01-02 15:04:05"),
+		},
+		{
+			Header:    "图片ID",
+			Width:     15,
+			FieldName: "ImageId",
+		},
+		{
+			Header:    "图片URL",
+			Width:     50,
+			FieldName: "ImageUrl",
+		},
+	}
+
+	// 创建Excel处理器
+	processor := excel.NewExcelProcessor("扫描记录", columns)
+
+	// 生成Excel文件
+	file, err := processor.GenerateExcelStream(result.Data)
+	if err != nil {
+		middleware.ThrowError(c, middleware.InternalServerError("生成Excel文件失败", err.Error()))
+		return
+	}
+
+	// 生成文件名
+	filename := excel.GenerateFilename("扫描记录")
+
+	// 设置响应头
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", "attachment; filename="+filename)
+	c.Header("Cache-Control", "no-cache")
+
+	// 将Excel文件写入响应流
+	if err := file.Write(c.Writer); err != nil {
+		middleware.ThrowError(c, middleware.InternalServerError("写入Excel文件失败", err.Error()))
+		return
+	}
+
+	c.Status(http.StatusOK)
 }

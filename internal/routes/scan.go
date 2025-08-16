@@ -15,6 +15,7 @@ func (r *Router) setupScanRoutes(rg *gin.RouterGroup) {
 	{
 		scans.GET("", scanHandler.GetScans)
 		scans.GET("/page", scanHandler.GetScansWithPagination)
+		scans.GET("/export", scanHandler.ExportScansToExcel)
 		scans.GET("/:id", scanHandler.GetScan)
 		scans.POST("", scanHandler.CreateScan)
 		scans.PUT("/:id", scanHandler.UpdateScan)

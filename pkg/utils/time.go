@@ -76,6 +76,39 @@ func NowString() string {
 	return time.Now().Format(LayoutDateTime)
 }
 
+// TimeToDateTimeString 返回时间的字符串形式（YYYY-MM-DD HH:mm:ss）
+func TimeToDateTimeString(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format(LayoutDateTime)
+}
+
+// TimeToDateString 返回时间的字符串形式（YYYY-MM-DD）
+func TimeToDateString(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format(LayoutDate)
+}
+
+// TimeToTimeString 返回时间的字符串形式（HH:mm:ss）
+func TimeToTimeString(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format(LayoutTime)
+}
+
 // ParseTime 根据 LayoutDateTime 解析时间字符串
 func ParseTime(s string) (time.Time, error) {
 	if s == "" {
