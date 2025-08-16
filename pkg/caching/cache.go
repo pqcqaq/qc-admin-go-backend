@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"go-backend/pkg/configs"
+	"go-backend/pkg/logging"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -36,6 +37,17 @@ func SetLogger(l LoggerInterface) {
 
 // NewClient 创建新的Redis客户端
 func NewClient(config *configs.RedisConfig) (*redis.Client, error) {
+	if !config.Enable {
+		logging.Warn(
+			`
+			******************************************************************************
+				Redis is disabled in the configuration, skipping client creation.
+				       PLEASE ENSHURE THAT YOUR CONFIGURATION IS CORRECT.
+			******************************************************************************
+			`,
+		)
+		return nil, nil
+	}
 	rdb := redis.NewClient(&redis.Options{
 		Addr:            config.Addr,
 		Password:        config.Password,

@@ -4,6 +4,7 @@ import "github.com/spf13/viper"
 
 // RedisConfig Redis配置
 type RedisConfig struct {
+	Enable       bool   `mapstructure:"enable"` // 是否启用Redis
 	Addr         string `mapstructure:"addr"`
 	Password     string `mapstructure:"password"`
 	DB           int    `mapstructure:"db"`
@@ -16,6 +17,7 @@ type RedisConfig struct {
 
 func setRedisConfigDefaults() {
 	// Redis默认配置
+	viper.SetDefault("redis.enable", true)
 	viper.SetDefault("redis.addr", "localhost:6379")
 	viper.SetDefault("redis.password", "")
 	viper.SetDefault("redis.db", 0)
