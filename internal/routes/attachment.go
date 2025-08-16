@@ -20,5 +20,12 @@ func (r *Router) setupAttachmentRoutes(rg *gin.RouterGroup) {
 		attachments.POST("", attachmentHandler.CreateAttachment)
 		attachments.PUT("/:id", attachmentHandler.UpdateAttachment)
 		attachments.DELETE("/:id", attachmentHandler.DeleteAttachment)
+
+		// 第一类功能：分离式上传
+		attachments.POST("/prepare-upload", attachmentHandler.PrepareUpload) // 准备上传，返回上传凭证
+		attachments.POST("/confirm-upload", attachmentHandler.ConfirmUpload) // 确认上传完成
+
+		// 第二类功能：直接上传
+		attachments.POST("/direct-upload", attachmentHandler.DirectUpload) // 直接上传文件表单
 	}
 }

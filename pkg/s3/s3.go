@@ -216,6 +216,35 @@ func (c *S3Client) GetFileURL(bucket, key string, expiration time.Duration) (str
 	return req.URL, nil
 }
 
+// GetPresignedPutURL 获取文件上传的预签名URL
+func (c *S3Client) GetPresignedPutURL(bucket, key string, expiration time.Duration, contentType string) (string, error) {
+	if bucket == "" {
+		bucket = c.config.Bucket
+	}
+
+	ctx := context.Background()
+	presignClient := s3.NewPresignClient(c.client)
+
+	input := &s3.PutObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	}
+
+	if contentType != "" {
+		input.ContentType = aws.String(contentType)
+	}
+
+	req, err := presignClient.PresignPutObject(ctx, input, func(opts *s3.PresignOptions) {
+		opts.Expires = expiration
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return req.URL, nil
+}
+
 // FileExists 检查文件是否存在
 func (c *S3Client) FileExists(bucket, key string) (bool, error) {
 	if bucket == "" {

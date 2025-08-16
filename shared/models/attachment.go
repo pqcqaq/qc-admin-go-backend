@@ -75,3 +75,37 @@ type AttachmentsListResponse struct {
 	Data       []*AttachmentResponse `json:"data"`
 	Pagination Pagination            `json:"pagination"`
 }
+
+// PrepareUploadRequest 准备上传请求结构
+type PrepareUploadRequest struct {
+	Filename    string `json:"filename" binding:"required"`
+	ContentType string `json:"content_type" binding:"required"`
+	Size        int64  `json:"size" binding:"required,min=1"`
+	Bucket      string `json:"bucket,omitempty"`
+	Tag1        string `json:"tag1,omitempty"`
+	Tag2        string `json:"tag2,omitempty"`
+	Tag3        string `json:"tag3,omitempty"`
+}
+
+// PrepareUploadResponse 准备上传响应结构
+type PrepareUploadResponse struct {
+	UploadURL       string                 `json:"upload_url"`
+	UploadSessionID string                 `json:"upload_session_id"`
+	Fields          map[string]interface{} `json:"fields,omitempty"` // 用于表单上传的额外字段
+	ExpiresAt       int64                  `json:"expires_at"`
+	AttachmentID    uint64                 `json:"attachment_id"`
+}
+
+// ConfirmUploadRequest 确认上传请求结构
+type ConfirmUploadRequest struct {
+	UploadSessionID string `json:"upload_session_id" binding:"required"`
+	Etag            string `json:"etag,omitempty"`
+	ActualSize      int64  `json:"actual_size,omitempty"`
+}
+
+// DirectUploadResponse 直接上传响应结构
+type DirectUploadResponse struct {
+	Success    bool                `json:"success"`
+	Message    string              `json:"message"`
+	Attachment *AttachmentResponse `json:"attachment"`
+}

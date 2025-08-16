@@ -2,6 +2,8 @@ package funcs
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"math"
 	"strings"
@@ -9,7 +11,9 @@ import (
 
 	"go-backend/database/ent"
 	"go-backend/database/ent/attachment"
+	"go-backend/pkg/configs"
 	"go-backend/pkg/database"
+	"go-backend/pkg/s3"
 	"go-backend/shared/models"
 )
 
@@ -299,4 +303,163 @@ func GetAttachmentsWithPagination(ctx context.Context, req *models.GetAttachment
 		Data:       attachmentResponses,
 		Pagination: pagination,
 	}, nil
+}
+
+// generateUploadSessionID 生成上传会话ID
+func generateUploadSessionID() string {
+	bytes := make([]byte, 16)
+	rand.Read(bytes)
+	return hex.EncodeToString(bytes)
+}
+
+// PrepareUpload 准备文件上传
+func PrepareUpload(ctx context.Context, req *models.PrepareUploadRequest) (*models.PrepareUploadResponse, error) {
+	// 生成上传会话ID
+	uploadSessionID := generateUploadSessionID()
+
+	// 生成文件路径
+	timestamp := time.Now().Format("2006/01/02")
+	filePath := fmt.Sprintf("uploads/%s/%s_%s", timestamp, uploadSessionID, req.Filename)
+
+	// 获取配置中的默认bucket
+	config := configs.GetConfig()
+	bucket := req.Bucket
+	if bucket == "" {
+		bucket = config.S3.Bucket
+	}
+
+	// 在数据库中创建uploading状态的附件记录
+	attachmentRecord, err := database.Client.Attachment.Create().
+		SetFilename(req.Filename).
+		SetPath(filePath).
+		SetContentType(req.ContentType).
+		SetSize(req.Size).
+		SetBucket(bucket).
+		SetStatus(attachment.StatusUploading).
+		SetUploadSessionID(uploadSessionID).
+		SetTag1(req.Tag1).
+		SetTag2(req.Tag2).
+		SetTag3(req.Tag3).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create attachment record: %w", err)
+	}
+
+	// 使用S3客户端生成预签名URL
+	s3Client := s3.GetClient()
+	uploadURL, err := s3Client.GetPresignedPutURL(bucket, filePath, time.Hour, req.ContentType)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate presigned URL: %w", err)
+	}
+
+	return &models.PrepareUploadResponse{
+		UploadURL:       uploadURL,
+		UploadSessionID: uploadSessionID,
+		ExpiresAt:       time.Now().Add(time.Hour).Unix(),
+		AttachmentID:    attachmentRecord.ID,
+	}, nil
+}
+
+// ConfirmUpload 确认文件上传完成
+func ConfirmUpload(ctx context.Context, req *models.ConfirmUploadRequest) (*ent.Attachment, error) {
+	// 根据上传会话ID查找附件
+	attachmentRecord, err := database.Client.Attachment.Query().
+		Where(attachment.UploadSessionIDEQ(req.UploadSessionID)).
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("upload session not found")
+		}
+		return nil, fmt.Errorf("failed to query attachment: %w", err)
+	}
+
+	// 检查附件状态
+	if attachmentRecord.Status != attachment.StatusUploading {
+		return nil, fmt.Errorf("invalid upload session status: %s", attachmentRecord.Status)
+	}
+
+	// 获取S3客户端和配置
+	s3Client := s3.GetClient()
+	config := configs.GetConfig()
+
+	// 从S3获取文件的真实信息
+	fileInfo, err := s3Client.GetFileInfo(attachmentRecord.Bucket, attachmentRecord.Path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get file info from S3: %w", err)
+	}
+
+	// 生成文件的访问URL
+	var fileURL string
+	if config.S3.Endpoint != "" {
+		// 使用自定义端点（如MinIO）
+		if config.S3.UseSSL {
+			fileURL = fmt.Sprintf("https://%s/%s/%s", config.S3.Endpoint, attachmentRecord.Bucket, attachmentRecord.Path)
+		} else {
+			fileURL = fmt.Sprintf("http://%s/%s/%s", config.S3.Endpoint, attachmentRecord.Bucket, attachmentRecord.Path)
+		}
+	} else {
+		// 使用AWS S3标准URL格式
+		fileURL = fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", attachmentRecord.Bucket, config.S3.Region, attachmentRecord.Path)
+	}
+
+	// 更新附件状态为已完成，使用从S3获取的真实数据
+	builder := database.Client.Attachment.UpdateOneID(attachmentRecord.ID).
+		SetStatus(attachment.StatusUploaded).
+		SetURL(fileURL).
+		SetStorageProvider("s3")
+
+	// 使用S3返回的真实文件大小
+	if fileInfo.ContentLength != nil {
+		builder = builder.SetSize(*fileInfo.ContentLength)
+	}
+
+	// 使用S3返回的ETag（优先级高于客户端传递的）
+	if fileInfo.ETag != nil {
+		etag := *fileInfo.ETag
+		// 移除ETag的双引号（如果存在）
+		if len(etag) > 2 && etag[0] == '"' && etag[len(etag)-1] == '"' {
+			etag = etag[1 : len(etag)-1]
+		}
+		builder = builder.SetEtag(etag)
+	} else if req.Etag != "" {
+		// 如果S3没有返回ETag，才使用客户端提供的
+		builder = builder.SetEtag(req.Etag)
+	}
+
+	// 同步内容类型（如果S3有提供）
+	if fileInfo.ContentType != nil && *fileInfo.ContentType != "" {
+		builder = builder.SetContentType(*fileInfo.ContentType)
+	}
+
+	// 同步最后修改时间
+	if fileInfo.LastModified != nil {
+		// 可以将S3的最后修改时间存储到元数据中
+		metadata := attachmentRecord.Metadata
+		if metadata == nil {
+			metadata = make(map[string]interface{})
+		}
+		metadata["s3_last_modified"] = fileInfo.LastModified.Format(time.RFC3339)
+		builder = builder.SetMetadata(metadata)
+	}
+
+	// 验证文件大小（如果客户端提供了实际大小，检查是否匹配）
+	if req.ActualSize > 0 && fileInfo.ContentLength != nil && req.ActualSize != *fileInfo.ContentLength {
+		return nil, fmt.Errorf("file size mismatch: client reported %d bytes, S3 has %d bytes", req.ActualSize, *fileInfo.ContentLength)
+	}
+
+	return builder.Save(ctx)
+}
+
+// GetAttachmentByUploadSessionID 根据上传会话ID获取附件
+func GetAttachmentByUploadSessionID(ctx context.Context, uploadSessionID string) (*ent.Attachment, error) {
+	attachment, err := database.Client.Attachment.Query().
+		Where(attachment.UploadSessionIDEQ(uploadSessionID)).
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("upload session not found")
+		}
+		return nil, err
+	}
+	return attachment, nil
 }
