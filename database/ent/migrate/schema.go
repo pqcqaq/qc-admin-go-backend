@@ -110,6 +110,79 @@ var (
 			},
 		},
 	}
+	// SysCredentialsColumns holds the columns for the "sys_credentials" table.
+	SysCredentialsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "credential_type", Type: field.TypeEnum, Enums: []string{"password", "email", "oauth", "phone", "totp"}},
+		{Name: "identifier", Type: field.TypeString, Size: 255},
+		{Name: "secret", Type: field.TypeString, Nullable: true, Size: 500},
+		{Name: "provider", Type: field.TypeString, Nullable: true, Size: 50},
+		{Name: "is_verified", Type: field.TypeBool, Default: false},
+		{Name: "verified_at", Type: field.TypeTime, Nullable: true},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "failed_attempts", Type: field.TypeInt, Default: 0},
+		{Name: "locked_until", Type: field.TypeTime, Nullable: true},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true},
+		{Name: "user_id", Type: field.TypeUint64},
+	}
+	// SysCredentialsTable holds the schema information for the "sys_credentials" table.
+	SysCredentialsTable = &schema.Table{
+		Name:       "sys_credentials",
+		Columns:    SysCredentialsColumns,
+		PrimaryKey: []*schema.Column{SysCredentialsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_credentials_sys_users_credentials",
+				Columns:    []*schema.Column{SysCredentialsColumns[18]},
+				RefColumns: []*schema.Column{SysUsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "credential_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysCredentialsColumns[5]},
+			},
+			{
+				Name:    "credential_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysCredentialsColumns[6]},
+			},
+			{
+				Name:    "credential_user_id_credential_type_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysCredentialsColumns[18], SysCredentialsColumns[7], SysCredentialsColumns[5]},
+			},
+			{
+				Name:    "credential_credential_type_identifier_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysCredentialsColumns[7], SysCredentialsColumns[8], SysCredentialsColumns[5]},
+			},
+			{
+				Name:    "credential_provider_identifier_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysCredentialsColumns[10], SysCredentialsColumns[8], SysCredentialsColumns[5]},
+			},
+			{
+				Name:    "credential_is_verified_credential_type_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysCredentialsColumns[11], SysCredentialsColumns[7], SysCredentialsColumns[5]},
+			},
+			{
+				Name:    "credential_expires_at_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysCredentialsColumns[14], SysCredentialsColumns[5]},
+			},
+		},
+	}
 	// LoggingsColumns holds the columns for the "loggings" table.
 	LoggingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -411,9 +484,9 @@ var (
 		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
 		{Name: "delete_by", Type: field.TypeInt64, Nullable: true},
 		{Name: "name", Type: field.TypeString, Size: 100},
-		{Name: "email", Type: field.TypeString, Unique: true, Size: 255},
 		{Name: "age", Type: field.TypeInt, Nullable: true},
-		{Name: "phone", Type: field.TypeString, Nullable: true, Size: 20},
+		{Name: "sex", Type: field.TypeEnum, Enums: []string{"male", "female", "other"}, Default: "other"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "inactive", "banned"}, Default: "active"},
 	}
 	// SysUsersTable holds the schema information for the "sys_users" table.
 	SysUsersTable = &schema.Table{
@@ -520,6 +593,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		SysAttachmentsTable,
+		SysCredentialsTable,
 		LoggingsTable,
 		SysPermissionsTable,
 		SysRolesTable,
@@ -536,6 +610,10 @@ func init() {
 	SysAttachmentsTable.ForeignKeys[0].RefTable = SysUsersTable
 	SysAttachmentsTable.Annotation = &entsql.Annotation{
 		Table: "sys_attachments",
+	}
+	SysCredentialsTable.ForeignKeys[0].RefTable = SysUsersTable
+	SysCredentialsTable.Annotation = &entsql.Annotation{
+		Table: "sys_credentials",
 	}
 	SysPermissionsTable.ForeignKeys[0].RefTable = SysScopesTable
 	SysPermissionsTable.Annotation = &entsql.Annotation{

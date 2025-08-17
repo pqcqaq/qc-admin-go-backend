@@ -135,6 +135,30 @@ func (f AttachmentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Muta
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AttachmentMutation", m)
 }
 
+// The CredentialQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type CredentialQueryRuleFunc func(context.Context, *ent.CredentialQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f CredentialQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.CredentialQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.CredentialQuery", q)
+}
+
+// The CredentialMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type CredentialMutationRuleFunc func(context.Context, *ent.CredentialMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f CredentialMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.CredentialMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.CredentialMutation", m)
+}
+
 // The LoggingQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type LoggingQueryRuleFunc func(context.Context, *ent.LoggingQuery) error
@@ -364,6 +388,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
 	case *ent.AttachmentQuery:
 		return q.Filter(), nil
+	case *ent.CredentialQuery:
+		return q.Filter(), nil
 	case *ent.LoggingQuery:
 		return q.Filter(), nil
 	case *ent.PermissionQuery:
@@ -388,6 +414,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
 	case *ent.AttachmentMutation:
+		return m.Filter(), nil
+	case *ent.CredentialMutation:
 		return m.Filter(), nil
 	case *ent.LoggingMutation:
 		return m.Filter(), nil

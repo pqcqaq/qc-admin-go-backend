@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"go-backend/database/ent/attachment"
+	"go-backend/database/ent/credential"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
 	"time"
@@ -112,12 +113,6 @@ func (_c *UserCreate) SetName(v string) *UserCreate {
 	return _c
 }
 
-// SetEmail sets the "email" field.
-func (_c *UserCreate) SetEmail(v string) *UserCreate {
-	_c.mutation.SetEmail(v)
-	return _c
-}
-
 // SetAge sets the "age" field.
 func (_c *UserCreate) SetAge(v int) *UserCreate {
 	_c.mutation.SetAge(v)
@@ -132,16 +127,30 @@ func (_c *UserCreate) SetNillableAge(v *int) *UserCreate {
 	return _c
 }
 
-// SetPhone sets the "phone" field.
-func (_c *UserCreate) SetPhone(v string) *UserCreate {
-	_c.mutation.SetPhone(v)
+// SetSex sets the "sex" field.
+func (_c *UserCreate) SetSex(v user.Sex) *UserCreate {
+	_c.mutation.SetSex(v)
 	return _c
 }
 
-// SetNillablePhone sets the "phone" field if the given value is not nil.
-func (_c *UserCreate) SetNillablePhone(v *string) *UserCreate {
+// SetNillableSex sets the "sex" field if the given value is not nil.
+func (_c *UserCreate) SetNillableSex(v *user.Sex) *UserCreate {
 	if v != nil {
-		_c.SetPhone(*v)
+		_c.SetSex(*v)
+	}
+	return _c
+}
+
+// SetStatus sets the "status" field.
+func (_c *UserCreate) SetStatus(v user.Status) *UserCreate {
+	_c.mutation.SetStatus(v)
+	return _c
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_c *UserCreate) SetNillableStatus(v *user.Status) *UserCreate {
+	if v != nil {
+		_c.SetStatus(*v)
 	}
 	return _c
 }
@@ -180,6 +189,21 @@ func (_c *UserCreate) AddUserRoles(v ...*UserRole) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddUserRoleIDs(ids...)
+}
+
+// AddCredentialIDs adds the "credentials" edge to the Credential entity by IDs.
+func (_c *UserCreate) AddCredentialIDs(ids ...uint64) *UserCreate {
+	_c.mutation.AddCredentialIDs(ids...)
+	return _c
+}
+
+// AddCredentials adds the "credentials" edges to the Credential entity.
+func (_c *UserCreate) AddCredentials(v ...*Credential) *UserCreate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCredentialIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -233,6 +257,14 @@ func (_c *UserCreate) defaults() error {
 		v := user.DefaultUpdateTime()
 		_c.mutation.SetUpdateTime(v)
 	}
+	if _, ok := _c.mutation.Sex(); !ok {
+		v := user.DefaultSex
+		_c.mutation.SetSex(v)
+	}
+	if _, ok := _c.mutation.Status(); !ok {
+		v := user.DefaultStatus
+		_c.mutation.SetStatus(v)
+	}
 	return nil
 }
 
@@ -252,22 +284,25 @@ func (_c *UserCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "User.name": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.Email(); !ok {
-		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
-	}
-	if v, ok := _c.mutation.Email(); ok {
-		if err := user.EmailValidator(v); err != nil {
-			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
-		}
-	}
 	if v, ok := _c.mutation.Age(); ok {
 		if err := user.AgeValidator(v); err != nil {
 			return &ValidationError{Name: "age", err: fmt.Errorf(`ent: validator failed for field "User.age": %w`, err)}
 		}
 	}
-	if v, ok := _c.mutation.Phone(); ok {
-		if err := user.PhoneValidator(v); err != nil {
-			return &ValidationError{Name: "phone", err: fmt.Errorf(`ent: validator failed for field "User.phone": %w`, err)}
+	if _, ok := _c.mutation.Sex(); !ok {
+		return &ValidationError{Name: "sex", err: errors.New(`ent: missing required field "User.sex"`)}
+	}
+	if v, ok := _c.mutation.Sex(); ok {
+		if err := user.SexValidator(v); err != nil {
+			return &ValidationError{Name: "sex", err: fmt.Errorf(`ent: validator failed for field "User.sex": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "User.status"`)}
+	}
+	if v, ok := _c.mutation.Status(); ok {
+		if err := user.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "User.status": %w`, err)}
 		}
 	}
 	return nil
@@ -330,17 +365,17 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := _c.mutation.Email(); ok {
-		_spec.SetField(user.FieldEmail, field.TypeString, value)
-		_node.Email = value
-	}
 	if value, ok := _c.mutation.Age(); ok {
 		_spec.SetField(user.FieldAge, field.TypeInt, value)
 		_node.Age = value
 	}
-	if value, ok := _c.mutation.Phone(); ok {
-		_spec.SetField(user.FieldPhone, field.TypeString, value)
-		_node.Phone = value
+	if value, ok := _c.mutation.Sex(); ok {
+		_spec.SetField(user.FieldSex, field.TypeEnum, value)
+		_node.Sex = value
+	}
+	if value, ok := _c.mutation.Status(); ok {
+		_spec.SetField(user.FieldStatus, field.TypeEnum, value)
+		_node.Status = value
 	}
 	if nodes := _c.mutation.AttachmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -367,6 +402,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(userrole.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CredentialsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CredentialsTable,
+			Columns: []string{user.CredentialsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(credential.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

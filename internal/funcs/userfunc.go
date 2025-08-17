@@ -40,14 +40,12 @@ func GetUserByID(ctx context.Context, id uint64) (*ent.User, error) {
 func CreateUser(ctx context.Context, req *models.CreateUserRequest) (*ent.User, error) {
 	builder := database.Client.User.Create().
 		SetName(req.Name).
-		SetEmail(req.Email)
+		SetAge(*req.Age).
+		SetSex(user.Sex(req.Sex)).
+		SetStatus(user.Status(req.Status))
 
 	if req.Age != nil {
 		builder = builder.SetAge(*req.Age)
-	}
-
-	if req.Phone != "" {
-		builder = builder.SetPhone(req.Phone)
 	}
 
 	return builder.Save(ctx)
@@ -69,14 +67,16 @@ func UpdateUser(ctx context.Context, id uint64, req *models.UpdateUserRequest) (
 	if req.Name != "" {
 		builder = builder.SetName(req.Name)
 	}
-	if req.Email != "" {
-		builder = builder.SetEmail(req.Email)
-	}
 	if req.Age != nil {
 		builder = builder.SetAge(*req.Age)
 	}
-	if req.Phone != "" {
-		builder = builder.SetPhone(req.Phone)
+	// Sex
+	if req.Sex != "" {
+		builder = builder.SetSex(user.Sex(req.Sex))
+	}
+	// status
+	if req.Status != "" {
+		builder = builder.SetStatus(user.Status(req.Status))
 	}
 
 	return builder.Save(ctx)
@@ -122,8 +122,15 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 	if req.Name != "" {
 		query = query.Where(user.NameContains(req.Name))
 	}
-	if req.Email != "" {
-		query = query.Where(user.EmailContains(req.Email))
+
+	// sex
+	if req.Sex != "" {
+		query = query.Where(user.SexEQ(user.Sex(req.Sex)))
+	}
+
+	// status
+	if req.Status != "" {
+		query = query.Where(user.StatusEQ(user.Status(req.Status)))
 	}
 
 	// 获取总数
@@ -149,12 +156,6 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 			query = query.Order(ent.Desc(user.FieldName))
 		} else {
 			query = query.Order(ent.Asc(user.FieldName))
-		}
-	case "email":
-		if strings.ToLower(req.Order) == "desc" {
-			query = query.Order(ent.Desc(user.FieldEmail))
-		} else {
-			query = query.Order(ent.Asc(user.FieldEmail))
 		}
 	case "age":
 		if strings.ToLower(req.Order) == "desc" {
@@ -197,11 +198,11 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 		}
 
 		userResponses[i] = &models.UserResponse{
-			ID:    utils.Uint64ToString(u.ID),
-			Name:  u.Name,
-			Email: u.Email,
-			Age:   age,
-			Phone: u.Phone,
+			ID:     utils.Uint64ToString(u.ID),
+			Name:   u.Name,
+			Age:    age,
+			Sex:    string(u.Sex),
+			Status: string(u.Status),
 		}
 	}
 
@@ -447,7 +448,8 @@ func ConvertUserToResponse(user *ent.User) *models.UserResponse {
 	return &models.UserResponse{
 		ID:         utils.Uint64ToString(user.ID),
 		Name:       user.Name, // 假设Name字段对应Username
-		Email:      user.Email,
+		Sex:        string(user.Sex),
+		Status:     string(user.Status),
 		CreateTime: utils.FormatDateTime(user.CreateTime),
 		UpdateTime: utils.FormatDateTime(user.UpdateTime),
 	}

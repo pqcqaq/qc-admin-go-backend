@@ -8,6 +8,7 @@ import (
 
 	"go-backend/database/ent"
 	"go-backend/database/ent/attachment"
+	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/predicate"
@@ -102,6 +103,33 @@ func (f TraverseAttachment) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AttachmentQuery", q)
+}
+
+// The CredentialFunc type is an adapter to allow the use of ordinary function as a Querier.
+type CredentialFunc func(context.Context, *ent.CredentialQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f CredentialFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.CredentialQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.CredentialQuery", q)
+}
+
+// The TraverseCredential type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseCredential func(context.Context, *ent.CredentialQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseCredential) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseCredential) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.CredentialQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.CredentialQuery", q)
 }
 
 // The LoggingFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -325,6 +353,8 @@ func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
 	case *ent.AttachmentQuery:
 		return &query[*ent.AttachmentQuery, predicate.Attachment, attachment.OrderOption]{typ: ent.TypeAttachment, tq: q}, nil
+	case *ent.CredentialQuery:
+		return &query[*ent.CredentialQuery, predicate.Credential, credential.OrderOption]{typ: ent.TypeCredential, tq: q}, nil
 	case *ent.LoggingQuery:
 		return &query[*ent.LoggingQuery, predicate.Logging, logging.OrderOption]{typ: ent.TypeLogging, tq: q}, nil
 	case *ent.PermissionQuery:

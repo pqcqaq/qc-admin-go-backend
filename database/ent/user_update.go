@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"go-backend/database/ent/attachment"
+	"go-backend/database/ent/credential"
 	"go-backend/database/ent/predicate"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
@@ -151,20 +152,6 @@ func (_u *UserUpdate) SetNillableName(v *string) *UserUpdate {
 	return _u
 }
 
-// SetEmail sets the "email" field.
-func (_u *UserUpdate) SetEmail(v string) *UserUpdate {
-	_u.mutation.SetEmail(v)
-	return _u
-}
-
-// SetNillableEmail sets the "email" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableEmail(v *string) *UserUpdate {
-	if v != nil {
-		_u.SetEmail(*v)
-	}
-	return _u
-}
-
 // SetAge sets the "age" field.
 func (_u *UserUpdate) SetAge(v int) *UserUpdate {
 	_u.mutation.ResetAge()
@@ -192,23 +179,31 @@ func (_u *UserUpdate) ClearAge() *UserUpdate {
 	return _u
 }
 
-// SetPhone sets the "phone" field.
-func (_u *UserUpdate) SetPhone(v string) *UserUpdate {
-	_u.mutation.SetPhone(v)
+// SetSex sets the "sex" field.
+func (_u *UserUpdate) SetSex(v user.Sex) *UserUpdate {
+	_u.mutation.SetSex(v)
 	return _u
 }
 
-// SetNillablePhone sets the "phone" field if the given value is not nil.
-func (_u *UserUpdate) SetNillablePhone(v *string) *UserUpdate {
+// SetNillableSex sets the "sex" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableSex(v *user.Sex) *UserUpdate {
 	if v != nil {
-		_u.SetPhone(*v)
+		_u.SetSex(*v)
 	}
 	return _u
 }
 
-// ClearPhone clears the value of the "phone" field.
-func (_u *UserUpdate) ClearPhone() *UserUpdate {
-	_u.mutation.ClearPhone()
+// SetStatus sets the "status" field.
+func (_u *UserUpdate) SetStatus(v user.Status) *UserUpdate {
+	_u.mutation.SetStatus(v)
+	return _u
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableStatus(v *user.Status) *UserUpdate {
+	if v != nil {
+		_u.SetStatus(*v)
+	}
 	return _u
 }
 
@@ -240,6 +235,21 @@ func (_u *UserUpdate) AddUserRoles(v ...*UserRole) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddUserRoleIDs(ids...)
+}
+
+// AddCredentialIDs adds the "credentials" edge to the Credential entity by IDs.
+func (_u *UserUpdate) AddCredentialIDs(ids ...uint64) *UserUpdate {
+	_u.mutation.AddCredentialIDs(ids...)
+	return _u
+}
+
+// AddCredentials adds the "credentials" edges to the Credential entity.
+func (_u *UserUpdate) AddCredentials(v ...*Credential) *UserUpdate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCredentialIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -287,6 +297,27 @@ func (_u *UserUpdate) RemoveUserRoles(v ...*UserRole) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUserRoleIDs(ids...)
+}
+
+// ClearCredentials clears all "credentials" edges to the Credential entity.
+func (_u *UserUpdate) ClearCredentials() *UserUpdate {
+	_u.mutation.ClearCredentials()
+	return _u
+}
+
+// RemoveCredentialIDs removes the "credentials" edge to Credential entities by IDs.
+func (_u *UserUpdate) RemoveCredentialIDs(ids ...uint64) *UserUpdate {
+	_u.mutation.RemoveCredentialIDs(ids...)
+	return _u
+}
+
+// RemoveCredentials removes "credentials" edges to Credential entities.
+func (_u *UserUpdate) RemoveCredentials(v ...*Credential) *UserUpdate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCredentialIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -338,19 +369,19 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "User.name": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Email(); ok {
-		if err := user.EmailValidator(v); err != nil {
-			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.Age(); ok {
 		if err := user.AgeValidator(v); err != nil {
 			return &ValidationError{Name: "age", err: fmt.Errorf(`ent: validator failed for field "User.age": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Phone(); ok {
-		if err := user.PhoneValidator(v); err != nil {
-			return &ValidationError{Name: "phone", err: fmt.Errorf(`ent: validator failed for field "User.phone": %w`, err)}
+	if v, ok := _u.mutation.Sex(); ok {
+		if err := user.SexValidator(v); err != nil {
+			return &ValidationError{Name: "sex", err: fmt.Errorf(`ent: validator failed for field "User.sex": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Status(); ok {
+		if err := user.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "User.status": %w`, err)}
 		}
 	}
 	return nil
@@ -407,9 +438,6 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Email(); ok {
-		_spec.SetField(user.FieldEmail, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.Age(); ok {
 		_spec.SetField(user.FieldAge, field.TypeInt, value)
 	}
@@ -419,11 +447,11 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.AgeCleared() {
 		_spec.ClearField(user.FieldAge, field.TypeInt)
 	}
-	if value, ok := _u.mutation.Phone(); ok {
-		_spec.SetField(user.FieldPhone, field.TypeString, value)
+	if value, ok := _u.mutation.Sex(); ok {
+		_spec.SetField(user.FieldSex, field.TypeEnum, value)
 	}
-	if _u.mutation.PhoneCleared() {
-		_spec.ClearField(user.FieldPhone, field.TypeString)
+	if value, ok := _u.mutation.Status(); ok {
+		_spec.SetField(user.FieldStatus, field.TypeEnum, value)
 	}
 	if _u.mutation.AttachmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -508,6 +536,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(userrole.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CredentialsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CredentialsTable,
+			Columns: []string{user.CredentialsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(credential.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCredentialsIDs(); len(nodes) > 0 && !_u.mutation.CredentialsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CredentialsTable,
+			Columns: []string{user.CredentialsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(credential.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CredentialsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CredentialsTable,
+			Columns: []string{user.CredentialsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(credential.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
@@ -656,20 +729,6 @@ func (_u *UserUpdateOne) SetNillableName(v *string) *UserUpdateOne {
 	return _u
 }
 
-// SetEmail sets the "email" field.
-func (_u *UserUpdateOne) SetEmail(v string) *UserUpdateOne {
-	_u.mutation.SetEmail(v)
-	return _u
-}
-
-// SetNillableEmail sets the "email" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableEmail(v *string) *UserUpdateOne {
-	if v != nil {
-		_u.SetEmail(*v)
-	}
-	return _u
-}
-
 // SetAge sets the "age" field.
 func (_u *UserUpdateOne) SetAge(v int) *UserUpdateOne {
 	_u.mutation.ResetAge()
@@ -697,23 +756,31 @@ func (_u *UserUpdateOne) ClearAge() *UserUpdateOne {
 	return _u
 }
 
-// SetPhone sets the "phone" field.
-func (_u *UserUpdateOne) SetPhone(v string) *UserUpdateOne {
-	_u.mutation.SetPhone(v)
+// SetSex sets the "sex" field.
+func (_u *UserUpdateOne) SetSex(v user.Sex) *UserUpdateOne {
+	_u.mutation.SetSex(v)
 	return _u
 }
 
-// SetNillablePhone sets the "phone" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillablePhone(v *string) *UserUpdateOne {
+// SetNillableSex sets the "sex" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableSex(v *user.Sex) *UserUpdateOne {
 	if v != nil {
-		_u.SetPhone(*v)
+		_u.SetSex(*v)
 	}
 	return _u
 }
 
-// ClearPhone clears the value of the "phone" field.
-func (_u *UserUpdateOne) ClearPhone() *UserUpdateOne {
-	_u.mutation.ClearPhone()
+// SetStatus sets the "status" field.
+func (_u *UserUpdateOne) SetStatus(v user.Status) *UserUpdateOne {
+	_u.mutation.SetStatus(v)
+	return _u
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableStatus(v *user.Status) *UserUpdateOne {
+	if v != nil {
+		_u.SetStatus(*v)
+	}
 	return _u
 }
 
@@ -745,6 +812,21 @@ func (_u *UserUpdateOne) AddUserRoles(v ...*UserRole) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.AddUserRoleIDs(ids...)
+}
+
+// AddCredentialIDs adds the "credentials" edge to the Credential entity by IDs.
+func (_u *UserUpdateOne) AddCredentialIDs(ids ...uint64) *UserUpdateOne {
+	_u.mutation.AddCredentialIDs(ids...)
+	return _u
+}
+
+// AddCredentials adds the "credentials" edges to the Credential entity.
+func (_u *UserUpdateOne) AddCredentials(v ...*Credential) *UserUpdateOne {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCredentialIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -792,6 +874,27 @@ func (_u *UserUpdateOne) RemoveUserRoles(v ...*UserRole) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUserRoleIDs(ids...)
+}
+
+// ClearCredentials clears all "credentials" edges to the Credential entity.
+func (_u *UserUpdateOne) ClearCredentials() *UserUpdateOne {
+	_u.mutation.ClearCredentials()
+	return _u
+}
+
+// RemoveCredentialIDs removes the "credentials" edge to Credential entities by IDs.
+func (_u *UserUpdateOne) RemoveCredentialIDs(ids ...uint64) *UserUpdateOne {
+	_u.mutation.RemoveCredentialIDs(ids...)
+	return _u
+}
+
+// RemoveCredentials removes "credentials" edges to Credential entities.
+func (_u *UserUpdateOne) RemoveCredentials(v ...*Credential) *UserUpdateOne {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCredentialIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -856,19 +959,19 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "User.name": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Email(); ok {
-		if err := user.EmailValidator(v); err != nil {
-			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "User.email": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.Age(); ok {
 		if err := user.AgeValidator(v); err != nil {
 			return &ValidationError{Name: "age", err: fmt.Errorf(`ent: validator failed for field "User.age": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Phone(); ok {
-		if err := user.PhoneValidator(v); err != nil {
-			return &ValidationError{Name: "phone", err: fmt.Errorf(`ent: validator failed for field "User.phone": %w`, err)}
+	if v, ok := _u.mutation.Sex(); ok {
+		if err := user.SexValidator(v); err != nil {
+			return &ValidationError{Name: "sex", err: fmt.Errorf(`ent: validator failed for field "User.sex": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Status(); ok {
+		if err := user.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "User.status": %w`, err)}
 		}
 	}
 	return nil
@@ -942,9 +1045,6 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Email(); ok {
-		_spec.SetField(user.FieldEmail, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.Age(); ok {
 		_spec.SetField(user.FieldAge, field.TypeInt, value)
 	}
@@ -954,11 +1054,11 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if _u.mutation.AgeCleared() {
 		_spec.ClearField(user.FieldAge, field.TypeInt)
 	}
-	if value, ok := _u.mutation.Phone(); ok {
-		_spec.SetField(user.FieldPhone, field.TypeString, value)
+	if value, ok := _u.mutation.Sex(); ok {
+		_spec.SetField(user.FieldSex, field.TypeEnum, value)
 	}
-	if _u.mutation.PhoneCleared() {
-		_spec.ClearField(user.FieldPhone, field.TypeString)
+	if value, ok := _u.mutation.Status(); ok {
+		_spec.SetField(user.FieldStatus, field.TypeEnum, value)
 	}
 	if _u.mutation.AttachmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1043,6 +1143,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(userrole.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CredentialsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CredentialsTable,
+			Columns: []string{user.CredentialsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(credential.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCredentialsIDs(); len(nodes) > 0 && !_u.mutation.CredentialsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CredentialsTable,
+			Columns: []string{user.CredentialsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(credential.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CredentialsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CredentialsTable,
+			Columns: []string{user.CredentialsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(credential.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

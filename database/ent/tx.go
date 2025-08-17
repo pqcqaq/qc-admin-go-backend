@@ -16,6 +16,8 @@ type Tx struct {
 	config
 	// Attachment is the client for interacting with the Attachment builders.
 	Attachment *AttachmentClient
+	// Credential is the client for interacting with the Credential builders.
+	Credential *CredentialClient
 	// Logging is the client for interacting with the Logging builders.
 	Logging *LoggingClient
 	// Permission is the client for interacting with the Permission builders.
@@ -164,6 +166,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Attachment = NewAttachmentClient(tx.config)
+	tx.Credential = NewCredentialClient(tx.config)
 	tx.Logging = NewLoggingClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)

@@ -4,6 +4,7 @@ package runtime
 
 import (
 	"go-backend/database/ent/attachment"
+	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/role"
@@ -88,6 +89,48 @@ func init() {
 	attachmentDescTag3 := attachmentFields[13].Descriptor()
 	// attachment.Tag3Validator is a validator for the "tag3" field. It is called by the builders before save.
 	attachment.Tag3Validator = attachmentDescTag3.Validators[0].(func(string) error)
+	credentialMixin := schema.Credential{}.Mixin()
+	credentialMixinHooks0 := credentialMixin[0].Hooks()
+	credentialMixinHooks1 := credentialMixin[1].Hooks()
+	credential.Hooks[0] = credentialMixinHooks0[0]
+	credential.Hooks[1] = credentialMixinHooks0[1]
+	credential.Hooks[2] = credentialMixinHooks1[0]
+	credentialMixinInters1 := credentialMixin[1].Interceptors()
+	credential.Interceptors[0] = credentialMixinInters1[0]
+	credentialMixinFields0 := credentialMixin[0].Fields()
+	_ = credentialMixinFields0
+	credentialFields := schema.Credential{}.Fields()
+	_ = credentialFields
+	// credentialDescCreateTime is the schema descriptor for create_time field.
+	credentialDescCreateTime := credentialMixinFields0[1].Descriptor()
+	// credential.DefaultCreateTime holds the default value on creation for the create_time field.
+	credential.DefaultCreateTime = credentialDescCreateTime.Default.(func() time.Time)
+	// credentialDescUpdateTime is the schema descriptor for update_time field.
+	credentialDescUpdateTime := credentialMixinFields0[3].Descriptor()
+	// credential.DefaultUpdateTime holds the default value on creation for the update_time field.
+	credential.DefaultUpdateTime = credentialDescUpdateTime.Default.(func() time.Time)
+	// credential.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	credential.UpdateDefaultUpdateTime = credentialDescUpdateTime.UpdateDefault.(func() time.Time)
+	// credentialDescIdentifier is the schema descriptor for identifier field.
+	credentialDescIdentifier := credentialFields[2].Descriptor()
+	// credential.IdentifierValidator is a validator for the "identifier" field. It is called by the builders before save.
+	credential.IdentifierValidator = credentialDescIdentifier.Validators[0].(func(string) error)
+	// credentialDescSecret is the schema descriptor for secret field.
+	credentialDescSecret := credentialFields[3].Descriptor()
+	// credential.SecretValidator is a validator for the "secret" field. It is called by the builders before save.
+	credential.SecretValidator = credentialDescSecret.Validators[0].(func(string) error)
+	// credentialDescProvider is the schema descriptor for provider field.
+	credentialDescProvider := credentialFields[4].Descriptor()
+	// credential.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
+	credential.ProviderValidator = credentialDescProvider.Validators[0].(func(string) error)
+	// credentialDescIsVerified is the schema descriptor for is_verified field.
+	credentialDescIsVerified := credentialFields[5].Descriptor()
+	// credential.DefaultIsVerified holds the default value on creation for the is_verified field.
+	credential.DefaultIsVerified = credentialDescIsVerified.Default.(bool)
+	// credentialDescFailedAttempts is the schema descriptor for failed_attempts field.
+	credentialDescFailedAttempts := credentialFields[9].Descriptor()
+	// credential.DefaultFailedAttempts holds the default value on creation for the failed_attempts field.
+	credential.DefaultFailedAttempts = credentialDescFailedAttempts.Default.(int)
 	loggingMixin := schema.Logging{}.Mixin()
 	loggingMixinHooks0 := loggingMixin[0].Hooks()
 	loggingMixinHooks1 := loggingMixin[1].Hooks()
@@ -358,32 +401,10 @@ func init() {
 			return nil
 		}
 	}()
-	// userDescEmail is the schema descriptor for email field.
-	userDescEmail := userFields[1].Descriptor()
-	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
-	user.EmailValidator = func() func(string) error {
-		validators := userDescEmail.Validators
-		fns := [...]func(string) error{
-			validators[0].(func(string) error),
-			validators[1].(func(string) error),
-		}
-		return func(email string) error {
-			for _, fn := range fns {
-				if err := fn(email); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-	}()
 	// userDescAge is the schema descriptor for age field.
-	userDescAge := userFields[2].Descriptor()
+	userDescAge := userFields[1].Descriptor()
 	// user.AgeValidator is a validator for the "age" field. It is called by the builders before save.
 	user.AgeValidator = userDescAge.Validators[0].(func(int) error)
-	// userDescPhone is the schema descriptor for phone field.
-	userDescPhone := userFields[3].Descriptor()
-	// user.PhoneValidator is a validator for the "phone" field. It is called by the builders before save.
-	user.PhoneValidator = userDescPhone.Validators[0].(func(string) error)
 	userroleMixin := schema.UserRole{}.Mixin()
 	userroleMixinHooks0 := userroleMixin[0].Hooks()
 	userroleMixinHooks1 := userroleMixin[1].Hooks()

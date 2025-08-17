@@ -9,6 +9,9 @@ import (
 // Attachment is the predicate function for attachment builders.
 type Attachment func(*sql.Selector)
 
+// Credential is the predicate function for credential builders.
+type Credential func(*sql.Selector)
+
 // Logging is the predicate function for logging builders.
 type Logging func(*sql.Selector)
 

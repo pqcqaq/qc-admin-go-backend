@@ -37,21 +37,23 @@ func (User) Fields() []ent.Field {
 		field.String("name").
 			NotEmpty().
 			MaxLen(100),
-		field.String("email").
-			NotEmpty().
-			MaxLen(255).
-			Unique(),
 		field.Int("age").
 			Positive().
 			Optional(),
-		field.String("phone").
-			MaxLen(20).
-			Optional(),
+		field.Enum("sex").
+			Values("male", "female", "other").
+			Default("other").
+			Comment("性别"),
+		field.Enum("status").
+			Values("active", "inactive", "banned").
+			Default("active").
+			Comment("用户状态"),
 	}
 }
 
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("user_roles", UserRole.Type), // 一对多: 一个用户对应多个 user_roles
+		edge.To("user_roles", UserRole.Type),    // 一对多: 一个用户对应多个 user_roles
+		edge.To("credentials", Credential.Type), // 一对多: 一个用户对应多个 credentials
 	}
 }

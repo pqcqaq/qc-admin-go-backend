@@ -32,12 +32,12 @@ type User struct {
 	DeleteBy int64 `json:"delete_by,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Email holds the value of the "email" field.
-	Email string `json:"email,omitempty"`
 	// Age holds the value of the "age" field.
 	Age int `json:"age,omitempty"`
-	// Phone holds the value of the "phone" field.
-	Phone string `json:"phone,omitempty"`
+	// 性别
+	Sex user.Sex `json:"sex,omitempty"`
+	// 用户状态
+	Status user.Status `json:"status,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -50,11 +50,14 @@ type UserEdges struct {
 	Attachments []*Attachment `json:"attachments,omitempty"`
 	// UserRoles holds the value of the user_roles edge.
 	UserRoles []*UserRole `json:"user_roles,omitempty"`
+	// Credentials holds the value of the credentials edge.
+	Credentials []*Credential `json:"credentials,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes      [2]bool
+	loadedTypes      [3]bool
 	namedAttachments map[string][]*Attachment
 	namedUserRoles   map[string][]*UserRole
+	namedCredentials map[string][]*Credential
 }
 
 // AttachmentsOrErr returns the Attachments value or an error if the edge
@@ -75,6 +78,15 @@ func (e UserEdges) UserRolesOrErr() ([]*UserRole, error) {
 	return nil, &NotLoadedError{edge: "user_roles"}
 }
 
+// CredentialsOrErr returns the Credentials value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) CredentialsOrErr() ([]*Credential, error) {
+	if e.loadedTypes[2] {
+		return e.Credentials, nil
+	}
+	return nil, &NotLoadedError{edge: "credentials"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -82,7 +94,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldID, user.FieldCreateBy, user.FieldUpdateBy, user.FieldDeleteBy, user.FieldAge:
 			values[i] = new(sql.NullInt64)
-		case user.FieldName, user.FieldEmail, user.FieldPhone:
+		case user.FieldName, user.FieldSex, user.FieldStatus:
 			values[i] = new(sql.NullString)
 		case user.FieldCreateTime, user.FieldUpdateTime, user.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
@@ -149,23 +161,23 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Name = value.String
 			}
-		case user.FieldEmail:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field email", values[i])
-			} else if value.Valid {
-				_m.Email = value.String
-			}
 		case user.FieldAge:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field age", values[i])
 			} else if value.Valid {
 				_m.Age = int(value.Int64)
 			}
-		case user.FieldPhone:
+		case user.FieldSex:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field phone", values[i])
+				return fmt.Errorf("unexpected type %T for field sex", values[i])
 			} else if value.Valid {
-				_m.Phone = value.String
+				_m.Sex = user.Sex(value.String)
+			}
+		case user.FieldStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
+			} else if value.Valid {
+				_m.Status = user.Status(value.String)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -188,6 +200,11 @@ func (_m *User) QueryAttachments() *AttachmentQuery {
 // QueryUserRoles queries the "user_roles" edge of the User entity.
 func (_m *User) QueryUserRoles() *UserRoleQuery {
 	return NewUserClient(_m.config).QueryUserRoles(_m)
+}
+
+// QueryCredentials queries the "credentials" edge of the User entity.
+func (_m *User) QueryCredentials() *CredentialQuery {
+	return NewUserClient(_m.config).QueryCredentials(_m)
 }
 
 // Update returns a builder for updating this User.
@@ -234,14 +251,14 @@ func (_m *User) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
-	builder.WriteString("email=")
-	builder.WriteString(_m.Email)
-	builder.WriteString(", ")
 	builder.WriteString("age=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Age))
 	builder.WriteString(", ")
-	builder.WriteString("phone=")
-	builder.WriteString(_m.Phone)
+	builder.WriteString("sex=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Sex))
+	builder.WriteString(", ")
+	builder.WriteString("status=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Status))
 	builder.WriteByte(')')
 	return builder.String()
 }
@@ -291,6 +308,30 @@ func (_m *User) appendNamedUserRoles(name string, edges ...*UserRole) {
 		_m.Edges.namedUserRoles[name] = []*UserRole{}
 	} else {
 		_m.Edges.namedUserRoles[name] = append(_m.Edges.namedUserRoles[name], edges...)
+	}
+}
+
+// NamedCredentials returns the Credentials named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *User) NamedCredentials(name string) ([]*Credential, error) {
+	if _m.Edges.namedCredentials == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedCredentials[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *User) appendNamedCredentials(name string, edges ...*Credential) {
+	if _m.Edges.namedCredentials == nil {
+		_m.Edges.namedCredentials = make(map[string][]*Credential)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedCredentials[name] = []*Credential{}
+	} else {
+		_m.Edges.namedCredentials[name] = append(_m.Edges.namedCredentials[name], edges...)
 	}
 }
 

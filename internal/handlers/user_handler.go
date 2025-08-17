@@ -161,17 +161,12 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	if req.Email == "" {
-		middleware.ThrowError(c, middleware.BadRequestError("邮箱不能为空", nil))
-		return
-	}
-
 	user, err := funcs.CreateUser(context.Background(), &req)
 	if err != nil {
 		// 根据错误内容判断错误类型
 		if err.Error() == "user already exists" {
 			middleware.ThrowError(c, middleware.UserExistsError(map[string]any{
-				"email": req.Email,
+				"name": req.Name,
 			}))
 		} else {
 			middleware.ThrowError(c, middleware.DatabaseError("创建用户失败", err.Error()))
