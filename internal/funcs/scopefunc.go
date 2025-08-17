@@ -329,8 +329,8 @@ func ConvertScopeToResponse(s *ent.Scope) *models.ScopeResponse {
 		Order:       s.Order,
 		Hidden:      s.Hidden,
 		Disabled:    s.Disabled,
-		CreateTime:  utils.JSONTime(s.CreateTime),
-		UpdateTime:  utils.JSONTime(s.UpdateTime),
+		CreateTime:  utils.FormatDateTime(s.CreateTime),
+		UpdateTime:  utils.FormatDateTime(s.UpdateTime),
 	}
 
 	if s.ParentID != 0 {

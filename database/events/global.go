@@ -20,6 +20,11 @@ func GlobalEventBus() *EventBus {
 	return globalEventBus
 }
 
+// Register 注册事件处理器到全局事件总线
+func Register(handler EventHandler) {
+	GlobalEventBus().Register(handler)
+}
+
 // Subscribe 订阅全局事件
 func Subscribe(eventType EventType, handler EventHandler) {
 	GlobalEventBus().Subscribe(eventType, handler)

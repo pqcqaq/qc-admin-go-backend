@@ -29,8 +29,8 @@ func (EventMixin) Hooks() []ent.Hook {
 
 				// 发布 post 事件
 				postEvent := NewEventWithValue(getPostEventType(m.Op()), ctx, m, nil, value, err)
-				// Post 事件异步执行，不阻塞主流程
-				PublishAsync(ctx, postEvent)
+				// Post 事件
+				Publish(ctx, postEvent)
 
 				return value, err
 			})
@@ -76,7 +76,7 @@ type ConditionalEventHandler struct {
 
 // Handle 实现 EventHandler 接口
 func (h ConditionalEventHandler) Handle(ctx context.Context, event *Event) error {
-	return h.Handler(ctx, event)
+	return h.Handler.handler(ctx, event)
 }
 
 // SupportsEvent 检查是否支持指定的事件

@@ -1,7 +1,5 @@
 package models
 
-import "go-backend/pkg/utils"
-
 // CreateScopeRequest 创建权限域请求结构
 type CreateScopeRequest struct {
 	Name        string `json:"name" binding:"required"`
@@ -52,8 +50,8 @@ type ScopeResponse struct {
 	Parent      *ScopeResponse        `json:"parent,omitempty"`      // 父级权限域
 	Children    []*ScopeResponse      `json:"children,omitempty"`    // 子级权限域
 	Permissions []*PermissionResponse `json:"permissions,omitempty"` // 关联的权限
-	CreateTime  utils.JSONTime        `json:"createTime"`
-	UpdateTime  utils.JSONTime        `json:"updateTime"`
+	CreateTime  string                `json:"createTime"`
+	UpdateTime  string                `json:"updateTime"`
 }
 
 // GetScopesRequest 获取权限域列表请求结构

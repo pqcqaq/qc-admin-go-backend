@@ -1,160 +1,167 @@
 package utils
 
 import (
-	"encoding/json"
-	"fmt"
 	"time"
 )
 
-// TimeFormat 常用时间格式
 const (
-	LayoutDateTime = "2006-01-02 15:04:05"
-	LayoutDate     = "2006-01-02"
-	LayoutTime     = "15:04:05"
+	DateFormat      = "2006-01-02"
+	TimeFormat      = "15:04:05"
+	DateTimeFormat  = "2006-01-02 15:04:05"
+	TimestampFormat = "2006-01-02T15:04:05Z07:00"
 )
 
-// JSONTime 自定义时间类型，便于 JSON 序列化/反序列化
-type JSONTime time.Time
-
-// MarshalJSON 实现 json 序列化
-func (t JSONTime) MarshalJSON() ([]byte, error) {
-	if time.Time(t).IsZero() {
-		return []byte(`""`), nil
-	}
-	formatted := fmt.Sprintf(`"%s"`, time.Time(t).Format(LayoutDateTime))
-	return []byte(formatted), nil
-}
-
-// UnmarshalJSON 实现 json 反序列化
-func (t *JSONTime) UnmarshalJSON(data []byte) error {
-	// 去掉引号
-	str := string(data)
-	if str == `""` || str == `null` {
-		*t = JSONTime(time.Time{})
-		return nil
-	}
-
-	// 先尝试标准格式
-	parsed, err := time.Parse(`"`+LayoutDateTime+`"`, str)
-	if err == nil {
-		*t = JSONTime(parsed)
-		return nil
-	}
-
-	// 再尝试仅日期
-	parsed, err = time.Parse(`"`+LayoutDate+`"`, str)
-	if err == nil {
-		*t = JSONTime(parsed)
-		return nil
-	}
-
-	// 最后尝试 RFC3339
-	parsed, err = time.Parse(`"`+time.RFC3339+`"`, str)
-	if err == nil {
-		*t = JSONTime(parsed)
-		return nil
-	}
-
-	return fmt.Errorf("invalid time format: %s", str)
-}
-
-// String 返回时间的字符串形式
-func (t JSONTime) String() string {
-	if time.Time(t).IsZero() {
-		return ""
-	}
-	return time.Time(t).Format(LayoutDateTime)
-}
-
-// Now 返回当前时间（time.Time）
+// Now 获取当前时间
 func Now() time.Time {
 	return time.Now()
 }
 
-// NowString 返回当前时间字符串（YYYY-MM-DD HH:mm:ss）
-func NowString() string {
-	return time.Now().Format(LayoutDateTime)
+// Today 获取今天的日期（零点时刻）
+func Today() time.Time {
+	now := time.Now()
+	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 }
 
-// TimeToDateTimeString 返回时间的字符串形式（YYYY-MM-DD HH:mm:ss）
-func TimeToDateTimeString(t *time.Time) string {
-	if t == nil {
-		return ""
-	}
-	if t.IsZero() {
-		return ""
-	}
-	return t.Format(LayoutDateTime)
+// Tomorrow 获取明天的日期（零点时刻）
+func Tomorrow() time.Time {
+	return Today().AddDate(0, 0, 1)
 }
 
-// TimeToDateString 返回时间的字符串形式（YYYY-MM-DD）
-func TimeToDateString(t *time.Time) string {
-	if t == nil {
-		return ""
-	}
-	if t.IsZero() {
-		return ""
-	}
-	return t.Format(LayoutDate)
+// Yesterday 获取昨天的日期（零点时刻）
+func Yesterday() time.Time {
+	return Today().AddDate(0, 0, -1)
 }
 
-// TimeToTimeString 返回时间的字符串形式（HH:mm:ss）
-func TimeToTimeString(t *time.Time) string {
-	if t == nil {
-		return ""
-	}
-	if t.IsZero() {
-		return ""
-	}
-	return t.Format(LayoutTime)
+// FormatDate 格式化日期
+func FormatDate(t time.Time) string {
+	return t.Format(DateFormat)
 }
 
-// ParseTime 根据 LayoutDateTime 解析时间字符串
-func ParseTime(s string) (time.Time, error) {
-	if s == "" {
-		return time.Time{}, nil // 返回零值时间
-	}
-	return time.Parse(LayoutDateTime, s)
+// FormatTime 格式化时间
+func FormatTime(t time.Time) string {
+	return t.Format(TimeFormat)
 }
 
-// ParseTimeWithLayout 按自定义格式解析时间字符串
-func ParseTimeWithLayout(s, layout string) (time.Time, error) {
-	return time.Parse(layout, s)
+// FormatDateTime 格式化日期时间
+func FormatDateTime(t time.Time) string {
+	return t.Format(DateTimeFormat)
 }
 
-// ToTimestamp 转为 Unix 时间戳（秒）
-func ToTimestamp(t time.Time) int64 {
+// FormatTimestamp 格式化时间戳
+func FormatTimestamp(t time.Time) string {
+	return t.Format(TimestampFormat)
+}
+
+// ParseDate 解析日期字符串
+func ParseDate(dateStr string) (time.Time, error) {
+	return time.Parse(DateFormat, dateStr)
+}
+
+// ParseTime 解析时间字符串
+func ParseTime(timeStr string) (time.Time, error) {
+	return time.Parse(TimeFormat, timeStr)
+}
+
+// ParseDateTime 解析日期时间字符串
+func ParseDateTime(datetimeStr string) (time.Time, error) {
+	return time.Parse(DateTimeFormat, datetimeStr)
+}
+
+// ParseTimestamp 解析时间戳字符串
+func ParseTimestamp(timestampStr string) (time.Time, error) {
+	return time.Parse(TimestampFormat, timestampStr)
+}
+
+// UnixToTime Unix时间戳转time.Time
+func UnixToTime(timestamp int64) time.Time {
+	return time.Unix(timestamp, 0)
+}
+
+// TimeToUnix time.Time转Unix时间戳
+func TimeToUnix(t time.Time) int64 {
 	return t.Unix()
 }
 
-// FromTimestamp 从 Unix 时间戳（秒）转为 time.Time
-func FromTimestamp(ts int64) time.Time {
-	return time.Unix(ts, 0)
+// UnixMilliToTime Unix毫秒时间戳转time.Time
+func UnixMilliToTime(timestamp int64) time.Time {
+	return time.Unix(timestamp/1000, (timestamp%1000)*int64(time.Millisecond))
 }
 
-// MustJSONTime 将 time.Time 转为 JSONTime
-func MustJSONTime(t time.Time) JSONTime {
-	return JSONTime(t)
+// TimeToUnixMilli time.Time转Unix毫秒时间戳
+func TimeToUnixMilli(t time.Time) int64 {
+	return t.UnixNano() / int64(time.Millisecond)
 }
 
-// ExampleUsage 演示序列化和反序列化
-func ExampleUsage() {
-	type Demo struct {
-		Name string   `json:"name"`
-		Time JSONTime `json:"time"`
+// IsToday 判断时间是否是今天
+func IsToday(t time.Time) bool {
+	today := Today()
+	return t.Year() == today.Year() &&
+		t.Month() == today.Month() &&
+		t.Day() == today.Day()
+}
+
+// IsYesterday 判断时间是否是昨天
+func IsYesterday(t time.Time) bool {
+	yesterday := Yesterday()
+	return t.Year() == yesterday.Year() &&
+		t.Month() == yesterday.Month() &&
+		t.Day() == yesterday.Day()
+}
+
+// IsTomorrow 判断时间是否是明天
+func IsTomorrow(t time.Time) bool {
+	tomorrow := Tomorrow()
+	return t.Year() == tomorrow.Year() &&
+		t.Month() == tomorrow.Month() &&
+		t.Day() == tomorrow.Day()
+}
+
+// DaysBetween 计算两个日期之间的天数差
+func DaysBetween(t1, t2 time.Time) int {
+	if t1.After(t2) {
+		t1, t2 = t2, t1
 	}
 
-	d := Demo{
-		Name: "Test",
-		Time: MustJSONTime(Now()),
+	date1 := time.Date(t1.Year(), t1.Month(), t1.Day(), 0, 0, 0, 0, time.UTC)
+	date2 := time.Date(t2.Year(), t2.Month(), t2.Day(), 0, 0, 0, 0, time.UTC)
+
+	return int(date2.Sub(date1).Hours() / 24)
+}
+
+// StartOfWeek 获取一周的开始时间（周一）
+func StartOfWeek(t time.Time) time.Time {
+	weekday := int(t.Weekday())
+	if weekday == 0 {
+		weekday = 7 // 将周日从0改为7
+	}
+	days := weekday - 1
+	return time.Date(t.Year(), t.Month(), t.Day()-days, 0, 0, 0, 0, t.Location())
+}
+
+// EndOfWeek 获取一周的结束时间（周日）
+func EndOfWeek(t time.Time) time.Time {
+	return StartOfWeek(t).AddDate(0, 0, 6).Add(23*time.Hour + 59*time.Minute + 59*time.Second)
+}
+
+// StartOfMonth 获取月份的开始时间
+func StartOfMonth(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())
+}
+
+// EndOfMonth 获取月份的结束时间
+func EndOfMonth(t time.Time) time.Time {
+	return StartOfMonth(t).AddDate(0, 1, -1).Add(23*time.Hour + 59*time.Minute + 59*time.Second)
+}
+
+// Age 根据出生日期计算年龄
+func Age(birthDate time.Time) int {
+	now := time.Now()
+	age := now.Year() - birthDate.Year()
+
+	if now.Month() < birthDate.Month() ||
+		(now.Month() == birthDate.Month() && now.Day() < birthDate.Day()) {
+		age--
 	}
 
-	// 序列化
-	b, _ := json.Marshal(d)
-	fmt.Println("Serialized:", string(b))
-
-	// 反序列化
-	var d2 Demo
-	_ = json.Unmarshal(b, &d2)
-	fmt.Println("Deserialized:", d2.Name, d2.Time.String())
+	return age
 }

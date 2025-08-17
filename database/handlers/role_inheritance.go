@@ -15,14 +15,12 @@ import (
 // RoleInheritanceHandler 角色继承检查处理器
 type RoleInheritanceHandler struct{}
 
+func (h *RoleInheritanceHandler) Name() string {
+	return "RoleInheritanceHandler"
+}
+
 // Handle 处理角色继承事件
 func (h *RoleInheritanceHandler) Handle(ctx context.Context, event *events.Event) error {
-	// 只处理角色相关的 pre-create 和 pre-update 事件
-	if event.EntityType != "Role" ||
-		(event.Type != events.EventTypePreUpdate && event.Type != events.EventTypePreCreate) {
-		return nil
-	}
-
 	// 类型断言获取角色变更信息
 	roleMutation, ok := event.Mutation.(*ent.RoleMutation)
 	if !ok {
@@ -86,11 +84,21 @@ func (h *RoleInheritanceHandler) Handle(ctx context.Context, event *events.Event
 	return nil
 }
 
-// SupportsEvent 检查是否支持指定的事件类型和实体类型
-func (h *RoleInheritanceHandler) SupportsEvent(eventType events.EventType, entityType string, operation entpkg.Op) bool {
-	return entityType == "Role" &&
-		(eventType == events.EventTypePreUpdate || eventType == events.EventTypePreCreate) &&
-		(operation == entpkg.OpUpdate || operation == entpkg.OpUpdateOne || operation == entpkg.OpCreate)
+// SupportsEvent 返回支持的事件配置
+func (h *RoleInheritanceHandler) SupportsEvent() events.SupportedEvents {
+	return events.SupportedEvents{
+		"Role": events.SupportedEntityEvents{
+			EventTypes: []events.EventType{
+				events.EventTypePreUpdate,
+				events.EventTypePreCreate,
+			},
+			Operations: []entpkg.Op{
+				entpkg.OpUpdate,
+				entpkg.OpUpdateOne,
+				entpkg.OpCreate,
+			},
+		},
+	}
 }
 
 // checkParentCircularInheritance 检查新建角色的父角色列表是否存在循环
@@ -140,7 +148,6 @@ func (h *RoleInheritanceHandler) checkChildCircularInheritance(ctx context.Conte
 // RegisterRoleInheritanceHandler 注册角色继承检查处理器
 func RegisterRoleInheritanceHandler() {
 	handler := &RoleInheritanceHandler{}
-	// 注册处理创建和更新事件
-	events.Subscribe(events.EventTypePreCreate, handler)
-	events.Subscribe(events.EventTypePreUpdate, handler)
+	// 注册到全局事件总线
+	events.GlobalEventBus().Register(handler)
 }
