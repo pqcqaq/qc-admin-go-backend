@@ -12,15 +12,20 @@ import (
 	"syscall"
 	"time"
 
+	"go-backend/database"
 	"go-backend/internal/routes"
 	"go-backend/pkg/caching"
 	"go-backend/pkg/configs"
-	"go-backend/pkg/database"
+	pkgdatabase "go-backend/pkg/database"
 	"go-backend/pkg/logging"
 	"go-backend/pkg/s3"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	// 导入ent runtime以注册schema hooks
+	_ "go-backend/database/ent/runtime"
+	"go-backend/database/events"
 )
 
 func main() {
@@ -85,13 +90,13 @@ func main() {
 	logging.SetPrefix(config.Logging.Prefix)
 
 	// 设置数据库包的logger
-	database.SetLogger(logging.GetInstance())
+	pkgdatabase.SetLogger(logging.WithName("Database"))
 
 	// 设置缓存包的logger
-	caching.SetLogger(logging.GetInstance())
+	caching.SetLogger(logging.WithName("Caching"))
 
 	// 设置S3包的logger
-	s3.SetLogger(logging.GetInstance())
+	s3.SetLogger(logging.WithName("S3Client"))
 
 	logging.Info("Config loaded successfully from: %s", resolvedConfigPath)
 	logging.Info("Log level set to: %s", config.Logging.Level)
@@ -101,8 +106,13 @@ func main() {
 	logging.Info("Gin mode set to: %s", config.Server.Mode)
 
 	// 创建数据库连接
-	dbClient := database.InitInstance(&config.Database)
+	dbClient := pkgdatabase.InitInstance(&config.Database)
 	redisClient := caching.InitInstance(&config.Redis)
+
+	// 初始化事件系统（必须在数据库初始化之后）
+	events.SetLogger(logging.WithName("EventBus"))
+	database.InitEventSystem()
+	logging.Info("Event system initialized successfully")
 
 	// 初始化S3客户端
 	if err := s3.InitClient(&config.S3); err != nil {

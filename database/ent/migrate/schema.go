@@ -3,13 +3,14 @@
 package migrate
 
 import (
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
 
 var (
-	// AttachmentsColumns holds the columns for the "attachments" table.
-	AttachmentsColumns = []*schema.Column{
+	// SysAttachmentsColumns holds the columns for the "sys_attachments" table.
+	SysAttachmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
@@ -33,69 +34,79 @@ var (
 		{Name: "tag3", Type: field.TypeString, Nullable: true, Size: 100},
 		{Name: "user_attachments", Type: field.TypeUint64, Nullable: true},
 	}
-	// AttachmentsTable holds the schema information for the "attachments" table.
-	AttachmentsTable = &schema.Table{
-		Name:       "attachments",
-		Columns:    AttachmentsColumns,
-		PrimaryKey: []*schema.Column{AttachmentsColumns[0]},
+	// SysAttachmentsTable holds the schema information for the "sys_attachments" table.
+	SysAttachmentsTable = &schema.Table{
+		Name:       "sys_attachments",
+		Columns:    SysAttachmentsColumns,
+		PrimaryKey: []*schema.Column{SysAttachmentsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "attachments_users_attachments",
-				Columns:    []*schema.Column{AttachmentsColumns[21]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "sys_attachments_sys_users_attachments",
+				Columns:    []*schema.Column{SysAttachmentsColumns[21]},
+				RefColumns: []*schema.Column{SysUsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
+				Name:    "attachment_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysAttachmentsColumns[5]},
+			},
+			{
+				Name:    "attachment_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysAttachmentsColumns[6]},
+			},
+			{
 				Name:    "idx_attachment_path",
 				Unique:  true,
-				Columns: []*schema.Column{AttachmentsColumns[8]},
+				Columns: []*schema.Column{SysAttachmentsColumns[8], SysAttachmentsColumns[5]},
 			},
 			{
 				Name:    "idx_attachment_filename",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[7]},
+				Columns: []*schema.Column{SysAttachmentsColumns[7]},
 			},
 			{
 				Name:    "idx_attachment_content_type",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[10]},
+				Columns: []*schema.Column{SysAttachmentsColumns[10]},
 			},
 			{
 				Name:    "idx_attachment_status",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[16]},
+				Columns: []*schema.Column{SysAttachmentsColumns[16]},
 			},
 			{
 				Name:    "idx_attachment_bucket",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[13]},
+				Columns: []*schema.Column{SysAttachmentsColumns[13]},
 			},
 			{
 				Name:    "idx_attachment_deleted_created",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[5], AttachmentsColumns[1]},
+				Columns: []*schema.Column{SysAttachmentsColumns[5], SysAttachmentsColumns[1]},
 			},
 			{
 				Name:    "idx_attachment_session",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[17]},
+				Columns: []*schema.Column{SysAttachmentsColumns[17]},
 			},
 			{
 				Name:    "idx_attachment_tag1",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[18]},
+				Columns: []*schema.Column{SysAttachmentsColumns[18]},
 			},
 			{
 				Name:    "idx_attachment_tag2",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[19]},
+				Columns: []*schema.Column{SysAttachmentsColumns[19]},
 			},
 			{
 				Name:    "idx_attachment_tag3",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[20]},
+				Columns: []*schema.Column{SysAttachmentsColumns[20]},
 			},
 		},
 	}
@@ -125,6 +136,162 @@ var (
 		Name:       "loggings",
 		Columns:    LoggingsColumns,
 		PrimaryKey: []*schema.Column{LoggingsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "logging_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{LoggingsColumns[5]},
+			},
+			{
+				Name:    "logging_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{LoggingsColumns[6]},
+			},
+		},
+	}
+	// SysPermissionsColumns holds the columns for the "sys_permissions" table.
+	SysPermissionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "action", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "scope_permissions", Type: field.TypeUint64, Nullable: true},
+	}
+	// SysPermissionsTable holds the schema information for the "sys_permissions" table.
+	SysPermissionsTable = &schema.Table{
+		Name:       "sys_permissions",
+		Columns:    SysPermissionsColumns,
+		PrimaryKey: []*schema.Column{SysPermissionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_permissions_sys_scopes_permissions",
+				Columns:    []*schema.Column{SysPermissionsColumns[10]},
+				RefColumns: []*schema.Column{SysScopesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "permission_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysPermissionsColumns[5]},
+			},
+			{
+				Name:    "permission_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysPermissionsColumns[6]},
+			},
+			{
+				Name:    "permission_action",
+				Unique:  false,
+				Columns: []*schema.Column{SysPermissionsColumns[8]},
+			},
+			{
+				Name:    "permission_name_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysPermissionsColumns[7], SysPermissionsColumns[5]},
+			},
+		},
+	}
+	// SysRolesColumns holds the columns for the "sys_roles" table.
+	SysRolesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+	}
+	// SysRolesTable holds the schema information for the "sys_roles" table.
+	SysRolesTable = &schema.Table{
+		Name:       "sys_roles",
+		Columns:    SysRolesColumns,
+		PrimaryKey: []*schema.Column{SysRolesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "role_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysRolesColumns[5]},
+			},
+			{
+				Name:    "role_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysRolesColumns[6]},
+			},
+			{
+				Name:    "role_name_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysRolesColumns[7], SysRolesColumns[5]},
+			},
+		},
+	}
+	// SysRolePermissionColumns holds the columns for the "sys_role_permission" table.
+	SysRolePermissionColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "permission_id", Type: field.TypeUint64},
+		{Name: "role_id", Type: field.TypeUint64},
+	}
+	// SysRolePermissionTable holds the schema information for the "sys_role_permission" table.
+	SysRolePermissionTable = &schema.Table{
+		Name:       "sys_role_permission",
+		Columns:    SysRolePermissionColumns,
+		PrimaryKey: []*schema.Column{SysRolePermissionColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_role_permission_sys_permissions_role_permissions",
+				Columns:    []*schema.Column{SysRolePermissionColumns[7]},
+				RefColumns: []*schema.Column{SysPermissionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "sys_role_permission_sys_roles_role_permissions",
+				Columns:    []*schema.Column{SysRolePermissionColumns[8]},
+				RefColumns: []*schema.Column{SysRolesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "rolepermission_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysRolePermissionColumns[5]},
+			},
+			{
+				Name:    "rolepermission_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysRolePermissionColumns[6]},
+			},
+			{
+				Name:    "rolepermission_role_id_permission_id_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysRolePermissionColumns[8], SysRolePermissionColumns[7], SysRolePermissionColumns[5]},
+			},
+			{
+				Name:    "rolepermission_role_id",
+				Unique:  false,
+				Columns: []*schema.Column{SysRolePermissionColumns[8]},
+			},
+			{
+				Name:    "rolepermission_permission_id",
+				Unique:  false,
+				Columns: []*schema.Column{SysRolePermissionColumns[7]},
+			},
+		},
 	}
 	// ScansColumns holds the columns for the "scans" table.
 	ScansColumns = []*schema.Column{
@@ -147,15 +314,95 @@ var (
 		PrimaryKey: []*schema.Column{ScansColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "scans_attachments_attachment",
+				Symbol:     "scans_sys_attachments_attachment",
 				Columns:    []*schema.Column{ScansColumns[10]},
-				RefColumns: []*schema.Column{AttachmentsColumns[0]},
+				RefColumns: []*schema.Column{SysAttachmentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "scan_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{ScansColumns[5]},
+			},
+			{
+				Name:    "scan_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{ScansColumns[6]},
+			},
+		},
 	}
-	// UsersColumns holds the columns for the "users" table.
-	UsersColumns = []*schema.Column{
+	// SysScopesColumns holds the columns for the "sys_scopes" table.
+	SysScopesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"menu", "page", "button"}, Default: "menu"},
+		{Name: "icon", Type: field.TypeString, Nullable: true},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "action", Type: field.TypeString, Nullable: true},
+		{Name: "path", Type: field.TypeString, Nullable: true},
+		{Name: "component", Type: field.TypeString, Nullable: true},
+		{Name: "redirect", Type: field.TypeString, Nullable: true},
+		{Name: "order", Type: field.TypeInt, Default: 0},
+		{Name: "hidden", Type: field.TypeBool, Default: false},
+		{Name: "disabled", Type: field.TypeBool, Default: false},
+		{Name: "parent_id", Type: field.TypeUint64, Nullable: true},
+	}
+	// SysScopesTable holds the schema information for the "sys_scopes" table.
+	SysScopesTable = &schema.Table{
+		Name:       "sys_scopes",
+		Columns:    SysScopesColumns,
+		PrimaryKey: []*schema.Column{SysScopesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_scopes_sys_scopes_children",
+				Columns:    []*schema.Column{SysScopesColumns[18]},
+				RefColumns: []*schema.Column{SysScopesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "scope_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysScopesColumns[5]},
+			},
+			{
+				Name:    "scope_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysScopesColumns[6]},
+			},
+			{
+				Name:    "scope_parent_id_order",
+				Unique:  false,
+				Columns: []*schema.Column{SysScopesColumns[18], SysScopesColumns[15]},
+			},
+			{
+				Name:    "scope_type_hidden_disabled",
+				Unique:  false,
+				Columns: []*schema.Column{SysScopesColumns[8], SysScopesColumns[16], SysScopesColumns[17]},
+			},
+			{
+				Name:    "scope_type_parent_id",
+				Unique:  false,
+				Columns: []*schema.Column{SysScopesColumns[8], SysScopesColumns[18]},
+			},
+			{
+				Name:    "scope_name_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysScopesColumns[7], SysScopesColumns[5]},
+			},
+		},
+	}
+	// SysUsersColumns holds the columns for the "sys_users" table.
+	SysUsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
@@ -168,22 +415,153 @@ var (
 		{Name: "age", Type: field.TypeInt, Nullable: true},
 		{Name: "phone", Type: field.TypeString, Nullable: true, Size: 20},
 	}
-	// UsersTable holds the schema information for the "users" table.
-	UsersTable = &schema.Table{
-		Name:       "users",
-		Columns:    UsersColumns,
-		PrimaryKey: []*schema.Column{UsersColumns[0]},
+	// SysUsersTable holds the schema information for the "sys_users" table.
+	SysUsersTable = &schema.Table{
+		Name:       "sys_users",
+		Columns:    SysUsersColumns,
+		PrimaryKey: []*schema.Column{SysUsersColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "user_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysUsersColumns[5]},
+			},
+			{
+				Name:    "user_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysUsersColumns[6]},
+			},
+		},
+	}
+	// SysUserRoleColumns holds the columns for the "sys_user_role" table.
+	SysUserRoleColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "role_id", Type: field.TypeUint64},
+		{Name: "user_id", Type: field.TypeUint64},
+	}
+	// SysUserRoleTable holds the schema information for the "sys_user_role" table.
+	SysUserRoleTable = &schema.Table{
+		Name:       "sys_user_role",
+		Columns:    SysUserRoleColumns,
+		PrimaryKey: []*schema.Column{SysUserRoleColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_user_role_sys_roles_user_roles",
+				Columns:    []*schema.Column{SysUserRoleColumns[7]},
+				RefColumns: []*schema.Column{SysRolesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "sys_user_role_sys_users_user_roles",
+				Columns:    []*schema.Column{SysUserRoleColumns[8]},
+				RefColumns: []*schema.Column{SysUsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "userrole_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysUserRoleColumns[5]},
+			},
+			{
+				Name:    "userrole_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysUserRoleColumns[6]},
+			},
+			{
+				Name:    "userrole_user_id_role_id_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysUserRoleColumns[8], SysUserRoleColumns[7], SysUserRoleColumns[5]},
+			},
+			{
+				Name:    "userrole_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{SysUserRoleColumns[8]},
+			},
+			{
+				Name:    "userrole_role_id",
+				Unique:  false,
+				Columns: []*schema.Column{SysUserRoleColumns[7]},
+			},
+		},
+	}
+	// RoleInheritsFromColumns holds the columns for the "role_inherits_from" table.
+	RoleInheritsFromColumns = []*schema.Column{
+		{Name: "role_id", Type: field.TypeUint64},
+		{Name: "inherited_by_id", Type: field.TypeUint64},
+	}
+	// RoleInheritsFromTable holds the schema information for the "role_inherits_from" table.
+	RoleInheritsFromTable = &schema.Table{
+		Name:       "role_inherits_from",
+		Columns:    RoleInheritsFromColumns,
+		PrimaryKey: []*schema.Column{RoleInheritsFromColumns[0], RoleInheritsFromColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "role_inherits_from_role_id",
+				Columns:    []*schema.Column{RoleInheritsFromColumns[0]},
+				RefColumns: []*schema.Column{SysRolesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "role_inherits_from_inherited_by_id",
+				Columns:    []*schema.Column{RoleInheritsFromColumns[1]},
+				RefColumns: []*schema.Column{SysRolesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		AttachmentsTable,
+		SysAttachmentsTable,
 		LoggingsTable,
+		SysPermissionsTable,
+		SysRolesTable,
+		SysRolePermissionTable,
 		ScansTable,
-		UsersTable,
+		SysScopesTable,
+		SysUsersTable,
+		SysUserRoleTable,
+		RoleInheritsFromTable,
 	}
 )
 
 func init() {
-	AttachmentsTable.ForeignKeys[0].RefTable = UsersTable
-	ScansTable.ForeignKeys[0].RefTable = AttachmentsTable
+	SysAttachmentsTable.ForeignKeys[0].RefTable = SysUsersTable
+	SysAttachmentsTable.Annotation = &entsql.Annotation{
+		Table: "sys_attachments",
+	}
+	SysPermissionsTable.ForeignKeys[0].RefTable = SysScopesTable
+	SysPermissionsTable.Annotation = &entsql.Annotation{
+		Table: "sys_permissions",
+	}
+	SysRolesTable.Annotation = &entsql.Annotation{
+		Table: "sys_roles",
+	}
+	SysRolePermissionTable.ForeignKeys[0].RefTable = SysPermissionsTable
+	SysRolePermissionTable.ForeignKeys[1].RefTable = SysRolesTable
+	SysRolePermissionTable.Annotation = &entsql.Annotation{
+		Table: "sys_role_permission",
+	}
+	ScansTable.ForeignKeys[0].RefTable = SysAttachmentsTable
+	SysScopesTable.ForeignKeys[0].RefTable = SysScopesTable
+	SysScopesTable.Annotation = &entsql.Annotation{
+		Table: "sys_scopes",
+	}
+	SysUsersTable.Annotation = &entsql.Annotation{
+		Table: "sys_users",
+	}
+	SysUserRoleTable.ForeignKeys[0].RefTable = SysRolesTable
+	SysUserRoleTable.ForeignKeys[1].RefTable = SysUsersTable
+	SysUserRoleTable.Annotation = &entsql.Annotation{
+		Table: "sys_user_role",
+	}
+	RoleInheritsFromTable.ForeignKeys[0].RefTable = SysRolesTable
+	RoleInheritsFromTable.ForeignKeys[1].RefTable = SysRolesTable
 }

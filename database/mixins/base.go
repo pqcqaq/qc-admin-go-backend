@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"entgo.io/ent/schema/mixin"
 	"github.com/sony/sonyflake"
 )
@@ -77,6 +78,13 @@ func (BaseMixin) Hooks() []ent.Hook {
 // SoftDeleteMixin 软删除mixin - 基于 ent 官方实现
 type SoftDeleteMixin struct {
 	mixin.Schema
+}
+
+func (SoftDeleteMixin) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("delete_time"), // 软删除时间索引
+		index.Fields("delete_by"),   // 软删除人ID索引
+	}
 }
 
 // Fields 返回软删除需要的字段

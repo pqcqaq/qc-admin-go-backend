@@ -4,6 +4,8 @@ import (
 	"go-backend/database/mixins"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -13,6 +15,12 @@ import (
 // Attachment holds the schema definition for the Attachment entity.
 type Attachment struct {
 	ent.Schema
+}
+
+func (Attachment) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Annotation{Table: "sys_attachments"},
+	}
 }
 
 // Mixin returns Attachment mixed-in fields.
@@ -86,7 +94,7 @@ func (Attachment) Edges() []ent.Edge {
 // Indexes of the Attachment.
 func (Attachment) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("path").Unique().StorageKey("idx_attachment_path"),
+		index.Fields("path", "delete_time").Unique().StorageKey("idx_attachment_path"),
 		index.Fields("filename").StorageKey("idx_attachment_filename"),
 		index.Fields("content_type").StorageKey("idx_attachment_content_type"),
 		index.Fields("status").StorageKey("idx_attachment_status"),

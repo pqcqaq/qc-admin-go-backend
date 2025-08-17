@@ -50,7 +50,7 @@ type Logging struct {
 	// UserAgent holds the value of the "user_agent" field.
 	UserAgent string `json:"user_agent,omitempty"`
 	// Data holds the value of the "data" field.
-	Data map[string]any `json:"data,omitempty"`
+	Data map[string]interface{} `json:"data,omitempty"`
 	// Stack holds the value of the "stack" field.
 	Stack        string `json:"stack,omitempty"`
 	selectValues sql.SelectValues

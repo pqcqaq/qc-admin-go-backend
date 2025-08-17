@@ -177,7 +177,7 @@ func (_c *AttachmentCreate) SetNillableStorageProvider(v *string) *AttachmentCre
 }
 
 // SetMetadata sets the "metadata" field.
-func (_c *AttachmentCreate) SetMetadata(v map[string]any) *AttachmentCreate {
+func (_c *AttachmentCreate) SetMetadata(v map[string]interface{}) *AttachmentCreate {
 	_c.mutation.SetMetadata(v)
 	return _c
 }

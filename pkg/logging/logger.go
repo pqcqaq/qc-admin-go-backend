@@ -30,8 +30,9 @@ type LoggerInterface interface {
 
 // Logger 结构体定义
 type Logger struct {
-	level  LogLevel
-	prefix string
+	level     LogLevel
+	prefix    string
+	component string
 }
 
 // 确保Logger实现了LoggerInterface接口
@@ -51,11 +52,24 @@ var (
 // 全局logger实例
 var defaultLogger *Logger
 
+func WithName(name string) *Logger {
+	return defaultLogger.WithComponent(name)
+}
+
+func (l *Logger) WithComponent(component string) *Logger {
+	return &Logger{
+		level:     l.level,
+		prefix:    l.prefix,
+		component: component,
+	}
+}
+
 // 初始化默认logger
 func init() {
 	defaultLogger = &Logger{
-		level:  INFO,
-		prefix: "APP",
+		level:     INFO,
+		prefix:    "APP",
+		component: "GLOBAL",
 	}
 }
 
@@ -75,7 +89,7 @@ func formatTime() string {
 }
 
 // 通用日志输出函数
-func (l *Logger) log(level LogLevel, levelName string, colorFunc *color.Color, format string, args ...any) {
+func (l *Logger) log(level LogLevel, levelName string, colorFunc *color.Color, component string, format string, args ...any) {
 	if level < l.level {
 		return
 	}
@@ -84,6 +98,9 @@ func (l *Logger) log(level LogLevel, levelName string, colorFunc *color.Color, f
 	prefix := prefixColor.Sprintf("[%s]", l.prefix)
 	levelStr := colorFunc.Sprintf("[%s]", levelName)
 
+	if component != "" {
+		prefix = fmt.Sprintf("%s [%s]", prefix, component)
+	}
 	message := fmt.Sprintf(format, args...)
 
 	fmt.Printf("%s %s %s %s\n", timestamp, prefix, levelStr, message)
@@ -91,27 +108,27 @@ func (l *Logger) log(level LogLevel, levelName string, colorFunc *color.Color, f
 
 // Debug 输出调试信息
 func (l *Logger) Debug(format string, args ...any) {
-	l.log(DEBUG, "DEBUG", debugColor, format, args...)
+	l.log(DEBUG, "DEBUG", debugColor, l.component, format, args...)
 }
 
 // Info 输出信息
 func (l *Logger) Info(format string, args ...any) {
-	l.log(INFO, "INFO", infoColor, format, args...)
+	l.log(INFO, "INFO", infoColor, l.component, format, args...)
 }
 
 // Warn 输出警告
 func (l *Logger) Warn(format string, args ...any) {
-	l.log(WARN, "WARN", warnColor, format, args...)
+	l.log(WARN, "WARN", warnColor, l.component, format, args...)
 }
 
 // Error 输出错误
 func (l *Logger) Error(format string, args ...any) {
-	l.log(ERROR, "ERROR", errorColor, format, args...)
+	l.log(ERROR, "ERROR", errorColor, l.component, format, args...)
 }
 
 // Fatal 输出致命错误并退出程序
 func (l *Logger) Fatal(format string, args ...any) {
-	l.log(FATAL, "FATAL", fatalColor, format, args...)
+	l.log(FATAL, "FATAL", fatalColor, l.component, format, args...)
 	os.Exit(1)
 }
 
