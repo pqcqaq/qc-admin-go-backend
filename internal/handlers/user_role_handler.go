@@ -21,6 +21,17 @@ func NewUserRoleHandler() *UserRoleHandler {
 }
 
 // AssignRole 为用户分配角色
+// @Summary      为用户分配角色
+// @Description  为指定用户分配角色
+// @Tags         rbac-user-roles
+// @Accept       json
+// @Produce      json
+// @Param        role  body      models.AssignUserRoleRequest  true  "用户角色分配信息"
+// @Success      201   {object}  object{success=bool,data=object,message=string}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      404   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /rbac/user-roles/assign [post]
 func (h *UserRoleHandler) AssignRole(c *gin.Context) {
 	var req models.AssignUserRoleRequest
 
@@ -68,6 +79,18 @@ func (h *UserRoleHandler) AssignRole(c *gin.Context) {
 }
 
 // RevokeRole 撤销用户角色
+// @Summary      撤销用户角色
+// @Description  撤销指定用户的角色
+// @Tags         rbac-user-roles
+// @Accept       json
+// @Produce      json
+// @Param        userID  path      int  true  "用户ID"
+// @Param        roleID  path      int  true  "角色ID"
+// @Success      200     {object}  object{success=bool,message=string}
+// @Failure      400     {object}  object{success=bool,message=string}
+// @Failure      404     {object}  object{success=bool,message=string}
+// @Failure      500     {object}  object{success=bool,message=string}
+// @Router       /rbac/user-roles/{userID}/roles/{roleID} [delete]
 func (h *UserRoleHandler) RevokeRole(c *gin.Context) {
 	userIDStr := c.Param("userID")
 	roleIDStr := c.Param("roleID")
@@ -108,6 +131,17 @@ func (h *UserRoleHandler) RevokeRole(c *gin.Context) {
 }
 
 // GetUserRoles 获取用户的所有角色
+// @Summary      获取用户的所有角色
+// @Description  获取指定用户拥有的所有角色
+// @Tags         rbac-user-roles
+// @Accept       json
+// @Produce      json
+// @Param        userID  path      int  true  "用户ID"
+// @Success      200     {object}  object{success=bool,data=[]models.RoleResponse,count=int}
+// @Failure      400     {object}  object{success=bool,message=string}
+// @Failure      404     {object}  object{success=bool,message=string}
+// @Failure      500     {object}  object{success=bool,message=string}
+// @Router       /rbac/user-roles/{userID}/roles [get]
 func (h *UserRoleHandler) GetUserRoles(c *gin.Context) {
 	userIDStr := c.Param("userID")
 
@@ -145,6 +179,17 @@ func (h *UserRoleHandler) GetUserRoles(c *gin.Context) {
 }
 
 // GetRoleUsers 获取拥有指定角色的所有用户
+// @Summary      获取拥有指定角色的所有用户
+// @Description  获取拥有指定角色的所有用户列表
+// @Tags         rbac-user-roles
+// @Accept       json
+// @Produce      json
+// @Param        roleID  path      int  true  "角色ID"
+// @Success      200     {object}  object{success=bool,data=[]models.UserResponse,count=int}
+// @Failure      400     {object}  object{success=bool,message=string}
+// @Failure      404     {object}  object{success=bool,message=string}
+// @Failure      500     {object}  object{success=bool,message=string}
+// @Router       /rbac/user-roles/roles/{roleID}/users [get]
 func (h *UserRoleHandler) GetRoleUsers(c *gin.Context) {
 	roleIDStr := c.Param("roleID")
 
@@ -182,6 +227,17 @@ func (h *UserRoleHandler) GetRoleUsers(c *gin.Context) {
 }
 
 // GetUserPermissions 获取用户的所有权限（通过角色继承）
+// @Summary      获取用户的所有权限
+// @Description  获取用户通过角色继承的所有权限
+// @Tags         rbac-user-roles
+// @Accept       json
+// @Produce      json
+// @Param        userID  path      int  true  "用户ID"
+// @Success      200     {object}  object{success=bool,data=[]models.PermissionResponse,count=int}
+// @Failure      400     {object}  object{success=bool,message=string}
+// @Failure      404     {object}  object{success=bool,message=string}
+// @Failure      500     {object}  object{success=bool,message=string}
+// @Router       /rbac/user-roles/{userID}/permissions [get]
 func (h *UserRoleHandler) GetUserPermissions(c *gin.Context) {
 	userIDStr := c.Param("userID")
 
@@ -219,6 +275,17 @@ func (h *UserRoleHandler) GetUserPermissions(c *gin.Context) {
 }
 
 // CheckUserPermission 检查用户是否拥有指定权限
+// @Summary      检查用户权限
+// @Description  检查用户是否拥有指定权限
+// @Tags         rbac-user-roles
+// @Accept       json
+// @Produce      json
+// @Param        userID       path      int  true  "用户ID"
+// @Param        permissionID path      int  true  "权限ID"
+// @Success      200          {object}  object{success=bool,has_permission=bool,data=object}
+// @Failure      400          {object}  object{success=bool,message=string}
+// @Failure      500          {object}  object{success=bool,message=string}
+// @Router       /rbac/user-roles/{userID}/permissions/{permissionID}/check [get]
 func (h *UserRoleHandler) CheckUserPermission(c *gin.Context) {
 	userIDStr := c.Param("userID")
 	permissionIDStr := c.Param("permissionID")

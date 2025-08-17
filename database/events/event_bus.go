@@ -26,16 +26,16 @@ const (
 
 // Event 表示一个数据库事件
 type Event struct {
-	Type       EventType              // 事件类型
-	EntityType string                 // 实体类型 (如 "User", "Role" 等)
-	Operation  ent.Op                 // 操作类型 (Create, Update, Delete 等)
-	Context    context.Context        // 上下文
-	Mutation   ent.Mutation           // 变更信息
-	OldValue   ent.Value              // 变更前的值 (仅 post 事件有效)
-	NewValue   ent.Value              // 变更后的值 (仅 post 事件有效)
-	Error      error                  // 错误信息 (仅 post 事件有效)
-	Fields     map[string]interface{} // 变更的字段
-	Timestamp  time.Time              // 事件时间
+	Type       EventType       // 事件类型
+	EntityType string          // 实体类型 (如 "User", "Role" 等)
+	Operation  ent.Op          // 操作类型 (Create, Update, Delete 等)
+	Context    context.Context // 上下文
+	Mutation   ent.Mutation    // 变更信息
+	OldValue   ent.Value       // 变更前的值 (仅 post 事件有效)
+	NewValue   ent.Value       // 变更后的值 (仅 post 事件有效)
+	Error      error           // 错误信息 (仅 post 事件有效)
+	Fields     map[string]any  // 变更的字段
+	Timestamp  time.Time       // 事件时间
 }
 
 // EventHandler 事件处理器接口
@@ -186,8 +186,8 @@ func extractEntityType(m ent.Mutation) string {
 }
 
 // extractFields 从 mutation 中提取变更的字段
-func extractFields(m ent.Mutation) map[string]interface{} {
-	fields := make(map[string]interface{})
+func extractFields(m ent.Mutation) map[string]any {
+	fields := make(map[string]any)
 
 	// 获取变更的字段名
 	fieldNames := m.Fields()

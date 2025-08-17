@@ -23,6 +23,14 @@ func NewScanHandler() *ScanHandler {
 }
 
 // GetScans 获取所有扫描记录
+// @Summary      获取所有扫描记录
+// @Description  获取系统中所有扫描记录的列表
+// @Tags         scans
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  object{success=bool,data=[]object,count=int}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /scans [get]
 func (h *ScanHandler) GetScans(c *gin.Context) {
 	scans, err := funcs.GetAllScans(context.Background())
 	if err != nil {
@@ -38,6 +46,19 @@ func (h *ScanHandler) GetScans(c *gin.Context) {
 }
 
 // GetScansWithPagination 分页获取扫描记录列表
+// @Summary      分页获取扫描记录列表
+// @Description  根据分页参数获取扫描记录列表
+// @Tags         scans
+// @Accept       json
+// @Produce      json
+// @Param        page      query     int     false  "页码"     default(1)
+// @Param        page_size query     int     false  "每页数量"  default(10)
+// @Param        order     query     string  false  "排序方式"  default(desc)
+// @Param        order_by  query     string  false  "排序字段"  default(create_time)
+// @Success      200  {object}  object{success=bool,data=[]object,pagination=object}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /scans/page [get]
 func (h *ScanHandler) GetScansWithPagination(c *gin.Context) {
 	var req models.PageScansRequest
 
@@ -68,6 +89,17 @@ func (h *ScanHandler) GetScansWithPagination(c *gin.Context) {
 }
 
 // GetScan 根据ID获取扫描记录
+// @Summary      根据ID获取扫描记录
+// @Description  根据扫描记录ID获取扫描记录详细信息
+// @Tags         scans
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "扫描记录ID"
+// @Success      200  {object}  object{success=bool,data=object}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /scans/{id} [get]
 func (h *ScanHandler) GetScan(c *gin.Context) {
 	idStr := c.Param("id")
 
@@ -106,6 +138,16 @@ func (h *ScanHandler) GetScan(c *gin.Context) {
 }
 
 // CreateScan 创建扫描记录
+// @Summary      创建扫描记录
+// @Description  创建新的扫描记录
+// @Tags         scans
+// @Accept       json
+// @Produce      json
+// @Param        scan  body      models.CreateScanRequest  true  "扫描记录信息"
+// @Success      201   {object}  object{success=bool,data=object}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /scans [post]
 func (h *ScanHandler) CreateScan(c *gin.Context) {
 	var req models.CreateScanRequest
 
@@ -135,6 +177,18 @@ func (h *ScanHandler) CreateScan(c *gin.Context) {
 }
 
 // UpdateScan 更新扫描记录
+// @Summary      更新扫描记录
+// @Description  根据ID更新扫描记录信息
+// @Tags         scans
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int                       true  "扫描记录ID"
+// @Param        scan  body      models.UpdateScanRequest  true  "扫描记录信息"
+// @Success      200   {object}  object{success=bool,data=object}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      404   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /scans/{id} [put]
 func (h *ScanHandler) UpdateScan(c *gin.Context) {
 	idStr := c.Param("id")
 
@@ -210,6 +264,19 @@ func (h *ScanHandler) DeleteScan(c *gin.Context) {
 }
 
 // ExportScansToExcel 导出扫描记录为Excel
+// @Summary      导出扫描记录为Excel
+// @Description  将扫描记录导出为Excel文件
+// @Tags         scans
+// @Accept       json
+// @Produce      application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+// @Param        page      query     int     false  "页码"     default(1)
+// @Param        page_size query     int     false  "每页数量"  default(10000)
+// @Param        order     query     string  false  "排序方式"  default(desc)
+// @Param        order_by  query     string  false  "排序字段"  default(create_time)
+// @Success      200  {file}   file    "Excel文件"
+// @Failure      400  {object} object{success=bool,message=string}
+// @Failure      500  {object} object{success=bool,message=string}
+// @Router       /scans/export [get]
 func (h *ScanHandler) ExportScansToExcel(c *gin.Context) {
 	var req models.PageScansRequest
 

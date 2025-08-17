@@ -21,6 +21,14 @@ func NewUserHandler() *UserHandler {
 }
 
 // GetUsers 获取所有用户
+// @Summary      获取所有用户
+// @Description  获取系统中所有用户的列表
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  object{success=bool,data=[]object,count=int}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /users [get]
 func (h *UserHandler) GetUsers(c *gin.Context) {
 	users, err := funcs.GetAllUsers(context.Background())
 	if err != nil {
@@ -37,6 +45,19 @@ func (h *UserHandler) GetUsers(c *gin.Context) {
 }
 
 // GetUsersWithPagination 分页获取用户列表
+// @Summary      分页获取用户列表
+// @Description  根据分页参数获取用户列表
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        page      query     int     false  "页码"     default(1)
+// @Param        page_size query     int     false  "每页数量"  default(10)
+// @Param        order     query     string  false  "排序方式"  default(desc)
+// @Param        order_by  query     string  false  "排序字段"  default(create_time)
+// @Success      200  {object}  object{success=bool,data=[]object,pagination=object}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /users/page [get]
 func (h *UserHandler) GetUsersWithPagination(c *gin.Context) {
 	var req models.GetUsersRequest
 
@@ -67,6 +88,17 @@ func (h *UserHandler) GetUsersWithPagination(c *gin.Context) {
 }
 
 // GetUser 根据ID获取用户
+// @Summary      根据ID获取用户
+// @Description  根据用户ID获取用户详细信息
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "用户ID"
+// @Success      200  {object}  object{success=bool,data=object}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /users/{id} [get]
 func (h *UserHandler) GetUser(c *gin.Context) {
 	idStr := c.Param("id")
 
@@ -104,6 +136,16 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 }
 
 // CreateUser 创建用户
+// @Summary      创建用户
+// @Description  创建新用户
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.CreateUserRequest  true  "用户信息"
+// @Success      201   {object}  object{success=bool,data=object}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /users [post]
 func (h *UserHandler) CreateUser(c *gin.Context) {
 	var req models.CreateUserRequest
 
@@ -145,6 +187,18 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 }
 
 // UpdateUser 更新用户
+// @Summary      更新用户
+// @Description  根据ID更新用户信息
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int                       true  "用户ID"
+// @Param        user  body      models.UpdateUserRequest  true  "用户信息"
+// @Success      200   {object}  object{success=bool,data=object}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      404   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /users/{id} [put]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
 	idStr := c.Param("id")
 
@@ -182,6 +236,17 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 }
 
 // DeleteUser 删除用户
+// @Summary      删除用户
+// @Description  根据ID删除用户
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "用户ID"
+// @Success      200  {object}  object{success=bool,message=string}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /users/{id} [delete]
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 	idStr := c.Param("id")
 

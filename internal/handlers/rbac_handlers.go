@@ -32,6 +32,14 @@ func NewPermissionHandler() *PermissionHandler {
 // === 角色相关方法 ===
 
 // GetAllRoles 获取所有角色（不分页）
+// @Summary      获取所有角色
+// @Description  获取系统中所有角色的列表（不分页）
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  object{success=bool,data=[]models.RoleResponse,count=int}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/all [get]
 func (h *RoleHandler) GetAllRoles(c *gin.Context) {
 	roles, err := funcs.GetAllRoles(context.Background())
 	if err != nil {
@@ -53,6 +61,19 @@ func (h *RoleHandler) GetAllRoles(c *gin.Context) {
 }
 
 // GetRoles 分页获取角色列表
+// @Summary      分页获取角色列表
+// @Description  根据分页参数获取角色列表
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        page      query     int     false  "页码"     default(1)
+// @Param        page_size query     int     false  "每页数量"  default(10)
+// @Param        order     query     string  false  "排序方式"  default(asc)
+// @Param        order_by  query     string  false  "排序字段"  default(id)
+// @Success      200  {object}  object{success=bool,data=[]models.RoleResponse,pagination=object}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /rbac/roles [get]
 func (h *RoleHandler) GetRoles(c *gin.Context) {
 	var req models.GetRolesRequest
 
@@ -82,6 +103,17 @@ func (h *RoleHandler) GetRoles(c *gin.Context) {
 }
 
 // GetRole 根据ID获取角色
+// @Summary      根据ID获取角色
+// @Description  根据角色ID获取角色详细信息
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "角色ID"
+// @Success      200  {object}  object{success=bool,data=models.RoleResponse}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/{id} [get]
 func (h *RoleHandler) GetRole(c *gin.Context) {
 	idStr := c.Param("id")
 
@@ -117,6 +149,16 @@ func (h *RoleHandler) GetRole(c *gin.Context) {
 }
 
 // CreateRole 创建角色
+// @Summary      创建角色
+// @Description  创建新的角色
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        role  body      models.CreateRoleRequest  true  "角色信息"
+// @Success      201   {object}  object{success=bool,data=models.RoleResponse,message=string}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /rbac/roles [post]
 func (h *RoleHandler) CreateRole(c *gin.Context) {
 	var req models.CreateRoleRequest
 
@@ -150,6 +192,18 @@ func (h *RoleHandler) CreateRole(c *gin.Context) {
 }
 
 // UpdateRole 更新角色
+// @Summary      更新角色
+// @Description  根据ID更新角色信息
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int                       true  "角色ID"
+// @Param        role  body      models.UpdateRoleRequest  true  "角色信息"
+// @Success      200   {object}  object{success=bool,data=models.RoleResponse,message=string}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      404   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/{id} [put]
 func (h *RoleHandler) UpdateRole(c *gin.Context) {
 	idStr := c.Param("id")
 
@@ -187,6 +241,17 @@ func (h *RoleHandler) UpdateRole(c *gin.Context) {
 }
 
 // DeleteRole 删除角色
+// @Summary      删除角色
+// @Description  根据ID删除角色
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "角色ID"
+// @Success      200  {object}  object{success=bool,message=string}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/{id} [delete]
 func (h *RoleHandler) DeleteRole(c *gin.Context) {
 	idStr := c.Param("id")
 
@@ -217,6 +282,17 @@ func (h *RoleHandler) DeleteRole(c *gin.Context) {
 }
 
 // AssignRolePermissions 分配角色权限
+// @Summary      分配角色权限
+// @Description  为角色分配权限
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        id          path      int                                  true  "角色ID"
+// @Param        permissions body      models.AssignRolePermissionsRequest  true  "权限ID列表"
+// @Success      200         {object}  object{success=bool,message=string}
+// @Failure      400         {object}  object{success=bool,message=string}
+// @Failure      500         {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/{id}/permissions [post]
 func (h *RoleHandler) AssignRolePermissions(c *gin.Context) {
 	idStr := c.Param("id")
 
@@ -247,6 +323,18 @@ func (h *RoleHandler) AssignRolePermissions(c *gin.Context) {
 }
 
 // RevokeRolePermission 撤销角色权限
+// @Summary      撤销角色权限
+// @Description  撤销角色的指定权限
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        id           path      int  true  "角色ID"
+// @Param        permissionId path      int  true  "权限ID"
+// @Success      200          {object}  object{success=bool,message=string}
+// @Failure      400          {object}  object{success=bool,message=string}
+// @Failure      404          {object}  object{success=bool,message=string}
+// @Failure      500          {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/{id}/permissions/{permissionId} [delete]
 func (h *RoleHandler) RevokeRolePermission(c *gin.Context) {
 	roleIDStr := c.Param("id")
 	permissionIDStr := c.Param("permissionId")
@@ -289,6 +377,14 @@ func (h *RoleHandler) RevokeRolePermission(c *gin.Context) {
 // === 权限相关方法 ===
 
 // GetAllPermissions 获取所有权限（不分页）
+// @Summary      获取所有权限
+// @Description  获取系统中所有权限的列表（不分页）
+// @Tags         rbac-permissions
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  object{success=bool,data=[]models.PermissionResponse,count=int}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /rbac/permissions/all [get]
 func (h *PermissionHandler) GetAllPermissions(c *gin.Context) {
 	permissions, err := funcs.GetAllPermissions(context.Background())
 	if err != nil {
@@ -310,6 +406,19 @@ func (h *PermissionHandler) GetAllPermissions(c *gin.Context) {
 }
 
 // GetPermissions 分页获取权限列表
+// @Summary      分页获取权限列表
+// @Description  根据分页参数获取权限列表
+// @Tags         rbac-permissions
+// @Accept       json
+// @Produce      json
+// @Param        page      query     int     false  "页码"     default(1)
+// @Param        page_size query     int     false  "每页数量"  default(10)
+// @Param        order     query     string  false  "排序方式"  default(asc)
+// @Param        order_by  query     string  false  "排序字段"  default(id)
+// @Success      200  {object}  object{success=bool,data=[]models.PermissionResponse,pagination=object}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /rbac/permissions [get]
 func (h *PermissionHandler) GetPermissions(c *gin.Context) {
 	var req models.GetPermissionsRequest
 
@@ -339,6 +448,17 @@ func (h *PermissionHandler) GetPermissions(c *gin.Context) {
 }
 
 // GetPermission 根据ID获取权限
+// @Summary      根据ID获取权限
+// @Description  根据权限ID获取权限详细信息
+// @Tags         rbac-permissions
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "权限ID"
+// @Success      200  {object}  object{success=bool,data=models.PermissionResponse}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /rbac/permissions/{id} [get]
 func (h *PermissionHandler) GetPermission(c *gin.Context) {
 	idStr := c.Param("id")
 
@@ -374,6 +494,16 @@ func (h *PermissionHandler) GetPermission(c *gin.Context) {
 }
 
 // CreatePermission 创建权限
+// @Summary      创建权限
+// @Description  创建新的权限
+// @Tags         rbac-permissions
+// @Accept       json
+// @Produce      json
+// @Param        permission  body      models.CreatePermissionRequest  true  "权限信息"
+// @Success      201         {object}  object{success=bool,data=models.PermissionResponse,message=string}
+// @Failure      400         {object}  object{success=bool,message=string}
+// @Failure      500         {object}  object{success=bool,message=string}
+// @Router       /rbac/permissions [post]
 func (h *PermissionHandler) CreatePermission(c *gin.Context) {
 	var req models.CreatePermissionRequest
 
@@ -413,6 +543,18 @@ func (h *PermissionHandler) CreatePermission(c *gin.Context) {
 }
 
 // UpdatePermission 更新权限
+// @Summary      更新权限
+// @Description  根据ID更新权限信息
+// @Tags         rbac-permissions
+// @Accept       json
+// @Produce      json
+// @Param        id          path      int                             true  "权限ID"
+// @Param        permission  body      models.UpdatePermissionRequest  true  "权限信息"
+// @Success      200         {object}  object{success=bool,data=models.PermissionResponse,message=string}
+// @Failure      400         {object}  object{success=bool,message=string}
+// @Failure      404         {object}  object{success=bool,message=string}
+// @Failure      500         {object}  object{success=bool,message=string}
+// @Router       /rbac/permissions/{id} [put]
 func (h *PermissionHandler) UpdatePermission(c *gin.Context) {
 	idStr := c.Param("id")
 
@@ -450,6 +592,17 @@ func (h *PermissionHandler) UpdatePermission(c *gin.Context) {
 }
 
 // DeletePermission 删除权限
+// @Summary      删除权限
+// @Description  根据ID删除权限
+// @Tags         rbac-permissions
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "权限ID"
+// @Success      200  {object}  object{success=bool,message=string}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /rbac/permissions/{id} [delete]
 func (h *PermissionHandler) DeletePermission(c *gin.Context) {
 	idStr := c.Param("id")
 
