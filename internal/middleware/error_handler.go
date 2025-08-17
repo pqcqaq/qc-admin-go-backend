@@ -12,7 +12,7 @@ import (
 
 // ErrorHandlerMiddleware 错误处理中间件
 func ErrorHandlerMiddleware() gin.HandlerFunc {
-	return gin.CustomRecoveryWithWriter(gin.DefaultWriter, func(c *gin.Context, recovered interface{}) {
+	return gin.CustomRecoveryWithWriter(gin.DefaultWriter, func(c *gin.Context, recovered any) {
 		handleError(c, recovered)
 	})
 }
@@ -31,7 +31,7 @@ func ErrorHandler() gin.HandlerFunc {
 }
 
 // handleError 处理panic恢复的错误
-func handleError(c *gin.Context, recovered interface{}) {
+func handleError(c *gin.Context, recovered any) {
 	var customErr *CustomError
 	var ok bool
 
@@ -40,7 +40,7 @@ func handleError(c *gin.Context, recovered interface{}) {
 		// 如果不是自定义错误，创建一个内部服务器错误
 		customErr = InternalServerError(
 			"服务器内部错误",
-			map[string]interface{}{
+			map[string]any{
 				"error": recovered,
 			},
 		)
@@ -106,7 +106,7 @@ func logError(c *gin.Context, customErr *CustomError, isPanic bool) {
 		errorType = "Panic"
 	}
 
-	logData := map[string]interface{}{
+	logData := map[string]any{
 		"type":       errorType,
 		"code":       customErr.Code,
 		"message":    customErr.Message,

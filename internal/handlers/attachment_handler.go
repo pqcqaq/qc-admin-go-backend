@@ -26,6 +26,14 @@ func NewAttachmentHandler() *AttachmentHandler {
 }
 
 // GetAttachments 获取所有附件
+// @Summary      获取所有附件
+// @Description  获取系统中所有附件的列表
+// @Tags         attachments
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  object{success=bool,data=[]object,count=int}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /attachments [get]
 func (h *AttachmentHandler) GetAttachments(c *gin.Context) {
 	attachments, err := funcs.GetAllAttachments(context.Background())
 	if err != nil {
@@ -41,6 +49,19 @@ func (h *AttachmentHandler) GetAttachments(c *gin.Context) {
 }
 
 // GetAttachmentsWithPagination 分页获取附件列表
+// @Summary      分页获取附件列表
+// @Description  根据分页参数获取附件列表
+// @Tags         attachments
+// @Accept       json
+// @Produce      json
+// @Param        page      query     int     false  "页码"     default(1)
+// @Param        page_size query     int     false  "每页数量"  default(10)
+// @Param        order     query     string  false  "排序方式"  default(desc)
+// @Param        order_by  query     string  false  "排序字段"  default(create_time)
+// @Success      200  {object}  object{success=bool,data=[]object,pagination=object}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /attachments/paginated [get]
 func (h *AttachmentHandler) GetAttachmentsWithPagination(c *gin.Context) {
 	var req models.GetAttachmentsRequest
 
@@ -71,6 +92,17 @@ func (h *AttachmentHandler) GetAttachmentsWithPagination(c *gin.Context) {
 }
 
 // GetAttachment 根据ID获取附件
+// @Summary      根据ID获取附件
+// @Description  根据附件ID获取附件详细信息
+// @Tags         attachments
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "附件ID"
+// @Success      200  {object}  object{success=bool,data=object}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /attachments/{id} [get]
 func (h *AttachmentHandler) GetAttachment(c *gin.Context) {
 	idStr := c.Param("id")
 
@@ -82,7 +114,7 @@ func (h *AttachmentHandler) GetAttachment(c *gin.Context) {
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -92,7 +124,7 @@ func (h *AttachmentHandler) GetAttachment(c *gin.Context) {
 	if err != nil {
 		// 根据错误类型抛出不同的自定义错误
 		if err.Error() == "attachment not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]any{
 				"id": id,
 			}))
 		} else {
@@ -108,6 +140,16 @@ func (h *AttachmentHandler) GetAttachment(c *gin.Context) {
 }
 
 // CreateAttachment 创建附件
+// @Summary      创建附件
+// @Description  创建新的附件记录
+// @Tags         attachments
+// @Accept       json
+// @Produce      json
+// @Param        attachment  body      models.CreateAttachmentRequest  true  "附件信息"
+// @Success      201         {object}  object{success=bool,data=object}
+// @Failure      400         {object}  object{success=bool,message=string}
+// @Failure      500         {object}  object{success=bool,message=string}
+// @Router       /attachments [post]
 func (h *AttachmentHandler) CreateAttachment(c *gin.Context) {
 	var req models.CreateAttachmentRequest
 
@@ -147,7 +189,7 @@ func (h *AttachmentHandler) CreateAttachment(c *gin.Context) {
 	if err != nil {
 		// 根据错误内容判断错误类型
 		if err.Error() == "attachment already exists" {
-			middleware.ThrowError(c, middleware.NewCustomError(middleware.ErrCodeConflict, "附件已存在", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NewCustomError(middleware.ErrCodeConflict, "附件已存在", map[string]any{
 				"path": req.Path,
 			}))
 		} else {
@@ -164,12 +206,24 @@ func (h *AttachmentHandler) CreateAttachment(c *gin.Context) {
 }
 
 // UpdateAttachment 更新附件
+// @Summary      更新附件
+// @Description  根据ID更新附件信息
+// @Tags         attachments
+// @Accept       json
+// @Produce      json
+// @Param        id          path      int                            true  "附件ID"
+// @Param        attachment  body      models.UpdateAttachmentRequest true  "附件信息"
+// @Success      200         {object}  object{success=bool,data=object}
+// @Failure      400         {object}  object{success=bool,message=string}
+// @Failure      404         {object}  object{success=bool,message=string}
+// @Failure      500         {object}  object{success=bool,message=string}
+// @Router       /attachments/{id} [put]
 func (h *AttachmentHandler) UpdateAttachment(c *gin.Context) {
 	idStr := c.Param("id")
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -184,7 +238,7 @@ func (h *AttachmentHandler) UpdateAttachment(c *gin.Context) {
 	attachment, err := funcs.UpdateAttachment(context.Background(), id, &req)
 	if err != nil {
 		if err.Error() == "attachment not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]any{
 				"id": id,
 			}))
 		} else {
@@ -206,7 +260,7 @@ func (h *AttachmentHandler) DeleteAttachment(c *gin.Context) {
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -215,7 +269,7 @@ func (h *AttachmentHandler) DeleteAttachment(c *gin.Context) {
 	err = funcs.DeleteAttachment(context.Background(), id)
 	if err != nil {
 		if err.Error() == "attachment not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]any{
 				"id": id,
 			}))
 		} else {
@@ -231,12 +285,23 @@ func (h *AttachmentHandler) DeleteAttachment(c *gin.Context) {
 }
 
 // GetAttachmentURL 获取附件的预签名URL
+// @Summary      获取附件预签名URL
+// @Description  获取附件的预签名URL用于直接下载
+// @Tags         attachments
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "附件ID"
+// @Success      200  {object}  object{success=bool,data=object{url=string}}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /attachments/{id}/url [get]
 func (h *AttachmentHandler) GetAttachmentURL(c *gin.Context) {
 	idStr := c.Param("id")
 
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]interface{}{
+		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]any{
 			"provided_id": idStr,
 		}))
 		return
@@ -246,7 +311,7 @@ func (h *AttachmentHandler) GetAttachmentURL(c *gin.Context) {
 	attachment, err := funcs.GetAttachmentByID(context.Background(), id)
 	if err != nil {
 		if err.Error() == "attachment not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]any{
 				"id": id,
 			}))
 		} else {
@@ -281,6 +346,16 @@ func (h *AttachmentHandler) GetAttachmentURL(c *gin.Context) {
 }
 
 // PrepareUpload 准备文件上传，返回上传凭证
+// @Summary      准备文件上传
+// @Description  获取文件上传凭证和预签名URL
+// @Tags         attachments
+// @Accept       json
+// @Produce      json
+// @Param        upload  body      models.PrepareUploadRequest  true  "上传准备信息"
+// @Success      200     {object}  object{success=bool,data=object,message=string}
+// @Failure      400     {object}  object{success=bool,message=string}
+// @Failure      500     {object}  object{success=bool,message=string}
+// @Router       /attachments/prepare-upload [post]
 func (h *AttachmentHandler) PrepareUpload(c *gin.Context) {
 	var req models.PrepareUploadRequest
 
@@ -321,6 +396,16 @@ func (h *AttachmentHandler) PrepareUpload(c *gin.Context) {
 }
 
 // ConfirmUpload 确认文件上传完成
+// @Summary      确认文件上传完成
+// @Description  确认文件已上传到S3并创建附件记录
+// @Tags         attachments
+// @Accept       json
+// @Produce      json
+// @Param        upload  body      models.ConfirmUploadRequest  true  "上传确认信息"
+// @Success      200     {object}  object{success=bool,data=object,message=string}
+// @Failure      400     {object}  object{success=bool,message=string}
+// @Failure      500     {object}  object{success=bool,message=string}
+// @Router       /attachments/confirm-upload [post]
 func (h *AttachmentHandler) ConfirmUpload(c *gin.Context) {
 	var req models.ConfirmUploadRequest
 
@@ -340,11 +425,11 @@ func (h *AttachmentHandler) ConfirmUpload(c *gin.Context) {
 	attachment, err := funcs.ConfirmUpload(context.Background(), &req)
 	if err != nil {
 		if err.Error() == "upload session not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("上传会话不存在", map[string]interface{}{
+			middleware.ThrowError(c, middleware.NotFoundError("上传会话不存在", map[string]any{
 				"upload_session_id": req.UploadSessionID,
 			}))
 		} else if err.Error() == "invalid upload session status" {
-			middleware.ThrowError(c, middleware.BadRequestError("无效的上传会话状态", map[string]interface{}{
+			middleware.ThrowError(c, middleware.BadRequestError("无效的上传会话状态", map[string]any{
 				"upload_session_id": req.UploadSessionID,
 			}))
 		} else {
@@ -382,6 +467,20 @@ func (h *AttachmentHandler) ConfirmUpload(c *gin.Context) {
 }
 
 // DirectUpload 直接上传文件表单
+// @Summary      直接上传文件表单
+// @Description  直接上传文件到S3并创建附件记录
+// @Tags         attachments
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        file   formData  file  true  "上传的文件"
+// @Param        bucket formData  string  false "存储桶名称" default("default-bucket")
+// @Param        tag1   formData  string  false "标签1"
+// @Param        tag2   formData  string  false "标签2"
+// @Param        tag3   formData  string  false "标签3"
+// @Success      200    {object}  object{success=bool,data=models.AttachmentResponse,message=string}
+// @Failure      400    {object}  object{success=bool,message=string}
+// @Failure      500    {object}  object{success=bool,message=string}
+// @Router       /attachments/direct-upload [post]
 func (h *AttachmentHandler) DirectUpload(c *gin.Context) {
 	// 解析表单数据
 	err := c.Request.ParseMultipartForm(32 << 20) // 32MB max memory

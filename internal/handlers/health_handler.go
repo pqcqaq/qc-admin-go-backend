@@ -20,6 +20,13 @@ func NewHealthHandler() *HealthHandler {
 }
 
 // Health 健康检查端点
+// @Summary      健康检查
+// @Description  检查服务健康状态
+// @Tags         health
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  models.HealthResponse
+// @Router       /health [get]
 func (h *HealthHandler) Health(c *gin.Context) {
 	var dbStatus string
 	if database.IsInstanceInitialized() {

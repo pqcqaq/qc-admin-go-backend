@@ -12,8 +12,23 @@ type Attachment func(*sql.Selector)
 // Logging is the predicate function for logging builders.
 type Logging func(*sql.Selector)
 
+// Permission is the predicate function for permission builders.
+type Permission func(*sql.Selector)
+
+// Role is the predicate function for role builders.
+type Role func(*sql.Selector)
+
+// RolePermission is the predicate function for rolepermission builders.
+type RolePermission func(*sql.Selector)
+
 // Scan is the predicate function for scan builders.
 type Scan func(*sql.Selector)
 
+// Scope is the predicate function for scope builders.
+type Scope func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
+
+// UserRole is the predicate function for userrole builders.
+type UserRole func(*sql.Selector)

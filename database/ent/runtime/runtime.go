@@ -5,8 +5,13 @@ package runtime
 import (
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/logging"
+	"go-backend/database/ent/permission"
+	"go-backend/database/ent/role"
+	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scan"
+	"go-backend/database/ent/scope"
 	"go-backend/database/ent/user"
+	"go-backend/database/ent/userrole"
 	"go-backend/database/schema"
 	"time"
 )
@@ -151,6 +156,86 @@ func init() {
 	loggingDescStack := loggingFields[10].Descriptor()
 	// logging.StackValidator is a validator for the "stack" field. It is called by the builders before save.
 	logging.StackValidator = loggingDescStack.Validators[0].(func(string) error)
+	permissionMixin := schema.Permission{}.Mixin()
+	permissionMixinHooks0 := permissionMixin[0].Hooks()
+	permissionMixinHooks1 := permissionMixin[1].Hooks()
+	permission.Hooks[0] = permissionMixinHooks0[0]
+	permission.Hooks[1] = permissionMixinHooks0[1]
+	permission.Hooks[2] = permissionMixinHooks1[0]
+	permissionMixinInters1 := permissionMixin[1].Interceptors()
+	permission.Interceptors[0] = permissionMixinInters1[0]
+	permissionMixinFields0 := permissionMixin[0].Fields()
+	_ = permissionMixinFields0
+	permissionFields := schema.Permission{}.Fields()
+	_ = permissionFields
+	// permissionDescCreateTime is the schema descriptor for create_time field.
+	permissionDescCreateTime := permissionMixinFields0[1].Descriptor()
+	// permission.DefaultCreateTime holds the default value on creation for the create_time field.
+	permission.DefaultCreateTime = permissionDescCreateTime.Default.(func() time.Time)
+	// permissionDescUpdateTime is the schema descriptor for update_time field.
+	permissionDescUpdateTime := permissionMixinFields0[3].Descriptor()
+	// permission.DefaultUpdateTime holds the default value on creation for the update_time field.
+	permission.DefaultUpdateTime = permissionDescUpdateTime.Default.(func() time.Time)
+	// permission.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	permission.UpdateDefaultUpdateTime = permissionDescUpdateTime.UpdateDefault.(func() time.Time)
+	// permissionDescName is the schema descriptor for name field.
+	permissionDescName := permissionFields[0].Descriptor()
+	// permission.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	permission.NameValidator = permissionDescName.Validators[0].(func(string) error)
+	// permissionDescAction is the schema descriptor for action field.
+	permissionDescAction := permissionFields[1].Descriptor()
+	// permission.ActionValidator is a validator for the "action" field. It is called by the builders before save.
+	permission.ActionValidator = permissionDescAction.Validators[0].(func(string) error)
+	roleMixin := schema.Role{}.Mixin()
+	roleMixinHooks0 := roleMixin[0].Hooks()
+	roleMixinHooks1 := roleMixin[1].Hooks()
+	roleMixinHooks2 := roleMixin[2].Hooks()
+	role.Hooks[0] = roleMixinHooks0[0]
+	role.Hooks[1] = roleMixinHooks0[1]
+	role.Hooks[2] = roleMixinHooks1[0]
+	role.Hooks[3] = roleMixinHooks2[0]
+	roleMixinInters1 := roleMixin[1].Interceptors()
+	role.Interceptors[0] = roleMixinInters1[0]
+	roleMixinFields0 := roleMixin[0].Fields()
+	_ = roleMixinFields0
+	roleFields := schema.Role{}.Fields()
+	_ = roleFields
+	// roleDescCreateTime is the schema descriptor for create_time field.
+	roleDescCreateTime := roleMixinFields0[1].Descriptor()
+	// role.DefaultCreateTime holds the default value on creation for the create_time field.
+	role.DefaultCreateTime = roleDescCreateTime.Default.(func() time.Time)
+	// roleDescUpdateTime is the schema descriptor for update_time field.
+	roleDescUpdateTime := roleMixinFields0[3].Descriptor()
+	// role.DefaultUpdateTime holds the default value on creation for the update_time field.
+	role.DefaultUpdateTime = roleDescUpdateTime.Default.(func() time.Time)
+	// role.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	role.UpdateDefaultUpdateTime = roleDescUpdateTime.UpdateDefault.(func() time.Time)
+	// roleDescName is the schema descriptor for name field.
+	roleDescName := roleFields[0].Descriptor()
+	// role.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	role.NameValidator = roleDescName.Validators[0].(func(string) error)
+	rolepermissionMixin := schema.RolePermission{}.Mixin()
+	rolepermissionMixinHooks0 := rolepermissionMixin[0].Hooks()
+	rolepermissionMixinHooks1 := rolepermissionMixin[1].Hooks()
+	rolepermission.Hooks[0] = rolepermissionMixinHooks0[0]
+	rolepermission.Hooks[1] = rolepermissionMixinHooks0[1]
+	rolepermission.Hooks[2] = rolepermissionMixinHooks1[0]
+	rolepermissionMixinInters1 := rolepermissionMixin[1].Interceptors()
+	rolepermission.Interceptors[0] = rolepermissionMixinInters1[0]
+	rolepermissionMixinFields0 := rolepermissionMixin[0].Fields()
+	_ = rolepermissionMixinFields0
+	rolepermissionFields := schema.RolePermission{}.Fields()
+	_ = rolepermissionFields
+	// rolepermissionDescCreateTime is the schema descriptor for create_time field.
+	rolepermissionDescCreateTime := rolepermissionMixinFields0[1].Descriptor()
+	// rolepermission.DefaultCreateTime holds the default value on creation for the create_time field.
+	rolepermission.DefaultCreateTime = rolepermissionDescCreateTime.Default.(func() time.Time)
+	// rolepermissionDescUpdateTime is the schema descriptor for update_time field.
+	rolepermissionDescUpdateTime := rolepermissionMixinFields0[3].Descriptor()
+	// rolepermission.DefaultUpdateTime holds the default value on creation for the update_time field.
+	rolepermission.DefaultUpdateTime = rolepermissionDescUpdateTime.Default.(func() time.Time)
+	// rolepermission.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	rolepermission.UpdateDefaultUpdateTime = rolepermissionDescUpdateTime.UpdateDefault.(func() time.Time)
 	scanMixin := schema.Scan{}.Mixin()
 	scanMixinHooks0 := scanMixin[0].Hooks()
 	scanMixinHooks1 := scanMixin[1].Hooks()
@@ -195,6 +280,44 @@ func init() {
 	scanDescLength := scanFields[1].Descriptor()
 	// scan.LengthValidator is a validator for the "length" field. It is called by the builders before save.
 	scan.LengthValidator = scanDescLength.Validators[0].(func(int) error)
+	scopeMixin := schema.Scope{}.Mixin()
+	scopeMixinHooks0 := scopeMixin[0].Hooks()
+	scopeMixinHooks1 := scopeMixin[1].Hooks()
+	scope.Hooks[0] = scopeMixinHooks0[0]
+	scope.Hooks[1] = scopeMixinHooks0[1]
+	scope.Hooks[2] = scopeMixinHooks1[0]
+	scopeMixinInters1 := scopeMixin[1].Interceptors()
+	scope.Interceptors[0] = scopeMixinInters1[0]
+	scopeMixinFields0 := scopeMixin[0].Fields()
+	_ = scopeMixinFields0
+	scopeFields := schema.Scope{}.Fields()
+	_ = scopeFields
+	// scopeDescCreateTime is the schema descriptor for create_time field.
+	scopeDescCreateTime := scopeMixinFields0[1].Descriptor()
+	// scope.DefaultCreateTime holds the default value on creation for the create_time field.
+	scope.DefaultCreateTime = scopeDescCreateTime.Default.(func() time.Time)
+	// scopeDescUpdateTime is the schema descriptor for update_time field.
+	scopeDescUpdateTime := scopeMixinFields0[3].Descriptor()
+	// scope.DefaultUpdateTime holds the default value on creation for the update_time field.
+	scope.DefaultUpdateTime = scopeDescUpdateTime.Default.(func() time.Time)
+	// scope.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	scope.UpdateDefaultUpdateTime = scopeDescUpdateTime.UpdateDefault.(func() time.Time)
+	// scopeDescName is the schema descriptor for name field.
+	scopeDescName := scopeFields[0].Descriptor()
+	// scope.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	scope.NameValidator = scopeDescName.Validators[0].(func(string) error)
+	// scopeDescOrder is the schema descriptor for order field.
+	scopeDescOrder := scopeFields[8].Descriptor()
+	// scope.DefaultOrder holds the default value on creation for the order field.
+	scope.DefaultOrder = scopeDescOrder.Default.(int)
+	// scopeDescHidden is the schema descriptor for hidden field.
+	scopeDescHidden := scopeFields[9].Descriptor()
+	// scope.DefaultHidden holds the default value on creation for the hidden field.
+	scope.DefaultHidden = scopeDescHidden.Default.(bool)
+	// scopeDescDisabled is the schema descriptor for disabled field.
+	scopeDescDisabled := scopeFields[10].Descriptor()
+	// scope.DefaultDisabled holds the default value on creation for the disabled field.
+	scope.DefaultDisabled = scopeDescDisabled.Default.(bool)
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks0 := userMixin[0].Hooks()
 	userMixinHooks1 := userMixin[1].Hooks()
@@ -261,6 +384,28 @@ func init() {
 	userDescPhone := userFields[3].Descriptor()
 	// user.PhoneValidator is a validator for the "phone" field. It is called by the builders before save.
 	user.PhoneValidator = userDescPhone.Validators[0].(func(string) error)
+	userroleMixin := schema.UserRole{}.Mixin()
+	userroleMixinHooks0 := userroleMixin[0].Hooks()
+	userroleMixinHooks1 := userroleMixin[1].Hooks()
+	userrole.Hooks[0] = userroleMixinHooks0[0]
+	userrole.Hooks[1] = userroleMixinHooks0[1]
+	userrole.Hooks[2] = userroleMixinHooks1[0]
+	userroleMixinInters1 := userroleMixin[1].Interceptors()
+	userrole.Interceptors[0] = userroleMixinInters1[0]
+	userroleMixinFields0 := userroleMixin[0].Fields()
+	_ = userroleMixinFields0
+	userroleFields := schema.UserRole{}.Fields()
+	_ = userroleFields
+	// userroleDescCreateTime is the schema descriptor for create_time field.
+	userroleDescCreateTime := userroleMixinFields0[1].Descriptor()
+	// userrole.DefaultCreateTime holds the default value on creation for the create_time field.
+	userrole.DefaultCreateTime = userroleDescCreateTime.Default.(func() time.Time)
+	// userroleDescUpdateTime is the schema descriptor for update_time field.
+	userroleDescUpdateTime := userroleMixinFields0[3].Descriptor()
+	// userrole.DefaultUpdateTime holds the default value on creation for the update_time field.
+	userrole.DefaultUpdateTime = userroleDescUpdateTime.Default.(func() time.Time)
+	// userrole.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	userrole.UpdateDefaultUpdateTime = userroleDescUpdateTime.UpdateDefault.(func() time.Time)
 }
 
 const (

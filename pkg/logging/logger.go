@@ -21,17 +21,18 @@ const (
 
 // LoggerInterface 定义日志接口，供其他包使用
 type LoggerInterface interface {
-	Debug(format string, args ...interface{})
-	Info(format string, args ...interface{})
-	Warn(format string, args ...interface{})
-	Error(format string, args ...interface{})
-	Fatal(format string, args ...interface{})
+	Debug(format string, args ...any)
+	Info(format string, args ...any)
+	Warn(format string, args ...any)
+	Error(format string, args ...any)
+	Fatal(format string, args ...any)
 }
 
 // Logger 结构体定义
 type Logger struct {
-	level  LogLevel
-	prefix string
+	level     LogLevel
+	prefix    string
+	component string
 }
 
 // 确保Logger实现了LoggerInterface接口
@@ -39,23 +40,36 @@ var _ LoggerInterface = (*Logger)(nil)
 
 // 颜色定义
 var (
-	debugColor = color.New(color.FgCyan)
-	infoColor  = color.New(color.FgGreen)
-	warnColor  = color.New(color.FgYellow)
-	errorColor = color.New(color.FgRed)
-	fatalColor = color.New(color.FgRed, color.Bold)
-	timeColor  = color.New(color.FgBlue)
+	debugColor  = color.New(color.FgCyan)
+	infoColor   = color.New(color.FgGreen)
+	warnColor   = color.New(color.FgYellow)
+	errorColor  = color.New(color.FgRed)
+	fatalColor  = color.New(color.FgRed, color.Bold)
+	timeColor   = color.New(color.FgBlue)
 	prefixColor = color.New(color.FgMagenta)
 )
 
 // 全局logger实例
 var defaultLogger *Logger
 
+func WithName(name string) *Logger {
+	return defaultLogger.WithComponent(name)
+}
+
+func (l *Logger) WithComponent(component string) *Logger {
+	return &Logger{
+		level:     l.level,
+		prefix:    l.prefix,
+		component: component,
+	}
+}
+
 // 初始化默认logger
 func init() {
 	defaultLogger = &Logger{
-		level:  INFO,
-		prefix: "APP",
+		level:     INFO,
+		prefix:    "APP",
+		component: "GLOBAL",
 	}
 }
 
@@ -75,7 +89,7 @@ func formatTime() string {
 }
 
 // 通用日志输出函数
-func (l *Logger) log(level LogLevel, levelName string, colorFunc *color.Color, format string, args ...interface{}) {
+func (l *Logger) log(level LogLevel, levelName string, colorFunc *color.Color, component string, format string, args ...any) {
 	if level < l.level {
 		return
 	}
@@ -83,35 +97,38 @@ func (l *Logger) log(level LogLevel, levelName string, colorFunc *color.Color, f
 	timestamp := timeColor.Sprintf("[%s]", formatTime())
 	prefix := prefixColor.Sprintf("[%s]", l.prefix)
 	levelStr := colorFunc.Sprintf("[%s]", levelName)
-	
+
+	if component != "" {
+		prefix = fmt.Sprintf("%s [%s]", prefix, component)
+	}
 	message := fmt.Sprintf(format, args...)
-	
+
 	fmt.Printf("%s %s %s %s\n", timestamp, prefix, levelStr, message)
 }
 
 // Debug 输出调试信息
-func (l *Logger) Debug(format string, args ...interface{}) {
-	l.log(DEBUG, "DEBUG", debugColor, format, args...)
+func (l *Logger) Debug(format string, args ...any) {
+	l.log(DEBUG, "DEBUG", debugColor, l.component, format, args...)
 }
 
 // Info 输出信息
-func (l *Logger) Info(format string, args ...interface{}) {
-	l.log(INFO, "INFO", infoColor, format, args...)
+func (l *Logger) Info(format string, args ...any) {
+	l.log(INFO, "INFO", infoColor, l.component, format, args...)
 }
 
 // Warn 输出警告
-func (l *Logger) Warn(format string, args ...interface{}) {
-	l.log(WARN, "WARN", warnColor, format, args...)
+func (l *Logger) Warn(format string, args ...any) {
+	l.log(WARN, "WARN", warnColor, l.component, format, args...)
 }
 
 // Error 输出错误
-func (l *Logger) Error(format string, args ...interface{}) {
-	l.log(ERROR, "ERROR", errorColor, format, args...)
+func (l *Logger) Error(format string, args ...any) {
+	l.log(ERROR, "ERROR", errorColor, l.component, format, args...)
 }
 
 // Fatal 输出致命错误并退出程序
-func (l *Logger) Fatal(format string, args ...interface{}) {
-	l.log(FATAL, "FATAL", fatalColor, format, args...)
+func (l *Logger) Fatal(format string, args ...any) {
+	l.log(FATAL, "FATAL", fatalColor, l.component, format, args...)
 	os.Exit(1)
 }
 
@@ -128,23 +145,23 @@ func SetPrefix(prefix string) {
 	defaultLogger.SetPrefix(prefix)
 }
 
-func Debug(format string, args ...interface{}) {
+func Debug(format string, args ...any) {
 	defaultLogger.Debug(format, args...)
 }
 
-func Info(format string, args ...interface{}) {
+func Info(format string, args ...any) {
 	defaultLogger.Info(format, args...)
 }
 
-func Warn(format string, args ...interface{}) {
+func Warn(format string, args ...any) {
 	defaultLogger.Warn(format, args...)
 }
 
-func Error(format string, args ...interface{}) {
+func Error(format string, args ...any) {
 	defaultLogger.Error(format, args...)
 }
 
-func Fatal(format string, args ...interface{}) {
+func Fatal(format string, args ...any) {
 	defaultLogger.Fatal(format, args...)
 }
 

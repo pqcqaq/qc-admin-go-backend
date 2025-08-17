@@ -8,8 +8,13 @@ import (
 	"fmt"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/logging"
+	"go-backend/database/ent/permission"
+	"go-backend/database/ent/role"
+	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scan"
+	"go-backend/database/ent/scope"
 	"go-backend/database/ent/user"
+	"go-backend/database/ent/userrole"
 	"reflect"
 	"sync"
 
@@ -76,10 +81,15 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			attachment.Table: attachment.ValidColumn,
-			logging.Table:    logging.ValidColumn,
-			scan.Table:       scan.ValidColumn,
-			user.Table:       user.ValidColumn,
+			attachment.Table:     attachment.ValidColumn,
+			logging.Table:        logging.ValidColumn,
+			permission.Table:     permission.ValidColumn,
+			role.Table:           role.ValidColumn,
+			rolepermission.Table: rolepermission.ValidColumn,
+			scan.Table:           scan.ValidColumn,
+			scope.Table:          scope.ValidColumn,
+			user.Table:           user.ValidColumn,
+			userrole.Table:       userrole.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

@@ -86,3 +86,6 @@ ehthumbs.db
 
 # Linux
 *~
+
+# Ent migration files
+migration/

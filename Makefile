@@ -29,6 +29,9 @@ help: ## 显示帮助信息
 	@echo "  make build                    # 构建包含所有驱动的版本"
 	@echo "  make build DB_TAGS=sqlite     # 构建仅包含 SQLite 驱动的版本"
 	@echo "  make build DB_TAGS=\"mysql postgres\" # 构建包含 MySQL 和 PostgreSQL 驱动的版本"
+	@echo "  make swagger                  # 生成 Swagger 文档"
+	@echo "  make run-with-swagger         # 生成文档并启动服务器"
+	@echo "  make init-full                # 完整初始化项目（包括 Swagger）"
 
 # 初始化项目
 .PHONY: init
@@ -37,10 +40,34 @@ init: ## 初始化项目（下载依赖和生成Ent代码）
 	go install entgo.io/ent/cmd/ent@latest
 	go generate ./ent
 
+# 完整初始化项目
+.PHONY: init-full
+init-full: ## 完整初始化项目（包括依赖、Ent代码和Swagger文档）
+	@echo "Initializing project..."
+	go mod tidy
+	go install entgo.io/ent/cmd/ent@latest
+	@$(MAKE) install-swagger
+	go generate ./ent
+	@$(MAKE) swagger
+	@echo "Project initialization completed!"
+
 # 生成Ent代码
 .PHONY: generate
 generate: ## 生成Ent ORM代码
 	go generate ./ent
+
+# 生成Swagger文档
+.PHONY: swagger
+swagger: ## 生成Swagger API文档
+	@echo "Generating Swagger documentation..."
+	go run github.com/swaggo/swag/cmd/swag@latest init
+	@echo "Swagger documentation generated successfully!"
+	@echo "Swagger UI will be available at: http://localhost:8080/swagger/index.html"
+
+# 安装Swagger工具
+.PHONY: install-swagger
+install-swagger: ## 安装Swagger CLI工具
+	go install github.com/swaggo/swag/cmd/swag@latest
 
 # 构建项目
 .PHONY: build
@@ -73,6 +100,16 @@ build-all-variants: ## 构建所有单数据库驱动版本
 run: ## 运行项目
 	go run -tags "$(DB_TAGS)" $(MAIN_PATH)
 
+# 运行项目并生成Swagger文档
+.PHONY: run-with-swagger
+run-with-swagger: ## 生成Swagger文档并运行项目
+	@echo "Generating Swagger documentation..."
+	@$(MAKE) swagger
+	@echo "Starting server with Swagger documentation..."
+	@echo "Swagger UI: http://localhost:8080/swagger/index.html"
+	@echo "Health Check: http://localhost:8080/health"
+	go run -tags "$(DB_TAGS)" $(MAIN_PATH)
+
 # 运行项目（带热重载）
 .PHONY: dev
 dev: ## 开发模式运行（需要安装air）
@@ -83,6 +120,13 @@ dev: ## 开发模式运行（需要安装air）
 clean: ## 清理构建文件
 	rm -f $(BINARY_NAME)*
 	rm -f ent.db
+
+# 清理所有生成文件
+.PHONY: clean-all
+clean-all: ## 清理构建文件和生成的文档
+	rm -f $(BINARY_NAME)*
+	rm -f ent.db
+	rm -rf docs/
 
 # 测试
 .PHONY: test

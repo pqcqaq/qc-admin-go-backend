@@ -18,10 +18,20 @@ type Tx struct {
 	Attachment *AttachmentClient
 	// Logging is the client for interacting with the Logging builders.
 	Logging *LoggingClient
+	// Permission is the client for interacting with the Permission builders.
+	Permission *PermissionClient
+	// Role is the client for interacting with the Role builders.
+	Role *RoleClient
+	// RolePermission is the client for interacting with the RolePermission builders.
+	RolePermission *RolePermissionClient
 	// Scan is the client for interacting with the Scan builders.
 	Scan *ScanClient
+	// Scope is the client for interacting with the Scope builders.
+	Scope *ScopeClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserRole is the client for interacting with the UserRole builders.
+	UserRole *UserRoleClient
 
 	// lazily loaded.
 	client     *Client
@@ -155,8 +165,13 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Attachment = NewAttachmentClient(tx.config)
 	tx.Logging = NewLoggingClient(tx.config)
+	tx.Permission = NewPermissionClient(tx.config)
+	tx.Role = NewRoleClient(tx.config)
+	tx.RolePermission = NewRolePermissionClient(tx.config)
 	tx.Scan = NewScanClient(tx.config)
+	tx.Scope = NewScopeClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.UserRole = NewUserRoleClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

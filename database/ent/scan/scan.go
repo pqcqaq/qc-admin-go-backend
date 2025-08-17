@@ -41,7 +41,7 @@ const (
 	AttachmentTable = "scans"
 	// AttachmentInverseTable is the table name for the Attachment entity.
 	// It exists in this package in order to avoid circular dependency with the "attachment" package.
-	AttachmentInverseTable = "attachments"
+	AttachmentInverseTable = "sys_attachments"
 	// AttachmentColumn is the table column denoting the attachment relation/edge.
 	AttachmentColumn = "scan_attachment"
 )

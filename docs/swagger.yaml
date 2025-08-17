@@ -1,0 +1,3019 @@
+basePath: /api/v1
+definitions:
+  models.AssignRolePermissionsRequest:
+    properties:
+      permissionIds:
+        description: 权限ID列表
+        items:
+          type: string
+        type: array
+    required:
+    - permissionIds
+    type: object
+  models.AssignUserRoleRequest:
+    properties:
+      roleId:
+        type: integer
+      userId:
+        type: integer
+    required:
+    - roleId
+    - userId
+    type: object
+  models.AttachmentResponse:
+    properties:
+      bucket:
+        type: string
+      contentType:
+        type: string
+      createTime:
+        type: string
+      etag:
+        type: string
+      filename:
+        type: string
+      id:
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      path:
+        type: string
+      size:
+        type: integer
+      status:
+        type: string
+      storageProvider:
+        type: string
+      tag1:
+        type: string
+      tag2:
+        type: string
+      tag3:
+        type: string
+      updateTime:
+        type: string
+      uploadSessionId:
+        type: string
+      url:
+        type: string
+    type: object
+  models.ConfirmUploadRequest:
+    properties:
+      actualSize:
+        type: integer
+      etag:
+        type: string
+      uploadSessionId:
+        type: string
+    required:
+    - uploadSessionId
+    type: object
+  models.CreateAttachmentRequest:
+    properties:
+      bucket:
+        type: string
+      contentType:
+        type: string
+      etag:
+        type: string
+      filename:
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      path:
+        type: string
+      size:
+        minimum: 1
+        type: integer
+      status:
+        type: string
+      storageProvider:
+        type: string
+      tag1:
+        type: string
+      tag2:
+        type: string
+      tag3:
+        type: string
+      uploadSessionId:
+        type: string
+      url:
+        type: string
+    required:
+    - bucket
+    - contentType
+    - filename
+    - path
+    - size
+    type: object
+  models.CreatePermissionRequest:
+    properties:
+      action:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      scopeId:
+        description: 权限域ID
+        type: string
+    required:
+    - action
+    - name
+    type: object
+  models.CreateRoleRequest:
+    properties:
+      description:
+        type: string
+      inheritsFrom:
+        description: 继承的父角色ID列表
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  models.CreateScanRequest:
+    properties:
+      content:
+        description: 扫描内容
+        type: string
+      imageId:
+        description: 关联的图片ID
+        type: string
+      success:
+        description: 扫描是否成功
+        type: boolean
+    required:
+    - content
+    - success
+    type: object
+  models.CreateScopeRequest:
+    properties:
+      action:
+        type: string
+      component:
+        type: string
+      description:
+        type: string
+      disabled:
+        type: boolean
+      hidden:
+        type: boolean
+      icon:
+        type: string
+      name:
+        type: string
+      order:
+        type: integer
+      parentId:
+        description: 父级ID
+        type: string
+      path:
+        type: string
+      redirect:
+        type: string
+      type:
+        enum:
+        - menu
+        - page
+        - button
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  models.CreateUserRequest:
+    properties:
+      age:
+        type: integer
+      createTime:
+        description: 创建时间
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      updateTime:
+        description: 更新时间
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  models.HealthResponse:
+    properties:
+      components:
+        additionalProperties:
+          type: string
+        type: object
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  models.PermissionResponse:
+    properties:
+      action:
+        type: string
+      createTime:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      scope:
+        allOf:
+        - $ref: '#/definitions/models.ScopeResponse'
+        description: 所属权限域
+      updateTime:
+        type: string
+    type: object
+  models.PrepareUploadRequest:
+    properties:
+      bucket:
+        type: string
+      contentType:
+        type: string
+      filename:
+        type: string
+      size:
+        minimum: 1
+        type: integer
+      tag1:
+        type: string
+      tag2:
+        type: string
+      tag3:
+        type: string
+    required:
+    - contentType
+    - filename
+    - size
+    type: object
+  models.RoleResponse:
+    properties:
+      createTime:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      inheritedBy:
+        description: 被哪些角色继承
+        items:
+          $ref: '#/definitions/models.RoleResponse'
+        type: array
+      inheritsFrom:
+        description: 继承的父角色
+        items:
+          $ref: '#/definitions/models.RoleResponse'
+        type: array
+      name:
+        type: string
+      permissions:
+        description: 角色拥有的权限
+        items:
+          $ref: '#/definitions/models.PermissionResponse'
+        type: array
+      updateTime:
+        type: string
+    type: object
+  models.ScopeResponse:
+    properties:
+      action:
+        type: string
+      children:
+        description: 子级权限域
+        items:
+          $ref: '#/definitions/models.ScopeResponse'
+        type: array
+      component:
+        type: string
+      createTime:
+        type: string
+      description:
+        type: string
+      disabled:
+        type: boolean
+      hidden:
+        type: boolean
+      icon:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      order:
+        type: integer
+      parent:
+        allOf:
+        - $ref: '#/definitions/models.ScopeResponse'
+        description: 父级权限域
+      parentId:
+        type: string
+      path:
+        type: string
+      permissions:
+        description: 关联的权限
+        items:
+          $ref: '#/definitions/models.PermissionResponse'
+        type: array
+      redirect:
+        type: string
+      type:
+        type: string
+      updateTime:
+        type: string
+    type: object
+  models.UpdateAttachmentRequest:
+    properties:
+      bucket:
+        type: string
+      contentType:
+        type: string
+      etag:
+        type: string
+      filename:
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      path:
+        type: string
+      size:
+        type: integer
+      status:
+        type: string
+      storageProvider:
+        type: string
+      tag1:
+        type: string
+      tag2:
+        type: string
+      tag3:
+        type: string
+      uploadSessionId:
+        type: string
+      url:
+        type: string
+    type: object
+  models.UpdatePermissionRequest:
+    properties:
+      action:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      scopeId:
+        description: 权限域ID
+        type: string
+    type: object
+  models.UpdateRoleRequest:
+    properties:
+      description:
+        type: string
+      inheritsFrom:
+        description: 继承的父角色ID列表
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+    type: object
+  models.UpdateScanRequest:
+    properties:
+      content:
+        description: 扫描内容
+        type: string
+      imageId:
+        description: 关联的图片ID
+        type: string
+      success:
+        description: 扫描是否成功
+        type: boolean
+    required:
+    - content
+    - success
+    type: object
+  models.UpdateScopeRequest:
+    properties:
+      action:
+        type: string
+      component:
+        type: string
+      description:
+        type: string
+      disabled:
+        type: boolean
+      hidden:
+        type: boolean
+      icon:
+        type: string
+      name:
+        type: string
+      order:
+        type: integer
+      parentId:
+        description: 父级ID
+        type: string
+      path:
+        type: string
+      redirect:
+        type: string
+      type:
+        type: string
+    type: object
+  models.UpdateUserRequest:
+    properties:
+      age:
+        type: integer
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  models.UserResponse:
+    properties:
+      age:
+        type: integer
+      createTime:
+        description: 创建时间
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      updateTime:
+        description: 更新时间
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: 这是一个基于Go和Gin框架的后端API服务
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Go Backend API
+  version: "1.0"
+paths:
+  /attachments:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统中所有附件的列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  type: object
+                type: array
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取所有附件
+      tags:
+      - attachments
+    post:
+      consumes:
+      - application/json
+      description: 创建新的附件记录
+      parameters:
+      - description: 附件信息
+        in: body
+        name: attachment
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateAttachmentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 创建附件
+      tags:
+      - attachments
+  /attachments/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据附件ID获取附件详细信息
+      parameters:
+      - description: 附件ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 根据ID获取附件
+      tags:
+      - attachments
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新附件信息
+      parameters:
+      - description: 附件ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 附件信息
+        in: body
+        name: attachment
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateAttachmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 更新附件
+      tags:
+      - attachments
+  /attachments/{id}/url:
+    get:
+      consumes:
+      - application/json
+      description: 获取附件的预签名URL用于直接下载
+      parameters:
+      - description: 附件ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                properties:
+                  url:
+                    type: string
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取附件预签名URL
+      tags:
+      - attachments
+  /attachments/confirm-upload:
+    post:
+      consumes:
+      - application/json
+      description: 确认文件已上传到S3并创建附件记录
+      parameters:
+      - description: 上传确认信息
+        in: body
+        name: upload
+        required: true
+        schema:
+          $ref: '#/definitions/models.ConfirmUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 确认文件上传完成
+      tags:
+      - attachments
+  /attachments/direct-upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 直接上传文件到S3并创建附件记录
+      parameters:
+      - description: 上传的文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      - default: '"default-bucket"'
+        description: 存储桶名称
+        in: formData
+        name: bucket
+        type: string
+      - description: 标签1
+        in: formData
+        name: tag1
+        type: string
+      - description: 标签2
+        in: formData
+        name: tag2
+        type: string
+      - description: 标签3
+        in: formData
+        name: tag3
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.AttachmentResponse'
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 直接上传文件表单
+      tags:
+      - attachments
+  /attachments/paginated:
+    get:
+      consumes:
+      - application/json
+      description: 根据分页参数获取附件列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: desc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: create_time
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  type: object
+                type: array
+              pagination:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 分页获取附件列表
+      tags:
+      - attachments
+  /attachments/prepare-upload:
+    post:
+      consumes:
+      - application/json
+      description: 获取文件上传凭证和预签名URL
+      parameters:
+      - description: 上传准备信息
+        in: body
+        name: upload
+        required: true
+        schema:
+          $ref: '#/definitions/models.PrepareUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 准备文件上传
+      tags:
+      - attachments
+  /demo/error:
+    get:
+      consumes:
+      - application/json
+      description: 演示不同类型的错误处理机制
+      parameters:
+      - description: 错误类型
+        enum:
+        - panic
+        - validation
+        - database
+        - notfound
+        - unauthorized
+        - forbidden
+        - conflict
+        - success
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 演示错误处理
+      tags:
+      - demo
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: 检查服务健康状态
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HealthResponse'
+      summary: 健康检查
+      tags:
+      - health
+  /rbac/permissions:
+    get:
+      consumes:
+      - application/json
+      description: 根据分页参数获取权限列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: asc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: id
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  $ref: '#/definitions/models.PermissionResponse'
+                type: array
+              pagination:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 分页获取权限列表
+      tags:
+      - rbac-permissions
+    post:
+      consumes:
+      - application/json
+      description: 创建新的权限
+      parameters:
+      - description: 权限信息
+        in: body
+        name: permission
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.PermissionResponse'
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 创建权限
+      tags:
+      - rbac-permissions
+  /rbac/permissions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除权限
+      parameters:
+      - description: 权限ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 删除权限
+      tags:
+      - rbac-permissions
+    get:
+      consumes:
+      - application/json
+      description: 根据权限ID获取权限详细信息
+      parameters:
+      - description: 权限ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.PermissionResponse'
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 根据ID获取权限
+      tags:
+      - rbac-permissions
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新权限信息
+      parameters:
+      - description: 权限ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 权限信息
+        in: body
+        name: permission
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdatePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.PermissionResponse'
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 更新权限
+      tags:
+      - rbac-permissions
+  /rbac/permissions/all:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统中所有权限的列表（不分页）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  $ref: '#/definitions/models.PermissionResponse'
+                type: array
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取所有权限
+      tags:
+      - rbac-permissions
+  /rbac/roles:
+    get:
+      consumes:
+      - application/json
+      description: 根据分页参数获取角色列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: asc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: id
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  $ref: '#/definitions/models.RoleResponse'
+                type: array
+              pagination:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 分页获取角色列表
+      tags:
+      - rbac-roles
+    post:
+      consumes:
+      - application/json
+      description: 创建新的角色
+      parameters:
+      - description: 角色信息
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.RoleResponse'
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 创建角色
+      tags:
+      - rbac-roles
+  /rbac/roles/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除角色
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 删除角色
+      tags:
+      - rbac-roles
+    get:
+      consumes:
+      - application/json
+      description: 根据角色ID获取角色详细信息
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.RoleResponse'
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 根据ID获取角色
+      tags:
+      - rbac-roles
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新角色信息
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 角色信息
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.RoleResponse'
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 更新角色
+      tags:
+      - rbac-roles
+  /rbac/roles/{id}/permissions:
+    post:
+      consumes:
+      - application/json
+      description: 为角色分配权限
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 权限ID列表
+        in: body
+        name: permissions
+        required: true
+        schema:
+          $ref: '#/definitions/models.AssignRolePermissionsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 分配角色权限
+      tags:
+      - rbac-roles
+  /rbac/roles/{id}/permissions/{permissionId}:
+    delete:
+      consumes:
+      - application/json
+      description: 撤销角色的指定权限
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 权限ID
+        in: path
+        name: permissionId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 撤销角色权限
+      tags:
+      - rbac-roles
+  /rbac/roles/all:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统中所有角色的列表（不分页）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  $ref: '#/definitions/models.RoleResponse'
+                type: array
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取所有角色
+      tags:
+      - rbac-roles
+  /rbac/scopes:
+    get:
+      consumes:
+      - application/json
+      description: 根据分页参数获取权限域列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: asc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: order
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  $ref: '#/definitions/models.ScopeResponse'
+                type: array
+              pagination:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 分页获取权限域列表
+      tags:
+      - rbac-scopes
+    post:
+      consumes:
+      - application/json
+      description: 创建新的权限域
+      parameters:
+      - description: 权限域信息
+        in: body
+        name: scope
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateScopeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.ScopeResponse'
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 创建权限域
+      tags:
+      - rbac-scopes
+  /rbac/scopes/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除权限域
+      parameters:
+      - description: 权限域ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 删除权限域
+      tags:
+      - rbac-scopes
+    get:
+      consumes:
+      - application/json
+      description: 根据权限域ID获取权限域详细信息
+      parameters:
+      - description: 权限域ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.ScopeResponse'
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 根据ID获取权限域
+      tags:
+      - rbac-scopes
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新权限域信息
+      parameters:
+      - description: 权限域ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 权限域信息
+        in: body
+        name: scope
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateScopeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.ScopeResponse'
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 更新权限域
+      tags:
+      - rbac-scopes
+  /rbac/scopes/all:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统中所有权限域的列表（不分页）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  $ref: '#/definitions/models.ScopeResponse'
+                type: array
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取所有权限域
+      tags:
+      - rbac-scopes
+  /rbac/scopes/tree:
+    get:
+      consumes:
+      - application/json
+      description: 获取权限域的树形结构数据
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取权限域树形结构
+      tags:
+      - rbac-scopes
+  /rbac/user-roles/{userID}/permissions:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户通过角色继承的所有权限
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  $ref: '#/definitions/models.PermissionResponse'
+                type: array
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取用户的所有权限
+      tags:
+      - rbac-user-roles
+  /rbac/user-roles/{userID}/permissions/{permissionID}/check:
+    get:
+      consumes:
+      - application/json
+      description: 检查用户是否拥有指定权限
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      - description: 权限ID
+        in: path
+        name: permissionID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              has_permission:
+                type: boolean
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 检查用户权限
+      tags:
+      - rbac-user-roles
+  /rbac/user-roles/{userID}/roles:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定用户拥有的所有角色
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  $ref: '#/definitions/models.RoleResponse'
+                type: array
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取用户的所有角色
+      tags:
+      - rbac-user-roles
+  /rbac/user-roles/{userID}/roles/{roleID}:
+    delete:
+      consumes:
+      - application/json
+      description: 撤销指定用户的角色
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      - description: 角色ID
+        in: path
+        name: roleID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 撤销用户角色
+      tags:
+      - rbac-user-roles
+  /rbac/user-roles/assign:
+    post:
+      consumes:
+      - application/json
+      description: 为指定用户分配角色
+      parameters:
+      - description: 用户角色分配信息
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/models.AssignUserRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                type: object
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 为用户分配角色
+      tags:
+      - rbac-user-roles
+  /rbac/user-roles/roles/{roleID}/users:
+    get:
+      consumes:
+      - application/json
+      description: 获取拥有指定角色的所有用户列表
+      parameters:
+      - description: 角色ID
+        in: path
+        name: roleID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  $ref: '#/definitions/models.UserResponse'
+                type: array
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取拥有指定角色的所有用户
+      tags:
+      - rbac-user-roles
+  /scans:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统中所有扫描记录的列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  type: object
+                type: array
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取所有扫描记录
+      tags:
+      - scans
+    post:
+      consumes:
+      - application/json
+      description: 创建新的扫描记录
+      parameters:
+      - description: 扫描记录信息
+        in: body
+        name: scan
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateScanRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 创建扫描记录
+      tags:
+      - scans
+  /scans/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据扫描记录ID获取扫描记录详细信息
+      parameters:
+      - description: 扫描记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 根据ID获取扫描记录
+      tags:
+      - scans
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新扫描记录信息
+      parameters:
+      - description: 扫描记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 扫描记录信息
+        in: body
+        name: scan
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateScanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 更新扫描记录
+      tags:
+      - scans
+  /scans/export:
+    get:
+      consumes:
+      - application/json
+      description: 将扫描记录导出为Excel文件
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10000
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: desc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: create_time
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel文件
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 导出扫描记录为Excel
+      tags:
+      - scans
+  /scans/page:
+    get:
+      consumes:
+      - application/json
+      description: 根据分页参数获取扫描记录列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: desc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: create_time
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  type: object
+                type: array
+              pagination:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 分页获取扫描记录列表
+      tags:
+      - scans
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统中所有用户的列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  type: object
+                type: array
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取所有用户
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: 创建新用户
+      parameters:
+      - description: 用户信息
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 创建用户
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除用户
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 删除用户
+      tags:
+      - users
+    get:
+      consumes:
+      - application/json
+      description: 根据用户ID获取用户详细信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 根据ID获取用户
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新用户信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 用户信息
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 更新用户
+      tags:
+      - users
+  /users/page:
+    get:
+      consumes:
+      - application/json
+      description: 根据分页参数获取用户列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: desc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: create_time
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  type: object
+                type: array
+              pagination:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 分页获取用户列表
+      tags:
+      - users
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

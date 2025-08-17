@@ -60,7 +60,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
     
     user, err := h.userService.GetUser(id)
     if err != nil {
-        middleware.ThrowError(c, middleware.UserNotFoundError(map[string]interface{}{
+        middleware.ThrowError(c, middleware.UserNotFoundError(map[string]any{
             "id": id,
         }))
         return
@@ -232,7 +232,7 @@ var ErrorMessages = map[int]string{
     ErrCodeCustomBusiness: "自定义业务错误",
 }
 
-func CustomBusinessError(message string, data interface{}) *CustomError {
+func CustomBusinessError(message string, data any) *CustomError {
     if message == "" {
         message = GetErrorMessage(ErrCodeCustomBusiness)
     }

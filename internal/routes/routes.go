@@ -5,6 +5,10 @@ import (
 	"go-backend/internal/middleware"
 
 	"github.com/gin-gonic/gin"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "go-backend/docs" // 导入swagger文档
 )
 
 // Router 路由配置结构
@@ -22,6 +26,9 @@ func (r *Router) SetupRoutes(engine *gin.Engine) {
 	engine.Use(middleware.ErrorHandlerMiddleware()) // 处理panic恢复
 	engine.Use(middleware.ErrorHandler())           // 处理gin.Error
 
+	// Swagger文档路由
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+
 	// 健康检查端点
 	healthHandler := handlers.NewHealthHandler()
 	engine.GET("/health", healthHandler.Health)
@@ -33,5 +40,6 @@ func (r *Router) SetupRoutes(engine *gin.Engine) {
 		r.setupAttachmentRoutes(api)
 		r.setupScanRoutes(api)
 		r.setupDemoRoutes(api)
+		r.setupRBACRoutes(api)
 	}
 }

@@ -9,9 +9,14 @@ import (
 	"go-backend/database/ent"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/logging"
+	"go-backend/database/ent/permission"
 	"go-backend/database/ent/predicate"
+	"go-backend/database/ent/role"
+	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scan"
+	"go-backend/database/ent/scope"
 	"go-backend/database/ent/user"
+	"go-backend/database/ent/userrole"
 
 	"entgo.io/ent/dialect/sql"
 )
@@ -126,6 +131,87 @@ func (f TraverseLogging) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.LoggingQuery", q)
 }
 
+// The PermissionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type PermissionFunc func(context.Context, *ent.PermissionQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f PermissionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.PermissionQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.PermissionQuery", q)
+}
+
+// The TraversePermission type is an adapter to allow the use of ordinary function as Traverser.
+type TraversePermission func(context.Context, *ent.PermissionQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraversePermission) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraversePermission) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.PermissionQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.PermissionQuery", q)
+}
+
+// The RoleFunc type is an adapter to allow the use of ordinary function as a Querier.
+type RoleFunc func(context.Context, *ent.RoleQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f RoleFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.RoleQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.RoleQuery", q)
+}
+
+// The TraverseRole type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseRole func(context.Context, *ent.RoleQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseRole) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseRole) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.RoleQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.RoleQuery", q)
+}
+
+// The RolePermissionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type RolePermissionFunc func(context.Context, *ent.RolePermissionQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f RolePermissionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.RolePermissionQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.RolePermissionQuery", q)
+}
+
+// The TraverseRolePermission type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseRolePermission func(context.Context, *ent.RolePermissionQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseRolePermission) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseRolePermission) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.RolePermissionQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.RolePermissionQuery", q)
+}
+
 // The ScanFunc type is an adapter to allow the use of ordinary function as a Querier.
 type ScanFunc func(context.Context, *ent.ScanQuery) (ent.Value, error)
 
@@ -151,6 +237,33 @@ func (f TraverseScan) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.ScanQuery", q)
+}
+
+// The ScopeFunc type is an adapter to allow the use of ordinary function as a Querier.
+type ScopeFunc func(context.Context, *ent.ScopeQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f ScopeFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.ScopeQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ScopeQuery", q)
+}
+
+// The TraverseScope type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseScope func(context.Context, *ent.ScopeQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseScope) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseScope) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ScopeQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.ScopeQuery", q)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -180,6 +293,33 @@ func (f TraverseUser) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.UserQuery", q)
 }
 
+// The UserRoleFunc type is an adapter to allow the use of ordinary function as a Querier.
+type UserRoleFunc func(context.Context, *ent.UserRoleQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f UserRoleFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.UserRoleQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.UserRoleQuery", q)
+}
+
+// The TraverseUserRole type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseUserRole func(context.Context, *ent.UserRoleQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseUserRole) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseUserRole) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.UserRoleQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.UserRoleQuery", q)
+}
+
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
@@ -187,10 +327,20 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AttachmentQuery, predicate.Attachment, attachment.OrderOption]{typ: ent.TypeAttachment, tq: q}, nil
 	case *ent.LoggingQuery:
 		return &query[*ent.LoggingQuery, predicate.Logging, logging.OrderOption]{typ: ent.TypeLogging, tq: q}, nil
+	case *ent.PermissionQuery:
+		return &query[*ent.PermissionQuery, predicate.Permission, permission.OrderOption]{typ: ent.TypePermission, tq: q}, nil
+	case *ent.RoleQuery:
+		return &query[*ent.RoleQuery, predicate.Role, role.OrderOption]{typ: ent.TypeRole, tq: q}, nil
+	case *ent.RolePermissionQuery:
+		return &query[*ent.RolePermissionQuery, predicate.RolePermission, rolepermission.OrderOption]{typ: ent.TypeRolePermission, tq: q}, nil
 	case *ent.ScanQuery:
 		return &query[*ent.ScanQuery, predicate.Scan, scan.OrderOption]{typ: ent.TypeScan, tq: q}, nil
+	case *ent.ScopeQuery:
+		return &query[*ent.ScopeQuery, predicate.Scope, scope.OrderOption]{typ: ent.TypeScope, tq: q}, nil
 	case *ent.UserQuery:
 		return &query[*ent.UserQuery, predicate.User, user.OrderOption]{typ: ent.TypeUser, tq: q}, nil
+	case *ent.UserRoleQuery:
+		return &query[*ent.UserRoleQuery, predicate.UserRole, userrole.OrderOption]{typ: ent.TypeUserRole, tq: q}, nil
 	default:
 		return nil, fmt.Errorf("unknown query type %T", q)
 	}

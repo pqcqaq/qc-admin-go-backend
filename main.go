@@ -1,3 +1,22 @@
+// @title           Go Backend API
+// @version         1.0
+// @description     这是一个基于Go和Gin框架的后端API服务
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.basic  BasicAuth
+
+// @externalDocs.description  OpenAPI
+// @externalDocs.url          https://swagger.io/resources/open-api/
 package main
 
 import (
@@ -12,15 +31,20 @@ import (
 	"syscall"
 	"time"
 
+	"go-backend/database"
 	"go-backend/internal/routes"
 	"go-backend/pkg/caching"
 	"go-backend/pkg/configs"
-	"go-backend/pkg/database"
+	pkgdatabase "go-backend/pkg/database"
 	"go-backend/pkg/logging"
 	"go-backend/pkg/s3"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	// 导入ent runtime以注册schema hooks
+	_ "go-backend/database/ent/runtime"
+	"go-backend/database/events"
 )
 
 func main() {
@@ -28,6 +52,9 @@ func main() {
 	var configPath string
 	flag.StringVar(&configPath, "config", "config.yaml", "配置文件路径")
 	flag.StringVar(&configPath, "c", "config.yaml", "配置文件路径（简写）")
+	var autoMigrate string
+	flag.StringVar(&autoMigrate, "migrate", "none", "是否自动迁移数据库模式")
+	flag.StringVar(&autoMigrate, "m", "none", "是否自动迁移数据库模式（简写）")
 
 	// 自定义帮助信息
 	flag.Usage = func() {
@@ -39,6 +66,10 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  %s -c config.dev.yaml        # 使用开发环境配置\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "  %s --config config.prod.yaml # 使用生产环境配置\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "  %s -c /path/to/config.yaml   # 使用绝对路径配置\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s -m          (skip|auto)   # 启动时自动迁移数据库模式\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  %s --migrate   (skip|auto)   # 启动时自动迁移数据库模式（长选项）\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "\n")
+		os.Exit(0)
 	}
 
 	// 解析命令行参数
@@ -56,18 +87,35 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
+	// 通过命令行传入的配置项也合并到配置中
+	{
+		// 是否自动迁移，这个选项优先读取main.go中的命令行参数，否则就配置文件
+		switch autoMigrate {
+		case "skip":
+			config.Database.SkipMigrateCheck = true
+			config.Database.AutoMigrate = false
+		case "auto":
+			config.Database.SkipMigrateCheck = false
+			config.Database.AutoMigrate = true
+		default:
+			// 默认不自动迁移，有不适配直接报错
+			config.Database.SkipMigrateCheck = false
+			config.Database.AutoMigrate = false
+		}
+	}
+
 	// 初始化日志系统
 	logging.SetLevel(logging.ParseLogLevel(config.Logging.Level))
 	logging.SetPrefix(config.Logging.Prefix)
 
 	// 设置数据库包的logger
-	database.SetLogger(logging.GetInstance())
+	pkgdatabase.SetLogger(logging.WithName("Database"))
 
 	// 设置缓存包的logger
-	caching.SetLogger(logging.GetInstance())
+	caching.SetLogger(logging.WithName("Caching"))
 
 	// 设置S3包的logger
-	s3.SetLogger(logging.GetInstance())
+	s3.SetLogger(logging.WithName("S3Client"))
 
 	logging.Info("Config loaded successfully from: %s", resolvedConfigPath)
 	logging.Info("Log level set to: %s", config.Logging.Level)
@@ -77,8 +125,13 @@ func main() {
 	logging.Info("Gin mode set to: %s", config.Server.Mode)
 
 	// 创建数据库连接
-	dbClient := database.InitInstance(&config.Database)
+	dbClient := pkgdatabase.InitInstance(&config.Database)
 	redisClient := caching.InitInstance(&config.Redis)
+
+	// 初始化事件系统（必须在数据库初始化之后）
+	events.SetLogger(logging.WithName("EventBus"))
+	database.InitEventSystem()
+	logging.Info("Event system initialized successfully")
 
 	// 初始化S3客户端
 	if err := s3.InitClient(&config.S3); err != nil {

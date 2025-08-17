@@ -56,7 +56,7 @@ const (
 	// FieldTag3 holds the string denoting the tag3 field in the database.
 	FieldTag3 = "tag3"
 	// Table holds the table name of the attachment in the database.
-	Table = "attachments"
+	Table = "sys_attachments"
 )
 
 // Columns holds all SQL columns for attachment fields.
@@ -84,7 +84,7 @@ var Columns = []string{
 	FieldTag3,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "attachments"
+// ForeignKeys holds the SQL foreign-keys that are owned by the "sys_attachments"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"user_attachments",
