@@ -28,10 +28,11 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sync"
 	"syscall"
 	"time"
 
-	"go-backend/database"
+	basedatabase "go-backend/database"
 	"go-backend/internal/routes"
 	"go-backend/pkg/caching"
 	"go-backend/pkg/configs"
@@ -41,8 +42,10 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 
 	// 导入ent runtime以注册schema hooks
+	database "go-backend/database/ent"
 	_ "go-backend/database/ent/runtime"
 	"go-backend/database/events"
 )
@@ -124,74 +127,130 @@ func main() {
 	gin.SetMode(config.Server.Mode)
 	logging.Info("Gin mode set to: %s", config.Server.Mode)
 
-	// 创建数据库连接
-	dbClient := pkgdatabase.InitInstance(&config.Database)
-	redisClient := caching.InitInstance(&config.Redis)
+	// 使用sync.WaitGroup并行初始化各个组件
+	type InitResults struct {
+		dbClient    *database.Client
+		redisClient *redis.Client
+		s3Error     error
+		engine      *gin.Engine
+	}
+
+	results := &InitResults{}
+
+	// 创建WaitGroup用于等待所有并行初始化完成
+	var initWaitGroup sync.WaitGroup
+	var initMutex sync.Mutex
+
+	// 并行初始化S3客户端
+	initWaitGroup.Add(1)
+	go func() {
+		defer initWaitGroup.Done()
+		if err := s3.InitClient(&config.S3); err != nil {
+			initMutex.Lock()
+			results.s3Error = err
+			initMutex.Unlock()
+			logging.Warn("Failed to initialize S3 client: %v", err)
+		} else {
+			logging.Info("S3 client initialized successfully")
+		}
+	}()
+
+	// 并行初始化数据库连接
+	initWaitGroup.Add(1)
+	go func() {
+		defer initWaitGroup.Done()
+		dbClient := pkgdatabase.InitInstance(&config.Database)
+		initMutex.Lock()
+		results.dbClient = dbClient
+		initMutex.Unlock()
+		logging.Info("Database connection established")
+	}()
+
+	// 并行初始化Redis连接
+	initWaitGroup.Add(1)
+	go func() {
+		defer initWaitGroup.Done()
+		redisClient := caching.InitInstance(&config.Redis)
+		initMutex.Lock()
+		results.redisClient = redisClient
+		initMutex.Unlock()
+		logging.Info("Redis connection established")
+	}()
+
+	// 并行创建和配置Gin引擎
+	initWaitGroup.Add(1)
+	go func() {
+		defer initWaitGroup.Done()
+
+		// 创建Gin引擎
+		engine := gin.Default()
+
+		// 配置CORS跨域中间件
+		if config.Server.CORS.Enabled {
+			var corsConfig cors.Config
+
+			// 如果是debug模式，允许所有来源
+			if config.Server.Debug {
+				corsConfig = cors.Config{
+					AllowAllOrigins:  true,
+					AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"},
+					AllowHeaders:     []string{"*"},
+					ExposeHeaders:    []string{"*"},
+					AllowCredentials: true,
+					MaxAge:           12 * time.Hour,
+				}
+				logging.Warn("CORS enabled with allow all origins (debug mode)")
+			} else {
+				// 生产环境使用配置文件中的设置
+				corsConfig = cors.Config{
+					AllowAllOrigins:  config.Server.CORS.AllowAllOrigins,
+					AllowOrigins:     config.Server.CORS.AllowOrigins,
+					AllowMethods:     config.Server.CORS.AllowMethods,
+					AllowHeaders:     config.Server.CORS.AllowHeaders,
+					ExposeHeaders:    config.Server.CORS.ExposeHeaders,
+					AllowCredentials: config.Server.CORS.AllowCredentials,
+					MaxAge:           time.Duration(config.Server.CORS.MaxAge) * time.Second,
+				}
+				logging.Info("CORS enabled with configured origins: %v", config.Server.CORS.AllowOrigins)
+			}
+
+			engine.Use(cors.New(corsConfig))
+		} else {
+			logging.Info("CORS disabled")
+		}
+
+		// 配置静态文件服务
+		if config.Server.Static.Enabled {
+			// 解析静态文件根目录的绝对路径
+			staticRoot, err := resolveStaticPath(config.Server.Static.Root)
+			if err != nil {
+				logging.Warn("Failed to resolve static root path: %v, static file service disabled", err)
+			} else {
+				engine.Static(config.Server.Static.Path, staticRoot)
+				logging.Info("Static file service enabled - Path: %s, Root: %s", config.Server.Static.Path, staticRoot)
+			}
+		} else {
+			logging.Info("Static file service disabled")
+		}
+
+		initMutex.Lock()
+		results.engine = engine
+		initMutex.Unlock()
+		logging.Info("Gin engine configured")
+	}()
+
+	// 等待所有并行初始化完成
+	initWaitGroup.Wait()
+
+	// 从结果中获取初始化的组件
+	dbClient := results.dbClient
+	redisClient := results.redisClient
+	engine := results.engine
 
 	// 初始化事件系统（必须在数据库初始化之后）
 	events.SetLogger(logging.WithName("EventBus"))
-	database.InitEventSystem()
+	basedatabase.InitEventSystem()
 	logging.Info("Event system initialized successfully")
-
-	// 初始化S3客户端
-	if err := s3.InitClient(&config.S3); err != nil {
-		logging.Warn("Failed to initialize S3 client: %v", err)
-	} else {
-		logging.Info("S3 client initialized successfully")
-	}
-
-	logging.Info("Database connection established")
-
-	// 创建Gin引擎
-	engine := gin.Default()
-
-	// 配置CORS跨域中间件
-	if config.Server.CORS.Enabled {
-		var corsConfig cors.Config
-
-		// 如果是debug模式，允许所有来源
-		if config.Server.Debug {
-			corsConfig = cors.Config{
-				AllowAllOrigins:  true,
-				AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"},
-				AllowHeaders:     []string{"*"},
-				ExposeHeaders:    []string{"*"},
-				AllowCredentials: true,
-				MaxAge:           12 * time.Hour,
-			}
-			logging.Warn("CORS enabled with allow all origins (debug mode)")
-		} else {
-			// 生产环境使用配置文件中的设置
-			corsConfig = cors.Config{
-				AllowAllOrigins:  config.Server.CORS.AllowAllOrigins,
-				AllowOrigins:     config.Server.CORS.AllowOrigins,
-				AllowMethods:     config.Server.CORS.AllowMethods,
-				AllowHeaders:     config.Server.CORS.AllowHeaders,
-				ExposeHeaders:    config.Server.CORS.ExposeHeaders,
-				AllowCredentials: config.Server.CORS.AllowCredentials,
-				MaxAge:           time.Duration(config.Server.CORS.MaxAge) * time.Second,
-			}
-			logging.Info("CORS enabled with configured origins: %v", config.Server.CORS.AllowOrigins)
-		}
-
-		engine.Use(cors.New(corsConfig))
-	} else {
-		logging.Info("CORS disabled")
-	}
-
-	// 配置静态文件服务
-	if config.Server.Static.Enabled {
-		// 解析静态文件根目录的绝对路径
-		staticRoot, err := resolveStaticPath(config.Server.Static.Root)
-		if err != nil {
-			logging.Warn("Failed to resolve static root path: %v, static file service disabled", err)
-		} else {
-			engine.Static(config.Server.Static.Path, staticRoot)
-			logging.Info("Static file service enabled - Path: %s, Root: %s", config.Server.Static.Path, staticRoot)
-		}
-	} else {
-		logging.Info("Static file service disabled")
-	}
 
 	// 设置路由
 	router := routes.NewRouter()
