@@ -52,7 +52,9 @@ type UserEdges struct {
 	UserRoles []*UserRole `json:"user_roles,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes      [2]bool
+	namedAttachments map[string][]*Attachment
+	namedUserRoles   map[string][]*UserRole
 }
 
 // AttachmentsOrErr returns the Attachments value or an error if the edge
@@ -265,6 +267,30 @@ func (_m *User) appendNamedAttachments(name string, edges ...*Attachment) {
 		_m.Edges.namedAttachments[name] = []*Attachment{}
 	} else {
 		_m.Edges.namedAttachments[name] = append(_m.Edges.namedAttachments[name], edges...)
+	}
+}
+
+// NamedUserRoles returns the UserRoles named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *User) NamedUserRoles(name string) ([]*UserRole, error) {
+	if _m.Edges.namedUserRoles == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedUserRoles[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *User) appendNamedUserRoles(name string, edges ...*UserRole) {
+	if _m.Edges.namedUserRoles == nil {
+		_m.Edges.namedUserRoles = make(map[string][]*UserRole)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedUserRoles[name] = []*UserRole{}
+	} else {
+		_m.Edges.namedUserRoles[name] = append(_m.Edges.namedUserRoles[name], edges...)
 	}
 }
 

@@ -22,12 +22,15 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx             *QueryContext
-	order           []user.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.User
-	withAttachments *AttachmentQuery
-	withUserRoles   *UserRoleQuery
+	ctx                  *QueryContext
+	order                []user.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.User
+	withAttachments      *AttachmentQuery
+	withUserRoles        *UserRoleQuery
+	modifiers            []func(*sql.Selector)
+	withNamedAttachments map[string]*AttachmentQuery
+	withNamedUserRoles   map[string]*UserRoleQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -441,17 +444,24 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
-<<<<<<< HEAD
-	for name, query := range _q.withNamedAttachments {
-		if err := _q.loadAttachments(ctx, query, nodes,
-			func(n *User) { n.appendNamedAttachments(name) },
-			func(n *User, e *Attachment) { n.appendNamedAttachments(name, e) }); err != nil {
-=======
 	if query := _q.withUserRoles; query != nil {
 		if err := _q.loadUserRoles(ctx, query, nodes,
 			func(n *User) { n.Edges.UserRoles = []*UserRole{} },
 			func(n *User, e *UserRole) { n.Edges.UserRoles = append(n.Edges.UserRoles, e) }); err != nil {
->>>>>>> fbcab01945186b289f40e4f43d8fe5b177b4188a
+			return nil, err
+		}
+	}
+	for name, query := range _q.withNamedAttachments {
+		if err := _q.loadAttachments(ctx, query, nodes,
+			func(n *User) { n.appendNamedAttachments(name) },
+			func(n *User, e *Attachment) { n.appendNamedAttachments(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range _q.withNamedUserRoles {
+		if err := _q.loadUserRoles(ctx, query, nodes,
+			func(n *User) { n.appendNamedUserRoles(name) },
+			func(n *User, e *UserRole) { n.appendNamedUserRoles(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -644,6 +654,20 @@ func (_q *UserQuery) WithNamedAttachments(name string, opts ...func(*AttachmentQ
 		_q.withNamedAttachments = make(map[string]*AttachmentQuery)
 	}
 	_q.withNamedAttachments[name] = query
+	return _q
+}
+
+// WithNamedUserRoles tells the query-builder to eager-load the nodes that are connected to the "user_roles"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithNamedUserRoles(name string, opts ...func(*UserRoleQuery)) *UserQuery {
+	query := (&UserRoleClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if _q.withNamedUserRoles == nil {
+		_q.withNamedUserRoles = make(map[string]*UserRoleQuery)
+	}
+	_q.withNamedUserRoles[name] = query
 	return _q
 }
 

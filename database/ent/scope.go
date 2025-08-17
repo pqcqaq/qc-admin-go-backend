@@ -70,7 +70,9 @@ type ScopeEdges struct {
 	Permissions []*Permission `json:"permissions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes      [3]bool
+	namedChildren    map[string][]*Scope
+	namedPermissions map[string][]*Permission
 }
 
 // ParentOrErr returns the Parent value or an error if the edge
@@ -350,6 +352,54 @@ func (_m *Scope) String() string {
 	builder.WriteString(fmt.Sprintf("%v", _m.ParentID))
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedChildren returns the Children named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *Scope) NamedChildren(name string) ([]*Scope, error) {
+	if _m.Edges.namedChildren == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedChildren[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *Scope) appendNamedChildren(name string, edges ...*Scope) {
+	if _m.Edges.namedChildren == nil {
+		_m.Edges.namedChildren = make(map[string][]*Scope)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedChildren[name] = []*Scope{}
+	} else {
+		_m.Edges.namedChildren[name] = append(_m.Edges.namedChildren[name], edges...)
+	}
+}
+
+// NamedPermissions returns the Permissions named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *Scope) NamedPermissions(name string) ([]*Permission, error) {
+	if _m.Edges.namedPermissions == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedPermissions[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *Scope) appendNamedPermissions(name string, edges ...*Permission) {
+	if _m.Edges.namedPermissions == nil {
+		_m.Edges.namedPermissions = make(map[string][]*Permission)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedPermissions[name] = []*Permission{}
+	} else {
+		_m.Edges.namedPermissions[name] = append(_m.Edges.namedPermissions[name], edges...)
+	}
 }
 
 // Scopes is a parsable slice of Scope.

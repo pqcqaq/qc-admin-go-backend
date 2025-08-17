@@ -52,7 +52,8 @@ type PermissionEdges struct {
 	Scope *Scope `json:"scope,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes          [2]bool
+	namedRolePermissions map[string][]*RolePermission
 }
 
 // RolePermissionsOrErr returns the RolePermissions value or an error if the edge
@@ -244,6 +245,30 @@ func (_m *Permission) String() string {
 	builder.WriteString(_m.Description)
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedRolePermissions returns the RolePermissions named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *Permission) NamedRolePermissions(name string) ([]*RolePermission, error) {
+	if _m.Edges.namedRolePermissions == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedRolePermissions[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *Permission) appendNamedRolePermissions(name string, edges ...*RolePermission) {
+	if _m.Edges.namedRolePermissions == nil {
+		_m.Edges.namedRolePermissions = make(map[string][]*RolePermission)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedRolePermissions[name] = []*RolePermission{}
+	} else {
+		_m.Edges.namedRolePermissions[name] = append(_m.Edges.namedRolePermissions[name], edges...)
+	}
 }
 
 // Permissions is a parsable slice of Permission.

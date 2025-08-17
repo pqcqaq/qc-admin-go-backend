@@ -13,6 +13,7 @@ import (
 	"math"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -21,14 +22,19 @@ import (
 // RoleQuery is the builder for querying Role entities.
 type RoleQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []role.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.Role
-	withUserRoles       *UserRoleQuery
-	withRolePermissions *RolePermissionQuery
-	withInheritedBy     *RoleQuery
-	withInheritsFrom    *RoleQuery
+	ctx                      *QueryContext
+	order                    []role.OrderOption
+	inters                   []Interceptor
+	predicates               []predicate.Role
+	withUserRoles            *UserRoleQuery
+	withRolePermissions      *RolePermissionQuery
+	withInheritedBy          *RoleQuery
+	withInheritsFrom         *RoleQuery
+	modifiers                []func(*sql.Selector)
+	withNamedUserRoles       map[string]*UserRoleQuery
+	withNamedRolePermissions map[string]*RolePermissionQuery
+	withNamedInheritedBy     map[string]*RoleQuery
+	withNamedInheritsFrom    map[string]*RoleQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -493,6 +499,9 @@ func (_q *RoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Role, e
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -527,6 +536,34 @@ func (_q *RoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Role, e
 		if err := _q.loadInheritsFrom(ctx, query, nodes,
 			func(n *Role) { n.Edges.InheritsFrom = []*Role{} },
 			func(n *Role, e *Role) { n.Edges.InheritsFrom = append(n.Edges.InheritsFrom, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range _q.withNamedUserRoles {
+		if err := _q.loadUserRoles(ctx, query, nodes,
+			func(n *Role) { n.appendNamedUserRoles(name) },
+			func(n *Role, e *UserRole) { n.appendNamedUserRoles(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range _q.withNamedRolePermissions {
+		if err := _q.loadRolePermissions(ctx, query, nodes,
+			func(n *Role) { n.appendNamedRolePermissions(name) },
+			func(n *Role, e *RolePermission) { n.appendNamedRolePermissions(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range _q.withNamedInheritedBy {
+		if err := _q.loadInheritedBy(ctx, query, nodes,
+			func(n *Role) { n.appendNamedInheritedBy(name) },
+			func(n *Role, e *Role) { n.appendNamedInheritedBy(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range _q.withNamedInheritsFrom {
+		if err := _q.loadInheritsFrom(ctx, query, nodes,
+			func(n *Role) { n.appendNamedInheritsFrom(name) },
+			func(n *Role, e *Role) { n.appendNamedInheritsFrom(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -718,6 +755,9 @@ func (_q *RoleQuery) loadInheritsFrom(ctx context.Context, query *RoleQuery, nod
 
 func (_q *RoleQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
+	}
 	_spec.Node.Columns = _q.ctx.Fields
 	if len(_q.ctx.Fields) > 0 {
 		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
@@ -780,6 +820,9 @@ func (_q *RoleQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	for _, m := range _q.modifiers {
+		m(selector)
+	}
 	for _, p := range _q.predicates {
 		p(selector)
 	}
@@ -795,6 +838,88 @@ func (_q *RoleQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (_q *RoleQuery) ForUpdate(opts ...sql.LockOption) *RoleQuery {
+	if _q.driver.Dialect() == dialect.Postgres {
+		_q.Unique(false)
+	}
+	_q.modifiers = append(_q.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return _q
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (_q *RoleQuery) ForShare(opts ...sql.LockOption) *RoleQuery {
+	if _q.driver.Dialect() == dialect.Postgres {
+		_q.Unique(false)
+	}
+	_q.modifiers = append(_q.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return _q
+}
+
+// WithNamedUserRoles tells the query-builder to eager-load the nodes that are connected to the "user_roles"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (_q *RoleQuery) WithNamedUserRoles(name string, opts ...func(*UserRoleQuery)) *RoleQuery {
+	query := (&UserRoleClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if _q.withNamedUserRoles == nil {
+		_q.withNamedUserRoles = make(map[string]*UserRoleQuery)
+	}
+	_q.withNamedUserRoles[name] = query
+	return _q
+}
+
+// WithNamedRolePermissions tells the query-builder to eager-load the nodes that are connected to the "role_permissions"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (_q *RoleQuery) WithNamedRolePermissions(name string, opts ...func(*RolePermissionQuery)) *RoleQuery {
+	query := (&RolePermissionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if _q.withNamedRolePermissions == nil {
+		_q.withNamedRolePermissions = make(map[string]*RolePermissionQuery)
+	}
+	_q.withNamedRolePermissions[name] = query
+	return _q
+}
+
+// WithNamedInheritedBy tells the query-builder to eager-load the nodes that are connected to the "inherited_by"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (_q *RoleQuery) WithNamedInheritedBy(name string, opts ...func(*RoleQuery)) *RoleQuery {
+	query := (&RoleClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if _q.withNamedInheritedBy == nil {
+		_q.withNamedInheritedBy = make(map[string]*RoleQuery)
+	}
+	_q.withNamedInheritedBy[name] = query
+	return _q
+}
+
+// WithNamedInheritsFrom tells the query-builder to eager-load the nodes that are connected to the "inherits_from"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (_q *RoleQuery) WithNamedInheritsFrom(name string, opts ...func(*RoleQuery)) *RoleQuery {
+	query := (&RoleClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if _q.withNamedInheritsFrom == nil {
+		_q.withNamedInheritsFrom = make(map[string]*RoleQuery)
+	}
+	_q.withNamedInheritsFrom[name] = query
+	return _q
 }
 
 // RoleGroupBy is the group-by builder for Role entities.

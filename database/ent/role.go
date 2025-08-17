@@ -52,7 +52,11 @@ type RoleEdges struct {
 	InheritsFrom []*Role `json:"inherits_from,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes          [4]bool
+	namedUserRoles       map[string][]*UserRole
+	namedRolePermissions map[string][]*RolePermission
+	namedInheritedBy     map[string][]*Role
+	namedInheritsFrom    map[string][]*Role
 }
 
 // UserRolesOrErr returns the UserRoles value or an error if the edge
@@ -252,6 +256,102 @@ func (_m *Role) String() string {
 	builder.WriteString(_m.Description)
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedUserRoles returns the UserRoles named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *Role) NamedUserRoles(name string) ([]*UserRole, error) {
+	if _m.Edges.namedUserRoles == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedUserRoles[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *Role) appendNamedUserRoles(name string, edges ...*UserRole) {
+	if _m.Edges.namedUserRoles == nil {
+		_m.Edges.namedUserRoles = make(map[string][]*UserRole)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedUserRoles[name] = []*UserRole{}
+	} else {
+		_m.Edges.namedUserRoles[name] = append(_m.Edges.namedUserRoles[name], edges...)
+	}
+}
+
+// NamedRolePermissions returns the RolePermissions named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *Role) NamedRolePermissions(name string) ([]*RolePermission, error) {
+	if _m.Edges.namedRolePermissions == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedRolePermissions[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *Role) appendNamedRolePermissions(name string, edges ...*RolePermission) {
+	if _m.Edges.namedRolePermissions == nil {
+		_m.Edges.namedRolePermissions = make(map[string][]*RolePermission)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedRolePermissions[name] = []*RolePermission{}
+	} else {
+		_m.Edges.namedRolePermissions[name] = append(_m.Edges.namedRolePermissions[name], edges...)
+	}
+}
+
+// NamedInheritedBy returns the InheritedBy named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *Role) NamedInheritedBy(name string) ([]*Role, error) {
+	if _m.Edges.namedInheritedBy == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedInheritedBy[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *Role) appendNamedInheritedBy(name string, edges ...*Role) {
+	if _m.Edges.namedInheritedBy == nil {
+		_m.Edges.namedInheritedBy = make(map[string][]*Role)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedInheritedBy[name] = []*Role{}
+	} else {
+		_m.Edges.namedInheritedBy[name] = append(_m.Edges.namedInheritedBy[name], edges...)
+	}
+}
+
+// NamedInheritsFrom returns the InheritsFrom named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *Role) NamedInheritsFrom(name string) ([]*Role, error) {
+	if _m.Edges.namedInheritsFrom == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedInheritsFrom[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *Role) appendNamedInheritsFrom(name string, edges ...*Role) {
+	if _m.Edges.namedInheritsFrom == nil {
+		_m.Edges.namedInheritsFrom = make(map[string][]*Role)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedInheritsFrom[name] = []*Role{}
+	} else {
+		_m.Edges.namedInheritsFrom[name] = append(_m.Edges.namedInheritsFrom[name], edges...)
+	}
 }
 
 // Roles is a parsable slice of Role.

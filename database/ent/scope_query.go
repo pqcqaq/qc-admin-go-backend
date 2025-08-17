@@ -12,6 +12,7 @@ import (
 	"math"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -20,13 +21,16 @@ import (
 // ScopeQuery is the builder for querying Scope entities.
 type ScopeQuery struct {
 	config
-	ctx             *QueryContext
-	order           []scope.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.Scope
-	withParent      *ScopeQuery
-	withChildren    *ScopeQuery
-	withPermissions *PermissionQuery
+	ctx                  *QueryContext
+	order                []scope.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.Scope
+	withParent           *ScopeQuery
+	withChildren         *ScopeQuery
+	withPermissions      *PermissionQuery
+	modifiers            []func(*sql.Selector)
+	withNamedChildren    map[string]*ScopeQuery
+	withNamedPermissions map[string]*PermissionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -456,6 +460,9 @@ func (_q *ScopeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Scope,
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -482,6 +489,20 @@ func (_q *ScopeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Scope,
 		if err := _q.loadPermissions(ctx, query, nodes,
 			func(n *Scope) { n.Edges.Permissions = []*Permission{} },
 			func(n *Scope, e *Permission) { n.Edges.Permissions = append(n.Edges.Permissions, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range _q.withNamedChildren {
+		if err := _q.loadChildren(ctx, query, nodes,
+			func(n *Scope) { n.appendNamedChildren(name) },
+			func(n *Scope, e *Scope) { n.appendNamedChildren(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range _q.withNamedPermissions {
+		if err := _q.loadPermissions(ctx, query, nodes,
+			func(n *Scope) { n.appendNamedPermissions(name) },
+			func(n *Scope, e *Permission) { n.appendNamedPermissions(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -581,6 +602,9 @@ func (_q *ScopeQuery) loadPermissions(ctx context.Context, query *PermissionQuer
 
 func (_q *ScopeQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
+	}
 	_spec.Node.Columns = _q.ctx.Fields
 	if len(_q.ctx.Fields) > 0 {
 		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
@@ -646,6 +670,9 @@ func (_q *ScopeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	for _, m := range _q.modifiers {
+		m(selector)
+	}
 	for _, p := range _q.predicates {
 		p(selector)
 	}
@@ -661,6 +688,60 @@ func (_q *ScopeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (_q *ScopeQuery) ForUpdate(opts ...sql.LockOption) *ScopeQuery {
+	if _q.driver.Dialect() == dialect.Postgres {
+		_q.Unique(false)
+	}
+	_q.modifiers = append(_q.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return _q
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (_q *ScopeQuery) ForShare(opts ...sql.LockOption) *ScopeQuery {
+	if _q.driver.Dialect() == dialect.Postgres {
+		_q.Unique(false)
+	}
+	_q.modifiers = append(_q.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return _q
+}
+
+// WithNamedChildren tells the query-builder to eager-load the nodes that are connected to the "children"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (_q *ScopeQuery) WithNamedChildren(name string, opts ...func(*ScopeQuery)) *ScopeQuery {
+	query := (&ScopeClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if _q.withNamedChildren == nil {
+		_q.withNamedChildren = make(map[string]*ScopeQuery)
+	}
+	_q.withNamedChildren[name] = query
+	return _q
+}
+
+// WithNamedPermissions tells the query-builder to eager-load the nodes that are connected to the "permissions"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (_q *ScopeQuery) WithNamedPermissions(name string, opts ...func(*PermissionQuery)) *ScopeQuery {
+	query := (&PermissionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if _q.withNamedPermissions == nil {
+		_q.withNamedPermissions = make(map[string]*PermissionQuery)
+	}
+	_q.withNamedPermissions[name] = query
+	return _q
 }
 
 // ScopeGroupBy is the group-by builder for Scope entities.
