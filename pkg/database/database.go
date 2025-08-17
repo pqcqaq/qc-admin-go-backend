@@ -16,6 +16,8 @@ import (
 	"go-backend/pkg/configs"
 	"go-backend/pkg/database/drivers"
 	"go-backend/pkg/logging"
+
+	"entgo.io/ent/dialect/sql"
 )
 
 // LoggerInterface 定义日志接口，避免循环依赖
@@ -32,6 +34,13 @@ type LoggerInterface interface {
 var (
 	once sync.Once
 	mu   sync.RWMutex
+)
+
+// 连接检查相关变量
+var (
+	connectionCheckTicker *time.Ticker
+	connectionCheckStop   chan bool
+	connectionCheckMu     sync.Mutex
 )
 
 // 全局logger实例
@@ -52,10 +61,16 @@ func NewClient(config *configs.DatabaseConfig) (*database.Client, error) {
 		return nil, fmt.Errorf("unsupported database driver: %s. Supported drivers: %v", config.Driver, supportedDrivers)
 	}
 
-	client, err := database.Open(config.Driver, config.DSN)
+	drv, err := sql.Open(config.Driver, config.DSN)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
+
+	db := drv.DB()
+	db.SetMaxIdleConns(config.MaxIdleConns)
+	db.SetMaxOpenConns(config.MaxOpenConns)
+	db.SetConnMaxLifetime(config.ConnMaxLifetime)
+	client := database.NewClient(database.Driver(drv))
 
 	// 如果配置了自动迁移，则创建数据库模式
 	if !config.SkipMigrateCheck {
@@ -80,6 +95,11 @@ func NewClient(config *configs.DatabaseConfig) (*database.Client, error) {
 	}
 
 	logger.Info("Database connected successfully with driver: %s", config.Driver)
+
+	// 启动连接检查协程
+	if config.ConnectionCheckInterval > 0 {
+		startConnectionCheck(client, config.ConnectionCheckInterval)
+	}
 
 	return client, nil
 }
@@ -121,6 +141,9 @@ func GetInstanceUnsafe() *database.Client {
 func CloseInstance() error {
 	mu.Lock()
 	defer mu.Unlock()
+
+	// 停止连接检查
+	stopConnectionCheck()
 
 	if Client != nil {
 		err := Client.Close()
@@ -219,4 +242,93 @@ func checkMigrationNeeded(client *database.Client) (*bool, error) {
 	}
 
 	return &needMigration, nil
+}
+
+// startConnectionCheck 启动数据库连接检查协程
+func startConnectionCheck(client *database.Client, interval time.Duration) {
+	connectionCheckMu.Lock()
+	defer connectionCheckMu.Unlock()
+
+	// 如果已经有检查在运行，先停止它
+	if connectionCheckTicker != nil {
+		stopConnectionCheckUnsafe()
+	}
+
+	connectionCheckTicker = time.NewTicker(interval)
+	connectionCheckStop = make(chan bool, 1)
+
+	go func() {
+		if logger != nil {
+			logger.Info("Database connection check started with interval: %v", interval)
+		}
+
+		for {
+			select {
+			case <-connectionCheckTicker.C:
+				checkDatabaseConnection(client)
+			case <-connectionCheckStop:
+				connectionCheckTicker.Stop()
+				if logger != nil {
+					logger.Info("Database connection check stopped")
+				}
+				return
+			}
+		}
+	}()
+}
+
+// stopConnectionCheck 停止数据库连接检查协程
+func stopConnectionCheck() {
+	connectionCheckMu.Lock()
+	defer connectionCheckMu.Unlock()
+	stopConnectionCheckUnsafe()
+}
+
+// stopConnectionCheckUnsafe 不加锁的停止连接检查（内部使用）
+func stopConnectionCheckUnsafe() {
+	if connectionCheckTicker != nil {
+		connectionCheckTicker.Stop()
+		connectionCheckTicker = nil
+	}
+	if connectionCheckStop != nil {
+		select {
+		case connectionCheckStop <- true:
+		default:
+		}
+		close(connectionCheckStop)
+		connectionCheckStop = nil
+	}
+}
+
+// checkDatabaseConnection 检查数据库连接状态
+func checkDatabaseConnection(client *database.Client) {
+	if client == nil {
+		if logger != nil {
+			logger.Error("Database client is nil during connection check")
+		}
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// 尝试执行一个简单的查询来检查连接
+	tx, err := client.BeginTx(ctx, nil)
+	if err != nil {
+		if logger != nil {
+			logger.Error("Database connection check failed: %v", err)
+		}
+		return
+	}
+
+	// 立即回滚事务以释放连接
+	if err := tx.Rollback(); err != nil {
+		if logger != nil {
+			logger.Warn("Failed to rollback connection check transaction: %v", err)
+		}
+	} else {
+		if logger != nil {
+			logger.Info("Database connection check passed")
+		}
+	}
 }

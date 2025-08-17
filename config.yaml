@@ -36,6 +36,9 @@ server:
 database:
   driver: "mysql"
   dsn: "qcqcqc:qcqcqc@tcp(localhost:33060)/go-backend-app-pure?charset=utf8mb4&parseTime=True&loc=Local"
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: "1h"  # 连接最大生命周期
 
 logging:
   level: "debug"    # 日志级别: debug, info, warn, error, fatal
