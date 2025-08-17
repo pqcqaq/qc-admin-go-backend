@@ -212,8 +212,8 @@ func ConvertPermissionToResponse(p *ent.Permission) *models.PermissionResponse {
 		Name:        p.Name,
 		Action:      p.Action,
 		Description: p.Description,
-		CreateTime:  utils.JSONTime(p.CreateTime),
-		UpdateTime:  utils.JSONTime(p.UpdateTime),
+		CreateTime:  utils.FormatDateTime(p.CreateTime),
+		UpdateTime:  utils.FormatDateTime(p.UpdateTime),
 	}
 
 	// 转换权限域
@@ -285,8 +285,8 @@ func GetRolePermissionsWithPagination(ctx context.Context, req *models.GetRolePe
 			ID:           utils.Uint64ToString(rp.ID),
 			RoleId:       utils.Uint64ToString(rp.RoleID),
 			PermissionId: utils.Uint64ToString(rp.PermissionID),
-			CreateTime:   utils.JSONTime(rp.CreateTime),
-			UpdateTime:   utils.JSONTime(rp.UpdateTime),
+			CreateTime:   utils.FormatDateTime(rp.CreateTime),
+			UpdateTime:   utils.FormatDateTime(rp.UpdateTime),
 		}
 
 		if rp.Edges.Role != nil {

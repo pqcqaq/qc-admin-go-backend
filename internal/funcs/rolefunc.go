@@ -267,8 +267,8 @@ func ConvertRoleToResponse(r *ent.Role) *models.RoleResponse {
 		ID:          utils.Uint64ToString(r.ID),
 		Name:        r.Name,
 		Description: r.Description,
-		CreateTime:  utils.JSONTime(r.CreateTime),
-		UpdateTime:  utils.JSONTime(r.UpdateTime),
+		CreateTime:  utils.FormatDateTime(r.CreateTime),
+		UpdateTime:  utils.FormatDateTime(r.UpdateTime),
 	}
 
 	// 转换父角色
@@ -279,8 +279,8 @@ func ConvertRoleToResponse(r *ent.Role) *models.RoleResponse {
 				ID:          utils.Uint64ToString(parent.ID),
 				Name:        parent.Name,
 				Description: parent.Description,
-				CreateTime:  utils.JSONTime(parent.CreateTime),
-				UpdateTime:  utils.JSONTime(parent.UpdateTime),
+				CreateTime:  utils.FormatDateTime(parent.CreateTime),
+				UpdateTime:  utils.FormatDateTime(parent.UpdateTime),
 			})
 		}
 	}
@@ -293,8 +293,8 @@ func ConvertRoleToResponse(r *ent.Role) *models.RoleResponse {
 				ID:          utils.Uint64ToString(child.ID),
 				Name:        child.Name,
 				Description: child.Description,
-				CreateTime:  utils.JSONTime(child.CreateTime),
-				UpdateTime:  utils.JSONTime(child.UpdateTime),
+				CreateTime:  utils.FormatDateTime(child.CreateTime),
+				UpdateTime:  utils.FormatDateTime(child.UpdateTime),
 			})
 		}
 	}

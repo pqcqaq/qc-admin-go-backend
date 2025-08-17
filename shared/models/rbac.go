@@ -1,7 +1,5 @@
 package models
 
-import "go-backend/pkg/utils"
-
 // CreateRoleRequest 创建角色请求结构
 type CreateRoleRequest struct {
 	Name         string   `json:"name" binding:"required"`
@@ -24,8 +22,8 @@ type RoleResponse struct {
 	InheritsFrom []*RoleResponse       `json:"inheritsFrom,omitempty"` // 继承的父角色
 	InheritedBy  []*RoleResponse       `json:"inheritedBy,omitempty"`  // 被哪些角色继承
 	Permissions  []*PermissionResponse `json:"permissions,omitempty"`  // 角色拥有的权限
-	CreateTime   utils.JSONTime        `json:"createTime"`
-	UpdateTime   utils.JSONTime        `json:"updateTime"`
+	CreateTime   string                `json:"createTime"`
+	UpdateTime   string                `json:"updateTime"`
 }
 
 // GetRolesRequest 获取角色列表请求结构
@@ -75,8 +73,8 @@ type PermissionResponse struct {
 	Action      string         `json:"action"`
 	Description string         `json:"description,omitempty"`
 	Scope       *ScopeResponse `json:"scope,omitempty"` // 所属权限域
-	CreateTime  utils.JSONTime `json:"createTime"`
-	UpdateTime  utils.JSONTime `json:"updateTime"`
+	CreateTime  string         `json:"createTime"`
+	UpdateTime  string         `json:"updateTime"`
 }
 
 // GetPermissionsRequest 获取权限列表请求结构
@@ -102,13 +100,13 @@ type CreateUserRoleRequest struct {
 
 // UserRoleResponse 用户角色关联响应结构
 type UserRoleResponse struct {
-	ID         string         `json:"id"`
-	UserID     uint64         `json:"userId"`
-	RoleID     uint64         `json:"roleId"`
-	User       *UserResponse  `json:"user,omitempty"`
-	Role       *RoleResponse  `json:"role,omitempty"`
-	CreateTime utils.JSONTime `json:"createTime"`
-	UpdateTime utils.JSONTime `json:"updateTime"`
+	ID         string        `json:"id"`
+	UserID     uint64        `json:"userId"`
+	RoleID     uint64        `json:"roleId"`
+	User       *UserResponse `json:"user,omitempty"`
+	Role       *RoleResponse `json:"role,omitempty"`
+	CreateTime string        `json:"createTime"`
+	UpdateTime string        `json:"updateTime"`
 }
 
 // GetUserRolesRequest 获取用户角色列表请求结构
@@ -131,8 +129,8 @@ type RolePermissionResponse struct {
 	PermissionId string              `json:"permissionId"`
 	Role         *RoleResponse       `json:"role,omitempty"`
 	Permission   *PermissionResponse `json:"permission,omitempty"`
-	CreateTime   utils.JSONTime      `json:"createTime"`
-	UpdateTime   utils.JSONTime      `json:"updateTime"`
+	CreateTime   string              `json:"createTime"`
+	UpdateTime   string              `json:"updateTime"`
 }
 
 // GetRolePermissionsRequest 获取角色权限列表请求结构

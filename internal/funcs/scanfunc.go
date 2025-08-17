@@ -24,7 +24,7 @@ func GetAllScans(ctx context.Context) ([]*models.ScanResponse, error) {
 			ID:         utils.Uint64ToString(record.ID),
 			Content:    record.Content,
 			Success:    record.Success,
-			CreateTime: utils.TimeToDateTimeString(&record.CreateTime),
+			CreateTime: utils.FormatDateTime(record.CreateTime),
 		}
 
 		// 由于使用了 WithAttachment()，关联数据已经在 Edges 中了
@@ -54,7 +54,7 @@ func GetScanById(ctx context.Context, id uint64) (*models.ScanResponse, error) {
 		ID:         utils.Uint64ToString(scan.ID),
 		Content:    scan.Content,
 		Success:    scan.Success,
-		CreateTime: utils.TimeToDateTimeString(&scan.CreateTime),
+		CreateTime: utils.FormatDateTime(scan.CreateTime),
 	}
 	if scan.Edges.Attachment != nil {
 		scanResponse.ImageId = utils.Uint64ToString(scan.Edges.Attachment.ID)
@@ -211,7 +211,7 @@ func GetScanWithPagination(ctx context.Context, req *models.PageScansRequest) (*
 			ID:         utils.Uint64ToString(scan.ID),
 			Content:    scan.Content,
 			Success:    scan.Success,
-			CreateTime: utils.TimeToDateTimeString(&scan.CreateTime),
+			CreateTime: utils.FormatDateTime(scan.CreateTime),
 		}
 
 		// 正确处理可能为空的 attachment 关联

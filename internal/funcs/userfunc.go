@@ -425,8 +425,8 @@ func ConvertUserRoleToResponse(userRole *ent.UserRole) *models.UserRoleResponse 
 		ID:         strconv.FormatUint(userRole.ID, 10),
 		UserID:     userRole.UserID,
 		RoleID:     userRole.RoleID,
-		CreateTime: utils.JSONTime(userRole.CreateTime),
-		UpdateTime: utils.JSONTime(userRole.UpdateTime),
+		CreateTime: utils.FormatDateTime(userRole.CreateTime),
+		UpdateTime: utils.FormatDateTime(userRole.UpdateTime),
 	}
 
 	// 如果加载了用户关联数据
@@ -448,7 +448,7 @@ func ConvertUserToResponse(user *ent.User) *models.UserResponse {
 		ID:         utils.Uint64ToString(user.ID),
 		Name:       user.Name, // 假设Name字段对应Username
 		Email:      user.Email,
-		CreateTime: utils.TimeToDateTimeString(&user.CreateTime),
-		UpdateTime: utils.TimeToDateTimeString(&user.UpdateTime),
+		CreateTime: utils.FormatDateTime(user.CreateTime),
+		UpdateTime: utils.FormatDateTime(user.UpdateTime),
 	}
 }
