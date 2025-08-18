@@ -34,6 +34,8 @@ type Tx struct {
 	User *UserClient
 	// UserRole is the client for interacting with the UserRole builders.
 	UserRole *UserRoleClient
+	// VerifyCode is the client for interacting with the VerifyCode builders.
+	VerifyCode *VerifyCodeClient
 
 	// lazily loaded.
 	client     *Client
@@ -175,6 +177,7 @@ func (tx *Tx) init() {
 	tx.Scope = NewScopeClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserRole = NewUserRoleClient(tx.config)
+	tx.VerifyCode = NewVerifyCodeClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

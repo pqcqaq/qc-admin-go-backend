@@ -21,6 +21,7 @@ import (
 	"go-backend/database/ent/scope"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
+	"go-backend/database/ent/verifycode"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -55,6 +56,8 @@ type Client struct {
 	User *UserClient
 	// UserRole is the client for interacting with the UserRole builders.
 	UserRole *UserRoleClient
+	// VerifyCode is the client for interacting with the VerifyCode builders.
+	VerifyCode *VerifyCodeClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -76,6 +79,7 @@ func (c *Client) init() {
 	c.Scope = NewScopeClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.UserRole = NewUserRoleClient(c.config)
+	c.VerifyCode = NewVerifyCodeClient(c.config)
 }
 
 type (
@@ -178,6 +182,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Scope:          NewScopeClient(cfg),
 		User:           NewUserClient(cfg),
 		UserRole:       NewUserRoleClient(cfg),
+		VerifyCode:     NewVerifyCodeClient(cfg),
 	}, nil
 }
 
@@ -207,6 +212,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Scope:          NewScopeClient(cfg),
 		User:           NewUserClient(cfg),
 		UserRole:       NewUserRoleClient(cfg),
+		VerifyCode:     NewVerifyCodeClient(cfg),
 	}, nil
 }
 
@@ -237,7 +243,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Attachment, c.Credential, c.Logging, c.Permission, c.Role, c.RolePermission,
-		c.Scan, c.Scope, c.User, c.UserRole,
+		c.Scan, c.Scope, c.User, c.UserRole, c.VerifyCode,
 	} {
 		n.Use(hooks...)
 	}
@@ -248,7 +254,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Attachment, c.Credential, c.Logging, c.Permission, c.Role, c.RolePermission,
-		c.Scan, c.Scope, c.User, c.UserRole,
+		c.Scan, c.Scope, c.User, c.UserRole, c.VerifyCode,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -277,6 +283,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.User.mutate(ctx, m)
 	case *UserRoleMutation:
 		return c.UserRole.mutate(ctx, m)
+	case *VerifyCodeMutation:
+		return c.VerifyCode.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -1920,15 +1928,150 @@ func (c *UserRoleClient) mutate(ctx context.Context, m *UserRoleMutation) (Value
 	}
 }
 
+// VerifyCodeClient is a client for the VerifyCode schema.
+type VerifyCodeClient struct {
+	config
+}
+
+// NewVerifyCodeClient returns a client for the VerifyCode from the given config.
+func NewVerifyCodeClient(c config) *VerifyCodeClient {
+	return &VerifyCodeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `verifycode.Hooks(f(g(h())))`.
+func (c *VerifyCodeClient) Use(hooks ...Hook) {
+	c.hooks.VerifyCode = append(c.hooks.VerifyCode, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `verifycode.Intercept(f(g(h())))`.
+func (c *VerifyCodeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.VerifyCode = append(c.inters.VerifyCode, interceptors...)
+}
+
+// Create returns a builder for creating a VerifyCode entity.
+func (c *VerifyCodeClient) Create() *VerifyCodeCreate {
+	mutation := newVerifyCodeMutation(c.config, OpCreate)
+	return &VerifyCodeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of VerifyCode entities.
+func (c *VerifyCodeClient) CreateBulk(builders ...*VerifyCodeCreate) *VerifyCodeCreateBulk {
+	return &VerifyCodeCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *VerifyCodeClient) MapCreateBulk(slice any, setFunc func(*VerifyCodeCreate, int)) *VerifyCodeCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &VerifyCodeCreateBulk{err: fmt.Errorf("calling to VerifyCodeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*VerifyCodeCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &VerifyCodeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for VerifyCode.
+func (c *VerifyCodeClient) Update() *VerifyCodeUpdate {
+	mutation := newVerifyCodeMutation(c.config, OpUpdate)
+	return &VerifyCodeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *VerifyCodeClient) UpdateOne(_m *VerifyCode) *VerifyCodeUpdateOne {
+	mutation := newVerifyCodeMutation(c.config, OpUpdateOne, withVerifyCode(_m))
+	return &VerifyCodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *VerifyCodeClient) UpdateOneID(id uint64) *VerifyCodeUpdateOne {
+	mutation := newVerifyCodeMutation(c.config, OpUpdateOne, withVerifyCodeID(id))
+	return &VerifyCodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for VerifyCode.
+func (c *VerifyCodeClient) Delete() *VerifyCodeDelete {
+	mutation := newVerifyCodeMutation(c.config, OpDelete)
+	return &VerifyCodeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *VerifyCodeClient) DeleteOne(_m *VerifyCode) *VerifyCodeDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *VerifyCodeClient) DeleteOneID(id uint64) *VerifyCodeDeleteOne {
+	builder := c.Delete().Where(verifycode.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &VerifyCodeDeleteOne{builder}
+}
+
+// Query returns a query builder for VerifyCode.
+func (c *VerifyCodeClient) Query() *VerifyCodeQuery {
+	return &VerifyCodeQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeVerifyCode},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a VerifyCode entity by its id.
+func (c *VerifyCodeClient) Get(ctx context.Context, id uint64) (*VerifyCode, error) {
+	return c.Query().Where(verifycode.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *VerifyCodeClient) GetX(ctx context.Context, id uint64) *VerifyCode {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *VerifyCodeClient) Hooks() []Hook {
+	hooks := c.hooks.VerifyCode
+	return append(hooks[:len(hooks):len(hooks)], verifycode.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *VerifyCodeClient) Interceptors() []Interceptor {
+	inters := c.inters.VerifyCode
+	return append(inters[:len(inters):len(inters)], verifycode.Interceptors[:]...)
+}
+
+func (c *VerifyCodeClient) mutate(ctx context.Context, m *VerifyCodeMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&VerifyCodeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&VerifyCodeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&VerifyCodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&VerifyCodeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown VerifyCode mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
 		Attachment, Credential, Logging, Permission, Role, RolePermission, Scan, Scope,
-		User, UserRole []ent.Hook
+		User, UserRole, VerifyCode []ent.Hook
 	}
 	inters struct {
 		Attachment, Credential, Logging, Permission, Role, RolePermission, Scan, Scope,
-		User, UserRole []ent.Interceptor
+		User, UserRole, VerifyCode []ent.Interceptor
 	}
 )
 

@@ -16,6 +16,7 @@ import (
 	"go-backend/database/ent/scope"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
+	"go-backend/database/ent/verifycode"
 	"reflect"
 	"sync"
 
@@ -92,6 +93,7 @@ func checkColumn(t, c string) error {
 			scope.Table:          scope.ValidColumn,
 			user.Table:           user.ValidColumn,
 			userrole.Table:       userrole.ValidColumn,
+			verifycode.Table:     verifycode.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

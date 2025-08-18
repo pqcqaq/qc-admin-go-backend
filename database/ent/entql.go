@@ -14,6 +14,7 @@ import (
 	"go-backend/database/ent/scope"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
+	"go-backend/database/ent/verifycode"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -23,7 +24,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 10)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 11)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   attachment.Table,
@@ -277,6 +278,33 @@ var schemaGraph = func() *sqlgraph.Schema {
 			userrole.FieldDeleteBy:   {Type: field.TypeInt64, Column: userrole.FieldDeleteBy},
 			userrole.FieldUserID:     {Type: field.TypeUint64, Column: userrole.FieldUserID},
 			userrole.FieldRoleID:     {Type: field.TypeUint64, Column: userrole.FieldRoleID},
+		},
+	}
+	graph.Nodes[10] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   verifycode.Table,
+			Columns: verifycode.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: verifycode.FieldID,
+			},
+		},
+		Type: "VerifyCode",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			verifycode.FieldCreateTime:  {Type: field.TypeTime, Column: verifycode.FieldCreateTime},
+			verifycode.FieldCreateBy:    {Type: field.TypeInt64, Column: verifycode.FieldCreateBy},
+			verifycode.FieldUpdateTime:  {Type: field.TypeTime, Column: verifycode.FieldUpdateTime},
+			verifycode.FieldUpdateBy:    {Type: field.TypeInt64, Column: verifycode.FieldUpdateBy},
+			verifycode.FieldDeleteTime:  {Type: field.TypeTime, Column: verifycode.FieldDeleteTime},
+			verifycode.FieldDeleteBy:    {Type: field.TypeInt64, Column: verifycode.FieldDeleteBy},
+			verifycode.FieldCode:        {Type: field.TypeString, Column: verifycode.FieldCode},
+			verifycode.FieldIdentifier:  {Type: field.TypeString, Column: verifycode.FieldIdentifier},
+			verifycode.FieldSenderType:  {Type: field.TypeEnum, Column: verifycode.FieldSenderType},
+			verifycode.FieldSendFor:     {Type: field.TypeString, Column: verifycode.FieldSendFor},
+			verifycode.FieldExpiresAt:   {Type: field.TypeTime, Column: verifycode.FieldExpiresAt},
+			verifycode.FieldUsedAt:      {Type: field.TypeTime, Column: verifycode.FieldUsedAt},
+			verifycode.FieldSendSuccess: {Type: field.TypeBool, Column: verifycode.FieldSendSuccess},
+			verifycode.FieldSendAt:      {Type: field.TypeTime, Column: verifycode.FieldSendAt},
 		},
 	}
 	graph.MustAddE(
@@ -1779,4 +1807,114 @@ func (f *UserRoleFilter) WhereHasRoleWith(preds ...predicate.Role) {
 			p(s)
 		}
 	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *VerifyCodeQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the VerifyCodeQuery builder.
+func (_q *VerifyCodeQuery) Filter() *VerifyCodeFilter {
+	return &VerifyCodeFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *VerifyCodeMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the VerifyCodeMutation builder.
+func (m *VerifyCodeMutation) Filter() *VerifyCodeFilter {
+	return &VerifyCodeFilter{config: m.config, predicateAdder: m}
+}
+
+// VerifyCodeFilter provides a generic filtering capability at runtime for VerifyCodeQuery.
+type VerifyCodeFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *VerifyCodeFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *VerifyCodeFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(verifycode.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *VerifyCodeFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(verifycode.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql int64 predicate on the create_by field.
+func (f *VerifyCodeFilter) WhereCreateBy(p entql.Int64P) {
+	f.Where(p.Field(verifycode.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *VerifyCodeFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(verifycode.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql int64 predicate on the update_by field.
+func (f *VerifyCodeFilter) WhereUpdateBy(p entql.Int64P) {
+	f.Where(p.Field(verifycode.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *VerifyCodeFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(verifycode.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
+func (f *VerifyCodeFilter) WhereDeleteBy(p entql.Int64P) {
+	f.Where(p.Field(verifycode.FieldDeleteBy))
+}
+
+// WhereCode applies the entql string predicate on the code field.
+func (f *VerifyCodeFilter) WhereCode(p entql.StringP) {
+	f.Where(p.Field(verifycode.FieldCode))
+}
+
+// WhereIdentifier applies the entql string predicate on the identifier field.
+func (f *VerifyCodeFilter) WhereIdentifier(p entql.StringP) {
+	f.Where(p.Field(verifycode.FieldIdentifier))
+}
+
+// WhereSenderType applies the entql string predicate on the sender_type field.
+func (f *VerifyCodeFilter) WhereSenderType(p entql.StringP) {
+	f.Where(p.Field(verifycode.FieldSenderType))
+}
+
+// WhereSendFor applies the entql string predicate on the send_for field.
+func (f *VerifyCodeFilter) WhereSendFor(p entql.StringP) {
+	f.Where(p.Field(verifycode.FieldSendFor))
+}
+
+// WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
+func (f *VerifyCodeFilter) WhereExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(verifycode.FieldExpiresAt))
+}
+
+// WhereUsedAt applies the entql time.Time predicate on the used_at field.
+func (f *VerifyCodeFilter) WhereUsedAt(p entql.TimeP) {
+	f.Where(p.Field(verifycode.FieldUsedAt))
+}
+
+// WhereSendSuccess applies the entql bool predicate on the send_success field.
+func (f *VerifyCodeFilter) WhereSendSuccess(p entql.BoolP) {
+	f.Where(p.Field(verifycode.FieldSendSuccess))
+}
+
+// WhereSendAt applies the entql time.Time predicate on the send_at field.
+func (f *VerifyCodeFilter) WhereSendAt(p entql.TimeP) {
+	f.Where(p.Field(verifycode.FieldSendAt))
 }

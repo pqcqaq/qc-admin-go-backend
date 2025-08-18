@@ -17,6 +17,7 @@ import (
 	"go-backend/database/ent/scope"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
+	"go-backend/database/ent/verifycode"
 	"sync"
 	"time"
 
@@ -43,6 +44,7 @@ const (
 	TypeScope          = "Scope"
 	TypeUser           = "User"
 	TypeUserRole       = "UserRole"
+	TypeVerifyCode     = "VerifyCode"
 )
 
 // AttachmentMutation represents an operation that mutates the Attachment nodes in the graph.
@@ -13517,4 +13519,1260 @@ func (m *UserRoleMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown UserRole edge %s", name)
+}
+
+// VerifyCodeMutation represents an operation that mutates the VerifyCode nodes in the graph.
+type VerifyCodeMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uint64
+	create_time   *time.Time
+	create_by     *int64
+	addcreate_by  *int64
+	update_time   *time.Time
+	update_by     *int64
+	addupdate_by  *int64
+	delete_time   *time.Time
+	delete_by     *int64
+	adddelete_by  *int64
+	code          *string
+	identifier    *string
+	sender_type   *verifycode.SenderType
+	send_for      *string
+	expires_at    *time.Time
+	used_at       *time.Time
+	send_success  *bool
+	send_at       *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*VerifyCode, error)
+	predicates    []predicate.VerifyCode
+}
+
+var _ ent.Mutation = (*VerifyCodeMutation)(nil)
+
+// verifycodeOption allows management of the mutation configuration using functional options.
+type verifycodeOption func(*VerifyCodeMutation)
+
+// newVerifyCodeMutation creates new mutation for the VerifyCode entity.
+func newVerifyCodeMutation(c config, op Op, opts ...verifycodeOption) *VerifyCodeMutation {
+	m := &VerifyCodeMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeVerifyCode,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withVerifyCodeID sets the ID field of the mutation.
+func withVerifyCodeID(id uint64) verifycodeOption {
+	return func(m *VerifyCodeMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *VerifyCode
+		)
+		m.oldValue = func(ctx context.Context) (*VerifyCode, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().VerifyCode.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withVerifyCode sets the old VerifyCode of the mutation.
+func withVerifyCode(node *VerifyCode) verifycodeOption {
+	return func(m *VerifyCodeMutation) {
+		m.oldValue = func(context.Context) (*VerifyCode, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m VerifyCodeMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m VerifyCodeMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of VerifyCode entities.
+func (m *VerifyCodeMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *VerifyCodeMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *VerifyCodeMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().VerifyCode.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *VerifyCodeMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *VerifyCodeMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *VerifyCodeMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *VerifyCodeMutation) SetCreateBy(i int64) {
+	m.create_by = &i
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *VerifyCodeMutation) CreateBy() (r int64, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldCreateBy(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds i to the "create_by" field.
+func (m *VerifyCodeMutation) AddCreateBy(i int64) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += i
+	} else {
+		m.addcreate_by = &i
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *VerifyCodeMutation) AddedCreateBy() (r int64, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *VerifyCodeMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[verifycode.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *VerifyCodeMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[verifycode.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *VerifyCodeMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, verifycode.FieldCreateBy)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *VerifyCodeMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *VerifyCodeMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *VerifyCodeMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (m *VerifyCodeMutation) SetUpdateBy(i int64) {
+	m.update_by = &i
+	m.addupdate_by = nil
+}
+
+// UpdateBy returns the value of the "update_by" field in the mutation.
+func (m *VerifyCodeMutation) UpdateBy() (r int64, exists bool) {
+	v := m.update_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateBy returns the old "update_by" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldUpdateBy(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateBy: %w", err)
+	}
+	return oldValue.UpdateBy, nil
+}
+
+// AddUpdateBy adds i to the "update_by" field.
+func (m *VerifyCodeMutation) AddUpdateBy(i int64) {
+	if m.addupdate_by != nil {
+		*m.addupdate_by += i
+	} else {
+		m.addupdate_by = &i
+	}
+}
+
+// AddedUpdateBy returns the value that was added to the "update_by" field in this mutation.
+func (m *VerifyCodeMutation) AddedUpdateBy() (r int64, exists bool) {
+	v := m.addupdate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (m *VerifyCodeMutation) ClearUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	m.clearedFields[verifycode.FieldUpdateBy] = struct{}{}
+}
+
+// UpdateByCleared returns if the "update_by" field was cleared in this mutation.
+func (m *VerifyCodeMutation) UpdateByCleared() bool {
+	_, ok := m.clearedFields[verifycode.FieldUpdateBy]
+	return ok
+}
+
+// ResetUpdateBy resets all changes to the "update_by" field.
+func (m *VerifyCodeMutation) ResetUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	delete(m.clearedFields, verifycode.FieldUpdateBy)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *VerifyCodeMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *VerifyCodeMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *VerifyCodeMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[verifycode.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *VerifyCodeMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[verifycode.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *VerifyCodeMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, verifycode.FieldDeleteTime)
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (m *VerifyCodeMutation) SetDeleteBy(i int64) {
+	m.delete_by = &i
+	m.adddelete_by = nil
+}
+
+// DeleteBy returns the value of the "delete_by" field in the mutation.
+func (m *VerifyCodeMutation) DeleteBy() (r int64, exists bool) {
+	v := m.delete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteBy returns the old "delete_by" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldDeleteBy(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteBy: %w", err)
+	}
+	return oldValue.DeleteBy, nil
+}
+
+// AddDeleteBy adds i to the "delete_by" field.
+func (m *VerifyCodeMutation) AddDeleteBy(i int64) {
+	if m.adddelete_by != nil {
+		*m.adddelete_by += i
+	} else {
+		m.adddelete_by = &i
+	}
+}
+
+// AddedDeleteBy returns the value that was added to the "delete_by" field in this mutation.
+func (m *VerifyCodeMutation) AddedDeleteBy() (r int64, exists bool) {
+	v := m.adddelete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (m *VerifyCodeMutation) ClearDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	m.clearedFields[verifycode.FieldDeleteBy] = struct{}{}
+}
+
+// DeleteByCleared returns if the "delete_by" field was cleared in this mutation.
+func (m *VerifyCodeMutation) DeleteByCleared() bool {
+	_, ok := m.clearedFields[verifycode.FieldDeleteBy]
+	return ok
+}
+
+// ResetDeleteBy resets all changes to the "delete_by" field.
+func (m *VerifyCodeMutation) ResetDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	delete(m.clearedFields, verifycode.FieldDeleteBy)
+}
+
+// SetCode sets the "code" field.
+func (m *VerifyCodeMutation) SetCode(s string) {
+	m.code = &s
+}
+
+// Code returns the value of the "code" field in the mutation.
+func (m *VerifyCodeMutation) Code() (r string, exists bool) {
+	v := m.code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCode returns the old "code" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldCode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCode: %w", err)
+	}
+	return oldValue.Code, nil
+}
+
+// ResetCode resets all changes to the "code" field.
+func (m *VerifyCodeMutation) ResetCode() {
+	m.code = nil
+}
+
+// SetIdentifier sets the "identifier" field.
+func (m *VerifyCodeMutation) SetIdentifier(s string) {
+	m.identifier = &s
+}
+
+// Identifier returns the value of the "identifier" field in the mutation.
+func (m *VerifyCodeMutation) Identifier() (r string, exists bool) {
+	v := m.identifier
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIdentifier returns the old "identifier" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldIdentifier(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIdentifier is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIdentifier requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIdentifier: %w", err)
+	}
+	return oldValue.Identifier, nil
+}
+
+// ResetIdentifier resets all changes to the "identifier" field.
+func (m *VerifyCodeMutation) ResetIdentifier() {
+	m.identifier = nil
+}
+
+// SetSenderType sets the "sender_type" field.
+func (m *VerifyCodeMutation) SetSenderType(vt verifycode.SenderType) {
+	m.sender_type = &vt
+}
+
+// SenderType returns the value of the "sender_type" field in the mutation.
+func (m *VerifyCodeMutation) SenderType() (r verifycode.SenderType, exists bool) {
+	v := m.sender_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSenderType returns the old "sender_type" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldSenderType(ctx context.Context) (v verifycode.SenderType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSenderType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSenderType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSenderType: %w", err)
+	}
+	return oldValue.SenderType, nil
+}
+
+// ResetSenderType resets all changes to the "sender_type" field.
+func (m *VerifyCodeMutation) ResetSenderType() {
+	m.sender_type = nil
+}
+
+// SetSendFor sets the "send_for" field.
+func (m *VerifyCodeMutation) SetSendFor(s string) {
+	m.send_for = &s
+}
+
+// SendFor returns the value of the "send_for" field in the mutation.
+func (m *VerifyCodeMutation) SendFor() (r string, exists bool) {
+	v := m.send_for
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSendFor returns the old "send_for" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldSendFor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSendFor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSendFor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSendFor: %w", err)
+	}
+	return oldValue.SendFor, nil
+}
+
+// ResetSendFor resets all changes to the "send_for" field.
+func (m *VerifyCodeMutation) ResetSendFor() {
+	m.send_for = nil
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (m *VerifyCodeMutation) SetExpiresAt(t time.Time) {
+	m.expires_at = &t
+}
+
+// ExpiresAt returns the value of the "expires_at" field in the mutation.
+func (m *VerifyCodeMutation) ExpiresAt() (r time.Time, exists bool) {
+	v := m.expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiresAt returns the old "expires_at" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldExpiresAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
+	}
+	return oldValue.ExpiresAt, nil
+}
+
+// ResetExpiresAt resets all changes to the "expires_at" field.
+func (m *VerifyCodeMutation) ResetExpiresAt() {
+	m.expires_at = nil
+}
+
+// SetUsedAt sets the "used_at" field.
+func (m *VerifyCodeMutation) SetUsedAt(t time.Time) {
+	m.used_at = &t
+}
+
+// UsedAt returns the value of the "used_at" field in the mutation.
+func (m *VerifyCodeMutation) UsedAt() (r time.Time, exists bool) {
+	v := m.used_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsedAt returns the old "used_at" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldUsedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsedAt: %w", err)
+	}
+	return oldValue.UsedAt, nil
+}
+
+// ClearUsedAt clears the value of the "used_at" field.
+func (m *VerifyCodeMutation) ClearUsedAt() {
+	m.used_at = nil
+	m.clearedFields[verifycode.FieldUsedAt] = struct{}{}
+}
+
+// UsedAtCleared returns if the "used_at" field was cleared in this mutation.
+func (m *VerifyCodeMutation) UsedAtCleared() bool {
+	_, ok := m.clearedFields[verifycode.FieldUsedAt]
+	return ok
+}
+
+// ResetUsedAt resets all changes to the "used_at" field.
+func (m *VerifyCodeMutation) ResetUsedAt() {
+	m.used_at = nil
+	delete(m.clearedFields, verifycode.FieldUsedAt)
+}
+
+// SetSendSuccess sets the "send_success" field.
+func (m *VerifyCodeMutation) SetSendSuccess(b bool) {
+	m.send_success = &b
+}
+
+// SendSuccess returns the value of the "send_success" field in the mutation.
+func (m *VerifyCodeMutation) SendSuccess() (r bool, exists bool) {
+	v := m.send_success
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSendSuccess returns the old "send_success" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldSendSuccess(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSendSuccess is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSendSuccess requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSendSuccess: %w", err)
+	}
+	return oldValue.SendSuccess, nil
+}
+
+// ResetSendSuccess resets all changes to the "send_success" field.
+func (m *VerifyCodeMutation) ResetSendSuccess() {
+	m.send_success = nil
+}
+
+// SetSendAt sets the "send_at" field.
+func (m *VerifyCodeMutation) SetSendAt(t time.Time) {
+	m.send_at = &t
+}
+
+// SendAt returns the value of the "send_at" field in the mutation.
+func (m *VerifyCodeMutation) SendAt() (r time.Time, exists bool) {
+	v := m.send_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSendAt returns the old "send_at" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldSendAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSendAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSendAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSendAt: %w", err)
+	}
+	return oldValue.SendAt, nil
+}
+
+// ClearSendAt clears the value of the "send_at" field.
+func (m *VerifyCodeMutation) ClearSendAt() {
+	m.send_at = nil
+	m.clearedFields[verifycode.FieldSendAt] = struct{}{}
+}
+
+// SendAtCleared returns if the "send_at" field was cleared in this mutation.
+func (m *VerifyCodeMutation) SendAtCleared() bool {
+	_, ok := m.clearedFields[verifycode.FieldSendAt]
+	return ok
+}
+
+// ResetSendAt resets all changes to the "send_at" field.
+func (m *VerifyCodeMutation) ResetSendAt() {
+	m.send_at = nil
+	delete(m.clearedFields, verifycode.FieldSendAt)
+}
+
+// Where appends a list predicates to the VerifyCodeMutation builder.
+func (m *VerifyCodeMutation) Where(ps ...predicate.VerifyCode) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the VerifyCodeMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *VerifyCodeMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.VerifyCode, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *VerifyCodeMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *VerifyCodeMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (VerifyCode).
+func (m *VerifyCodeMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *VerifyCodeMutation) Fields() []string {
+	fields := make([]string, 0, 14)
+	if m.create_time != nil {
+		fields = append(fields, verifycode.FieldCreateTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, verifycode.FieldCreateBy)
+	}
+	if m.update_time != nil {
+		fields = append(fields, verifycode.FieldUpdateTime)
+	}
+	if m.update_by != nil {
+		fields = append(fields, verifycode.FieldUpdateBy)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, verifycode.FieldDeleteTime)
+	}
+	if m.delete_by != nil {
+		fields = append(fields, verifycode.FieldDeleteBy)
+	}
+	if m.code != nil {
+		fields = append(fields, verifycode.FieldCode)
+	}
+	if m.identifier != nil {
+		fields = append(fields, verifycode.FieldIdentifier)
+	}
+	if m.sender_type != nil {
+		fields = append(fields, verifycode.FieldSenderType)
+	}
+	if m.send_for != nil {
+		fields = append(fields, verifycode.FieldSendFor)
+	}
+	if m.expires_at != nil {
+		fields = append(fields, verifycode.FieldExpiresAt)
+	}
+	if m.used_at != nil {
+		fields = append(fields, verifycode.FieldUsedAt)
+	}
+	if m.send_success != nil {
+		fields = append(fields, verifycode.FieldSendSuccess)
+	}
+	if m.send_at != nil {
+		fields = append(fields, verifycode.FieldSendAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *VerifyCodeMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case verifycode.FieldCreateTime:
+		return m.CreateTime()
+	case verifycode.FieldCreateBy:
+		return m.CreateBy()
+	case verifycode.FieldUpdateTime:
+		return m.UpdateTime()
+	case verifycode.FieldUpdateBy:
+		return m.UpdateBy()
+	case verifycode.FieldDeleteTime:
+		return m.DeleteTime()
+	case verifycode.FieldDeleteBy:
+		return m.DeleteBy()
+	case verifycode.FieldCode:
+		return m.Code()
+	case verifycode.FieldIdentifier:
+		return m.Identifier()
+	case verifycode.FieldSenderType:
+		return m.SenderType()
+	case verifycode.FieldSendFor:
+		return m.SendFor()
+	case verifycode.FieldExpiresAt:
+		return m.ExpiresAt()
+	case verifycode.FieldUsedAt:
+		return m.UsedAt()
+	case verifycode.FieldSendSuccess:
+		return m.SendSuccess()
+	case verifycode.FieldSendAt:
+		return m.SendAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *VerifyCodeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case verifycode.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case verifycode.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case verifycode.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case verifycode.FieldUpdateBy:
+		return m.OldUpdateBy(ctx)
+	case verifycode.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case verifycode.FieldDeleteBy:
+		return m.OldDeleteBy(ctx)
+	case verifycode.FieldCode:
+		return m.OldCode(ctx)
+	case verifycode.FieldIdentifier:
+		return m.OldIdentifier(ctx)
+	case verifycode.FieldSenderType:
+		return m.OldSenderType(ctx)
+	case verifycode.FieldSendFor:
+		return m.OldSendFor(ctx)
+	case verifycode.FieldExpiresAt:
+		return m.OldExpiresAt(ctx)
+	case verifycode.FieldUsedAt:
+		return m.OldUsedAt(ctx)
+	case verifycode.FieldSendSuccess:
+		return m.OldSendSuccess(ctx)
+	case verifycode.FieldSendAt:
+		return m.OldSendAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown VerifyCode field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *VerifyCodeMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case verifycode.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case verifycode.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case verifycode.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case verifycode.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateBy(v)
+		return nil
+	case verifycode.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case verifycode.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteBy(v)
+		return nil
+	case verifycode.FieldCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCode(v)
+		return nil
+	case verifycode.FieldIdentifier:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIdentifier(v)
+		return nil
+	case verifycode.FieldSenderType:
+		v, ok := value.(verifycode.SenderType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSenderType(v)
+		return nil
+	case verifycode.FieldSendFor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSendFor(v)
+		return nil
+	case verifycode.FieldExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiresAt(v)
+		return nil
+	case verifycode.FieldUsedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsedAt(v)
+		return nil
+	case verifycode.FieldSendSuccess:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSendSuccess(v)
+		return nil
+	case verifycode.FieldSendAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSendAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown VerifyCode field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *VerifyCodeMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, verifycode.FieldCreateBy)
+	}
+	if m.addupdate_by != nil {
+		fields = append(fields, verifycode.FieldUpdateBy)
+	}
+	if m.adddelete_by != nil {
+		fields = append(fields, verifycode.FieldDeleteBy)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *VerifyCodeMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case verifycode.FieldCreateBy:
+		return m.AddedCreateBy()
+	case verifycode.FieldUpdateBy:
+		return m.AddedUpdateBy()
+	case verifycode.FieldDeleteBy:
+		return m.AddedDeleteBy()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *VerifyCodeMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case verifycode.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case verifycode.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdateBy(v)
+		return nil
+	case verifycode.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeleteBy(v)
+		return nil
+	}
+	return fmt.Errorf("unknown VerifyCode numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *VerifyCodeMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(verifycode.FieldCreateBy) {
+		fields = append(fields, verifycode.FieldCreateBy)
+	}
+	if m.FieldCleared(verifycode.FieldUpdateBy) {
+		fields = append(fields, verifycode.FieldUpdateBy)
+	}
+	if m.FieldCleared(verifycode.FieldDeleteTime) {
+		fields = append(fields, verifycode.FieldDeleteTime)
+	}
+	if m.FieldCleared(verifycode.FieldDeleteBy) {
+		fields = append(fields, verifycode.FieldDeleteBy)
+	}
+	if m.FieldCleared(verifycode.FieldUsedAt) {
+		fields = append(fields, verifycode.FieldUsedAt)
+	}
+	if m.FieldCleared(verifycode.FieldSendAt) {
+		fields = append(fields, verifycode.FieldSendAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *VerifyCodeMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *VerifyCodeMutation) ClearField(name string) error {
+	switch name {
+	case verifycode.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case verifycode.FieldUpdateBy:
+		m.ClearUpdateBy()
+		return nil
+	case verifycode.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case verifycode.FieldDeleteBy:
+		m.ClearDeleteBy()
+		return nil
+	case verifycode.FieldUsedAt:
+		m.ClearUsedAt()
+		return nil
+	case verifycode.FieldSendAt:
+		m.ClearSendAt()
+		return nil
+	}
+	return fmt.Errorf("unknown VerifyCode nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *VerifyCodeMutation) ResetField(name string) error {
+	switch name {
+	case verifycode.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case verifycode.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case verifycode.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case verifycode.FieldUpdateBy:
+		m.ResetUpdateBy()
+		return nil
+	case verifycode.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case verifycode.FieldDeleteBy:
+		m.ResetDeleteBy()
+		return nil
+	case verifycode.FieldCode:
+		m.ResetCode()
+		return nil
+	case verifycode.FieldIdentifier:
+		m.ResetIdentifier()
+		return nil
+	case verifycode.FieldSenderType:
+		m.ResetSenderType()
+		return nil
+	case verifycode.FieldSendFor:
+		m.ResetSendFor()
+		return nil
+	case verifycode.FieldExpiresAt:
+		m.ResetExpiresAt()
+		return nil
+	case verifycode.FieldUsedAt:
+		m.ResetUsedAt()
+		return nil
+	case verifycode.FieldSendSuccess:
+		m.ResetSendSuccess()
+		return nil
+	case verifycode.FieldSendAt:
+		m.ResetSendAt()
+		return nil
+	}
+	return fmt.Errorf("unknown VerifyCode field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *VerifyCodeMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *VerifyCodeMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *VerifyCodeMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *VerifyCodeMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *VerifyCodeMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *VerifyCodeMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *VerifyCodeMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown VerifyCode unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *VerifyCodeMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown VerifyCode edge %s", name)
 }

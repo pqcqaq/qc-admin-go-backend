@@ -13,6 +13,7 @@ import (
 	"go-backend/database/ent/scope"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
+	"go-backend/database/ent/verifycode"
 	"go-backend/database/schema"
 	"time"
 )
@@ -427,6 +428,44 @@ func init() {
 	userrole.DefaultUpdateTime = userroleDescUpdateTime.Default.(func() time.Time)
 	// userrole.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	userrole.UpdateDefaultUpdateTime = userroleDescUpdateTime.UpdateDefault.(func() time.Time)
+	verifycodeMixin := schema.VerifyCode{}.Mixin()
+	verifycodeMixinHooks0 := verifycodeMixin[0].Hooks()
+	verifycodeMixinHooks1 := verifycodeMixin[1].Hooks()
+	verifycode.Hooks[0] = verifycodeMixinHooks0[0]
+	verifycode.Hooks[1] = verifycodeMixinHooks0[1]
+	verifycode.Hooks[2] = verifycodeMixinHooks1[0]
+	verifycodeMixinInters1 := verifycodeMixin[1].Interceptors()
+	verifycode.Interceptors[0] = verifycodeMixinInters1[0]
+	verifycodeMixinFields0 := verifycodeMixin[0].Fields()
+	_ = verifycodeMixinFields0
+	verifycodeFields := schema.VerifyCode{}.Fields()
+	_ = verifycodeFields
+	// verifycodeDescCreateTime is the schema descriptor for create_time field.
+	verifycodeDescCreateTime := verifycodeMixinFields0[1].Descriptor()
+	// verifycode.DefaultCreateTime holds the default value on creation for the create_time field.
+	verifycode.DefaultCreateTime = verifycodeDescCreateTime.Default.(func() time.Time)
+	// verifycodeDescUpdateTime is the schema descriptor for update_time field.
+	verifycodeDescUpdateTime := verifycodeMixinFields0[3].Descriptor()
+	// verifycode.DefaultUpdateTime holds the default value on creation for the update_time field.
+	verifycode.DefaultUpdateTime = verifycodeDescUpdateTime.Default.(func() time.Time)
+	// verifycode.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	verifycode.UpdateDefaultUpdateTime = verifycodeDescUpdateTime.UpdateDefault.(func() time.Time)
+	// verifycodeDescCode is the schema descriptor for code field.
+	verifycodeDescCode := verifycodeFields[0].Descriptor()
+	// verifycode.CodeValidator is a validator for the "code" field. It is called by the builders before save.
+	verifycode.CodeValidator = verifycodeDescCode.Validators[0].(func(string) error)
+	// verifycodeDescIdentifier is the schema descriptor for identifier field.
+	verifycodeDescIdentifier := verifycodeFields[1].Descriptor()
+	// verifycode.IdentifierValidator is a validator for the "identifier" field. It is called by the builders before save.
+	verifycode.IdentifierValidator = verifycodeDescIdentifier.Validators[0].(func(string) error)
+	// verifycodeDescSendFor is the schema descriptor for send_for field.
+	verifycodeDescSendFor := verifycodeFields[3].Descriptor()
+	// verifycode.SendForValidator is a validator for the "send_for" field. It is called by the builders before save.
+	verifycode.SendForValidator = verifycodeDescSendFor.Validators[0].(func(string) error)
+	// verifycodeDescSendSuccess is the schema descriptor for send_success field.
+	verifycodeDescSendSuccess := verifycodeFields[6].Descriptor()
+	// verifycode.DefaultSendSuccess holds the default value on creation for the send_success field.
+	verifycode.DefaultSendSuccess = verifycodeDescSendSuccess.Default.(bool)
 }
 
 const (

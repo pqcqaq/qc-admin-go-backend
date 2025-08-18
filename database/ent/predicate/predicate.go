@@ -35,3 +35,6 @@ type User func(*sql.Selector)
 
 // UserRole is the predicate function for userrole builders.
 type UserRole func(*sql.Selector)
+
+// VerifyCode is the predicate function for verifycode builders.
+type VerifyCode func(*sql.Selector)

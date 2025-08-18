@@ -565,6 +565,47 @@ var (
 			},
 		},
 	}
+	// SysVerifyCodesColumns holds the columns for the "sys_verify_codes" table.
+	SysVerifyCodesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "code", Type: field.TypeString, Size: 10},
+		{Name: "identifier", Type: field.TypeString, Size: 255},
+		{Name: "sender_type", Type: field.TypeEnum, Enums: []string{"email", "phone", "sms"}},
+		{Name: "send_for", Type: field.TypeString, Size: 50},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "send_success", Type: field.TypeBool, Default: false},
+		{Name: "send_at", Type: field.TypeTime, Nullable: true},
+	}
+	// SysVerifyCodesTable holds the schema information for the "sys_verify_codes" table.
+	SysVerifyCodesTable = &schema.Table{
+		Name:       "sys_verify_codes",
+		Columns:    SysVerifyCodesColumns,
+		PrimaryKey: []*schema.Column{SysVerifyCodesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "verifycode_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysVerifyCodesColumns[5]},
+			},
+			{
+				Name:    "verifycode_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysVerifyCodesColumns[6]},
+			},
+			{
+				Name:    "verifycode_identifier_sender_type_send_for_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysVerifyCodesColumns[8], SysVerifyCodesColumns[9], SysVerifyCodesColumns[10], SysVerifyCodesColumns[5]},
+			},
+		},
+	}
 	// RoleInheritsFromColumns holds the columns for the "role_inherits_from" table.
 	RoleInheritsFromColumns = []*schema.Column{
 		{Name: "role_id", Type: field.TypeUint64},
@@ -602,6 +643,7 @@ var (
 		SysScopesTable,
 		SysUsersTable,
 		SysUserRoleTable,
+		SysVerifyCodesTable,
 		RoleInheritsFromTable,
 	}
 )
@@ -639,6 +681,9 @@ func init() {
 	SysUserRoleTable.ForeignKeys[1].RefTable = SysUsersTable
 	SysUserRoleTable.Annotation = &entsql.Annotation{
 		Table: "sys_user_role",
+	}
+	SysVerifyCodesTable.Annotation = &entsql.Annotation{
+		Table: "sys_verify_codes",
 	}
 	RoleInheritsFromTable.ForeignKeys[0].RefTable = SysRolesTable
 	RoleInheritsFromTable.ForeignKeys[1].RefTable = SysRolesTable

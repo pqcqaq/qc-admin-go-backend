@@ -18,6 +18,7 @@ import (
 	"go-backend/database/ent/scope"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
+	"go-backend/database/ent/verifycode"
 
 	"entgo.io/ent/dialect/sql"
 )
@@ -348,6 +349,33 @@ func (f TraverseUserRole) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.UserRoleQuery", q)
 }
 
+// The VerifyCodeFunc type is an adapter to allow the use of ordinary function as a Querier.
+type VerifyCodeFunc func(context.Context, *ent.VerifyCodeQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f VerifyCodeFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.VerifyCodeQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.VerifyCodeQuery", q)
+}
+
+// The TraverseVerifyCode type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseVerifyCode func(context.Context, *ent.VerifyCodeQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseVerifyCode) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseVerifyCode) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.VerifyCodeQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.VerifyCodeQuery", q)
+}
+
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
@@ -371,6 +399,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.UserQuery, predicate.User, user.OrderOption]{typ: ent.TypeUser, tq: q}, nil
 	case *ent.UserRoleQuery:
 		return &query[*ent.UserRoleQuery, predicate.UserRole, userrole.OrderOption]{typ: ent.TypeUserRole, tq: q}, nil
+	case *ent.VerifyCodeQuery:
+		return &query[*ent.VerifyCodeQuery, predicate.VerifyCode, verifycode.OrderOption]{typ: ent.TypeVerifyCode, tq: q}, nil
 	default:
 		return nil, fmt.Errorf("unknown query type %T", q)
 	}
