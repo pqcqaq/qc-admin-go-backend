@@ -57,12 +57,13 @@ const (
 	ProviderAliyun  ProviderType = "aliyun"  // 阿里云
 	ProviderTencent ProviderType = "tencent" // 腾讯云
 	ProviderHTTP    ProviderType = "http"    // HTTP接口
+	ProviderMock    ProviderType = "mock"    // Mock提供商（用于测试）
 )
 
 // IsValid 检查提供商类型是否有效
 func (p ProviderType) IsValid() bool {
 	switch p {
-	case ProviderAliyun, ProviderTencent, ProviderHTTP:
+	case ProviderAliyun, ProviderTencent, ProviderHTTP, ProviderMock:
 		return true
 	default:
 		return false

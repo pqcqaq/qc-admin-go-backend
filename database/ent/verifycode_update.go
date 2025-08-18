@@ -29,14 +29,14 @@ func (_u *VerifyCodeUpdate) Where(ps ...predicate.VerifyCode) *VerifyCodeUpdate 
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_u *VerifyCodeUpdate) SetCreateBy(v int64) *VerifyCodeUpdate {
+func (_u *VerifyCodeUpdate) SetCreateBy(v uint64) *VerifyCodeUpdate {
 	_u.mutation.ResetCreateBy()
 	_u.mutation.SetCreateBy(v)
 	return _u
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_u *VerifyCodeUpdate) SetNillableCreateBy(v *int64) *VerifyCodeUpdate {
+func (_u *VerifyCodeUpdate) SetNillableCreateBy(v *uint64) *VerifyCodeUpdate {
 	if v != nil {
 		_u.SetCreateBy(*v)
 	}
@@ -62,14 +62,14 @@ func (_u *VerifyCodeUpdate) SetUpdateTime(v time.Time) *VerifyCodeUpdate {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_u *VerifyCodeUpdate) SetUpdateBy(v int64) *VerifyCodeUpdate {
+func (_u *VerifyCodeUpdate) SetUpdateBy(v uint64) *VerifyCodeUpdate {
 	_u.mutation.ResetUpdateBy()
 	_u.mutation.SetUpdateBy(v)
 	return _u
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_u *VerifyCodeUpdate) SetNillableUpdateBy(v *int64) *VerifyCodeUpdate {
+func (_u *VerifyCodeUpdate) SetNillableUpdateBy(v *uint64) *VerifyCodeUpdate {
 	if v != nil {
 		_u.SetUpdateBy(*v)
 	}
@@ -109,14 +109,14 @@ func (_u *VerifyCodeUpdate) ClearDeleteTime() *VerifyCodeUpdate {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_u *VerifyCodeUpdate) SetDeleteBy(v int64) *VerifyCodeUpdate {
+func (_u *VerifyCodeUpdate) SetDeleteBy(v uint64) *VerifyCodeUpdate {
 	_u.mutation.ResetDeleteBy()
 	_u.mutation.SetDeleteBy(v)
 	return _u
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_u *VerifyCodeUpdate) SetNillableDeleteBy(v *int64) *VerifyCodeUpdate {
+func (_u *VerifyCodeUpdate) SetNillableDeleteBy(v *uint64) *VerifyCodeUpdate {
 	if v != nil {
 		_u.SetDeleteBy(*v)
 	}
@@ -344,25 +344,25 @@ func (_u *VerifyCodeUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 		}
 	}
 	if value, ok := _u.mutation.CreateBy(); ok {
-		_spec.SetField(verifycode.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(verifycode.FieldCreateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedCreateBy(); ok {
-		_spec.AddField(verifycode.FieldCreateBy, field.TypeInt64, value)
+		_spec.AddField(verifycode.FieldCreateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.CreateByCleared() {
-		_spec.ClearField(verifycode.FieldCreateBy, field.TypeInt64)
+		_spec.ClearField(verifycode.FieldCreateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.UpdateTime(); ok {
 		_spec.SetField(verifycode.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdateBy(); ok {
-		_spec.SetField(verifycode.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(verifycode.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedUpdateBy(); ok {
-		_spec.AddField(verifycode.FieldUpdateBy, field.TypeInt64, value)
+		_spec.AddField(verifycode.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.UpdateByCleared() {
-		_spec.ClearField(verifycode.FieldUpdateBy, field.TypeInt64)
+		_spec.ClearField(verifycode.FieldUpdateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.DeleteTime(); ok {
 		_spec.SetField(verifycode.FieldDeleteTime, field.TypeTime, value)
@@ -371,13 +371,13 @@ func (_u *VerifyCodeUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 		_spec.ClearField(verifycode.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.DeleteBy(); ok {
-		_spec.SetField(verifycode.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(verifycode.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedDeleteBy(); ok {
-		_spec.AddField(verifycode.FieldDeleteBy, field.TypeInt64, value)
+		_spec.AddField(verifycode.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if _u.mutation.DeleteByCleared() {
-		_spec.ClearField(verifycode.FieldDeleteBy, field.TypeInt64)
+		_spec.ClearField(verifycode.FieldDeleteBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.Code(); ok {
 		_spec.SetField(verifycode.FieldCode, field.TypeString, value)
@@ -430,14 +430,14 @@ type VerifyCodeUpdateOne struct {
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_u *VerifyCodeUpdateOne) SetCreateBy(v int64) *VerifyCodeUpdateOne {
+func (_u *VerifyCodeUpdateOne) SetCreateBy(v uint64) *VerifyCodeUpdateOne {
 	_u.mutation.ResetCreateBy()
 	_u.mutation.SetCreateBy(v)
 	return _u
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_u *VerifyCodeUpdateOne) SetNillableCreateBy(v *int64) *VerifyCodeUpdateOne {
+func (_u *VerifyCodeUpdateOne) SetNillableCreateBy(v *uint64) *VerifyCodeUpdateOne {
 	if v != nil {
 		_u.SetCreateBy(*v)
 	}
@@ -463,14 +463,14 @@ func (_u *VerifyCodeUpdateOne) SetUpdateTime(v time.Time) *VerifyCodeUpdateOne {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_u *VerifyCodeUpdateOne) SetUpdateBy(v int64) *VerifyCodeUpdateOne {
+func (_u *VerifyCodeUpdateOne) SetUpdateBy(v uint64) *VerifyCodeUpdateOne {
 	_u.mutation.ResetUpdateBy()
 	_u.mutation.SetUpdateBy(v)
 	return _u
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_u *VerifyCodeUpdateOne) SetNillableUpdateBy(v *int64) *VerifyCodeUpdateOne {
+func (_u *VerifyCodeUpdateOne) SetNillableUpdateBy(v *uint64) *VerifyCodeUpdateOne {
 	if v != nil {
 		_u.SetUpdateBy(*v)
 	}
@@ -510,14 +510,14 @@ func (_u *VerifyCodeUpdateOne) ClearDeleteTime() *VerifyCodeUpdateOne {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_u *VerifyCodeUpdateOne) SetDeleteBy(v int64) *VerifyCodeUpdateOne {
+func (_u *VerifyCodeUpdateOne) SetDeleteBy(v uint64) *VerifyCodeUpdateOne {
 	_u.mutation.ResetDeleteBy()
 	_u.mutation.SetDeleteBy(v)
 	return _u
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_u *VerifyCodeUpdateOne) SetNillableDeleteBy(v *int64) *VerifyCodeUpdateOne {
+func (_u *VerifyCodeUpdateOne) SetNillableDeleteBy(v *uint64) *VerifyCodeUpdateOne {
 	if v != nil {
 		_u.SetDeleteBy(*v)
 	}
@@ -775,25 +775,25 @@ func (_u *VerifyCodeUpdateOne) sqlSave(ctx context.Context) (_node *VerifyCode, 
 		}
 	}
 	if value, ok := _u.mutation.CreateBy(); ok {
-		_spec.SetField(verifycode.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(verifycode.FieldCreateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedCreateBy(); ok {
-		_spec.AddField(verifycode.FieldCreateBy, field.TypeInt64, value)
+		_spec.AddField(verifycode.FieldCreateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.CreateByCleared() {
-		_spec.ClearField(verifycode.FieldCreateBy, field.TypeInt64)
+		_spec.ClearField(verifycode.FieldCreateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.UpdateTime(); ok {
 		_spec.SetField(verifycode.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdateBy(); ok {
-		_spec.SetField(verifycode.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(verifycode.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedUpdateBy(); ok {
-		_spec.AddField(verifycode.FieldUpdateBy, field.TypeInt64, value)
+		_spec.AddField(verifycode.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.UpdateByCleared() {
-		_spec.ClearField(verifycode.FieldUpdateBy, field.TypeInt64)
+		_spec.ClearField(verifycode.FieldUpdateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.DeleteTime(); ok {
 		_spec.SetField(verifycode.FieldDeleteTime, field.TypeTime, value)
@@ -802,13 +802,13 @@ func (_u *VerifyCodeUpdateOne) sqlSave(ctx context.Context) (_node *VerifyCode, 
 		_spec.ClearField(verifycode.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.DeleteBy(); ok {
-		_spec.SetField(verifycode.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(verifycode.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedDeleteBy(); ok {
-		_spec.AddField(verifycode.FieldDeleteBy, field.TypeInt64, value)
+		_spec.AddField(verifycode.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if _u.mutation.DeleteByCleared() {
-		_spec.ClearField(verifycode.FieldDeleteBy, field.TypeInt64)
+		_spec.ClearField(verifycode.FieldDeleteBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.Code(); ok {
 		_spec.SetField(verifycode.FieldCode, field.TypeString, value)

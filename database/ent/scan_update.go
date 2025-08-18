@@ -30,14 +30,14 @@ func (_u *ScanUpdate) Where(ps ...predicate.Scan) *ScanUpdate {
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_u *ScanUpdate) SetCreateBy(v int64) *ScanUpdate {
+func (_u *ScanUpdate) SetCreateBy(v uint64) *ScanUpdate {
 	_u.mutation.ResetCreateBy()
 	_u.mutation.SetCreateBy(v)
 	return _u
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_u *ScanUpdate) SetNillableCreateBy(v *int64) *ScanUpdate {
+func (_u *ScanUpdate) SetNillableCreateBy(v *uint64) *ScanUpdate {
 	if v != nil {
 		_u.SetCreateBy(*v)
 	}
@@ -63,14 +63,14 @@ func (_u *ScanUpdate) SetUpdateTime(v time.Time) *ScanUpdate {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_u *ScanUpdate) SetUpdateBy(v int64) *ScanUpdate {
+func (_u *ScanUpdate) SetUpdateBy(v uint64) *ScanUpdate {
 	_u.mutation.ResetUpdateBy()
 	_u.mutation.SetUpdateBy(v)
 	return _u
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_u *ScanUpdate) SetNillableUpdateBy(v *int64) *ScanUpdate {
+func (_u *ScanUpdate) SetNillableUpdateBy(v *uint64) *ScanUpdate {
 	if v != nil {
 		_u.SetUpdateBy(*v)
 	}
@@ -110,14 +110,14 @@ func (_u *ScanUpdate) ClearDeleteTime() *ScanUpdate {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_u *ScanUpdate) SetDeleteBy(v int64) *ScanUpdate {
+func (_u *ScanUpdate) SetDeleteBy(v uint64) *ScanUpdate {
 	_u.mutation.ResetDeleteBy()
 	_u.mutation.SetDeleteBy(v)
 	return _u
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_u *ScanUpdate) SetNillableDeleteBy(v *int64) *ScanUpdate {
+func (_u *ScanUpdate) SetNillableDeleteBy(v *uint64) *ScanUpdate {
 	if v != nil {
 		_u.SetDeleteBy(*v)
 	}
@@ -285,25 +285,25 @@ func (_u *ScanUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 	}
 	if value, ok := _u.mutation.CreateBy(); ok {
-		_spec.SetField(scan.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(scan.FieldCreateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedCreateBy(); ok {
-		_spec.AddField(scan.FieldCreateBy, field.TypeInt64, value)
+		_spec.AddField(scan.FieldCreateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.CreateByCleared() {
-		_spec.ClearField(scan.FieldCreateBy, field.TypeInt64)
+		_spec.ClearField(scan.FieldCreateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.UpdateTime(); ok {
 		_spec.SetField(scan.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdateBy(); ok {
-		_spec.SetField(scan.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(scan.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedUpdateBy(); ok {
-		_spec.AddField(scan.FieldUpdateBy, field.TypeInt64, value)
+		_spec.AddField(scan.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.UpdateByCleared() {
-		_spec.ClearField(scan.FieldUpdateBy, field.TypeInt64)
+		_spec.ClearField(scan.FieldUpdateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.DeleteTime(); ok {
 		_spec.SetField(scan.FieldDeleteTime, field.TypeTime, value)
@@ -312,13 +312,13 @@ func (_u *ScanUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		_spec.ClearField(scan.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.DeleteBy(); ok {
-		_spec.SetField(scan.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(scan.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedDeleteBy(); ok {
-		_spec.AddField(scan.FieldDeleteBy, field.TypeInt64, value)
+		_spec.AddField(scan.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if _u.mutation.DeleteByCleared() {
-		_spec.ClearField(scan.FieldDeleteBy, field.TypeInt64)
+		_spec.ClearField(scan.FieldDeleteBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(scan.FieldContent, field.TypeString, value)
@@ -382,14 +382,14 @@ type ScanUpdateOne struct {
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_u *ScanUpdateOne) SetCreateBy(v int64) *ScanUpdateOne {
+func (_u *ScanUpdateOne) SetCreateBy(v uint64) *ScanUpdateOne {
 	_u.mutation.ResetCreateBy()
 	_u.mutation.SetCreateBy(v)
 	return _u
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_u *ScanUpdateOne) SetNillableCreateBy(v *int64) *ScanUpdateOne {
+func (_u *ScanUpdateOne) SetNillableCreateBy(v *uint64) *ScanUpdateOne {
 	if v != nil {
 		_u.SetCreateBy(*v)
 	}
@@ -415,14 +415,14 @@ func (_u *ScanUpdateOne) SetUpdateTime(v time.Time) *ScanUpdateOne {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_u *ScanUpdateOne) SetUpdateBy(v int64) *ScanUpdateOne {
+func (_u *ScanUpdateOne) SetUpdateBy(v uint64) *ScanUpdateOne {
 	_u.mutation.ResetUpdateBy()
 	_u.mutation.SetUpdateBy(v)
 	return _u
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_u *ScanUpdateOne) SetNillableUpdateBy(v *int64) *ScanUpdateOne {
+func (_u *ScanUpdateOne) SetNillableUpdateBy(v *uint64) *ScanUpdateOne {
 	if v != nil {
 		_u.SetUpdateBy(*v)
 	}
@@ -462,14 +462,14 @@ func (_u *ScanUpdateOne) ClearDeleteTime() *ScanUpdateOne {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_u *ScanUpdateOne) SetDeleteBy(v int64) *ScanUpdateOne {
+func (_u *ScanUpdateOne) SetDeleteBy(v uint64) *ScanUpdateOne {
 	_u.mutation.ResetDeleteBy()
 	_u.mutation.SetDeleteBy(v)
 	return _u
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_u *ScanUpdateOne) SetNillableDeleteBy(v *int64) *ScanUpdateOne {
+func (_u *ScanUpdateOne) SetNillableDeleteBy(v *uint64) *ScanUpdateOne {
 	if v != nil {
 		_u.SetDeleteBy(*v)
 	}
@@ -667,25 +667,25 @@ func (_u *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) {
 		}
 	}
 	if value, ok := _u.mutation.CreateBy(); ok {
-		_spec.SetField(scan.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(scan.FieldCreateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedCreateBy(); ok {
-		_spec.AddField(scan.FieldCreateBy, field.TypeInt64, value)
+		_spec.AddField(scan.FieldCreateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.CreateByCleared() {
-		_spec.ClearField(scan.FieldCreateBy, field.TypeInt64)
+		_spec.ClearField(scan.FieldCreateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.UpdateTime(); ok {
 		_spec.SetField(scan.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdateBy(); ok {
-		_spec.SetField(scan.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(scan.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedUpdateBy(); ok {
-		_spec.AddField(scan.FieldUpdateBy, field.TypeInt64, value)
+		_spec.AddField(scan.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.UpdateByCleared() {
-		_spec.ClearField(scan.FieldUpdateBy, field.TypeInt64)
+		_spec.ClearField(scan.FieldUpdateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.DeleteTime(); ok {
 		_spec.SetField(scan.FieldDeleteTime, field.TypeTime, value)
@@ -694,13 +694,13 @@ func (_u *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) {
 		_spec.ClearField(scan.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.DeleteBy(); ok {
-		_spec.SetField(scan.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(scan.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedDeleteBy(); ok {
-		_spec.AddField(scan.FieldDeleteBy, field.TypeInt64, value)
+		_spec.AddField(scan.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if _u.mutation.DeleteByCleared() {
-		_spec.ClearField(scan.FieldDeleteBy, field.TypeInt64)
+		_spec.ClearField(scan.FieldDeleteBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(scan.FieldContent, field.TypeString, value)

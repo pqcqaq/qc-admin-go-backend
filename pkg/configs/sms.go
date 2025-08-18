@@ -4,10 +4,11 @@ import "github.com/spf13/viper"
 
 // SMSConfig 短信配置
 type SMSConfig struct {
-	Provider string                 `mapstructure:"provider"` // 短信服务提供商 (aliyun, tencent, http)
+	Provider string                 `mapstructure:"provider"` // 短信服务提供商 (aliyun, tencent, http, mock)
 	Aliyun   AliyunSMSConfig        `mapstructure:"aliyun"`   // 阿里云短信配置
 	Tencent  TencentSMSConfig       `mapstructure:"tencent"`  // 腾讯云短信配置
 	HTTP     HTTPSMSConfig          `mapstructure:"http"`     // HTTP短信配置
+	Mock     MockSMSConfig          `mapstructure:"mock"`     // Mock短信配置
 	Extra    map[string]interface{} `mapstructure:"extra"`    // 额外配置
 }
 
@@ -48,6 +49,11 @@ type HTTPSMSConfig struct {
 	Timeout    int               `mapstructure:"timeout"`     // 超时时间(秒)
 }
 
+// MockSMSConfig Mock短信配置
+type MockSMSConfig struct {
+	Verbose bool `mapstructure:"verbose"` // 是否启用详细输出
+}
+
 // setSMSConfigDefaults 设置短信默认配置
 func setSMSConfigDefaults() {
 	viper.SetDefault("sms.provider", "aliyun")
@@ -74,4 +80,7 @@ func setSMSConfigDefaults() {
 	viper.SetDefault("sms.http.method", "POST")
 	viper.SetDefault("sms.http.auth_type", "api_key")
 	viper.SetDefault("sms.http.timeout", 30)
+
+	// Mock默认配置
+	viper.SetDefault("sms.mock.verbose", true)
 }

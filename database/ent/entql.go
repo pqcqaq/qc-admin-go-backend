@@ -37,11 +37,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "Attachment",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			attachment.FieldCreateTime:      {Type: field.TypeTime, Column: attachment.FieldCreateTime},
-			attachment.FieldCreateBy:        {Type: field.TypeInt64, Column: attachment.FieldCreateBy},
+			attachment.FieldCreateBy:        {Type: field.TypeUint64, Column: attachment.FieldCreateBy},
 			attachment.FieldUpdateTime:      {Type: field.TypeTime, Column: attachment.FieldUpdateTime},
-			attachment.FieldUpdateBy:        {Type: field.TypeInt64, Column: attachment.FieldUpdateBy},
+			attachment.FieldUpdateBy:        {Type: field.TypeUint64, Column: attachment.FieldUpdateBy},
 			attachment.FieldDeleteTime:      {Type: field.TypeTime, Column: attachment.FieldDeleteTime},
-			attachment.FieldDeleteBy:        {Type: field.TypeInt64, Column: attachment.FieldDeleteBy},
+			attachment.FieldDeleteBy:        {Type: field.TypeUint64, Column: attachment.FieldDeleteBy},
 			attachment.FieldFilename:        {Type: field.TypeString, Column: attachment.FieldFilename},
 			attachment.FieldPath:            {Type: field.TypeString, Column: attachment.FieldPath},
 			attachment.FieldURL:             {Type: field.TypeString, Column: attachment.FieldURL},
@@ -70,11 +70,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "Credential",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			credential.FieldCreateTime:     {Type: field.TypeTime, Column: credential.FieldCreateTime},
-			credential.FieldCreateBy:       {Type: field.TypeInt64, Column: credential.FieldCreateBy},
+			credential.FieldCreateBy:       {Type: field.TypeUint64, Column: credential.FieldCreateBy},
 			credential.FieldUpdateTime:     {Type: field.TypeTime, Column: credential.FieldUpdateTime},
-			credential.FieldUpdateBy:       {Type: field.TypeInt64, Column: credential.FieldUpdateBy},
+			credential.FieldUpdateBy:       {Type: field.TypeUint64, Column: credential.FieldUpdateBy},
 			credential.FieldDeleteTime:     {Type: field.TypeTime, Column: credential.FieldDeleteTime},
-			credential.FieldDeleteBy:       {Type: field.TypeInt64, Column: credential.FieldDeleteBy},
+			credential.FieldDeleteBy:       {Type: field.TypeUint64, Column: credential.FieldDeleteBy},
 			credential.FieldUserID:         {Type: field.TypeUint64, Column: credential.FieldUserID},
 			credential.FieldCredentialType: {Type: field.TypeEnum, Column: credential.FieldCredentialType},
 			credential.FieldIdentifier:     {Type: field.TypeString, Column: credential.FieldIdentifier},
@@ -101,11 +101,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "Logging",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			logging.FieldCreateTime: {Type: field.TypeTime, Column: logging.FieldCreateTime},
-			logging.FieldCreateBy:   {Type: field.TypeInt64, Column: logging.FieldCreateBy},
+			logging.FieldCreateBy:   {Type: field.TypeUint64, Column: logging.FieldCreateBy},
 			logging.FieldUpdateTime: {Type: field.TypeTime, Column: logging.FieldUpdateTime},
-			logging.FieldUpdateBy:   {Type: field.TypeInt64, Column: logging.FieldUpdateBy},
+			logging.FieldUpdateBy:   {Type: field.TypeUint64, Column: logging.FieldUpdateBy},
 			logging.FieldDeleteTime: {Type: field.TypeTime, Column: logging.FieldDeleteTime},
-			logging.FieldDeleteBy:   {Type: field.TypeInt64, Column: logging.FieldDeleteBy},
+			logging.FieldDeleteBy:   {Type: field.TypeUint64, Column: logging.FieldDeleteBy},
 			logging.FieldLevel:      {Type: field.TypeEnum, Column: logging.FieldLevel},
 			logging.FieldType:       {Type: field.TypeEnum, Column: logging.FieldType},
 			logging.FieldMessage:    {Type: field.TypeString, Column: logging.FieldMessage},
@@ -131,11 +131,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "Permission",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			permission.FieldCreateTime:  {Type: field.TypeTime, Column: permission.FieldCreateTime},
-			permission.FieldCreateBy:    {Type: field.TypeInt64, Column: permission.FieldCreateBy},
+			permission.FieldCreateBy:    {Type: field.TypeUint64, Column: permission.FieldCreateBy},
 			permission.FieldUpdateTime:  {Type: field.TypeTime, Column: permission.FieldUpdateTime},
-			permission.FieldUpdateBy:    {Type: field.TypeInt64, Column: permission.FieldUpdateBy},
+			permission.FieldUpdateBy:    {Type: field.TypeUint64, Column: permission.FieldUpdateBy},
 			permission.FieldDeleteTime:  {Type: field.TypeTime, Column: permission.FieldDeleteTime},
-			permission.FieldDeleteBy:    {Type: field.TypeInt64, Column: permission.FieldDeleteBy},
+			permission.FieldDeleteBy:    {Type: field.TypeUint64, Column: permission.FieldDeleteBy},
 			permission.FieldName:        {Type: field.TypeString, Column: permission.FieldName},
 			permission.FieldAction:      {Type: field.TypeString, Column: permission.FieldAction},
 			permission.FieldDescription: {Type: field.TypeString, Column: permission.FieldDescription},
@@ -153,11 +153,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "Role",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			role.FieldCreateTime:  {Type: field.TypeTime, Column: role.FieldCreateTime},
-			role.FieldCreateBy:    {Type: field.TypeInt64, Column: role.FieldCreateBy},
+			role.FieldCreateBy:    {Type: field.TypeUint64, Column: role.FieldCreateBy},
 			role.FieldUpdateTime:  {Type: field.TypeTime, Column: role.FieldUpdateTime},
-			role.FieldUpdateBy:    {Type: field.TypeInt64, Column: role.FieldUpdateBy},
+			role.FieldUpdateBy:    {Type: field.TypeUint64, Column: role.FieldUpdateBy},
 			role.FieldDeleteTime:  {Type: field.TypeTime, Column: role.FieldDeleteTime},
-			role.FieldDeleteBy:    {Type: field.TypeInt64, Column: role.FieldDeleteBy},
+			role.FieldDeleteBy:    {Type: field.TypeUint64, Column: role.FieldDeleteBy},
 			role.FieldName:        {Type: field.TypeString, Column: role.FieldName},
 			role.FieldDescription: {Type: field.TypeString, Column: role.FieldDescription},
 		},
@@ -174,11 +174,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "RolePermission",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			rolepermission.FieldCreateTime:   {Type: field.TypeTime, Column: rolepermission.FieldCreateTime},
-			rolepermission.FieldCreateBy:     {Type: field.TypeInt64, Column: rolepermission.FieldCreateBy},
+			rolepermission.FieldCreateBy:     {Type: field.TypeUint64, Column: rolepermission.FieldCreateBy},
 			rolepermission.FieldUpdateTime:   {Type: field.TypeTime, Column: rolepermission.FieldUpdateTime},
-			rolepermission.FieldUpdateBy:     {Type: field.TypeInt64, Column: rolepermission.FieldUpdateBy},
+			rolepermission.FieldUpdateBy:     {Type: field.TypeUint64, Column: rolepermission.FieldUpdateBy},
 			rolepermission.FieldDeleteTime:   {Type: field.TypeTime, Column: rolepermission.FieldDeleteTime},
-			rolepermission.FieldDeleteBy:     {Type: field.TypeInt64, Column: rolepermission.FieldDeleteBy},
+			rolepermission.FieldDeleteBy:     {Type: field.TypeUint64, Column: rolepermission.FieldDeleteBy},
 			rolepermission.FieldRoleID:       {Type: field.TypeUint64, Column: rolepermission.FieldRoleID},
 			rolepermission.FieldPermissionID: {Type: field.TypeUint64, Column: rolepermission.FieldPermissionID},
 		},
@@ -195,11 +195,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "Scan",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			scan.FieldCreateTime: {Type: field.TypeTime, Column: scan.FieldCreateTime},
-			scan.FieldCreateBy:   {Type: field.TypeInt64, Column: scan.FieldCreateBy},
+			scan.FieldCreateBy:   {Type: field.TypeUint64, Column: scan.FieldCreateBy},
 			scan.FieldUpdateTime: {Type: field.TypeTime, Column: scan.FieldUpdateTime},
-			scan.FieldUpdateBy:   {Type: field.TypeInt64, Column: scan.FieldUpdateBy},
+			scan.FieldUpdateBy:   {Type: field.TypeUint64, Column: scan.FieldUpdateBy},
 			scan.FieldDeleteTime: {Type: field.TypeTime, Column: scan.FieldDeleteTime},
-			scan.FieldDeleteBy:   {Type: field.TypeInt64, Column: scan.FieldDeleteBy},
+			scan.FieldDeleteBy:   {Type: field.TypeUint64, Column: scan.FieldDeleteBy},
 			scan.FieldContent:    {Type: field.TypeString, Column: scan.FieldContent},
 			scan.FieldLength:     {Type: field.TypeInt, Column: scan.FieldLength},
 			scan.FieldSuccess:    {Type: field.TypeBool, Column: scan.FieldSuccess},
@@ -217,11 +217,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "Scope",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			scope.FieldCreateTime:  {Type: field.TypeTime, Column: scope.FieldCreateTime},
-			scope.FieldCreateBy:    {Type: field.TypeInt64, Column: scope.FieldCreateBy},
+			scope.FieldCreateBy:    {Type: field.TypeUint64, Column: scope.FieldCreateBy},
 			scope.FieldUpdateTime:  {Type: field.TypeTime, Column: scope.FieldUpdateTime},
-			scope.FieldUpdateBy:    {Type: field.TypeInt64, Column: scope.FieldUpdateBy},
+			scope.FieldUpdateBy:    {Type: field.TypeUint64, Column: scope.FieldUpdateBy},
 			scope.FieldDeleteTime:  {Type: field.TypeTime, Column: scope.FieldDeleteTime},
-			scope.FieldDeleteBy:    {Type: field.TypeInt64, Column: scope.FieldDeleteBy},
+			scope.FieldDeleteBy:    {Type: field.TypeUint64, Column: scope.FieldDeleteBy},
 			scope.FieldName:        {Type: field.TypeString, Column: scope.FieldName},
 			scope.FieldType:        {Type: field.TypeEnum, Column: scope.FieldType},
 			scope.FieldIcon:        {Type: field.TypeString, Column: scope.FieldIcon},
@@ -248,11 +248,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "User",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			user.FieldCreateTime: {Type: field.TypeTime, Column: user.FieldCreateTime},
-			user.FieldCreateBy:   {Type: field.TypeInt64, Column: user.FieldCreateBy},
+			user.FieldCreateBy:   {Type: field.TypeUint64, Column: user.FieldCreateBy},
 			user.FieldUpdateTime: {Type: field.TypeTime, Column: user.FieldUpdateTime},
-			user.FieldUpdateBy:   {Type: field.TypeInt64, Column: user.FieldUpdateBy},
+			user.FieldUpdateBy:   {Type: field.TypeUint64, Column: user.FieldUpdateBy},
 			user.FieldDeleteTime: {Type: field.TypeTime, Column: user.FieldDeleteTime},
-			user.FieldDeleteBy:   {Type: field.TypeInt64, Column: user.FieldDeleteBy},
+			user.FieldDeleteBy:   {Type: field.TypeUint64, Column: user.FieldDeleteBy},
 			user.FieldName:       {Type: field.TypeString, Column: user.FieldName},
 			user.FieldAge:        {Type: field.TypeInt, Column: user.FieldAge},
 			user.FieldSex:        {Type: field.TypeEnum, Column: user.FieldSex},
@@ -271,11 +271,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "UserRole",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			userrole.FieldCreateTime: {Type: field.TypeTime, Column: userrole.FieldCreateTime},
-			userrole.FieldCreateBy:   {Type: field.TypeInt64, Column: userrole.FieldCreateBy},
+			userrole.FieldCreateBy:   {Type: field.TypeUint64, Column: userrole.FieldCreateBy},
 			userrole.FieldUpdateTime: {Type: field.TypeTime, Column: userrole.FieldUpdateTime},
-			userrole.FieldUpdateBy:   {Type: field.TypeInt64, Column: userrole.FieldUpdateBy},
+			userrole.FieldUpdateBy:   {Type: field.TypeUint64, Column: userrole.FieldUpdateBy},
 			userrole.FieldDeleteTime: {Type: field.TypeTime, Column: userrole.FieldDeleteTime},
-			userrole.FieldDeleteBy:   {Type: field.TypeInt64, Column: userrole.FieldDeleteBy},
+			userrole.FieldDeleteBy:   {Type: field.TypeUint64, Column: userrole.FieldDeleteBy},
 			userrole.FieldUserID:     {Type: field.TypeUint64, Column: userrole.FieldUserID},
 			userrole.FieldRoleID:     {Type: field.TypeUint64, Column: userrole.FieldRoleID},
 		},
@@ -292,11 +292,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "VerifyCode",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			verifycode.FieldCreateTime:  {Type: field.TypeTime, Column: verifycode.FieldCreateTime},
-			verifycode.FieldCreateBy:    {Type: field.TypeInt64, Column: verifycode.FieldCreateBy},
+			verifycode.FieldCreateBy:    {Type: field.TypeUint64, Column: verifycode.FieldCreateBy},
 			verifycode.FieldUpdateTime:  {Type: field.TypeTime, Column: verifycode.FieldUpdateTime},
-			verifycode.FieldUpdateBy:    {Type: field.TypeInt64, Column: verifycode.FieldUpdateBy},
+			verifycode.FieldUpdateBy:    {Type: field.TypeUint64, Column: verifycode.FieldUpdateBy},
 			verifycode.FieldDeleteTime:  {Type: field.TypeTime, Column: verifycode.FieldDeleteTime},
-			verifycode.FieldDeleteBy:    {Type: field.TypeInt64, Column: verifycode.FieldDeleteBy},
+			verifycode.FieldDeleteBy:    {Type: field.TypeUint64, Column: verifycode.FieldDeleteBy},
 			verifycode.FieldCode:        {Type: field.TypeString, Column: verifycode.FieldCode},
 			verifycode.FieldIdentifier:  {Type: field.TypeString, Column: verifycode.FieldIdentifier},
 			verifycode.FieldSenderType:  {Type: field.TypeEnum, Column: verifycode.FieldSenderType},
@@ -577,8 +577,8 @@ func (f *AttachmentFilter) WhereCreateTime(p entql.TimeP) {
 	f.Where(p.Field(attachment.FieldCreateTime))
 }
 
-// WhereCreateBy applies the entql int64 predicate on the create_by field.
-func (f *AttachmentFilter) WhereCreateBy(p entql.Int64P) {
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *AttachmentFilter) WhereCreateBy(p entql.Uint64P) {
 	f.Where(p.Field(attachment.FieldCreateBy))
 }
 
@@ -587,8 +587,8 @@ func (f *AttachmentFilter) WhereUpdateTime(p entql.TimeP) {
 	f.Where(p.Field(attachment.FieldUpdateTime))
 }
 
-// WhereUpdateBy applies the entql int64 predicate on the update_by field.
-func (f *AttachmentFilter) WhereUpdateBy(p entql.Int64P) {
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *AttachmentFilter) WhereUpdateBy(p entql.Uint64P) {
 	f.Where(p.Field(attachment.FieldUpdateBy))
 }
 
@@ -597,8 +597,8 @@ func (f *AttachmentFilter) WhereDeleteTime(p entql.TimeP) {
 	f.Where(p.Field(attachment.FieldDeleteTime))
 }
 
-// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
-func (f *AttachmentFilter) WhereDeleteBy(p entql.Int64P) {
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *AttachmentFilter) WhereDeleteBy(p entql.Uint64P) {
 	f.Where(p.Field(attachment.FieldDeleteBy))
 }
 
@@ -717,8 +717,8 @@ func (f *CredentialFilter) WhereCreateTime(p entql.TimeP) {
 	f.Where(p.Field(credential.FieldCreateTime))
 }
 
-// WhereCreateBy applies the entql int64 predicate on the create_by field.
-func (f *CredentialFilter) WhereCreateBy(p entql.Int64P) {
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *CredentialFilter) WhereCreateBy(p entql.Uint64P) {
 	f.Where(p.Field(credential.FieldCreateBy))
 }
 
@@ -727,8 +727,8 @@ func (f *CredentialFilter) WhereUpdateTime(p entql.TimeP) {
 	f.Where(p.Field(credential.FieldUpdateTime))
 }
 
-// WhereUpdateBy applies the entql int64 predicate on the update_by field.
-func (f *CredentialFilter) WhereUpdateBy(p entql.Int64P) {
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *CredentialFilter) WhereUpdateBy(p entql.Uint64P) {
 	f.Where(p.Field(credential.FieldUpdateBy))
 }
 
@@ -737,8 +737,8 @@ func (f *CredentialFilter) WhereDeleteTime(p entql.TimeP) {
 	f.Where(p.Field(credential.FieldDeleteTime))
 }
 
-// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
-func (f *CredentialFilter) WhereDeleteBy(p entql.Int64P) {
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *CredentialFilter) WhereDeleteBy(p entql.Uint64P) {
 	f.Where(p.Field(credential.FieldDeleteBy))
 }
 
@@ -861,8 +861,8 @@ func (f *LoggingFilter) WhereCreateTime(p entql.TimeP) {
 	f.Where(p.Field(logging.FieldCreateTime))
 }
 
-// WhereCreateBy applies the entql int64 predicate on the create_by field.
-func (f *LoggingFilter) WhereCreateBy(p entql.Int64P) {
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *LoggingFilter) WhereCreateBy(p entql.Uint64P) {
 	f.Where(p.Field(logging.FieldCreateBy))
 }
 
@@ -871,8 +871,8 @@ func (f *LoggingFilter) WhereUpdateTime(p entql.TimeP) {
 	f.Where(p.Field(logging.FieldUpdateTime))
 }
 
-// WhereUpdateBy applies the entql int64 predicate on the update_by field.
-func (f *LoggingFilter) WhereUpdateBy(p entql.Int64P) {
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *LoggingFilter) WhereUpdateBy(p entql.Uint64P) {
 	f.Where(p.Field(logging.FieldUpdateBy))
 }
 
@@ -881,8 +881,8 @@ func (f *LoggingFilter) WhereDeleteTime(p entql.TimeP) {
 	f.Where(p.Field(logging.FieldDeleteTime))
 }
 
-// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
-func (f *LoggingFilter) WhereDeleteBy(p entql.Int64P) {
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *LoggingFilter) WhereDeleteBy(p entql.Uint64P) {
 	f.Where(p.Field(logging.FieldDeleteBy))
 }
 
@@ -986,8 +986,8 @@ func (f *PermissionFilter) WhereCreateTime(p entql.TimeP) {
 	f.Where(p.Field(permission.FieldCreateTime))
 }
 
-// WhereCreateBy applies the entql int64 predicate on the create_by field.
-func (f *PermissionFilter) WhereCreateBy(p entql.Int64P) {
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *PermissionFilter) WhereCreateBy(p entql.Uint64P) {
 	f.Where(p.Field(permission.FieldCreateBy))
 }
 
@@ -996,8 +996,8 @@ func (f *PermissionFilter) WhereUpdateTime(p entql.TimeP) {
 	f.Where(p.Field(permission.FieldUpdateTime))
 }
 
-// WhereUpdateBy applies the entql int64 predicate on the update_by field.
-func (f *PermissionFilter) WhereUpdateBy(p entql.Int64P) {
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *PermissionFilter) WhereUpdateBy(p entql.Uint64P) {
 	f.Where(p.Field(permission.FieldUpdateBy))
 }
 
@@ -1006,8 +1006,8 @@ func (f *PermissionFilter) WhereDeleteTime(p entql.TimeP) {
 	f.Where(p.Field(permission.FieldDeleteTime))
 }
 
-// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
-func (f *PermissionFilter) WhereDeleteBy(p entql.Int64P) {
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *PermissionFilter) WhereDeleteBy(p entql.Uint64P) {
 	f.Where(p.Field(permission.FieldDeleteBy))
 }
 
@@ -1099,8 +1099,8 @@ func (f *RoleFilter) WhereCreateTime(p entql.TimeP) {
 	f.Where(p.Field(role.FieldCreateTime))
 }
 
-// WhereCreateBy applies the entql int64 predicate on the create_by field.
-func (f *RoleFilter) WhereCreateBy(p entql.Int64P) {
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *RoleFilter) WhereCreateBy(p entql.Uint64P) {
 	f.Where(p.Field(role.FieldCreateBy))
 }
 
@@ -1109,8 +1109,8 @@ func (f *RoleFilter) WhereUpdateTime(p entql.TimeP) {
 	f.Where(p.Field(role.FieldUpdateTime))
 }
 
-// WhereUpdateBy applies the entql int64 predicate on the update_by field.
-func (f *RoleFilter) WhereUpdateBy(p entql.Int64P) {
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *RoleFilter) WhereUpdateBy(p entql.Uint64P) {
 	f.Where(p.Field(role.FieldUpdateBy))
 }
 
@@ -1119,8 +1119,8 @@ func (f *RoleFilter) WhereDeleteTime(p entql.TimeP) {
 	f.Where(p.Field(role.FieldDeleteTime))
 }
 
-// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
-func (f *RoleFilter) WhereDeleteBy(p entql.Int64P) {
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *RoleFilter) WhereDeleteBy(p entql.Uint64P) {
 	f.Where(p.Field(role.FieldDeleteBy))
 }
 
@@ -1235,8 +1235,8 @@ func (f *RolePermissionFilter) WhereCreateTime(p entql.TimeP) {
 	f.Where(p.Field(rolepermission.FieldCreateTime))
 }
 
-// WhereCreateBy applies the entql int64 predicate on the create_by field.
-func (f *RolePermissionFilter) WhereCreateBy(p entql.Int64P) {
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *RolePermissionFilter) WhereCreateBy(p entql.Uint64P) {
 	f.Where(p.Field(rolepermission.FieldCreateBy))
 }
 
@@ -1245,8 +1245,8 @@ func (f *RolePermissionFilter) WhereUpdateTime(p entql.TimeP) {
 	f.Where(p.Field(rolepermission.FieldUpdateTime))
 }
 
-// WhereUpdateBy applies the entql int64 predicate on the update_by field.
-func (f *RolePermissionFilter) WhereUpdateBy(p entql.Int64P) {
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *RolePermissionFilter) WhereUpdateBy(p entql.Uint64P) {
 	f.Where(p.Field(rolepermission.FieldUpdateBy))
 }
 
@@ -1255,8 +1255,8 @@ func (f *RolePermissionFilter) WhereDeleteTime(p entql.TimeP) {
 	f.Where(p.Field(rolepermission.FieldDeleteTime))
 }
 
-// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
-func (f *RolePermissionFilter) WhereDeleteBy(p entql.Int64P) {
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *RolePermissionFilter) WhereDeleteBy(p entql.Uint64P) {
 	f.Where(p.Field(rolepermission.FieldDeleteBy))
 }
 
@@ -1343,8 +1343,8 @@ func (f *ScanFilter) WhereCreateTime(p entql.TimeP) {
 	f.Where(p.Field(scan.FieldCreateTime))
 }
 
-// WhereCreateBy applies the entql int64 predicate on the create_by field.
-func (f *ScanFilter) WhereCreateBy(p entql.Int64P) {
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *ScanFilter) WhereCreateBy(p entql.Uint64P) {
 	f.Where(p.Field(scan.FieldCreateBy))
 }
 
@@ -1353,8 +1353,8 @@ func (f *ScanFilter) WhereUpdateTime(p entql.TimeP) {
 	f.Where(p.Field(scan.FieldUpdateTime))
 }
 
-// WhereUpdateBy applies the entql int64 predicate on the update_by field.
-func (f *ScanFilter) WhereUpdateBy(p entql.Int64P) {
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *ScanFilter) WhereUpdateBy(p entql.Uint64P) {
 	f.Where(p.Field(scan.FieldUpdateBy))
 }
 
@@ -1363,8 +1363,8 @@ func (f *ScanFilter) WhereDeleteTime(p entql.TimeP) {
 	f.Where(p.Field(scan.FieldDeleteTime))
 }
 
-// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
-func (f *ScanFilter) WhereDeleteBy(p entql.Int64P) {
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *ScanFilter) WhereDeleteBy(p entql.Uint64P) {
 	f.Where(p.Field(scan.FieldDeleteBy))
 }
 
@@ -1442,8 +1442,8 @@ func (f *ScopeFilter) WhereCreateTime(p entql.TimeP) {
 	f.Where(p.Field(scope.FieldCreateTime))
 }
 
-// WhereCreateBy applies the entql int64 predicate on the create_by field.
-func (f *ScopeFilter) WhereCreateBy(p entql.Int64P) {
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *ScopeFilter) WhereCreateBy(p entql.Uint64P) {
 	f.Where(p.Field(scope.FieldCreateBy))
 }
 
@@ -1452,8 +1452,8 @@ func (f *ScopeFilter) WhereUpdateTime(p entql.TimeP) {
 	f.Where(p.Field(scope.FieldUpdateTime))
 }
 
-// WhereUpdateBy applies the entql int64 predicate on the update_by field.
-func (f *ScopeFilter) WhereUpdateBy(p entql.Int64P) {
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *ScopeFilter) WhereUpdateBy(p entql.Uint64P) {
 	f.Where(p.Field(scope.FieldUpdateBy))
 }
 
@@ -1462,8 +1462,8 @@ func (f *ScopeFilter) WhereDeleteTime(p entql.TimeP) {
 	f.Where(p.Field(scope.FieldDeleteTime))
 }
 
-// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
-func (f *ScopeFilter) WhereDeleteBy(p entql.Int64P) {
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *ScopeFilter) WhereDeleteBy(p entql.Uint64P) {
 	f.Where(p.Field(scope.FieldDeleteBy))
 }
 
@@ -1614,8 +1614,8 @@ func (f *UserFilter) WhereCreateTime(p entql.TimeP) {
 	f.Where(p.Field(user.FieldCreateTime))
 }
 
-// WhereCreateBy applies the entql int64 predicate on the create_by field.
-func (f *UserFilter) WhereCreateBy(p entql.Int64P) {
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *UserFilter) WhereCreateBy(p entql.Uint64P) {
 	f.Where(p.Field(user.FieldCreateBy))
 }
 
@@ -1624,8 +1624,8 @@ func (f *UserFilter) WhereUpdateTime(p entql.TimeP) {
 	f.Where(p.Field(user.FieldUpdateTime))
 }
 
-// WhereUpdateBy applies the entql int64 predicate on the update_by field.
-func (f *UserFilter) WhereUpdateBy(p entql.Int64P) {
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *UserFilter) WhereUpdateBy(p entql.Uint64P) {
 	f.Where(p.Field(user.FieldUpdateBy))
 }
 
@@ -1634,8 +1634,8 @@ func (f *UserFilter) WhereDeleteTime(p entql.TimeP) {
 	f.Where(p.Field(user.FieldDeleteTime))
 }
 
-// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
-func (f *UserFilter) WhereDeleteBy(p entql.Int64P) {
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *UserFilter) WhereDeleteBy(p entql.Uint64P) {
 	f.Where(p.Field(user.FieldDeleteBy))
 }
 
@@ -1746,8 +1746,8 @@ func (f *UserRoleFilter) WhereCreateTime(p entql.TimeP) {
 	f.Where(p.Field(userrole.FieldCreateTime))
 }
 
-// WhereCreateBy applies the entql int64 predicate on the create_by field.
-func (f *UserRoleFilter) WhereCreateBy(p entql.Int64P) {
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *UserRoleFilter) WhereCreateBy(p entql.Uint64P) {
 	f.Where(p.Field(userrole.FieldCreateBy))
 }
 
@@ -1756,8 +1756,8 @@ func (f *UserRoleFilter) WhereUpdateTime(p entql.TimeP) {
 	f.Where(p.Field(userrole.FieldUpdateTime))
 }
 
-// WhereUpdateBy applies the entql int64 predicate on the update_by field.
-func (f *UserRoleFilter) WhereUpdateBy(p entql.Int64P) {
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *UserRoleFilter) WhereUpdateBy(p entql.Uint64P) {
 	f.Where(p.Field(userrole.FieldUpdateBy))
 }
 
@@ -1766,8 +1766,8 @@ func (f *UserRoleFilter) WhereDeleteTime(p entql.TimeP) {
 	f.Where(p.Field(userrole.FieldDeleteTime))
 }
 
-// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
-func (f *UserRoleFilter) WhereDeleteBy(p entql.Int64P) {
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *UserRoleFilter) WhereDeleteBy(p entql.Uint64P) {
 	f.Where(p.Field(userrole.FieldDeleteBy))
 }
 
@@ -1854,8 +1854,8 @@ func (f *VerifyCodeFilter) WhereCreateTime(p entql.TimeP) {
 	f.Where(p.Field(verifycode.FieldCreateTime))
 }
 
-// WhereCreateBy applies the entql int64 predicate on the create_by field.
-func (f *VerifyCodeFilter) WhereCreateBy(p entql.Int64P) {
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *VerifyCodeFilter) WhereCreateBy(p entql.Uint64P) {
 	f.Where(p.Field(verifycode.FieldCreateBy))
 }
 
@@ -1864,8 +1864,8 @@ func (f *VerifyCodeFilter) WhereUpdateTime(p entql.TimeP) {
 	f.Where(p.Field(verifycode.FieldUpdateTime))
 }
 
-// WhereUpdateBy applies the entql int64 predicate on the update_by field.
-func (f *VerifyCodeFilter) WhereUpdateBy(p entql.Int64P) {
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *VerifyCodeFilter) WhereUpdateBy(p entql.Uint64P) {
 	f.Where(p.Field(verifycode.FieldUpdateBy))
 }
 
@@ -1874,8 +1874,8 @@ func (f *VerifyCodeFilter) WhereDeleteTime(p entql.TimeP) {
 	f.Where(p.Field(verifycode.FieldDeleteTime))
 }
 
-// WhereDeleteBy applies the entql int64 predicate on the delete_by field.
-func (f *VerifyCodeFilter) WhereDeleteBy(p entql.Int64P) {
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *VerifyCodeFilter) WhereDeleteBy(p entql.Uint64P) {
 	f.Where(p.Field(verifycode.FieldDeleteBy))
 }
 

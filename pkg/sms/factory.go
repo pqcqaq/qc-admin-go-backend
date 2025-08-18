@@ -34,6 +34,8 @@ func (f *DefaultProviderFactory) CreateProvider(providerType ProviderType, confi
 		return NewTencentProvider(&config.Tencent)
 	case ProviderHTTP:
 		return NewHTTPProvider(&config.HTTP)
+	case ProviderMock:
+		return NewMockProvider(&config.Mock)
 	default:
 		return nil, fmt.Errorf("不支持的短信提供商类型: %s", providerType)
 	}
@@ -45,6 +47,7 @@ func (f *DefaultProviderFactory) GetSupportedProviders() []ProviderType {
 		ProviderAliyun,
 		ProviderTencent,
 		ProviderHTTP,
+		ProviderMock,
 	}
 }
 

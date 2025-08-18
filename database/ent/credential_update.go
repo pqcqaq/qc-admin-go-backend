@@ -30,14 +30,14 @@ func (_u *CredentialUpdate) Where(ps ...predicate.Credential) *CredentialUpdate 
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_u *CredentialUpdate) SetCreateBy(v int64) *CredentialUpdate {
+func (_u *CredentialUpdate) SetCreateBy(v uint64) *CredentialUpdate {
 	_u.mutation.ResetCreateBy()
 	_u.mutation.SetCreateBy(v)
 	return _u
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_u *CredentialUpdate) SetNillableCreateBy(v *int64) *CredentialUpdate {
+func (_u *CredentialUpdate) SetNillableCreateBy(v *uint64) *CredentialUpdate {
 	if v != nil {
 		_u.SetCreateBy(*v)
 	}
@@ -63,14 +63,14 @@ func (_u *CredentialUpdate) SetUpdateTime(v time.Time) *CredentialUpdate {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_u *CredentialUpdate) SetUpdateBy(v int64) *CredentialUpdate {
+func (_u *CredentialUpdate) SetUpdateBy(v uint64) *CredentialUpdate {
 	_u.mutation.ResetUpdateBy()
 	_u.mutation.SetUpdateBy(v)
 	return _u
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_u *CredentialUpdate) SetNillableUpdateBy(v *int64) *CredentialUpdate {
+func (_u *CredentialUpdate) SetNillableUpdateBy(v *uint64) *CredentialUpdate {
 	if v != nil {
 		_u.SetUpdateBy(*v)
 	}
@@ -110,14 +110,14 @@ func (_u *CredentialUpdate) ClearDeleteTime() *CredentialUpdate {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_u *CredentialUpdate) SetDeleteBy(v int64) *CredentialUpdate {
+func (_u *CredentialUpdate) SetDeleteBy(v uint64) *CredentialUpdate {
 	_u.mutation.ResetDeleteBy()
 	_u.mutation.SetDeleteBy(v)
 	return _u
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_u *CredentialUpdate) SetNillableDeleteBy(v *int64) *CredentialUpdate {
+func (_u *CredentialUpdate) SetNillableDeleteBy(v *uint64) *CredentialUpdate {
 	if v != nil {
 		_u.SetDeleteBy(*v)
 	}
@@ -444,25 +444,25 @@ func (_u *CredentialUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 		}
 	}
 	if value, ok := _u.mutation.CreateBy(); ok {
-		_spec.SetField(credential.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(credential.FieldCreateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedCreateBy(); ok {
-		_spec.AddField(credential.FieldCreateBy, field.TypeInt64, value)
+		_spec.AddField(credential.FieldCreateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.CreateByCleared() {
-		_spec.ClearField(credential.FieldCreateBy, field.TypeInt64)
+		_spec.ClearField(credential.FieldCreateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.UpdateTime(); ok {
 		_spec.SetField(credential.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdateBy(); ok {
-		_spec.SetField(credential.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(credential.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedUpdateBy(); ok {
-		_spec.AddField(credential.FieldUpdateBy, field.TypeInt64, value)
+		_spec.AddField(credential.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.UpdateByCleared() {
-		_spec.ClearField(credential.FieldUpdateBy, field.TypeInt64)
+		_spec.ClearField(credential.FieldUpdateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.DeleteTime(); ok {
 		_spec.SetField(credential.FieldDeleteTime, field.TypeTime, value)
@@ -471,13 +471,13 @@ func (_u *CredentialUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 		_spec.ClearField(credential.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.DeleteBy(); ok {
-		_spec.SetField(credential.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(credential.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedDeleteBy(); ok {
-		_spec.AddField(credential.FieldDeleteBy, field.TypeInt64, value)
+		_spec.AddField(credential.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if _u.mutation.DeleteByCleared() {
-		_spec.ClearField(credential.FieldDeleteBy, field.TypeInt64)
+		_spec.ClearField(credential.FieldDeleteBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.CredentialType(); ok {
 		_spec.SetField(credential.FieldCredentialType, field.TypeEnum, value)
@@ -586,14 +586,14 @@ type CredentialUpdateOne struct {
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_u *CredentialUpdateOne) SetCreateBy(v int64) *CredentialUpdateOne {
+func (_u *CredentialUpdateOne) SetCreateBy(v uint64) *CredentialUpdateOne {
 	_u.mutation.ResetCreateBy()
 	_u.mutation.SetCreateBy(v)
 	return _u
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_u *CredentialUpdateOne) SetNillableCreateBy(v *int64) *CredentialUpdateOne {
+func (_u *CredentialUpdateOne) SetNillableCreateBy(v *uint64) *CredentialUpdateOne {
 	if v != nil {
 		_u.SetCreateBy(*v)
 	}
@@ -619,14 +619,14 @@ func (_u *CredentialUpdateOne) SetUpdateTime(v time.Time) *CredentialUpdateOne {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_u *CredentialUpdateOne) SetUpdateBy(v int64) *CredentialUpdateOne {
+func (_u *CredentialUpdateOne) SetUpdateBy(v uint64) *CredentialUpdateOne {
 	_u.mutation.ResetUpdateBy()
 	_u.mutation.SetUpdateBy(v)
 	return _u
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_u *CredentialUpdateOne) SetNillableUpdateBy(v *int64) *CredentialUpdateOne {
+func (_u *CredentialUpdateOne) SetNillableUpdateBy(v *uint64) *CredentialUpdateOne {
 	if v != nil {
 		_u.SetUpdateBy(*v)
 	}
@@ -666,14 +666,14 @@ func (_u *CredentialUpdateOne) ClearDeleteTime() *CredentialUpdateOne {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_u *CredentialUpdateOne) SetDeleteBy(v int64) *CredentialUpdateOne {
+func (_u *CredentialUpdateOne) SetDeleteBy(v uint64) *CredentialUpdateOne {
 	_u.mutation.ResetDeleteBy()
 	_u.mutation.SetDeleteBy(v)
 	return _u
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_u *CredentialUpdateOne) SetNillableDeleteBy(v *int64) *CredentialUpdateOne {
+func (_u *CredentialUpdateOne) SetNillableDeleteBy(v *uint64) *CredentialUpdateOne {
 	if v != nil {
 		_u.SetDeleteBy(*v)
 	}
@@ -1030,25 +1030,25 @@ func (_u *CredentialUpdateOne) sqlSave(ctx context.Context) (_node *Credential, 
 		}
 	}
 	if value, ok := _u.mutation.CreateBy(); ok {
-		_spec.SetField(credential.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(credential.FieldCreateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedCreateBy(); ok {
-		_spec.AddField(credential.FieldCreateBy, field.TypeInt64, value)
+		_spec.AddField(credential.FieldCreateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.CreateByCleared() {
-		_spec.ClearField(credential.FieldCreateBy, field.TypeInt64)
+		_spec.ClearField(credential.FieldCreateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.UpdateTime(); ok {
 		_spec.SetField(credential.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdateBy(); ok {
-		_spec.SetField(credential.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(credential.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedUpdateBy(); ok {
-		_spec.AddField(credential.FieldUpdateBy, field.TypeInt64, value)
+		_spec.AddField(credential.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.UpdateByCleared() {
-		_spec.ClearField(credential.FieldUpdateBy, field.TypeInt64)
+		_spec.ClearField(credential.FieldUpdateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.DeleteTime(); ok {
 		_spec.SetField(credential.FieldDeleteTime, field.TypeTime, value)
@@ -1057,13 +1057,13 @@ func (_u *CredentialUpdateOne) sqlSave(ctx context.Context) (_node *Credential, 
 		_spec.ClearField(credential.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.DeleteBy(); ok {
-		_spec.SetField(credential.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(credential.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedDeleteBy(); ok {
-		_spec.AddField(credential.FieldDeleteBy, field.TypeInt64, value)
+		_spec.AddField(credential.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if _u.mutation.DeleteByCleared() {
-		_spec.ClearField(credential.FieldDeleteBy, field.TypeInt64)
+		_spec.ClearField(credential.FieldDeleteBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.CredentialType(); ok {
 		_spec.SetField(credential.FieldCredentialType, field.TypeEnum, value)

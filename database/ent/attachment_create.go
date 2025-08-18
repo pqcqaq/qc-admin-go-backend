@@ -35,13 +35,13 @@ func (_c *AttachmentCreate) SetNillableCreateTime(v *time.Time) *AttachmentCreat
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_c *AttachmentCreate) SetCreateBy(v int64) *AttachmentCreate {
+func (_c *AttachmentCreate) SetCreateBy(v uint64) *AttachmentCreate {
 	_c.mutation.SetCreateBy(v)
 	return _c
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_c *AttachmentCreate) SetNillableCreateBy(v *int64) *AttachmentCreate {
+func (_c *AttachmentCreate) SetNillableCreateBy(v *uint64) *AttachmentCreate {
 	if v != nil {
 		_c.SetCreateBy(*v)
 	}
@@ -63,13 +63,13 @@ func (_c *AttachmentCreate) SetNillableUpdateTime(v *time.Time) *AttachmentCreat
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_c *AttachmentCreate) SetUpdateBy(v int64) *AttachmentCreate {
+func (_c *AttachmentCreate) SetUpdateBy(v uint64) *AttachmentCreate {
 	_c.mutation.SetUpdateBy(v)
 	return _c
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_c *AttachmentCreate) SetNillableUpdateBy(v *int64) *AttachmentCreate {
+func (_c *AttachmentCreate) SetNillableUpdateBy(v *uint64) *AttachmentCreate {
 	if v != nil {
 		_c.SetUpdateBy(*v)
 	}
@@ -91,13 +91,13 @@ func (_c *AttachmentCreate) SetNillableDeleteTime(v *time.Time) *AttachmentCreat
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_c *AttachmentCreate) SetDeleteBy(v int64) *AttachmentCreate {
+func (_c *AttachmentCreate) SetDeleteBy(v uint64) *AttachmentCreate {
 	_c.mutation.SetDeleteBy(v)
 	return _c
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_c *AttachmentCreate) SetNillableDeleteBy(v *int64) *AttachmentCreate {
+func (_c *AttachmentCreate) SetNillableDeleteBy(v *uint64) *AttachmentCreate {
 	if v != nil {
 		_c.SetDeleteBy(*v)
 	}
@@ -446,7 +446,7 @@ func (_c *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 		_node.CreateTime = value
 	}
 	if value, ok := _c.mutation.CreateBy(); ok {
-		_spec.SetField(attachment.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(attachment.FieldCreateBy, field.TypeUint64, value)
 		_node.CreateBy = value
 	}
 	if value, ok := _c.mutation.UpdateTime(); ok {
@@ -454,7 +454,7 @@ func (_c *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 		_node.UpdateTime = value
 	}
 	if value, ok := _c.mutation.UpdateBy(); ok {
-		_spec.SetField(attachment.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(attachment.FieldUpdateBy, field.TypeUint64, value)
 		_node.UpdateBy = value
 	}
 	if value, ok := _c.mutation.DeleteTime(); ok {
@@ -462,7 +462,7 @@ func (_c *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 		_node.DeleteTime = value
 	}
 	if value, ok := _c.mutation.DeleteBy(); ok {
-		_spec.SetField(attachment.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(attachment.FieldDeleteBy, field.TypeUint64, value)
 		_node.DeleteBy = value
 	}
 	if value, ok := _c.mutation.Filename(); ok {

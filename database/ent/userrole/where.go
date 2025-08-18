@@ -61,7 +61,7 @@ func CreateTime(v time.Time) predicate.UserRole {
 }
 
 // CreateBy applies equality check predicate on the "create_by" field. It's identical to CreateByEQ.
-func CreateBy(v int64) predicate.UserRole {
+func CreateBy(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldEQ(FieldCreateBy, v))
 }
 
@@ -71,7 +71,7 @@ func UpdateTime(v time.Time) predicate.UserRole {
 }
 
 // UpdateBy applies equality check predicate on the "update_by" field. It's identical to UpdateByEQ.
-func UpdateBy(v int64) predicate.UserRole {
+func UpdateBy(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldEQ(FieldUpdateBy, v))
 }
 
@@ -81,7 +81,7 @@ func DeleteTime(v time.Time) predicate.UserRole {
 }
 
 // DeleteBy applies equality check predicate on the "delete_by" field. It's identical to DeleteByEQ.
-func DeleteBy(v int64) predicate.UserRole {
+func DeleteBy(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldEQ(FieldDeleteBy, v))
 }
 
@@ -136,42 +136,42 @@ func CreateTimeLTE(v time.Time) predicate.UserRole {
 }
 
 // CreateByEQ applies the EQ predicate on the "create_by" field.
-func CreateByEQ(v int64) predicate.UserRole {
+func CreateByEQ(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldEQ(FieldCreateBy, v))
 }
 
 // CreateByNEQ applies the NEQ predicate on the "create_by" field.
-func CreateByNEQ(v int64) predicate.UserRole {
+func CreateByNEQ(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldNEQ(FieldCreateBy, v))
 }
 
 // CreateByIn applies the In predicate on the "create_by" field.
-func CreateByIn(vs ...int64) predicate.UserRole {
+func CreateByIn(vs ...uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldIn(FieldCreateBy, vs...))
 }
 
 // CreateByNotIn applies the NotIn predicate on the "create_by" field.
-func CreateByNotIn(vs ...int64) predicate.UserRole {
+func CreateByNotIn(vs ...uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldNotIn(FieldCreateBy, vs...))
 }
 
 // CreateByGT applies the GT predicate on the "create_by" field.
-func CreateByGT(v int64) predicate.UserRole {
+func CreateByGT(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldGT(FieldCreateBy, v))
 }
 
 // CreateByGTE applies the GTE predicate on the "create_by" field.
-func CreateByGTE(v int64) predicate.UserRole {
+func CreateByGTE(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldGTE(FieldCreateBy, v))
 }
 
 // CreateByLT applies the LT predicate on the "create_by" field.
-func CreateByLT(v int64) predicate.UserRole {
+func CreateByLT(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldLT(FieldCreateBy, v))
 }
 
 // CreateByLTE applies the LTE predicate on the "create_by" field.
-func CreateByLTE(v int64) predicate.UserRole {
+func CreateByLTE(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldLTE(FieldCreateBy, v))
 }
 
@@ -226,42 +226,42 @@ func UpdateTimeLTE(v time.Time) predicate.UserRole {
 }
 
 // UpdateByEQ applies the EQ predicate on the "update_by" field.
-func UpdateByEQ(v int64) predicate.UserRole {
+func UpdateByEQ(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldEQ(FieldUpdateBy, v))
 }
 
 // UpdateByNEQ applies the NEQ predicate on the "update_by" field.
-func UpdateByNEQ(v int64) predicate.UserRole {
+func UpdateByNEQ(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldNEQ(FieldUpdateBy, v))
 }
 
 // UpdateByIn applies the In predicate on the "update_by" field.
-func UpdateByIn(vs ...int64) predicate.UserRole {
+func UpdateByIn(vs ...uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldIn(FieldUpdateBy, vs...))
 }
 
 // UpdateByNotIn applies the NotIn predicate on the "update_by" field.
-func UpdateByNotIn(vs ...int64) predicate.UserRole {
+func UpdateByNotIn(vs ...uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldNotIn(FieldUpdateBy, vs...))
 }
 
 // UpdateByGT applies the GT predicate on the "update_by" field.
-func UpdateByGT(v int64) predicate.UserRole {
+func UpdateByGT(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldGT(FieldUpdateBy, v))
 }
 
 // UpdateByGTE applies the GTE predicate on the "update_by" field.
-func UpdateByGTE(v int64) predicate.UserRole {
+func UpdateByGTE(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldGTE(FieldUpdateBy, v))
 }
 
 // UpdateByLT applies the LT predicate on the "update_by" field.
-func UpdateByLT(v int64) predicate.UserRole {
+func UpdateByLT(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldLT(FieldUpdateBy, v))
 }
 
 // UpdateByLTE applies the LTE predicate on the "update_by" field.
-func UpdateByLTE(v int64) predicate.UserRole {
+func UpdateByLTE(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldLTE(FieldUpdateBy, v))
 }
 
@@ -326,42 +326,42 @@ func DeleteTimeNotNil() predicate.UserRole {
 }
 
 // DeleteByEQ applies the EQ predicate on the "delete_by" field.
-func DeleteByEQ(v int64) predicate.UserRole {
+func DeleteByEQ(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldEQ(FieldDeleteBy, v))
 }
 
 // DeleteByNEQ applies the NEQ predicate on the "delete_by" field.
-func DeleteByNEQ(v int64) predicate.UserRole {
+func DeleteByNEQ(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldNEQ(FieldDeleteBy, v))
 }
 
 // DeleteByIn applies the In predicate on the "delete_by" field.
-func DeleteByIn(vs ...int64) predicate.UserRole {
+func DeleteByIn(vs ...uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldIn(FieldDeleteBy, vs...))
 }
 
 // DeleteByNotIn applies the NotIn predicate on the "delete_by" field.
-func DeleteByNotIn(vs ...int64) predicate.UserRole {
+func DeleteByNotIn(vs ...uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldNotIn(FieldDeleteBy, vs...))
 }
 
 // DeleteByGT applies the GT predicate on the "delete_by" field.
-func DeleteByGT(v int64) predicate.UserRole {
+func DeleteByGT(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldGT(FieldDeleteBy, v))
 }
 
 // DeleteByGTE applies the GTE predicate on the "delete_by" field.
-func DeleteByGTE(v int64) predicate.UserRole {
+func DeleteByGTE(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldGTE(FieldDeleteBy, v))
 }
 
 // DeleteByLT applies the LT predicate on the "delete_by" field.
-func DeleteByLT(v int64) predicate.UserRole {
+func DeleteByLT(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldLT(FieldDeleteBy, v))
 }
 
 // DeleteByLTE applies the LTE predicate on the "delete_by" field.
-func DeleteByLTE(v int64) predicate.UserRole {
+func DeleteByLTE(v uint64) predicate.UserRole {
 	return predicate.UserRole(sql.FieldLTE(FieldDeleteBy, v))
 }
 

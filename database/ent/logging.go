@@ -22,15 +22,15 @@ type Logging struct {
 	// 创建时间
 	CreateTime time.Time `json:"create_time,omitempty"`
 	// 创建人ID
-	CreateBy int64 `json:"create_by,omitempty"`
+	CreateBy uint64 `json:"create_by,omitempty"`
 	// 更新时间
 	UpdateTime time.Time `json:"update_time,omitempty"`
 	// 更新人ID
-	UpdateBy int64 `json:"update_by,omitempty"`
+	UpdateBy uint64 `json:"update_by,omitempty"`
 	// 删除时间
 	DeleteTime time.Time `json:"delete_time,omitempty"`
 	// 删除人ID
-	DeleteBy int64 `json:"delete_by,omitempty"`
+	DeleteBy uint64 `json:"delete_by,omitempty"`
 	// Level holds the value of the "level" field.
 	Level logging.Level `json:"level,omitempty"`
 	// Type holds the value of the "type" field.
@@ -100,7 +100,7 @@ func (_m *Logging) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field create_by", values[i])
 			} else if value.Valid {
-				_m.CreateBy = value.Int64
+				_m.CreateBy = uint64(value.Int64)
 			}
 		case logging.FieldUpdateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -112,7 +112,7 @@ func (_m *Logging) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field update_by", values[i])
 			} else if value.Valid {
-				_m.UpdateBy = value.Int64
+				_m.UpdateBy = uint64(value.Int64)
 			}
 		case logging.FieldDeleteTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -124,7 +124,7 @@ func (_m *Logging) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field delete_by", values[i])
 			} else if value.Valid {
-				_m.DeleteBy = value.Int64
+				_m.DeleteBy = uint64(value.Int64)
 			}
 		case logging.FieldLevel:
 			if value, ok := values[i].(*sql.NullString); !ok {

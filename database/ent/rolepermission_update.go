@@ -31,14 +31,14 @@ func (_u *RolePermissionUpdate) Where(ps ...predicate.RolePermission) *RolePermi
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_u *RolePermissionUpdate) SetCreateBy(v int64) *RolePermissionUpdate {
+func (_u *RolePermissionUpdate) SetCreateBy(v uint64) *RolePermissionUpdate {
 	_u.mutation.ResetCreateBy()
 	_u.mutation.SetCreateBy(v)
 	return _u
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_u *RolePermissionUpdate) SetNillableCreateBy(v *int64) *RolePermissionUpdate {
+func (_u *RolePermissionUpdate) SetNillableCreateBy(v *uint64) *RolePermissionUpdate {
 	if v != nil {
 		_u.SetCreateBy(*v)
 	}
@@ -64,14 +64,14 @@ func (_u *RolePermissionUpdate) SetUpdateTime(v time.Time) *RolePermissionUpdate
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_u *RolePermissionUpdate) SetUpdateBy(v int64) *RolePermissionUpdate {
+func (_u *RolePermissionUpdate) SetUpdateBy(v uint64) *RolePermissionUpdate {
 	_u.mutation.ResetUpdateBy()
 	_u.mutation.SetUpdateBy(v)
 	return _u
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_u *RolePermissionUpdate) SetNillableUpdateBy(v *int64) *RolePermissionUpdate {
+func (_u *RolePermissionUpdate) SetNillableUpdateBy(v *uint64) *RolePermissionUpdate {
 	if v != nil {
 		_u.SetUpdateBy(*v)
 	}
@@ -111,14 +111,14 @@ func (_u *RolePermissionUpdate) ClearDeleteTime() *RolePermissionUpdate {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_u *RolePermissionUpdate) SetDeleteBy(v int64) *RolePermissionUpdate {
+func (_u *RolePermissionUpdate) SetDeleteBy(v uint64) *RolePermissionUpdate {
 	_u.mutation.ResetDeleteBy()
 	_u.mutation.SetDeleteBy(v)
 	return _u
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_u *RolePermissionUpdate) SetNillableDeleteBy(v *int64) *RolePermissionUpdate {
+func (_u *RolePermissionUpdate) SetNillableDeleteBy(v *uint64) *RolePermissionUpdate {
 	if v != nil {
 		_u.SetDeleteBy(*v)
 	}
@@ -258,25 +258,25 @@ func (_u *RolePermissionUpdate) sqlSave(ctx context.Context) (_node int, err err
 		}
 	}
 	if value, ok := _u.mutation.CreateBy(); ok {
-		_spec.SetField(rolepermission.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(rolepermission.FieldCreateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedCreateBy(); ok {
-		_spec.AddField(rolepermission.FieldCreateBy, field.TypeInt64, value)
+		_spec.AddField(rolepermission.FieldCreateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.CreateByCleared() {
-		_spec.ClearField(rolepermission.FieldCreateBy, field.TypeInt64)
+		_spec.ClearField(rolepermission.FieldCreateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.UpdateTime(); ok {
 		_spec.SetField(rolepermission.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdateBy(); ok {
-		_spec.SetField(rolepermission.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(rolepermission.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedUpdateBy(); ok {
-		_spec.AddField(rolepermission.FieldUpdateBy, field.TypeInt64, value)
+		_spec.AddField(rolepermission.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.UpdateByCleared() {
-		_spec.ClearField(rolepermission.FieldUpdateBy, field.TypeInt64)
+		_spec.ClearField(rolepermission.FieldUpdateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.DeleteTime(); ok {
 		_spec.SetField(rolepermission.FieldDeleteTime, field.TypeTime, value)
@@ -285,13 +285,13 @@ func (_u *RolePermissionUpdate) sqlSave(ctx context.Context) (_node int, err err
 		_spec.ClearField(rolepermission.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.DeleteBy(); ok {
-		_spec.SetField(rolepermission.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(rolepermission.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedDeleteBy(); ok {
-		_spec.AddField(rolepermission.FieldDeleteBy, field.TypeInt64, value)
+		_spec.AddField(rolepermission.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if _u.mutation.DeleteByCleared() {
-		_spec.ClearField(rolepermission.FieldDeleteBy, field.TypeInt64)
+		_spec.ClearField(rolepermission.FieldDeleteBy, field.TypeUint64)
 	}
 	if _u.mutation.RoleCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -372,14 +372,14 @@ type RolePermissionUpdateOne struct {
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_u *RolePermissionUpdateOne) SetCreateBy(v int64) *RolePermissionUpdateOne {
+func (_u *RolePermissionUpdateOne) SetCreateBy(v uint64) *RolePermissionUpdateOne {
 	_u.mutation.ResetCreateBy()
 	_u.mutation.SetCreateBy(v)
 	return _u
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_u *RolePermissionUpdateOne) SetNillableCreateBy(v *int64) *RolePermissionUpdateOne {
+func (_u *RolePermissionUpdateOne) SetNillableCreateBy(v *uint64) *RolePermissionUpdateOne {
 	if v != nil {
 		_u.SetCreateBy(*v)
 	}
@@ -405,14 +405,14 @@ func (_u *RolePermissionUpdateOne) SetUpdateTime(v time.Time) *RolePermissionUpd
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_u *RolePermissionUpdateOne) SetUpdateBy(v int64) *RolePermissionUpdateOne {
+func (_u *RolePermissionUpdateOne) SetUpdateBy(v uint64) *RolePermissionUpdateOne {
 	_u.mutation.ResetUpdateBy()
 	_u.mutation.SetUpdateBy(v)
 	return _u
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_u *RolePermissionUpdateOne) SetNillableUpdateBy(v *int64) *RolePermissionUpdateOne {
+func (_u *RolePermissionUpdateOne) SetNillableUpdateBy(v *uint64) *RolePermissionUpdateOne {
 	if v != nil {
 		_u.SetUpdateBy(*v)
 	}
@@ -452,14 +452,14 @@ func (_u *RolePermissionUpdateOne) ClearDeleteTime() *RolePermissionUpdateOne {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_u *RolePermissionUpdateOne) SetDeleteBy(v int64) *RolePermissionUpdateOne {
+func (_u *RolePermissionUpdateOne) SetDeleteBy(v uint64) *RolePermissionUpdateOne {
 	_u.mutation.ResetDeleteBy()
 	_u.mutation.SetDeleteBy(v)
 	return _u
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_u *RolePermissionUpdateOne) SetNillableDeleteBy(v *int64) *RolePermissionUpdateOne {
+func (_u *RolePermissionUpdateOne) SetNillableDeleteBy(v *uint64) *RolePermissionUpdateOne {
 	if v != nil {
 		_u.SetDeleteBy(*v)
 	}
@@ -629,25 +629,25 @@ func (_u *RolePermissionUpdateOne) sqlSave(ctx context.Context) (_node *RolePerm
 		}
 	}
 	if value, ok := _u.mutation.CreateBy(); ok {
-		_spec.SetField(rolepermission.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(rolepermission.FieldCreateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedCreateBy(); ok {
-		_spec.AddField(rolepermission.FieldCreateBy, field.TypeInt64, value)
+		_spec.AddField(rolepermission.FieldCreateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.CreateByCleared() {
-		_spec.ClearField(rolepermission.FieldCreateBy, field.TypeInt64)
+		_spec.ClearField(rolepermission.FieldCreateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.UpdateTime(); ok {
 		_spec.SetField(rolepermission.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdateBy(); ok {
-		_spec.SetField(rolepermission.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(rolepermission.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedUpdateBy(); ok {
-		_spec.AddField(rolepermission.FieldUpdateBy, field.TypeInt64, value)
+		_spec.AddField(rolepermission.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.UpdateByCleared() {
-		_spec.ClearField(rolepermission.FieldUpdateBy, field.TypeInt64)
+		_spec.ClearField(rolepermission.FieldUpdateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.DeleteTime(); ok {
 		_spec.SetField(rolepermission.FieldDeleteTime, field.TypeTime, value)
@@ -656,13 +656,13 @@ func (_u *RolePermissionUpdateOne) sqlSave(ctx context.Context) (_node *RolePerm
 		_spec.ClearField(rolepermission.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.DeleteBy(); ok {
-		_spec.SetField(rolepermission.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(rolepermission.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedDeleteBy(); ok {
-		_spec.AddField(rolepermission.FieldDeleteBy, field.TypeInt64, value)
+		_spec.AddField(rolepermission.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if _u.mutation.DeleteByCleared() {
-		_spec.ClearField(rolepermission.FieldDeleteBy, field.TypeInt64)
+		_spec.ClearField(rolepermission.FieldDeleteBy, field.TypeUint64)
 	}
 	if _u.mutation.RoleCleared() {
 		edge := &sqlgraph.EdgeSpec{

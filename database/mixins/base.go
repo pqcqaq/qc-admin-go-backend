@@ -29,6 +29,11 @@ func IDHook() ent.Hook {
 	}
 	return func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			// 只在创建操作时设置ID
+			if m.Op() != ent.OpCreate {
+				return next.Mutate(ctx, m)
+			}
+
 			is, ok := m.(IDSetter)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation %T", m)
@@ -54,14 +59,14 @@ func (BaseMixin) Fields() []ent.Field {
 			Default(time.Now).
 			Immutable().
 			Comment("创建时间"),
-		field.Int64("create_by").
+		field.Uint64("create_by").
 			Optional().
 			Comment("创建人ID"),
 		field.Time("update_time").
 			Default(time.Now).
 			UpdateDefault(time.Now).
 			Comment("更新时间"),
-		field.Int64("update_by").
+		field.Uint64("update_by").
 			Optional().
 			Comment("更新人ID"),
 	}
@@ -93,7 +98,7 @@ func (SoftDeleteMixin) Fields() []ent.Field {
 		field.Time("delete_time").
 			Optional().
 			Comment("删除时间"),
-		field.Int64("delete_by").
+		field.Uint64("delete_by").
 			Optional().
 			Comment("删除人ID"),
 	}
@@ -137,8 +142,8 @@ func (d SoftDeleteMixin) Hooks() []ent.Hook {
 						Client() *pkgent.Client
 						SetDeleteTime(time.Time)
 						SetUpdateTime(time.Time)
-						SetDeleteBy(int64)
-						SetUpdateBy(int64)
+						SetDeleteBy(uint64)
+						SetUpdateBy(uint64)
 						WhereP(...func(*sql.Selector))
 					})
 					if !ok {
@@ -180,24 +185,24 @@ func (d SoftDeleteMixin) P(w interface{ WhereP(...func(*sql.Selector)) }) {
 type AuditLogger interface {
 	SetCreateTime(time.Time)
 	CreateTime() (value time.Time, exists bool)
-	SetCreateBy(int64)
-	CreateBy() (id int64, exists bool)
+	SetCreateBy(uint64)
+	CreateBy() (id uint64, exists bool)
 	SetUpdateTime(time.Time)
 	UpdateTime() (value time.Time, exists bool)
-	SetUpdateBy(int64)
-	UpdateBy() (id int64, exists bool)
+	SetUpdateBy(uint64)
+	UpdateBy() (id uint64, exists bool)
 }
 
 // SoftDeleteLogger 软删除审计接口
 type SoftDeleteLogger interface {
 	SetDeleteTime(time.Time)
 	DeleteTime() (value time.Time, exists bool)
-	SetDeleteBy(int64)
-	DeleteBy() (id int64, exists bool)
+	SetDeleteBy(uint64)
+	DeleteBy() (id uint64, exists bool)
 	SetUpdateTime(time.Time)
 	UpdateTime() (value time.Time, exists bool)
-	SetUpdateBy(int64)
-	UpdateBy() (id int64, exists bool)
+	SetUpdateBy(uint64)
+	UpdateBy() (id uint64, exists bool)
 	SetOp(ent.Op)
 	Where(...func(*sql.Selector))
 }
@@ -234,11 +239,11 @@ func AuditHook(next ent.Mutator) ent.Mutator {
 }
 
 // getUserIDFromContext 从上下文中获取用户ID
-func getUserIDFromContext(ctx context.Context) int64 {
-	if userID, ok := ctx.Value("user_id").(int64); ok {
+func getUserIDFromContext(ctx context.Context) uint64 {
+	if userID, ok := ctx.Value("user_id").(uint64); ok {
 		return userID
 	}
-	if userID, ok := ctx.Value("UserIDKey").(int64); ok {
+	if userID, ok := ctx.Value("UserIDKey").(uint64); ok {
 		return userID
 	}
 	return 0

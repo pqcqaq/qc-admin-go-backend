@@ -61,7 +61,7 @@ func CreateTime(v time.Time) predicate.User {
 }
 
 // CreateBy applies equality check predicate on the "create_by" field. It's identical to CreateByEQ.
-func CreateBy(v int64) predicate.User {
+func CreateBy(v uint64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreateBy, v))
 }
 
@@ -71,7 +71,7 @@ func UpdateTime(v time.Time) predicate.User {
 }
 
 // UpdateBy applies equality check predicate on the "update_by" field. It's identical to UpdateByEQ.
-func UpdateBy(v int64) predicate.User {
+func UpdateBy(v uint64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUpdateBy, v))
 }
 
@@ -81,7 +81,7 @@ func DeleteTime(v time.Time) predicate.User {
 }
 
 // DeleteBy applies equality check predicate on the "delete_by" field. It's identical to DeleteByEQ.
-func DeleteBy(v int64) predicate.User {
+func DeleteBy(v uint64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldDeleteBy, v))
 }
 
@@ -136,42 +136,42 @@ func CreateTimeLTE(v time.Time) predicate.User {
 }
 
 // CreateByEQ applies the EQ predicate on the "create_by" field.
-func CreateByEQ(v int64) predicate.User {
+func CreateByEQ(v uint64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreateBy, v))
 }
 
 // CreateByNEQ applies the NEQ predicate on the "create_by" field.
-func CreateByNEQ(v int64) predicate.User {
+func CreateByNEQ(v uint64) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldCreateBy, v))
 }
 
 // CreateByIn applies the In predicate on the "create_by" field.
-func CreateByIn(vs ...int64) predicate.User {
+func CreateByIn(vs ...uint64) predicate.User {
 	return predicate.User(sql.FieldIn(FieldCreateBy, vs...))
 }
 
 // CreateByNotIn applies the NotIn predicate on the "create_by" field.
-func CreateByNotIn(vs ...int64) predicate.User {
+func CreateByNotIn(vs ...uint64) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldCreateBy, vs...))
 }
 
 // CreateByGT applies the GT predicate on the "create_by" field.
-func CreateByGT(v int64) predicate.User {
+func CreateByGT(v uint64) predicate.User {
 	return predicate.User(sql.FieldGT(FieldCreateBy, v))
 }
 
 // CreateByGTE applies the GTE predicate on the "create_by" field.
-func CreateByGTE(v int64) predicate.User {
+func CreateByGTE(v uint64) predicate.User {
 	return predicate.User(sql.FieldGTE(FieldCreateBy, v))
 }
 
 // CreateByLT applies the LT predicate on the "create_by" field.
-func CreateByLT(v int64) predicate.User {
+func CreateByLT(v uint64) predicate.User {
 	return predicate.User(sql.FieldLT(FieldCreateBy, v))
 }
 
 // CreateByLTE applies the LTE predicate on the "create_by" field.
-func CreateByLTE(v int64) predicate.User {
+func CreateByLTE(v uint64) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldCreateBy, v))
 }
 
@@ -226,42 +226,42 @@ func UpdateTimeLTE(v time.Time) predicate.User {
 }
 
 // UpdateByEQ applies the EQ predicate on the "update_by" field.
-func UpdateByEQ(v int64) predicate.User {
+func UpdateByEQ(v uint64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUpdateBy, v))
 }
 
 // UpdateByNEQ applies the NEQ predicate on the "update_by" field.
-func UpdateByNEQ(v int64) predicate.User {
+func UpdateByNEQ(v uint64) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldUpdateBy, v))
 }
 
 // UpdateByIn applies the In predicate on the "update_by" field.
-func UpdateByIn(vs ...int64) predicate.User {
+func UpdateByIn(vs ...uint64) predicate.User {
 	return predicate.User(sql.FieldIn(FieldUpdateBy, vs...))
 }
 
 // UpdateByNotIn applies the NotIn predicate on the "update_by" field.
-func UpdateByNotIn(vs ...int64) predicate.User {
+func UpdateByNotIn(vs ...uint64) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldUpdateBy, vs...))
 }
 
 // UpdateByGT applies the GT predicate on the "update_by" field.
-func UpdateByGT(v int64) predicate.User {
+func UpdateByGT(v uint64) predicate.User {
 	return predicate.User(sql.FieldGT(FieldUpdateBy, v))
 }
 
 // UpdateByGTE applies the GTE predicate on the "update_by" field.
-func UpdateByGTE(v int64) predicate.User {
+func UpdateByGTE(v uint64) predicate.User {
 	return predicate.User(sql.FieldGTE(FieldUpdateBy, v))
 }
 
 // UpdateByLT applies the LT predicate on the "update_by" field.
-func UpdateByLT(v int64) predicate.User {
+func UpdateByLT(v uint64) predicate.User {
 	return predicate.User(sql.FieldLT(FieldUpdateBy, v))
 }
 
 // UpdateByLTE applies the LTE predicate on the "update_by" field.
-func UpdateByLTE(v int64) predicate.User {
+func UpdateByLTE(v uint64) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldUpdateBy, v))
 }
 
@@ -326,42 +326,42 @@ func DeleteTimeNotNil() predicate.User {
 }
 
 // DeleteByEQ applies the EQ predicate on the "delete_by" field.
-func DeleteByEQ(v int64) predicate.User {
+func DeleteByEQ(v uint64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldDeleteBy, v))
 }
 
 // DeleteByNEQ applies the NEQ predicate on the "delete_by" field.
-func DeleteByNEQ(v int64) predicate.User {
+func DeleteByNEQ(v uint64) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldDeleteBy, v))
 }
 
 // DeleteByIn applies the In predicate on the "delete_by" field.
-func DeleteByIn(vs ...int64) predicate.User {
+func DeleteByIn(vs ...uint64) predicate.User {
 	return predicate.User(sql.FieldIn(FieldDeleteBy, vs...))
 }
 
 // DeleteByNotIn applies the NotIn predicate on the "delete_by" field.
-func DeleteByNotIn(vs ...int64) predicate.User {
+func DeleteByNotIn(vs ...uint64) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldDeleteBy, vs...))
 }
 
 // DeleteByGT applies the GT predicate on the "delete_by" field.
-func DeleteByGT(v int64) predicate.User {
+func DeleteByGT(v uint64) predicate.User {
 	return predicate.User(sql.FieldGT(FieldDeleteBy, v))
 }
 
 // DeleteByGTE applies the GTE predicate on the "delete_by" field.
-func DeleteByGTE(v int64) predicate.User {
+func DeleteByGTE(v uint64) predicate.User {
 	return predicate.User(sql.FieldGTE(FieldDeleteBy, v))
 }
 
 // DeleteByLT applies the LT predicate on the "delete_by" field.
-func DeleteByLT(v int64) predicate.User {
+func DeleteByLT(v uint64) predicate.User {
 	return predicate.User(sql.FieldLT(FieldDeleteBy, v))
 }
 
 // DeleteByLTE applies the LTE predicate on the "delete_by" field.
-func DeleteByLTE(v int64) predicate.User {
+func DeleteByLTE(v uint64) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldDeleteBy, v))
 }
 

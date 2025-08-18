@@ -29,14 +29,14 @@ func (_u *LoggingUpdate) Where(ps ...predicate.Logging) *LoggingUpdate {
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_u *LoggingUpdate) SetCreateBy(v int64) *LoggingUpdate {
+func (_u *LoggingUpdate) SetCreateBy(v uint64) *LoggingUpdate {
 	_u.mutation.ResetCreateBy()
 	_u.mutation.SetCreateBy(v)
 	return _u
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_u *LoggingUpdate) SetNillableCreateBy(v *int64) *LoggingUpdate {
+func (_u *LoggingUpdate) SetNillableCreateBy(v *uint64) *LoggingUpdate {
 	if v != nil {
 		_u.SetCreateBy(*v)
 	}
@@ -62,14 +62,14 @@ func (_u *LoggingUpdate) SetUpdateTime(v time.Time) *LoggingUpdate {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_u *LoggingUpdate) SetUpdateBy(v int64) *LoggingUpdate {
+func (_u *LoggingUpdate) SetUpdateBy(v uint64) *LoggingUpdate {
 	_u.mutation.ResetUpdateBy()
 	_u.mutation.SetUpdateBy(v)
 	return _u
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_u *LoggingUpdate) SetNillableUpdateBy(v *int64) *LoggingUpdate {
+func (_u *LoggingUpdate) SetNillableUpdateBy(v *uint64) *LoggingUpdate {
 	if v != nil {
 		_u.SetUpdateBy(*v)
 	}
@@ -109,14 +109,14 @@ func (_u *LoggingUpdate) ClearDeleteTime() *LoggingUpdate {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_u *LoggingUpdate) SetDeleteBy(v int64) *LoggingUpdate {
+func (_u *LoggingUpdate) SetDeleteBy(v uint64) *LoggingUpdate {
 	_u.mutation.ResetDeleteBy()
 	_u.mutation.SetDeleteBy(v)
 	return _u
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_u *LoggingUpdate) SetNillableDeleteBy(v *int64) *LoggingUpdate {
+func (_u *LoggingUpdate) SetNillableDeleteBy(v *uint64) *LoggingUpdate {
 	if v != nil {
 		_u.SetDeleteBy(*v)
 	}
@@ -451,25 +451,25 @@ func (_u *LoggingUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 	}
 	if value, ok := _u.mutation.CreateBy(); ok {
-		_spec.SetField(logging.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(logging.FieldCreateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedCreateBy(); ok {
-		_spec.AddField(logging.FieldCreateBy, field.TypeInt64, value)
+		_spec.AddField(logging.FieldCreateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.CreateByCleared() {
-		_spec.ClearField(logging.FieldCreateBy, field.TypeInt64)
+		_spec.ClearField(logging.FieldCreateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.UpdateTime(); ok {
 		_spec.SetField(logging.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdateBy(); ok {
-		_spec.SetField(logging.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(logging.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedUpdateBy(); ok {
-		_spec.AddField(logging.FieldUpdateBy, field.TypeInt64, value)
+		_spec.AddField(logging.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.UpdateByCleared() {
-		_spec.ClearField(logging.FieldUpdateBy, field.TypeInt64)
+		_spec.ClearField(logging.FieldUpdateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.DeleteTime(); ok {
 		_spec.SetField(logging.FieldDeleteTime, field.TypeTime, value)
@@ -478,13 +478,13 @@ func (_u *LoggingUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		_spec.ClearField(logging.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.DeleteBy(); ok {
-		_spec.SetField(logging.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(logging.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedDeleteBy(); ok {
-		_spec.AddField(logging.FieldDeleteBy, field.TypeInt64, value)
+		_spec.AddField(logging.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if _u.mutation.DeleteByCleared() {
-		_spec.ClearField(logging.FieldDeleteBy, field.TypeInt64)
+		_spec.ClearField(logging.FieldDeleteBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.Level(); ok {
 		_spec.SetField(logging.FieldLevel, field.TypeEnum, value)
@@ -567,14 +567,14 @@ type LoggingUpdateOne struct {
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_u *LoggingUpdateOne) SetCreateBy(v int64) *LoggingUpdateOne {
+func (_u *LoggingUpdateOne) SetCreateBy(v uint64) *LoggingUpdateOne {
 	_u.mutation.ResetCreateBy()
 	_u.mutation.SetCreateBy(v)
 	return _u
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_u *LoggingUpdateOne) SetNillableCreateBy(v *int64) *LoggingUpdateOne {
+func (_u *LoggingUpdateOne) SetNillableCreateBy(v *uint64) *LoggingUpdateOne {
 	if v != nil {
 		_u.SetCreateBy(*v)
 	}
@@ -600,14 +600,14 @@ func (_u *LoggingUpdateOne) SetUpdateTime(v time.Time) *LoggingUpdateOne {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_u *LoggingUpdateOne) SetUpdateBy(v int64) *LoggingUpdateOne {
+func (_u *LoggingUpdateOne) SetUpdateBy(v uint64) *LoggingUpdateOne {
 	_u.mutation.ResetUpdateBy()
 	_u.mutation.SetUpdateBy(v)
 	return _u
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_u *LoggingUpdateOne) SetNillableUpdateBy(v *int64) *LoggingUpdateOne {
+func (_u *LoggingUpdateOne) SetNillableUpdateBy(v *uint64) *LoggingUpdateOne {
 	if v != nil {
 		_u.SetUpdateBy(*v)
 	}
@@ -647,14 +647,14 @@ func (_u *LoggingUpdateOne) ClearDeleteTime() *LoggingUpdateOne {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_u *LoggingUpdateOne) SetDeleteBy(v int64) *LoggingUpdateOne {
+func (_u *LoggingUpdateOne) SetDeleteBy(v uint64) *LoggingUpdateOne {
 	_u.mutation.ResetDeleteBy()
 	_u.mutation.SetDeleteBy(v)
 	return _u
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_u *LoggingUpdateOne) SetNillableDeleteBy(v *int64) *LoggingUpdateOne {
+func (_u *LoggingUpdateOne) SetNillableDeleteBy(v *uint64) *LoggingUpdateOne {
 	if v != nil {
 		_u.SetDeleteBy(*v)
 	}
@@ -1019,25 +1019,25 @@ func (_u *LoggingUpdateOne) sqlSave(ctx context.Context) (_node *Logging, err er
 		}
 	}
 	if value, ok := _u.mutation.CreateBy(); ok {
-		_spec.SetField(logging.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(logging.FieldCreateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedCreateBy(); ok {
-		_spec.AddField(logging.FieldCreateBy, field.TypeInt64, value)
+		_spec.AddField(logging.FieldCreateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.CreateByCleared() {
-		_spec.ClearField(logging.FieldCreateBy, field.TypeInt64)
+		_spec.ClearField(logging.FieldCreateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.UpdateTime(); ok {
 		_spec.SetField(logging.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdateBy(); ok {
-		_spec.SetField(logging.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(logging.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedUpdateBy(); ok {
-		_spec.AddField(logging.FieldUpdateBy, field.TypeInt64, value)
+		_spec.AddField(logging.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.UpdateByCleared() {
-		_spec.ClearField(logging.FieldUpdateBy, field.TypeInt64)
+		_spec.ClearField(logging.FieldUpdateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.DeleteTime(); ok {
 		_spec.SetField(logging.FieldDeleteTime, field.TypeTime, value)
@@ -1046,13 +1046,13 @@ func (_u *LoggingUpdateOne) sqlSave(ctx context.Context) (_node *Logging, err er
 		_spec.ClearField(logging.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.DeleteBy(); ok {
-		_spec.SetField(logging.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(logging.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedDeleteBy(); ok {
-		_spec.AddField(logging.FieldDeleteBy, field.TypeInt64, value)
+		_spec.AddField(logging.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if _u.mutation.DeleteByCleared() {
-		_spec.ClearField(logging.FieldDeleteBy, field.TypeInt64)
+		_spec.ClearField(logging.FieldDeleteBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.Level(); ok {
 		_spec.SetField(logging.FieldLevel, field.TypeEnum, value)

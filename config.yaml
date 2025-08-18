@@ -35,6 +35,7 @@ server:
     max_age: 86400  # 24小时
 
 database:
+  debug: true  # 是否启用数据库调试模式
   driver: "mysql"
   dsn: "qcqcqc:qcqcqc@tcp(localhost:33060)/go-backend-app-pure?charset=utf8mb4&parseTime=True&loc=Local"
   max_idle_conns: 10
@@ -82,7 +83,11 @@ email:
 
 # 短信配置
 sms:
-  provider: "tencent"  # 短信提供商: aliyun, tencent, http
+  provider: "mock"  # 短信提供商: aliyun, tencent, http, mock
+  
+  # Mock短信配置（用于测试）
+  mock:
+    verbose: true  # 启用详细输出
   
   # 阿里云短信配置
   aliyun:

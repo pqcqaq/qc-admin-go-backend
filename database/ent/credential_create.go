@@ -36,13 +36,13 @@ func (_c *CredentialCreate) SetNillableCreateTime(v *time.Time) *CredentialCreat
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_c *CredentialCreate) SetCreateBy(v int64) *CredentialCreate {
+func (_c *CredentialCreate) SetCreateBy(v uint64) *CredentialCreate {
 	_c.mutation.SetCreateBy(v)
 	return _c
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_c *CredentialCreate) SetNillableCreateBy(v *int64) *CredentialCreate {
+func (_c *CredentialCreate) SetNillableCreateBy(v *uint64) *CredentialCreate {
 	if v != nil {
 		_c.SetCreateBy(*v)
 	}
@@ -64,13 +64,13 @@ func (_c *CredentialCreate) SetNillableUpdateTime(v *time.Time) *CredentialCreat
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_c *CredentialCreate) SetUpdateBy(v int64) *CredentialCreate {
+func (_c *CredentialCreate) SetUpdateBy(v uint64) *CredentialCreate {
 	_c.mutation.SetUpdateBy(v)
 	return _c
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_c *CredentialCreate) SetNillableUpdateBy(v *int64) *CredentialCreate {
+func (_c *CredentialCreate) SetNillableUpdateBy(v *uint64) *CredentialCreate {
 	if v != nil {
 		_c.SetUpdateBy(*v)
 	}
@@ -92,13 +92,13 @@ func (_c *CredentialCreate) SetNillableDeleteTime(v *time.Time) *CredentialCreat
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_c *CredentialCreate) SetDeleteBy(v int64) *CredentialCreate {
+func (_c *CredentialCreate) SetDeleteBy(v uint64) *CredentialCreate {
 	_c.mutation.SetDeleteBy(v)
 	return _c
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_c *CredentialCreate) SetNillableDeleteBy(v *int64) *CredentialCreate {
+func (_c *CredentialCreate) SetNillableDeleteBy(v *uint64) *CredentialCreate {
 	if v != nil {
 		_c.SetDeleteBy(*v)
 	}
@@ -397,7 +397,7 @@ func (_c *CredentialCreate) createSpec() (*Credential, *sqlgraph.CreateSpec) {
 		_node.CreateTime = value
 	}
 	if value, ok := _c.mutation.CreateBy(); ok {
-		_spec.SetField(credential.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(credential.FieldCreateBy, field.TypeUint64, value)
 		_node.CreateBy = value
 	}
 	if value, ok := _c.mutation.UpdateTime(); ok {
@@ -405,7 +405,7 @@ func (_c *CredentialCreate) createSpec() (*Credential, *sqlgraph.CreateSpec) {
 		_node.UpdateTime = value
 	}
 	if value, ok := _c.mutation.UpdateBy(); ok {
-		_spec.SetField(credential.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(credential.FieldUpdateBy, field.TypeUint64, value)
 		_node.UpdateBy = value
 	}
 	if value, ok := _c.mutation.DeleteTime(); ok {
@@ -413,7 +413,7 @@ func (_c *CredentialCreate) createSpec() (*Credential, *sqlgraph.CreateSpec) {
 		_node.DeleteTime = value
 	}
 	if value, ok := _c.mutation.DeleteBy(); ok {
-		_spec.SetField(credential.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(credential.FieldDeleteBy, field.TypeUint64, value)
 		_node.DeleteBy = value
 	}
 	if value, ok := _c.mutation.CredentialType(); ok {

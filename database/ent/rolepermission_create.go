@@ -37,13 +37,13 @@ func (_c *RolePermissionCreate) SetNillableCreateTime(v *time.Time) *RolePermiss
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_c *RolePermissionCreate) SetCreateBy(v int64) *RolePermissionCreate {
+func (_c *RolePermissionCreate) SetCreateBy(v uint64) *RolePermissionCreate {
 	_c.mutation.SetCreateBy(v)
 	return _c
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_c *RolePermissionCreate) SetNillableCreateBy(v *int64) *RolePermissionCreate {
+func (_c *RolePermissionCreate) SetNillableCreateBy(v *uint64) *RolePermissionCreate {
 	if v != nil {
 		_c.SetCreateBy(*v)
 	}
@@ -65,13 +65,13 @@ func (_c *RolePermissionCreate) SetNillableUpdateTime(v *time.Time) *RolePermiss
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_c *RolePermissionCreate) SetUpdateBy(v int64) *RolePermissionCreate {
+func (_c *RolePermissionCreate) SetUpdateBy(v uint64) *RolePermissionCreate {
 	_c.mutation.SetUpdateBy(v)
 	return _c
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_c *RolePermissionCreate) SetNillableUpdateBy(v *int64) *RolePermissionCreate {
+func (_c *RolePermissionCreate) SetNillableUpdateBy(v *uint64) *RolePermissionCreate {
 	if v != nil {
 		_c.SetUpdateBy(*v)
 	}
@@ -93,13 +93,13 @@ func (_c *RolePermissionCreate) SetNillableDeleteTime(v *time.Time) *RolePermiss
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_c *RolePermissionCreate) SetDeleteBy(v int64) *RolePermissionCreate {
+func (_c *RolePermissionCreate) SetDeleteBy(v uint64) *RolePermissionCreate {
 	_c.mutation.SetDeleteBy(v)
 	return _c
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_c *RolePermissionCreate) SetNillableDeleteBy(v *int64) *RolePermissionCreate {
+func (_c *RolePermissionCreate) SetNillableDeleteBy(v *uint64) *RolePermissionCreate {
 	if v != nil {
 		_c.SetDeleteBy(*v)
 	}
@@ -245,7 +245,7 @@ func (_c *RolePermissionCreate) createSpec() (*RolePermission, *sqlgraph.CreateS
 		_node.CreateTime = value
 	}
 	if value, ok := _c.mutation.CreateBy(); ok {
-		_spec.SetField(rolepermission.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(rolepermission.FieldCreateBy, field.TypeUint64, value)
 		_node.CreateBy = value
 	}
 	if value, ok := _c.mutation.UpdateTime(); ok {
@@ -253,7 +253,7 @@ func (_c *RolePermissionCreate) createSpec() (*RolePermission, *sqlgraph.CreateS
 		_node.UpdateTime = value
 	}
 	if value, ok := _c.mutation.UpdateBy(); ok {
-		_spec.SetField(rolepermission.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(rolepermission.FieldUpdateBy, field.TypeUint64, value)
 		_node.UpdateBy = value
 	}
 	if value, ok := _c.mutation.DeleteTime(); ok {
@@ -261,7 +261,7 @@ func (_c *RolePermissionCreate) createSpec() (*RolePermission, *sqlgraph.CreateS
 		_node.DeleteTime = value
 	}
 	if value, ok := _c.mutation.DeleteBy(); ok {
-		_spec.SetField(rolepermission.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(rolepermission.FieldDeleteBy, field.TypeUint64, value)
 		_node.DeleteBy = value
 	}
 	if nodes := _c.mutation.RoleIDs(); len(nodes) > 0 {

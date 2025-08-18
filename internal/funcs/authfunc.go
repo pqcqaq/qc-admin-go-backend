@@ -84,7 +84,6 @@ func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCo
 		Where(
 			credential.CredentialTypeEQ(credential.CredentialType(credentialType)),
 			credential.Identifier(identifier),
-			credential.DeleteTimeIsNil(),
 		).
 		WithUser().
 		First(ctx)
@@ -184,7 +183,6 @@ func UserRegister(ctx context.Context, credentialType, identifier, secret, verif
 		Where(
 			credential.CredentialTypeEQ(credential.CredentialType(credentialType)),
 			credential.Identifier(identifier),
-			credential.DeleteTimeIsNil(),
 		).
 		Exist(ctx)
 
@@ -264,7 +262,6 @@ func ResetPassword(ctx context.Context, credentialType, identifier, newPassword,
 		Where(
 			credential.CredentialTypeEQ(credential.CredentialType(credentialType)),
 			credential.Identifier(identifier),
-			credential.DeleteTimeIsNil(),
 		).
 		First(ctx)
 

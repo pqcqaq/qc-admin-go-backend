@@ -35,13 +35,13 @@ func (_c *LoggingCreate) SetNillableCreateTime(v *time.Time) *LoggingCreate {
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_c *LoggingCreate) SetCreateBy(v int64) *LoggingCreate {
+func (_c *LoggingCreate) SetCreateBy(v uint64) *LoggingCreate {
 	_c.mutation.SetCreateBy(v)
 	return _c
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_c *LoggingCreate) SetNillableCreateBy(v *int64) *LoggingCreate {
+func (_c *LoggingCreate) SetNillableCreateBy(v *uint64) *LoggingCreate {
 	if v != nil {
 		_c.SetCreateBy(*v)
 	}
@@ -63,13 +63,13 @@ func (_c *LoggingCreate) SetNillableUpdateTime(v *time.Time) *LoggingCreate {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_c *LoggingCreate) SetUpdateBy(v int64) *LoggingCreate {
+func (_c *LoggingCreate) SetUpdateBy(v uint64) *LoggingCreate {
 	_c.mutation.SetUpdateBy(v)
 	return _c
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_c *LoggingCreate) SetNillableUpdateBy(v *int64) *LoggingCreate {
+func (_c *LoggingCreate) SetNillableUpdateBy(v *uint64) *LoggingCreate {
 	if v != nil {
 		_c.SetUpdateBy(*v)
 	}
@@ -91,13 +91,13 @@ func (_c *LoggingCreate) SetNillableDeleteTime(v *time.Time) *LoggingCreate {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_c *LoggingCreate) SetDeleteBy(v int64) *LoggingCreate {
+func (_c *LoggingCreate) SetDeleteBy(v uint64) *LoggingCreate {
 	_c.mutation.SetDeleteBy(v)
 	return _c
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_c *LoggingCreate) SetNillableDeleteBy(v *int64) *LoggingCreate {
+func (_c *LoggingCreate) SetNillableDeleteBy(v *uint64) *LoggingCreate {
 	if v != nil {
 		_c.SetDeleteBy(*v)
 	}
@@ -414,7 +414,7 @@ func (_c *LoggingCreate) createSpec() (*Logging, *sqlgraph.CreateSpec) {
 		_node.CreateTime = value
 	}
 	if value, ok := _c.mutation.CreateBy(); ok {
-		_spec.SetField(logging.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(logging.FieldCreateBy, field.TypeUint64, value)
 		_node.CreateBy = value
 	}
 	if value, ok := _c.mutation.UpdateTime(); ok {
@@ -422,7 +422,7 @@ func (_c *LoggingCreate) createSpec() (*Logging, *sqlgraph.CreateSpec) {
 		_node.UpdateTime = value
 	}
 	if value, ok := _c.mutation.UpdateBy(); ok {
-		_spec.SetField(logging.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(logging.FieldUpdateBy, field.TypeUint64, value)
 		_node.UpdateBy = value
 	}
 	if value, ok := _c.mutation.DeleteTime(); ok {
@@ -430,7 +430,7 @@ func (_c *LoggingCreate) createSpec() (*Logging, *sqlgraph.CreateSpec) {
 		_node.DeleteTime = value
 	}
 	if value, ok := _c.mutation.DeleteBy(); ok {
-		_spec.SetField(logging.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(logging.FieldDeleteBy, field.TypeUint64, value)
 		_node.DeleteBy = value
 	}
 	if value, ok := _c.mutation.Level(); ok {

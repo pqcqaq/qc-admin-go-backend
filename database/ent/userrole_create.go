@@ -37,13 +37,13 @@ func (_c *UserRoleCreate) SetNillableCreateTime(v *time.Time) *UserRoleCreate {
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_c *UserRoleCreate) SetCreateBy(v int64) *UserRoleCreate {
+func (_c *UserRoleCreate) SetCreateBy(v uint64) *UserRoleCreate {
 	_c.mutation.SetCreateBy(v)
 	return _c
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_c *UserRoleCreate) SetNillableCreateBy(v *int64) *UserRoleCreate {
+func (_c *UserRoleCreate) SetNillableCreateBy(v *uint64) *UserRoleCreate {
 	if v != nil {
 		_c.SetCreateBy(*v)
 	}
@@ -65,13 +65,13 @@ func (_c *UserRoleCreate) SetNillableUpdateTime(v *time.Time) *UserRoleCreate {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_c *UserRoleCreate) SetUpdateBy(v int64) *UserRoleCreate {
+func (_c *UserRoleCreate) SetUpdateBy(v uint64) *UserRoleCreate {
 	_c.mutation.SetUpdateBy(v)
 	return _c
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_c *UserRoleCreate) SetNillableUpdateBy(v *int64) *UserRoleCreate {
+func (_c *UserRoleCreate) SetNillableUpdateBy(v *uint64) *UserRoleCreate {
 	if v != nil {
 		_c.SetUpdateBy(*v)
 	}
@@ -93,13 +93,13 @@ func (_c *UserRoleCreate) SetNillableDeleteTime(v *time.Time) *UserRoleCreate {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_c *UserRoleCreate) SetDeleteBy(v int64) *UserRoleCreate {
+func (_c *UserRoleCreate) SetDeleteBy(v uint64) *UserRoleCreate {
 	_c.mutation.SetDeleteBy(v)
 	return _c
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_c *UserRoleCreate) SetNillableDeleteBy(v *int64) *UserRoleCreate {
+func (_c *UserRoleCreate) SetNillableDeleteBy(v *uint64) *UserRoleCreate {
 	if v != nil {
 		_c.SetDeleteBy(*v)
 	}
@@ -245,7 +245,7 @@ func (_c *UserRoleCreate) createSpec() (*UserRole, *sqlgraph.CreateSpec) {
 		_node.CreateTime = value
 	}
 	if value, ok := _c.mutation.CreateBy(); ok {
-		_spec.SetField(userrole.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(userrole.FieldCreateBy, field.TypeUint64, value)
 		_node.CreateBy = value
 	}
 	if value, ok := _c.mutation.UpdateTime(); ok {
@@ -253,7 +253,7 @@ func (_c *UserRoleCreate) createSpec() (*UserRole, *sqlgraph.CreateSpec) {
 		_node.UpdateTime = value
 	}
 	if value, ok := _c.mutation.UpdateBy(); ok {
-		_spec.SetField(userrole.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(userrole.FieldUpdateBy, field.TypeUint64, value)
 		_node.UpdateBy = value
 	}
 	if value, ok := _c.mutation.DeleteTime(); ok {
@@ -261,7 +261,7 @@ func (_c *UserRoleCreate) createSpec() (*UserRole, *sqlgraph.CreateSpec) {
 		_node.DeleteTime = value
 	}
 	if value, ok := _c.mutation.DeleteBy(); ok {
-		_spec.SetField(userrole.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(userrole.FieldDeleteBy, field.TypeUint64, value)
 		_node.DeleteBy = value
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {

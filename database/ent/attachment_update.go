@@ -29,14 +29,14 @@ func (_u *AttachmentUpdate) Where(ps ...predicate.Attachment) *AttachmentUpdate 
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_u *AttachmentUpdate) SetCreateBy(v int64) *AttachmentUpdate {
+func (_u *AttachmentUpdate) SetCreateBy(v uint64) *AttachmentUpdate {
 	_u.mutation.ResetCreateBy()
 	_u.mutation.SetCreateBy(v)
 	return _u
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_u *AttachmentUpdate) SetNillableCreateBy(v *int64) *AttachmentUpdate {
+func (_u *AttachmentUpdate) SetNillableCreateBy(v *uint64) *AttachmentUpdate {
 	if v != nil {
 		_u.SetCreateBy(*v)
 	}
@@ -62,14 +62,14 @@ func (_u *AttachmentUpdate) SetUpdateTime(v time.Time) *AttachmentUpdate {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_u *AttachmentUpdate) SetUpdateBy(v int64) *AttachmentUpdate {
+func (_u *AttachmentUpdate) SetUpdateBy(v uint64) *AttachmentUpdate {
 	_u.mutation.ResetUpdateBy()
 	_u.mutation.SetUpdateBy(v)
 	return _u
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_u *AttachmentUpdate) SetNillableUpdateBy(v *int64) *AttachmentUpdate {
+func (_u *AttachmentUpdate) SetNillableUpdateBy(v *uint64) *AttachmentUpdate {
 	if v != nil {
 		_u.SetUpdateBy(*v)
 	}
@@ -109,14 +109,14 @@ func (_u *AttachmentUpdate) ClearDeleteTime() *AttachmentUpdate {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_u *AttachmentUpdate) SetDeleteBy(v int64) *AttachmentUpdate {
+func (_u *AttachmentUpdate) SetDeleteBy(v uint64) *AttachmentUpdate {
 	_u.mutation.ResetDeleteBy()
 	_u.mutation.SetDeleteBy(v)
 	return _u
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_u *AttachmentUpdate) SetNillableDeleteBy(v *int64) *AttachmentUpdate {
+func (_u *AttachmentUpdate) SetNillableDeleteBy(v *uint64) *AttachmentUpdate {
 	if v != nil {
 		_u.SetDeleteBy(*v)
 	}
@@ -497,25 +497,25 @@ func (_u *AttachmentUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 		}
 	}
 	if value, ok := _u.mutation.CreateBy(); ok {
-		_spec.SetField(attachment.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(attachment.FieldCreateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedCreateBy(); ok {
-		_spec.AddField(attachment.FieldCreateBy, field.TypeInt64, value)
+		_spec.AddField(attachment.FieldCreateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.CreateByCleared() {
-		_spec.ClearField(attachment.FieldCreateBy, field.TypeInt64)
+		_spec.ClearField(attachment.FieldCreateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.UpdateTime(); ok {
 		_spec.SetField(attachment.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdateBy(); ok {
-		_spec.SetField(attachment.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(attachment.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedUpdateBy(); ok {
-		_spec.AddField(attachment.FieldUpdateBy, field.TypeInt64, value)
+		_spec.AddField(attachment.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.UpdateByCleared() {
-		_spec.ClearField(attachment.FieldUpdateBy, field.TypeInt64)
+		_spec.ClearField(attachment.FieldUpdateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.DeleteTime(); ok {
 		_spec.SetField(attachment.FieldDeleteTime, field.TypeTime, value)
@@ -524,13 +524,13 @@ func (_u *AttachmentUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 		_spec.ClearField(attachment.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.DeleteBy(); ok {
-		_spec.SetField(attachment.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(attachment.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedDeleteBy(); ok {
-		_spec.AddField(attachment.FieldDeleteBy, field.TypeInt64, value)
+		_spec.AddField(attachment.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if _u.mutation.DeleteByCleared() {
-		_spec.ClearField(attachment.FieldDeleteBy, field.TypeInt64)
+		_spec.ClearField(attachment.FieldDeleteBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.Filename(); ok {
 		_spec.SetField(attachment.FieldFilename, field.TypeString, value)
@@ -619,14 +619,14 @@ type AttachmentUpdateOne struct {
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_u *AttachmentUpdateOne) SetCreateBy(v int64) *AttachmentUpdateOne {
+func (_u *AttachmentUpdateOne) SetCreateBy(v uint64) *AttachmentUpdateOne {
 	_u.mutation.ResetCreateBy()
 	_u.mutation.SetCreateBy(v)
 	return _u
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_u *AttachmentUpdateOne) SetNillableCreateBy(v *int64) *AttachmentUpdateOne {
+func (_u *AttachmentUpdateOne) SetNillableCreateBy(v *uint64) *AttachmentUpdateOne {
 	if v != nil {
 		_u.SetCreateBy(*v)
 	}
@@ -652,14 +652,14 @@ func (_u *AttachmentUpdateOne) SetUpdateTime(v time.Time) *AttachmentUpdateOne {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_u *AttachmentUpdateOne) SetUpdateBy(v int64) *AttachmentUpdateOne {
+func (_u *AttachmentUpdateOne) SetUpdateBy(v uint64) *AttachmentUpdateOne {
 	_u.mutation.ResetUpdateBy()
 	_u.mutation.SetUpdateBy(v)
 	return _u
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_u *AttachmentUpdateOne) SetNillableUpdateBy(v *int64) *AttachmentUpdateOne {
+func (_u *AttachmentUpdateOne) SetNillableUpdateBy(v *uint64) *AttachmentUpdateOne {
 	if v != nil {
 		_u.SetUpdateBy(*v)
 	}
@@ -699,14 +699,14 @@ func (_u *AttachmentUpdateOne) ClearDeleteTime() *AttachmentUpdateOne {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_u *AttachmentUpdateOne) SetDeleteBy(v int64) *AttachmentUpdateOne {
+func (_u *AttachmentUpdateOne) SetDeleteBy(v uint64) *AttachmentUpdateOne {
 	_u.mutation.ResetDeleteBy()
 	_u.mutation.SetDeleteBy(v)
 	return _u
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_u *AttachmentUpdateOne) SetNillableDeleteBy(v *int64) *AttachmentUpdateOne {
+func (_u *AttachmentUpdateOne) SetNillableDeleteBy(v *uint64) *AttachmentUpdateOne {
 	if v != nil {
 		_u.SetDeleteBy(*v)
 	}
@@ -1117,25 +1117,25 @@ func (_u *AttachmentUpdateOne) sqlSave(ctx context.Context) (_node *Attachment, 
 		}
 	}
 	if value, ok := _u.mutation.CreateBy(); ok {
-		_spec.SetField(attachment.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(attachment.FieldCreateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedCreateBy(); ok {
-		_spec.AddField(attachment.FieldCreateBy, field.TypeInt64, value)
+		_spec.AddField(attachment.FieldCreateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.CreateByCleared() {
-		_spec.ClearField(attachment.FieldCreateBy, field.TypeInt64)
+		_spec.ClearField(attachment.FieldCreateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.UpdateTime(); ok {
 		_spec.SetField(attachment.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.UpdateBy(); ok {
-		_spec.SetField(attachment.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(attachment.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedUpdateBy(); ok {
-		_spec.AddField(attachment.FieldUpdateBy, field.TypeInt64, value)
+		_spec.AddField(attachment.FieldUpdateBy, field.TypeUint64, value)
 	}
 	if _u.mutation.UpdateByCleared() {
-		_spec.ClearField(attachment.FieldUpdateBy, field.TypeInt64)
+		_spec.ClearField(attachment.FieldUpdateBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.DeleteTime(); ok {
 		_spec.SetField(attachment.FieldDeleteTime, field.TypeTime, value)
@@ -1144,13 +1144,13 @@ func (_u *AttachmentUpdateOne) sqlSave(ctx context.Context) (_node *Attachment, 
 		_spec.ClearField(attachment.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.DeleteBy(); ok {
-		_spec.SetField(attachment.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(attachment.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if value, ok := _u.mutation.AddedDeleteBy(); ok {
-		_spec.AddField(attachment.FieldDeleteBy, field.TypeInt64, value)
+		_spec.AddField(attachment.FieldDeleteBy, field.TypeUint64, value)
 	}
 	if _u.mutation.DeleteByCleared() {
-		_spec.ClearField(attachment.FieldDeleteBy, field.TypeInt64)
+		_spec.ClearField(attachment.FieldDeleteBy, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.Filename(); ok {
 		_spec.SetField(attachment.FieldFilename, field.TypeString, value)

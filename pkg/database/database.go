@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"go-backend/database/ent"
 	database "go-backend/database/ent"
 	_ "go-backend/database/ent/runtime"
 
@@ -70,7 +71,14 @@ func NewClient(config *configs.DatabaseConfig) (*database.Client, error) {
 	db.SetMaxIdleConns(config.MaxIdleConns)
 	db.SetMaxOpenConns(config.MaxOpenConns)
 	db.SetConnMaxLifetime(config.ConnMaxLifetime)
-	client := database.NewClient(database.Driver(drv))
+
+	var client *database.Client
+	if config.Debug {
+		logging.Info("Database debug mode enabled")
+		client = database.NewClient(database.Driver(drv), ent.Debug())
+	} else {
+		client = database.NewClient(database.Driver(drv))
+	}
 
 	// 如果配置了自动迁移，则创建数据库模式
 	if !config.SkipMigrateCheck {

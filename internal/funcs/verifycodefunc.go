@@ -21,7 +21,6 @@ func SendVerificationCode(ctx context.Context, senderType, purpose, identifier s
 			verifycode.SenderTypeEQ(verifycode.SenderType(senderType)),
 			verifycode.SendFor(purpose),
 			verifycode.SendAtGTE(thirtySecondsAgo),
-			verifycode.DeleteTimeIsNil(),
 		).
 		Exist(ctx)
 
@@ -96,7 +95,6 @@ func VerifyCode(ctx context.Context, senderType, purpose, identifier, code strin
 			verifycode.ExpiresAtGTE(now),
 			verifycode.CreateTimeGTE(fifteenMinutesAgo),
 			verifycode.UsedAtIsNil(),
-			verifycode.DeleteTimeIsNil(),
 		).
 		First(ctx)
 

@@ -37,13 +37,13 @@ func (_c *RoleCreate) SetNillableCreateTime(v *time.Time) *RoleCreate {
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_c *RoleCreate) SetCreateBy(v int64) *RoleCreate {
+func (_c *RoleCreate) SetCreateBy(v uint64) *RoleCreate {
 	_c.mutation.SetCreateBy(v)
 	return _c
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_c *RoleCreate) SetNillableCreateBy(v *int64) *RoleCreate {
+func (_c *RoleCreate) SetNillableCreateBy(v *uint64) *RoleCreate {
 	if v != nil {
 		_c.SetCreateBy(*v)
 	}
@@ -65,13 +65,13 @@ func (_c *RoleCreate) SetNillableUpdateTime(v *time.Time) *RoleCreate {
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_c *RoleCreate) SetUpdateBy(v int64) *RoleCreate {
+func (_c *RoleCreate) SetUpdateBy(v uint64) *RoleCreate {
 	_c.mutation.SetUpdateBy(v)
 	return _c
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_c *RoleCreate) SetNillableUpdateBy(v *int64) *RoleCreate {
+func (_c *RoleCreate) SetNillableUpdateBy(v *uint64) *RoleCreate {
 	if v != nil {
 		_c.SetUpdateBy(*v)
 	}
@@ -93,13 +93,13 @@ func (_c *RoleCreate) SetNillableDeleteTime(v *time.Time) *RoleCreate {
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_c *RoleCreate) SetDeleteBy(v int64) *RoleCreate {
+func (_c *RoleCreate) SetDeleteBy(v uint64) *RoleCreate {
 	_c.mutation.SetDeleteBy(v)
 	return _c
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_c *RoleCreate) SetNillableDeleteBy(v *int64) *RoleCreate {
+func (_c *RoleCreate) SetNillableDeleteBy(v *uint64) *RoleCreate {
 	if v != nil {
 		_c.SetDeleteBy(*v)
 	}
@@ -299,7 +299,7 @@ func (_c *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 		_node.CreateTime = value
 	}
 	if value, ok := _c.mutation.CreateBy(); ok {
-		_spec.SetField(role.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(role.FieldCreateBy, field.TypeUint64, value)
 		_node.CreateBy = value
 	}
 	if value, ok := _c.mutation.UpdateTime(); ok {
@@ -307,7 +307,7 @@ func (_c *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 		_node.UpdateTime = value
 	}
 	if value, ok := _c.mutation.UpdateBy(); ok {
-		_spec.SetField(role.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(role.FieldUpdateBy, field.TypeUint64, value)
 		_node.UpdateBy = value
 	}
 	if value, ok := _c.mutation.DeleteTime(); ok {
@@ -315,7 +315,7 @@ func (_c *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 		_node.DeleteTime = value
 	}
 	if value, ok := _c.mutation.DeleteBy(); ok {
-		_spec.SetField(role.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(role.FieldDeleteBy, field.TypeUint64, value)
 		_node.DeleteBy = value
 	}
 	if value, ok := _c.mutation.Name(); ok {

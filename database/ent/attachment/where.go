@@ -60,7 +60,7 @@ func CreateTime(v time.Time) predicate.Attachment {
 }
 
 // CreateBy applies equality check predicate on the "create_by" field. It's identical to CreateByEQ.
-func CreateBy(v int64) predicate.Attachment {
+func CreateBy(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldCreateBy, v))
 }
 
@@ -70,7 +70,7 @@ func UpdateTime(v time.Time) predicate.Attachment {
 }
 
 // UpdateBy applies equality check predicate on the "update_by" field. It's identical to UpdateByEQ.
-func UpdateBy(v int64) predicate.Attachment {
+func UpdateBy(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldUpdateBy, v))
 }
 
@@ -80,7 +80,7 @@ func DeleteTime(v time.Time) predicate.Attachment {
 }
 
 // DeleteBy applies equality check predicate on the "delete_by" field. It's identical to DeleteByEQ.
-func DeleteBy(v int64) predicate.Attachment {
+func DeleteBy(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldDeleteBy, v))
 }
 
@@ -185,42 +185,42 @@ func CreateTimeLTE(v time.Time) predicate.Attachment {
 }
 
 // CreateByEQ applies the EQ predicate on the "create_by" field.
-func CreateByEQ(v int64) predicate.Attachment {
+func CreateByEQ(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldCreateBy, v))
 }
 
 // CreateByNEQ applies the NEQ predicate on the "create_by" field.
-func CreateByNEQ(v int64) predicate.Attachment {
+func CreateByNEQ(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldNEQ(FieldCreateBy, v))
 }
 
 // CreateByIn applies the In predicate on the "create_by" field.
-func CreateByIn(vs ...int64) predicate.Attachment {
+func CreateByIn(vs ...uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldIn(FieldCreateBy, vs...))
 }
 
 // CreateByNotIn applies the NotIn predicate on the "create_by" field.
-func CreateByNotIn(vs ...int64) predicate.Attachment {
+func CreateByNotIn(vs ...uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldNotIn(FieldCreateBy, vs...))
 }
 
 // CreateByGT applies the GT predicate on the "create_by" field.
-func CreateByGT(v int64) predicate.Attachment {
+func CreateByGT(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldGT(FieldCreateBy, v))
 }
 
 // CreateByGTE applies the GTE predicate on the "create_by" field.
-func CreateByGTE(v int64) predicate.Attachment {
+func CreateByGTE(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldGTE(FieldCreateBy, v))
 }
 
 // CreateByLT applies the LT predicate on the "create_by" field.
-func CreateByLT(v int64) predicate.Attachment {
+func CreateByLT(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldLT(FieldCreateBy, v))
 }
 
 // CreateByLTE applies the LTE predicate on the "create_by" field.
-func CreateByLTE(v int64) predicate.Attachment {
+func CreateByLTE(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldLTE(FieldCreateBy, v))
 }
 
@@ -275,42 +275,42 @@ func UpdateTimeLTE(v time.Time) predicate.Attachment {
 }
 
 // UpdateByEQ applies the EQ predicate on the "update_by" field.
-func UpdateByEQ(v int64) predicate.Attachment {
+func UpdateByEQ(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldUpdateBy, v))
 }
 
 // UpdateByNEQ applies the NEQ predicate on the "update_by" field.
-func UpdateByNEQ(v int64) predicate.Attachment {
+func UpdateByNEQ(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldNEQ(FieldUpdateBy, v))
 }
 
 // UpdateByIn applies the In predicate on the "update_by" field.
-func UpdateByIn(vs ...int64) predicate.Attachment {
+func UpdateByIn(vs ...uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldIn(FieldUpdateBy, vs...))
 }
 
 // UpdateByNotIn applies the NotIn predicate on the "update_by" field.
-func UpdateByNotIn(vs ...int64) predicate.Attachment {
+func UpdateByNotIn(vs ...uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldNotIn(FieldUpdateBy, vs...))
 }
 
 // UpdateByGT applies the GT predicate on the "update_by" field.
-func UpdateByGT(v int64) predicate.Attachment {
+func UpdateByGT(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldGT(FieldUpdateBy, v))
 }
 
 // UpdateByGTE applies the GTE predicate on the "update_by" field.
-func UpdateByGTE(v int64) predicate.Attachment {
+func UpdateByGTE(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldGTE(FieldUpdateBy, v))
 }
 
 // UpdateByLT applies the LT predicate on the "update_by" field.
-func UpdateByLT(v int64) predicate.Attachment {
+func UpdateByLT(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldLT(FieldUpdateBy, v))
 }
 
 // UpdateByLTE applies the LTE predicate on the "update_by" field.
-func UpdateByLTE(v int64) predicate.Attachment {
+func UpdateByLTE(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldLTE(FieldUpdateBy, v))
 }
 
@@ -375,42 +375,42 @@ func DeleteTimeNotNil() predicate.Attachment {
 }
 
 // DeleteByEQ applies the EQ predicate on the "delete_by" field.
-func DeleteByEQ(v int64) predicate.Attachment {
+func DeleteByEQ(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldDeleteBy, v))
 }
 
 // DeleteByNEQ applies the NEQ predicate on the "delete_by" field.
-func DeleteByNEQ(v int64) predicate.Attachment {
+func DeleteByNEQ(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldNEQ(FieldDeleteBy, v))
 }
 
 // DeleteByIn applies the In predicate on the "delete_by" field.
-func DeleteByIn(vs ...int64) predicate.Attachment {
+func DeleteByIn(vs ...uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldIn(FieldDeleteBy, vs...))
 }
 
 // DeleteByNotIn applies the NotIn predicate on the "delete_by" field.
-func DeleteByNotIn(vs ...int64) predicate.Attachment {
+func DeleteByNotIn(vs ...uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldNotIn(FieldDeleteBy, vs...))
 }
 
 // DeleteByGT applies the GT predicate on the "delete_by" field.
-func DeleteByGT(v int64) predicate.Attachment {
+func DeleteByGT(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldGT(FieldDeleteBy, v))
 }
 
 // DeleteByGTE applies the GTE predicate on the "delete_by" field.
-func DeleteByGTE(v int64) predicate.Attachment {
+func DeleteByGTE(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldGTE(FieldDeleteBy, v))
 }
 
 // DeleteByLT applies the LT predicate on the "delete_by" field.
-func DeleteByLT(v int64) predicate.Attachment {
+func DeleteByLT(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldLT(FieldDeleteBy, v))
 }
 
 // DeleteByLTE applies the LTE predicate on the "delete_by" field.
-func DeleteByLTE(v int64) predicate.Attachment {
+func DeleteByLTE(v uint64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldLTE(FieldDeleteBy, v))
 }
 

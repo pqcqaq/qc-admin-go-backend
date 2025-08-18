@@ -35,13 +35,13 @@ func (_c *VerifyCodeCreate) SetNillableCreateTime(v *time.Time) *VerifyCodeCreat
 }
 
 // SetCreateBy sets the "create_by" field.
-func (_c *VerifyCodeCreate) SetCreateBy(v int64) *VerifyCodeCreate {
+func (_c *VerifyCodeCreate) SetCreateBy(v uint64) *VerifyCodeCreate {
 	_c.mutation.SetCreateBy(v)
 	return _c
 }
 
 // SetNillableCreateBy sets the "create_by" field if the given value is not nil.
-func (_c *VerifyCodeCreate) SetNillableCreateBy(v *int64) *VerifyCodeCreate {
+func (_c *VerifyCodeCreate) SetNillableCreateBy(v *uint64) *VerifyCodeCreate {
 	if v != nil {
 		_c.SetCreateBy(*v)
 	}
@@ -63,13 +63,13 @@ func (_c *VerifyCodeCreate) SetNillableUpdateTime(v *time.Time) *VerifyCodeCreat
 }
 
 // SetUpdateBy sets the "update_by" field.
-func (_c *VerifyCodeCreate) SetUpdateBy(v int64) *VerifyCodeCreate {
+func (_c *VerifyCodeCreate) SetUpdateBy(v uint64) *VerifyCodeCreate {
 	_c.mutation.SetUpdateBy(v)
 	return _c
 }
 
 // SetNillableUpdateBy sets the "update_by" field if the given value is not nil.
-func (_c *VerifyCodeCreate) SetNillableUpdateBy(v *int64) *VerifyCodeCreate {
+func (_c *VerifyCodeCreate) SetNillableUpdateBy(v *uint64) *VerifyCodeCreate {
 	if v != nil {
 		_c.SetUpdateBy(*v)
 	}
@@ -91,13 +91,13 @@ func (_c *VerifyCodeCreate) SetNillableDeleteTime(v *time.Time) *VerifyCodeCreat
 }
 
 // SetDeleteBy sets the "delete_by" field.
-func (_c *VerifyCodeCreate) SetDeleteBy(v int64) *VerifyCodeCreate {
+func (_c *VerifyCodeCreate) SetDeleteBy(v uint64) *VerifyCodeCreate {
 	_c.mutation.SetDeleteBy(v)
 	return _c
 }
 
 // SetNillableDeleteBy sets the "delete_by" field if the given value is not nil.
-func (_c *VerifyCodeCreate) SetNillableDeleteBy(v *int64) *VerifyCodeCreate {
+func (_c *VerifyCodeCreate) SetNillableDeleteBy(v *uint64) *VerifyCodeCreate {
 	if v != nil {
 		_c.SetDeleteBy(*v)
 	}
@@ -323,7 +323,7 @@ func (_c *VerifyCodeCreate) createSpec() (*VerifyCode, *sqlgraph.CreateSpec) {
 		_node.CreateTime = value
 	}
 	if value, ok := _c.mutation.CreateBy(); ok {
-		_spec.SetField(verifycode.FieldCreateBy, field.TypeInt64, value)
+		_spec.SetField(verifycode.FieldCreateBy, field.TypeUint64, value)
 		_node.CreateBy = value
 	}
 	if value, ok := _c.mutation.UpdateTime(); ok {
@@ -331,7 +331,7 @@ func (_c *VerifyCodeCreate) createSpec() (*VerifyCode, *sqlgraph.CreateSpec) {
 		_node.UpdateTime = value
 	}
 	if value, ok := _c.mutation.UpdateBy(); ok {
-		_spec.SetField(verifycode.FieldUpdateBy, field.TypeInt64, value)
+		_spec.SetField(verifycode.FieldUpdateBy, field.TypeUint64, value)
 		_node.UpdateBy = value
 	}
 	if value, ok := _c.mutation.DeleteTime(); ok {
@@ -339,7 +339,7 @@ func (_c *VerifyCodeCreate) createSpec() (*VerifyCode, *sqlgraph.CreateSpec) {
 		_node.DeleteTime = value
 	}
 	if value, ok := _c.mutation.DeleteBy(); ok {
-		_spec.SetField(verifycode.FieldDeleteBy, field.TypeInt64, value)
+		_spec.SetField(verifycode.FieldDeleteBy, field.TypeUint64, value)
 		_node.DeleteBy = value
 	}
 	if value, ok := _c.mutation.Code(); ok {
