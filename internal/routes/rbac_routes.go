@@ -2,6 +2,7 @@ package routes
 
 import (
 	"go-backend/internal/handlers"
+	"go-backend/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,6 +17,8 @@ func (r *Router) setupRBACRoutes(rg *gin.RouterGroup) {
 
 	// RBAC API组
 	rbacGroup := rg.Group("/rbac")
+	// 全部需要auth中间件保护
+	rbacGroup.Use(middleware.JWTAuthMiddleware())
 	{
 		// 角色路由
 		roleGroup := rbacGroup.Group("/roles")

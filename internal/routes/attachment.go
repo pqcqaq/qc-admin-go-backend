@@ -2,6 +2,7 @@ package routes
 
 import (
 	"go-backend/internal/handlers"
+	"go-backend/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,6 +13,8 @@ func (r *Router) setupAttachmentRoutes(rg *gin.RouterGroup) {
 	attachmentHandler := handlers.NewAttachmentHandler()
 
 	attachments := rg.Group("/attachments")
+	// 全部需要auth中间件保护
+	attachments.Use(middleware.JWTAuthMiddleware())
 	{
 		attachments.GET("", attachmentHandler.GetAttachments)
 		attachments.GET("/paginated", attachmentHandler.GetAttachmentsWithPagination) // 分页查询路由
