@@ -3,6 +3,8 @@ package routes
 import (
 	"go-backend/internal/handlers"
 	"go-backend/internal/middleware"
+	"go-backend/pkg/configs"
+	"go-backend/pkg/logging"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -21,7 +23,7 @@ func NewRouter() *Router {
 }
 
 // SetupRoutes 设置所有路由
-func (r *Router) SetupRoutes(engine *gin.Engine) {
+func (r *Router) SetupRoutes(config *configs.AppConfig, engine *gin.Engine) {
 	// 注册错误处理中间件
 	engine.Use(middleware.ErrorHandlerMiddleware()) // 处理panic恢复
 	engine.Use(middleware.ErrorHandler())           // 处理gin.Error
@@ -33,8 +35,11 @@ func (r *Router) SetupRoutes(engine *gin.Engine) {
 	healthHandler := handlers.NewHealthHandler()
 	engine.GET("/health", healthHandler.Health)
 
+	logging.WithName("Router").Info("Setting up routes with prefix: %s", config.Server.Prefix)
+	prefixGroup := engine.Group(config.Server.Prefix)
+
 	// API v1 路由组
-	api := engine.Group("/api/v1")
+	api := prefixGroup.Group("/v1")
 	{
 		r.setupAuthRoutes(api)
 		r.setupUserRoutes(api)

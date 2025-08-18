@@ -9,6 +9,7 @@ type ServerConfig struct {
 	Static StaticConfig `mapstructure:"static"` // 静态文件服务配置
 	Debug  bool         `mapstructure:"debug"`  // 是否启用调试模式
 	CORS   CORSConfig   `mapstructure:"cors"`   // 跨域配置
+	Prefix string       `mapstructure:"prefix"` // API前缀
 }
 
 type StaticConfig struct {
@@ -36,6 +37,7 @@ func setServerConfigDefaults() {
 	viper.SetDefault("server.static.enabled", true)
 	viper.SetDefault("server.static.root", "../public")
 	viper.SetDefault("server.static.path", "/static")
+	viper.SetDefault("server.api_prefix", "/api")
 
 	// CORS默认配置
 	viper.SetDefault("server.cors.enabled", true)

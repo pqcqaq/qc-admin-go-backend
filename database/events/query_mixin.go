@@ -70,11 +70,9 @@ func NewQueryEventWithValue(eventType EventType, ctx context.Context, query ent.
 // getQueryEntityType 从查询中提取实体类型
 func getQueryEntityType(query ent.Query) string {
 	// 使用类型断言来获取具体的查询类型
-	switch query.(type) {
+	switch query := query.(type) {
 	case interface{ Table() string }:
-		if t, ok := query.(interface{ Table() string }); ok {
-			return t.Table()
-		}
+		return query.Table()
 	}
 
 	// 备用方案：从类型名称推断

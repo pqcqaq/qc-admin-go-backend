@@ -13,6 +13,7 @@ import (
 	"go-backend/database/ent/user"
 	"go-backend/pkg/database"
 	"go-backend/pkg/jwt"
+	"go-backend/pkg/logging"
 	"go-backend/shared/models"
 
 	"golang.org/x/crypto/argon2"
@@ -162,7 +163,7 @@ func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCo
 	_, err = updateBuilder.Save(ctx)
 	if err != nil {
 		// 更新失败不影响认证结果
-		fmt.Printf("更新认证记录失败: %v\n", err)
+		logging.Warn("更新认证记录失败: %v\n", err)
 	}
 
 	if !authSuccess {

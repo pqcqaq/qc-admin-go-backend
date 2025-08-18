@@ -2,6 +2,9 @@ package configs
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 
 	"go-backend/pkg/logging"
 
@@ -84,4 +87,61 @@ func setDefaults() {
 
 	// JWT默认配置
 	setJWTConfigDefaults()
+}
+
+// ResolveConfigPath 解析配置文件路径，支持相对路径和绝对路径
+func ResolveConfigPath(configPath string) (string, error) {
+	// 如果是绝对路径，直接返回
+	if filepath.IsAbs(configPath) {
+		// 检查文件是否存在
+		if _, err := os.Stat(configPath); os.IsNotExist(err) {
+			return "", fmt.Errorf("配置文件不存在: %s", configPath)
+		}
+		return configPath, nil
+	}
+
+	// 相对路径：相对于当前工作目录
+	workDir, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("获取工作目录失败: %w", err)
+	}
+
+	resolvedPath := filepath.Join(workDir, configPath)
+
+	// 检查文件是否存在（可选，因为Viper会处理文件不存在的情况）
+	if _, err := os.Stat(resolvedPath); os.IsNotExist(err) {
+		log.Printf("警告: 配置文件不存在 %s, 将使用默认值", resolvedPath)
+	}
+
+	return resolvedPath, nil
+}
+
+// ResolveStaticPath 解析静态文件目录路径，支持相对路径和绝对路径
+func ResolveStaticPath(staticPath string) (string, error) {
+	// 如果是绝对路径，直接返回
+	if filepath.IsAbs(staticPath) {
+		// 检查目录是否存在
+		if _, err := os.Stat(staticPath); os.IsNotExist(err) {
+			return "", fmt.Errorf("静态文件目录不存在: %s", staticPath)
+		}
+		return staticPath, nil
+	}
+
+	// 相对路径：相对于当前工作目录
+	workDir, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("获取工作目录失败: %w", err)
+	}
+
+	resolvedPath := filepath.Join(workDir, staticPath)
+
+	// 检查目录是否存在，如果不存在则创建
+	if _, err := os.Stat(resolvedPath); os.IsNotExist(err) {
+		log.Printf("静态文件目录不存在，正在创建: %s", resolvedPath)
+		if err := os.MkdirAll(resolvedPath, 0755); err != nil {
+			return "", fmt.Errorf("创建静态文件目录失败: %w", err)
+		}
+	}
+
+	return resolvedPath, nil
 }
