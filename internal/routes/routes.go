@@ -36,6 +36,7 @@ func (r *Router) SetupRoutes(engine *gin.Engine) {
 	// API v1 路由组
 	api := engine.Group("/api/v1")
 	{
+		r.setupAuthRoutes(api)
 		r.setupUserRoutes(api)
 		r.setupAttachmentRoutes(api)
 		r.setupScanRoutes(api)

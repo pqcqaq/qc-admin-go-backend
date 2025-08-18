@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go-backend/internal/funcs"
 	"go-backend/pkg/logging"
+	"go-backend/shared/models"
 	"net/http"
 	"time"
 
@@ -151,12 +152,12 @@ func logError(c *gin.Context, customErr *CustomError, isPanic bool) {
 }
 
 // getHTTPStatusCode 根据自定义错误代码获取HTTP状态码
-func getHTTPStatusCode(errorCode int) int {
+func getHTTPStatusCode(errorCode models.ErrorCode) int {
 	switch {
 	case errorCode >= 400 && errorCode < 500:
-		return errorCode
+		return int(errorCode)
 	case errorCode >= 500 && errorCode < 600:
-		return errorCode
+		return int(errorCode)
 	case errorCode == ErrCodeUserNotFound:
 		return http.StatusNotFound
 	case errorCode == ErrCodeUserExists:

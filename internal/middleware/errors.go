@@ -2,15 +2,16 @@ package middleware
 
 import (
 	"fmt"
+	"go-backend/shared/models"
 	"runtime"
 )
 
 // CustomError 自定义错误结构
 type CustomError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Data    any    `json:"data,omitempty"`
-	Stack   string `json:"stack,omitempty"`
+	Code    models.ErrorCode `json:"code"`
+	Message string           `json:"message"`
+	Data    any              `json:"data,omitempty"`
+	Stack   string           `json:"stack,omitempty"`
 }
 
 // Error 实现 error 接口
@@ -19,7 +20,7 @@ func (e *CustomError) Error() string {
 }
 
 // NewCustomError 创建新的自定义错误
-func NewCustomError(code int, message string, data any) *CustomError {
+func NewCustomError(code models.ErrorCode, message string, data any) *CustomError {
 	return &CustomError{
 		Code:    code,
 		Message: message,
@@ -28,7 +29,7 @@ func NewCustomError(code int, message string, data any) *CustomError {
 }
 
 // NewCustomErrorWithStack 创建带有堆栈信息的自定义错误
-func NewCustomErrorWithStack(code int, message string, data any) *CustomError {
+func NewCustomErrorWithStack(code models.ErrorCode, message string, data any) *CustomError {
 	stack := make([]byte, 1024*8)
 	stack = stack[:runtime.Stack(stack, false)]
 
@@ -42,35 +43,36 @@ func NewCustomErrorWithStack(code int, message string, data any) *CustomError {
 
 // ErrorResponse 统一的错误响应结构
 type ErrorResponse struct {
-	Success   bool   `json:"success"`
-	Code      int    `json:"code"`
-	Message   string `json:"message"`
-	Data      any    `json:"data,omitempty"`
-	Timestamp string `json:"timestamp"`
-	Path      string `json:"path"`
-	Stack     string `json:"stack,omitempty"`
+	Success   bool             `json:"success"`
+	Code      models.ErrorCode `json:"code"`
+	Message   string           `json:"message"`
+	Data      any              `json:"data,omitempty"`
+	Timestamp string           `json:"timestamp"`
+	Path      string           `json:"path"`
+	Stack     string           `json:"stack,omitempty"`
 }
 
 // 预定义的错误代码
+
 const (
 	// 通用错误
-	ErrCodeInternal     = 500
-	ErrCodeBadRequest   = 400
-	ErrCodeUnauthorized = 401
-	ErrCodeForbidden    = 403
-	ErrCodeNotFound     = 404
-	ErrCodeConflict     = 409
+	ErrCodeInternal     models.ErrorCode = 500
+	ErrCodeBadRequest   models.ErrorCode = 400
+	ErrCodeUnauthorized models.ErrorCode = 401
+	ErrCodeForbidden    models.ErrorCode = 403
+	ErrCodeNotFound     models.ErrorCode = 404
+	ErrCodeConflict     models.ErrorCode = 409
 
 	// 业务错误
-	ErrCodeUserNotFound    = 1001
-	ErrCodeUserExists      = 1002
-	ErrCodeInvalidUserData = 1003
-	ErrCodeDatabaseError   = 2001
-	ErrCodeValidationError = 3001
+	ErrCodeUserNotFound    models.ErrorCode = 1001
+	ErrCodeUserExists      models.ErrorCode = 1002
+	ErrCodeInvalidUserData models.ErrorCode = 1003
+	ErrCodeDatabaseError   models.ErrorCode = 2001
+	ErrCodeValidationError models.ErrorCode = 3001
 )
 
 // 预定义错误消息
-var ErrorMessages = map[int]string{
+var ErrorMessages = map[models.ErrorCode]string{
 	ErrCodeInternal:        "内部服务器错误",
 	ErrCodeBadRequest:      "请求参数错误",
 	ErrCodeUnauthorized:    "未授权",
@@ -85,7 +87,7 @@ var ErrorMessages = map[int]string{
 }
 
 // GetErrorMessage 获取错误消息
-func GetErrorMessage(code int) string {
+func GetErrorMessage(code models.ErrorCode) string {
 	if msg, exists := ErrorMessages[code]; exists {
 		return msg
 	}
@@ -133,6 +135,13 @@ func ValidationError(message string, data any) *CustomError {
 		message = GetErrorMessage(ErrCodeValidationError)
 	}
 	return NewCustomError(ErrCodeValidationError, message, data)
+}
+
+func BusinessError(message string, data any) *CustomError {
+	if message == "" {
+		message = "业务逻辑错误"
+	}
+	return NewCustomError(ErrCodeInternal, message, data)
 }
 
 func UserNotFoundError(data any) *CustomError {

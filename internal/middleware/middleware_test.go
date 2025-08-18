@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"go-backend/shared/models"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -42,10 +43,10 @@ func TestErrorHandlerMiddleware(t *testing.T) {
 		expectedErrMsg string
 	}{
 		{
-			name:           "正常请求",
-			path:           "/normal",
-			expectedCode:   200,
-			expectedError:  false,
+			name:          "正常请求",
+			path:          "/normal",
+			expectedCode:  200,
+			expectedError: false,
 		},
 		{
 			name:           "panic错误",
@@ -96,7 +97,7 @@ func TestCustomErrorTypes(t *testing.T) {
 	tests := []struct {
 		name         string
 		errorFunc    func() *CustomError
-		expectedCode int
+		expectedCode models.ErrorCode
 		expectedMsg  string
 	}{
 		{
@@ -128,11 +129,11 @@ func TestCustomErrorTypes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.errorFunc()
-			
+
 			if err.Code != tt.expectedCode {
 				t.Errorf("Expected code %d, got %d", tt.expectedCode, err.Code)
 			}
-			
+
 			if err.Message != tt.expectedMsg {
 				t.Errorf("Expected message '%s', got '%s'", tt.expectedMsg, err.Message)
 			}
@@ -143,7 +144,7 @@ func TestCustomErrorTypes(t *testing.T) {
 func TestGetHTTPStatusCode(t *testing.T) {
 	tests := []struct {
 		name         string
-		errorCode    int
+		errorCode    models.ErrorCode
 		expectedHTTP int
 	}{
 		{"BadRequest", ErrCodeBadRequest, 400},

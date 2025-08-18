@@ -5,10 +5,11 @@ import (
 	schemaLogging "go-backend/database/ent/logging"
 	"go-backend/pkg/database"
 	"go-backend/pkg/logging"
+	"go-backend/shared/models"
 )
 
 // CreateAsyncLoggingFunc 异步创建日志记录
-func CreateAsyncLoggingFunc(level string, logType string, message string, method, path, ip, query string, code int, user_agent string, data map[string]any, stack string) {
+func CreateAsyncLoggingFunc(level string, logType string, message string, method, path, ip, query string, code models.ErrorCode, user_agent string, data map[string]any, stack string) {
 
 	ctx := context.Background()
 	if database.Client == nil {
@@ -36,7 +37,7 @@ func CreateAsyncLoggingFunc(level string, logType string, message string, method
 			builder.SetQuery(query)
 		}
 		if code > 0 {
-			builder.SetCode(code)
+			builder.SetCode(int(code))
 		}
 		if user_agent != "" {
 			builder.SetUserAgent(user_agent)

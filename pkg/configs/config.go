@@ -15,6 +15,9 @@ type AppConfig struct {
 	Logging  LoggingConfig  `mapstructure:"logging"`
 	Redis    RedisConfig    `mapstructure:"redis"`
 	S3       S3Config       `mapstructure:"s3"`
+	Email    EmailConfig    `mapstructure:"email"`
+	SMS      SMSConfig      `mapstructure:"sms"`
+	JWT      JWTConfig      `mapstructure:"jwt"`
 }
 
 var config *AppConfig
@@ -72,4 +75,13 @@ func setDefaults() {
 
 	// S3默认配置
 	setS3ConfigDefaults()
+
+	// 邮件默认配置
+	setEmailConfigDefaults()
+
+	// 短信默认配置
+	setSMSConfigDefaults()
+
+	// JWT默认配置
+	setJWTConfigDefaults()
 }

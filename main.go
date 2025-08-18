@@ -37,8 +37,11 @@ import (
 	"go-backend/pkg/caching"
 	"go-backend/pkg/configs"
 	pkgdatabase "go-backend/pkg/database"
+	"go-backend/pkg/email"
+	"go-backend/pkg/jwt"
 	"go-backend/pkg/logging"
 	"go-backend/pkg/s3"
+	"go-backend/pkg/sms"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -120,6 +123,12 @@ func main() {
 	// 设置S3包的logger
 	s3.SetLogger(logging.WithName("S3Client"))
 
+	// 设置邮件包的logger
+	email.SetLogger(logging.WithName("EmailClient"))
+
+	// 设置短信包的logger
+	sms.SetLogger(logging.WithName("SMSClient"))
+
 	logging.Info("Config loaded successfully from: %s", resolvedConfigPath)
 	logging.Info("Log level set to: %s", config.Logging.Level)
 
@@ -132,6 +141,9 @@ func main() {
 		dbClient    *database.Client
 		redisClient *redis.Client
 		s3Error     error
+		emailError  error
+		smsError    error
+		jwtError    error
 		engine      *gin.Engine
 	}
 
@@ -152,6 +164,48 @@ func main() {
 			logging.Warn("Failed to initialize S3 client: %v", err)
 		} else {
 			logging.Info("S3 client initialized successfully")
+		}
+	}()
+
+	// 并行初始化邮件客户端
+	initWaitGroup.Add(1)
+	go func() {
+		defer initWaitGroup.Done()
+		if err := email.InitializeClient(&config.Email); err != nil {
+			initMutex.Lock()
+			results.emailError = err
+			initMutex.Unlock()
+			logging.Warn("Failed to initialize email client: %v", err)
+		} else {
+			logging.Info("Email client initialized successfully")
+		}
+	}()
+
+	// 并行初始化短信客户端
+	initWaitGroup.Add(1)
+	go func() {
+		defer initWaitGroup.Done()
+		if err := sms.InitializeClient(&config.SMS); err != nil {
+			initMutex.Lock()
+			results.smsError = err
+			initMutex.Unlock()
+			logging.Warn("Failed to initialize SMS client: %v", err)
+		} else {
+			logging.Info("SMS client initialized successfully")
+		}
+	}()
+
+	// 并行初始化JWT服务
+	initWaitGroup.Add(1)
+	go func() {
+		defer initWaitGroup.Done()
+		if err := jwt.InitializeService(&config.JWT); err != nil {
+			initMutex.Lock()
+			results.jwtError = err
+			initMutex.Unlock()
+			logging.Warn("Failed to initialize JWT service: %v", err)
+		} else {
+			logging.Info("JWT service initialized successfully")
 		}
 	}()
 

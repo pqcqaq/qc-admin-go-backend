@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>登录验证码</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f4f4f4; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background-color: #ffffff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .header { 
+            text-align: center; 
+            color: #333; 
+            margin-bottom: 30px; 
+        }
+        .code-box { 
+            background-color: #e3f2fd; 
+            border: 2px dashed #007bff; 
+            border-radius: 6px; 
+            padding: 20px; 
+            text-align: center; 
+            margin: 20px 0; 
+        }
+        .code { 
+            font-size: 32px; 
+            font-weight: bold; 
+            color: #007bff; 
+            letter-spacing: 8px; 
+            font-family: 'Courier New', monospace; 
+        }
+        .info { 
+            color: #666; 
+            line-height: 1.6; 
+            margin: 20px 0; 
+        }
+        .warning { 
+            color: #dc3545; 
+            font-size: 14px; 
+            margin-top: 20px; 
+        }
+        .footer { 
+            text-align: center; 
+            color: #999; 
+            font-size: 12px; 
+            margin-top: 30px; 
+            border-top: 1px solid #eee; 
+            padding-top: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 安全登录</h1>
+        </div>
+        <div class="info">
+            <p>您好！</p>
+            <p>您正在尝试登录账户，您的登录验证码如下：</p>
+        </div>
+        <div class="code-box">
+            <div class="code">{{.Code}}</div>
+        </div>
+        <div class="info">
+            <p>验证码有效期为 <strong>15分钟</strong>，请及时完成登录。</p>
+            <p>如果这不是您本人的操作，请立即检查账户安全。</p>
+        </div>
+        <div class="warning">
+            <p>• 请勿将验证码告诉他人</p>
+            <p>• 验证码仅限本次登录使用</p>
+            <p>• 如非本人操作，请立即修改密码</p>
+        </div>
+        <div class="footer">
+            <p>此邮件由系统自动发送，请勿回复</p>
+            <p>如有疑问，请联系客服</p>
+        </div>
+    </div>
+</body>
+</html>

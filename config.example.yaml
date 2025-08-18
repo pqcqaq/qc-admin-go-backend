@@ -71,3 +71,20 @@ s3:
   endpoint: "http://localhost:9000"
   bucket: "your-bucket"
   use_ssl: false
+
+# 邮件配置
+email:
+  smtp_host: "smtp.gmail.com"
+  smtp_port: 587
+  username: "your-email@gmail.com"
+  password: "your-email-password"
+  from_name: "扫描应用"
+  from_email: "your-email@gmail.com"
+
+# 短信配置
+sms:
+  access_key_id: "your-aliyun-access-key-id"
+  access_key_secret: "your-aliyun-access-key-secret"
+  sign_name: "你的短信签名"
+  template_code: "SMS_123456789"
+  endpoint: "dysmsapi.aliyuncs.com"

@@ -1,5 +1,8 @@
 package models
 
+// ErrorCode 自定义错误代码类型
+type ErrorCode int
+
 // ApiResponse 通用API响应结构
 type ApiResponse struct {
 	Data    any    `json:"data,omitempty"`
