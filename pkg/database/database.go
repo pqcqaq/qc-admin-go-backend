@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"go-backend/database/ent"
 	database "go-backend/database/ent"
 	_ "go-backend/database/ent/runtime"
 
@@ -74,8 +73,8 @@ func NewClient(config *configs.DatabaseConfig) (*database.Client, error) {
 
 	var client *database.Client
 	if config.Debug {
-		logging.Info("Database debug mode enabled")
-		client = database.NewClient(database.Driver(drv), ent.Debug())
+		logger.Info("Database debug mode enabled")
+		client = database.NewClient(database.Driver(drv), database.Debug())
 	} else {
 		client = database.NewClient(database.Driver(drv))
 	}
