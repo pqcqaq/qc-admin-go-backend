@@ -63,12 +63,55 @@ services:
     networks:
       - app-network
 
+  postgresql:
+    image: postgres:15-alpine
+    container_name: postgresql-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      # PostgreSQL数据库配置
+      POSTGRES_DB: qc_admin
+      POSTGRES_USER: qc_admin
+      POSTGRES_PASSWORD: qc_admin123
+      # 可选：设置时区
+      TZ: Asia/Shanghai
+      # 关键：禁用DNS反向查询以提高连接速度
+      POSTGRES_HOST_AUTH_METHOD: md5
+    command: >
+      postgres
+      -c log_hostname=off
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=4MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qc_admin -d qc_admin"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - app-network
+
 volumes:
   minio_data:
     driver: local
   minio_config:
     driver: local
   redis_data:
+    driver: local
+  postgresql_data:
     driver: local
 
 networks:

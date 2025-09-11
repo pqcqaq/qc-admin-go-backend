@@ -1,0 +1,111 @@
+# 数据库配置示例文件
+# 这个文件展示了如何配置不同类型的数据库
+
+# =======================
+# SQLite 配置
+# =======================
+# database:
+#   driver: "sqlite3"
+#   dsn: "file:ent.db?cache=shared&_fk=1"
+
+# =======================
+# MySQL 配置
+# =======================
+# database:
+#   driver: "mysql"
+#   dsn: "user:password@tcp(localhost:3306)/database_name?charset=utf8mb4&parseTime=True&loc=Local"
+
+# =======================
+# PostgreSQL 配置
+# =======================
+database:
+  driver: "postgres"
+  dsn: "host=localhost user=qc_admin password=qc_admin123 dbname=qc_admin port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+
+# =======================
+# ClickHouse 配置
+# =======================
+# database:
+#   driver: "clickhouse"
+#   dsn: "tcp://localhost:9000?database=default&username=default&password="
+
+# =======================
+# SQL Server 配置
+# =======================
+# database:
+#   driver: "sqlserver"
+#   dsn: "sqlserver://username:password@localhost:1433?database=database_name"
+
+# =======================
+# Oracle 配置
+# =======================
+# database:
+#   driver: "godror"
+#   dsn: "oracle://username:password@localhost:1521/XE"
+
+# 开发环境配置示例
+server:
+  port: "localhost:8080"
+  mode: "release"  # gin模式: debug, release, test
+  debug: true    # 开发环境启用debug模式，允许所有跨域
+  prefix: "/api"  # API前缀
+  cors:
+    enabled: true
+    allow_all_origins: true  # 开发环境允许所有来源
+    allow_methods:
+      - "GET"
+      - "POST" 
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"
+      - "HEAD"
+      - "PATCH"
+    allow_headers:
+      - "*"  # 开发环境允许所有请求头
+    expose_headers: 
+      - "*"  # 开发环境暴露所有响应头
+    allow_credentials: true
+    max_age: 86400
+
+logging:
+  level: "debug"   # 开发环境使用debug级别
+  prefix: "DEV"    # 开发环境前缀
+
+redis:
+  addr: "localhost:6379"        # Redis服务器地址
+  password: ""                  # Redis密码（如果有的话）
+  db: 0                        # Redis数据库索引
+  pool_size: 10                # 连接池大小
+  min_idle_conns: 5            # 最小空闲连接数
+  read_timeout: 3              # 读超时（秒）
+  write_timeout: 3             # 写超时（秒）
+  idle_timeout: 300            # 空闲超时（秒）
+
+s3:
+  endpoint: "http://localhost:9300"                  # S3端点URL (例如: https://s3.amazonaws.com)
+  region: "us-east-1"          # AWS区域
+  access_key_id: "minioadmin"            # AWS访问密钥ID
+  secret_access_key: "minioadmin123"        # AWS访问密钥
+  session_token: ""            # AWS会话令牌（可选）
+  bucket: "default-bucket"     # 默认存储桶
+  use_ssl: true               # 是否使用HTTPS
+  force_path_style: false     # 是否强制使用路径样式URL
+  disable_ssl: false          # 是否禁用SSL
+  timeout: 30                 # 超时时间（秒）
+  max_retries: 3              # 最大重试次数
+
+email:
+  host: "smtp.example.com"  # SMTP服务器地址
+  port: 587                 # SMTP服务器端口
+  username: "123"              # SMTP用户名
+  password: "123"              # SMTP密码
+
+sms:
+  provider: aliyun
+  aliyun: 
+     access_key_id: "123123"         # 阿里云访问密钥ID
+     access_key_secret: "123123"     # 阿里云访问密钥
+     sign_name: "YourSignName" # 短信签名
+     template_code: "YourTemplateCode" # 短信模板代码
+     region_id: "cn-hangzhou" # 阿里云区域ID
+     endpoint: "dysmsapi.aliyuncs.com" # 阿里云短信API端点
