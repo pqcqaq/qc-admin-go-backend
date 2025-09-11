@@ -198,11 +198,13 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 		}
 
 		userResponses[i] = &models.UserResponse{
-			ID:     utils.Uint64ToString(u.ID),
-			Name:   u.Name,
-			Age:    age,
-			Sex:    string(u.Sex),
-			Status: string(u.Status),
+			ID:         utils.Uint64ToString(u.ID),
+			Name:       u.Name,
+			Age:        age,
+			Sex:        string(u.Sex),
+			Status:     string(u.Status),
+			CreateTime: utils.FormatDateTime(u.CreateTime),
+			UpdateTime: utils.FormatDateTime(u.UpdateTime),
 		}
 	}
 

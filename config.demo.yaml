@@ -101,7 +101,7 @@ email:
   password: "123"              # SMTP密码
 
 sms:
-  provider: aliyun
+  provider: mock
   aliyun: 
      access_key_id: "123123"         # 阿里云访问密钥ID
      access_key_secret: "123123"     # 阿里云访问密钥
