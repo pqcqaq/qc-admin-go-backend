@@ -28,6 +28,8 @@ func (r *Router) SetupRoutes(config *configs.AppConfig, engine *gin.Engine) {
 	engine.Use(middleware.ErrorHandlerMiddleware()) // 处理panic恢复
 	engine.Use(middleware.ErrorHandler())           // 处理gin.Error
 
+	middleware.RegisterConfigMiddlewares(engine)
+
 	// Swagger文档路由
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 

@@ -1,15 +1,20 @@
 package configs
 
-import "github.com/spf13/viper"
+import (
+	"go-backend/pkg/configs/middleware"
+
+	"github.com/spf13/viper"
+)
 
 // ServerConfig 服务器配置
 type ServerConfig struct {
-	Port   string       `mapstructure:"port"`
-	Mode   string       `mapstructure:"mode"`   // gin模式: debug, release, test
-	Static StaticConfig `mapstructure:"static"` // 静态文件服务配置
-	Debug  bool         `mapstructure:"debug"`  // 是否启用调试模式
-	CORS   CORSConfig   `mapstructure:"cors"`   // 跨域配置
-	Prefix string       `mapstructure:"prefix"` // API前缀
+	Port       string                      `mapstructure:"port"`
+	Mode       string                      `mapstructure:"mode"`   // gin模式: debug, release, test
+	Static     StaticConfig                `mapstructure:"static"` // 静态文件服务配置
+	Debug      bool                        `mapstructure:"debug"`  // 是否启用调试模式
+	CORS       CORSConfig                  `mapstructure:"cors"`   // 跨域配置
+	Prefix     string                      `mapstructure:"prefix"` // API前缀
+	Middleware middleware.MiddlewareConfig `mapstructure:"middleware"`
 }
 
 type StaticConfig struct {
@@ -48,4 +53,6 @@ func setServerConfigDefaults() {
 	viper.SetDefault("server.cors.expose_headers", []string{})
 	viper.SetDefault("server.cors.allow_credentials", true)
 	viper.SetDefault("server.cors.max_age", 86400) // 24小时
+
+	middleware.SetMiddlewareConfigDefaults()
 }
