@@ -317,3 +317,35 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 		"data":    userInfo,
 	})
 }
+
+// GetUserMenuTree 获取当前用户的菜单树
+// @Summary      获取当前用户的菜单树
+// @Description  根据当前用户的角色和权限，返回该用户可访问的菜单树形结构
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  object{success=bool,data=[]object}
+// @Failure      401  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /auth/user-menu-tree [get]
+func (h *AuthHandler) GetUserMenuTree(c *gin.Context) {
+	userID, exists := middleware.GetCurrentUserID(c)
+	if !exists {
+		middleware.ThrowError(c, middleware.UnauthorizedError("未找到用户信息", ""))
+		return
+	}
+
+	// 获取用户的菜单树
+	menuTree, err := funcs.GetUserMenuTree(context.Background(), userID)
+	if err != nil {
+		middleware.ThrowError(c, middleware.InternalServerError("获取用户菜单树失败", err.Error()))
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"data":    menuTree,
+	})
+}

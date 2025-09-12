@@ -26,6 +26,7 @@ func (r *Router) setupAuthRoutes(rg *gin.RouterGroup) {
 		{
 			protected.POST("/refresh-token", authHandler.RefreshToken)
 			protected.GET("/user-info", authHandler.GetUserInfo)
+			protected.GET("/user-menu-tree", authHandler.GetUserMenuTree)
 		}
 	}
 }

@@ -59,6 +59,7 @@ func (r *Router) setupRBACRoutes(rg *gin.RouterGroup) {
 		// 用户角色路由
 		userRoleGroup := rbacGroup.Group("/user-roles")
 		{
+			userRoleGroup.GET("", userRoleHandler.GetUserRolesWithPagination)                                        // 分页获取用户角色关联列表
 			userRoleGroup.POST("", userRoleHandler.AssignRole)                                                       // 分配用户角色
 			userRoleGroup.DELETE("/users/:userID/roles/:roleID", userRoleHandler.RevokeRole)                         // 撤销用户角色
 			userRoleGroup.GET("/users/:userID/roles", userRoleHandler.GetUserRoles)                                  // 获取用户的所有角色

@@ -20,6 +20,50 @@ func NewUserRoleHandler() *UserRoleHandler {
 	return &UserRoleHandler{}
 }
 
+// GetUserRolesWithPagination 分页获取用户角色关联列表
+// @Summary      分页获取用户角色关联列表
+// @Description  根据分页参数获取用户角色关联列表
+// @Tags         rbac-user-roles
+// @Accept       json
+// @Produce      json
+// @Param        page     query     int     false  "页码"     default(1)
+// @Param        page_size query    int     false  "每页数量"  default(10)
+// @Param        order    query     string  false  "排序方式"  default(desc)
+// @Param        order_by query     string  false  "排序字段"  default(create_time)
+// @Param        userId   query     string  false  "按用户ID搜索"
+// @Param        roleId   query     string  false  "按角色ID搜索"
+// @Success      200      {object}  object{success=bool,data=[]models.UserRoleResponse,pagination=object}
+// @Failure      400      {object}  object{success=bool,message=string}
+// @Failure      500      {object}  object{success=bool,message=string}
+// @Router       /rbac/user-roles [get]
+func (h *UserRoleHandler) GetUserRolesWithPagination(c *gin.Context) {
+	var req models.GetUserRolesRequest
+
+	// 设置默认值
+	req.Page = 1
+	req.PageSize = 10
+	req.Order = "desc"
+	req.OrderBy = "create_time"
+
+	// 绑定查询参数
+	if err := c.ShouldBindQuery(&req); err != nil {
+		middleware.ThrowError(c, middleware.ValidationError("查询参数格式错误", err.Error()))
+		return
+	}
+
+	result, err := funcs.GetUserRolesWithPagination(context.Background(), &req)
+	if err != nil {
+		middleware.ThrowError(c, middleware.DatabaseError("获取用户角色列表失败", err.Error()))
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success":    true,
+		"data":       result.Data,
+		"pagination": result.Pagination,
+	})
+}
+
 // AssignRole 为用户分配角色
 // @Summary      为用户分配角色
 // @Description  为指定用户分配角色
@@ -31,7 +75,7 @@ func NewUserRoleHandler() *UserRoleHandler {
 // @Failure      400   {object}  object{success=bool,message=string}
 // @Failure      404   {object}  object{success=bool,message=string}
 // @Failure      500   {object}  object{success=bool,message=string}
-// @Router       /rbac/user-roles/assign [post]
+// @Router       /rbac/user-roles [post]
 func (h *UserRoleHandler) AssignRole(c *gin.Context) {
 	var req models.AssignUserRoleRequest
 
@@ -40,12 +84,12 @@ func (h *UserRoleHandler) AssignRole(c *gin.Context) {
 		return
 	}
 
-	if req.UserID == 0 {
+	if req.UserID == "" {
 		middleware.ThrowError(c, middleware.BadRequestError("用户ID不能为空", nil))
 		return
 	}
 
-	if req.RoleID == 0 {
+	if req.RoleID == "" {
 		middleware.ThrowError(c, middleware.BadRequestError("角色ID不能为空", nil))
 		return
 	}

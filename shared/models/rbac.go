@@ -46,8 +46,8 @@ type AssignRolePermissionsRequest struct {
 
 // AssignUserRoleRequest 分配用户角色请求结构
 type AssignUserRoleRequest struct {
-	UserID uint64 `json:"userId" binding:"required"`
-	RoleID uint64 `json:"roleId" binding:"required"`
+	UserID string `json:"userId" binding:"required"`
+	RoleID string `json:"roleId" binding:"required"`
 }
 
 // CreatePermissionRequest 创建权限请求结构
@@ -94,15 +94,15 @@ type PermissionsListResponse struct {
 
 // CreateUserRoleRequest 创建用户角色关联请求结构
 type CreateUserRoleRequest struct {
-	UserID uint64 `json:"userId" binding:"required"`
-	RoleID uint64 `json:"roleId" binding:"required"`
+	UserID string `json:"userId" binding:"required"`
+	RoleID string `json:"roleId" binding:"required"`
 }
 
 // UserRoleResponse 用户角色关联响应结构
 type UserRoleResponse struct {
 	ID         string        `json:"id"`
-	UserID     uint64        `json:"userId"`
-	RoleID     uint64        `json:"roleId"`
+	UserID     string        `json:"userId"`
+	RoleID     string        `json:"roleId"`
 	User       *UserResponse `json:"user,omitempty"`
 	Role       *RoleResponse `json:"role,omitempty"`
 	CreateTime string        `json:"createTime"`

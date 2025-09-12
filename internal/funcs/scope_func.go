@@ -268,7 +268,6 @@ func GetScopeTree(ctx context.Context) (*models.ScopeTreeResponse, error) {
 	// 获取所有权限域
 	allScopes, err := database.Client.Scope.Query().
 		WithParent().
-		WithChildren().
 		WithPermissions().
 		Order(ent.Asc(scope.FieldOrder)).
 		All(ctx)
@@ -280,9 +279,9 @@ func GetScopeTree(ctx context.Context) (*models.ScopeTreeResponse, error) {
 	scopeMap := make(map[uint64]*models.ScopeResponse)
 	var rootScopes []*models.ScopeResponse
 
-	// 先创建所有节点
+	// 先创建所有节点（不包含Children，避免重复）
 	for _, s := range allScopes {
-		scopeResp := ConvertScopeToResponse(s)
+		scopeResp := ConvertScopeToResponseForTree(s)
 		scopeMap[s.ID] = scopeResp
 
 		// 如果没有父节点，则为根节点
@@ -301,9 +300,11 @@ func GetScopeTree(ctx context.Context) (*models.ScopeTreeResponse, error) {
 					parent.Children = make([]*models.ScopeResponse, 0)
 				}
 				parent.Children = append(parent.Children, child)
+				// 设置子节点的父节点信息
 				child.Parent = &models.ScopeResponse{
 					ID:   parent.ID,
 					Name: parent.Name,
+					Type: parent.Type,
 				}
 			}
 		}
@@ -362,6 +363,53 @@ func ConvertScopeToResponse(s *ent.Scope) *models.ScopeResponse {
 	}
 
 	// 转换权限（简单信息）
+	if len(s.Edges.Permissions) > 0 {
+		resp.Permissions = make([]*models.PermissionResponse, 0, len(s.Edges.Permissions))
+		for _, permission := range s.Edges.Permissions {
+			resp.Permissions = append(resp.Permissions, &models.PermissionResponse{
+				ID:     utils.Uint64ToString(permission.ID),
+				Name:   permission.Name,
+				Action: permission.Action,
+			})
+		}
+	}
+
+	return resp
+}
+
+// ConvertScopeToResponseForTree 将权限域实体转换为响应格式（专用于树形结构，不包含Children避免重复）
+func ConvertScopeToResponseForTree(s *ent.Scope) *models.ScopeResponse {
+	resp := &models.ScopeResponse{
+		ID:          utils.Uint64ToString(s.ID),
+		Name:        s.Name,
+		Type:        string(s.Type),
+		Icon:        s.Icon,
+		Description: s.Description,
+		Action:      s.Action,
+		Path:        s.Path,
+		Component:   s.Component,
+		Redirect:    s.Redirect,
+		Order:       s.Order,
+		Hidden:      s.Hidden,
+		Disabled:    s.Disabled,
+		CreateTime:  utils.FormatDateTime(s.CreateTime),
+		UpdateTime:  utils.FormatDateTime(s.UpdateTime),
+	}
+
+	if s.ParentID != 0 {
+		resp.ParentId = utils.Uint64ToString(s.ParentID)
+	}
+
+	// 转换父级权限域（简单信息）
+	if s.Edges.Parent != nil {
+		resp.Parent = &models.ScopeResponse{
+			ID:   utils.Uint64ToString(s.Edges.Parent.ID),
+			Name: s.Edges.Parent.Name,
+			Type: string(s.Edges.Parent.Type),
+		}
+	}
+
+	// 只转换权限信息，不包含Children（树形结构中手动构建）
 	if len(s.Edges.Permissions) > 0 {
 		resp.Permissions = make([]*models.PermissionResponse, 0, len(s.Edges.Permissions))
 		for _, permission := range s.Edges.Permissions {

@@ -14,6 +14,7 @@ import (
 	"go-backend/pkg/database"
 	"go-backend/pkg/jwt"
 	"go-backend/pkg/logging"
+	"go-backend/pkg/utils"
 	"go-backend/shared/models"
 
 	"golang.org/x/crypto/argon2"
@@ -326,7 +327,7 @@ func ResetPassword(ctx context.Context, credentialType, identifier, newPassword,
 // BuildUserInfoWithToken 构建包含Token和角色权限的用户信息
 func BuildUserInfoWithToken(ctx context.Context, user *ent.User, includeToken bool) (*models.UserInfo, string, error) {
 	userInfo := &models.UserInfo{
-		ID:         user.ID,
+		ID:         utils.ToString(user.ID),
 		Name:       user.Name,
 		Status:     string(user.Status),
 		CreateTime: user.CreateTime.Format("2006-01-02 15:04:05"),

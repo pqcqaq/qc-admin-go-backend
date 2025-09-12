@@ -20,8 +20,24 @@ import (
 // UserService 用户服务
 
 // GetAllUsers 获取所有用户
-func GetAllUsers(ctx context.Context) ([]*ent.User, error) {
-	return database.Client.User.Query().All(ctx)
+func GetAllUsers(ctx context.Context) ([]*models.UserResponse, error) {
+	list, err := database.Client.User.Query().All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to query users: %w", err)
+	}
+	// 格式转换
+	var res []*models.UserResponse
+	for _, item := range list {
+		res = append(res, &models.UserResponse{
+			ID:     utils.Uint64ToString(item.ID),
+			Name:   item.Name,
+			Age:    &item.Age,
+			Sex:    utils.ToString(item.Sex),
+			Status: utils.ToString(item.Status),
+		})
+	}
+	return res, nil
 }
 
 // GetUserByID 根据ID获取用户
@@ -227,7 +243,7 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 // AssignUserRole 为用户分配角色
 func AssignUserRole(ctx context.Context, req *models.AssignUserRoleRequest) (*ent.UserRole, error) {
 	// 检查用户是否存在
-	exists, err := database.Client.User.Query().Where(user.ID(req.UserID)).Exist(ctx)
+	exists, err := database.Client.User.Query().Where(user.ID(utils.StringToUint64(req.UserID))).Exist(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +252,7 @@ func AssignUserRole(ctx context.Context, req *models.AssignUserRoleRequest) (*en
 	}
 
 	// 检查角色是否存在
-	exists, err = database.Client.Role.Query().Where(role.ID(req.RoleID)).Exist(ctx)
+	exists, err = database.Client.Role.Query().Where(role.ID(utils.StringToUint64(req.RoleID))).Exist(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -247,8 +263,8 @@ func AssignUserRole(ctx context.Context, req *models.AssignUserRoleRequest) (*en
 	// 检查是否已经分配了该角色
 	exists, err = database.Client.UserRole.Query().
 		Where(
-			userrole.UserID(req.UserID),
-			userrole.RoleID(req.RoleID),
+			userrole.UserID(utils.StringToUint64(req.UserID)),
+			userrole.RoleID(utils.StringToUint64(req.RoleID)),
 		).Exist(ctx)
 	if err != nil {
 		return nil, err
@@ -259,8 +275,8 @@ func AssignUserRole(ctx context.Context, req *models.AssignUserRoleRequest) (*en
 
 	// 创建用户角色关联
 	userRole, err := database.Client.UserRole.Create().
-		SetUserID(req.UserID).
-		SetRoleID(req.RoleID).
+		SetUserID(utils.StringToUint64(req.UserID)).
+		SetRoleID(utils.StringToUint64(req.RoleID)).
 		Save(ctx)
 	if err != nil {
 		return nil, err
@@ -426,8 +442,8 @@ func CheckUserPermission(ctx context.Context, userID, permissionID uint64) (bool
 func ConvertUserRoleToResponse(userRole *ent.UserRole) *models.UserRoleResponse {
 	response := &models.UserRoleResponse{
 		ID:         strconv.FormatUint(userRole.ID, 10),
-		UserID:     userRole.UserID,
-		RoleID:     userRole.RoleID,
+		UserID:     utils.ToString(userRole.UserID),
+		RoleID:     utils.ToString(userRole.RoleID),
 		CreateTime: utils.FormatDateTime(userRole.CreateTime),
 		UpdateTime: utils.FormatDateTime(userRole.UpdateTime),
 	}
@@ -445,6 +461,119 @@ func ConvertUserRoleToResponse(userRole *ent.UserRole) *models.UserRoleResponse 
 	return response
 }
 
+// GetUserRolesWithPagination 分页获取用户角色关联列表
+func GetUserRolesWithPagination(ctx context.Context, req *models.GetUserRolesRequest) (*models.UserRolesListResponse, error) {
+	// 设置默认值
+	if req.Page < 1 {
+		req.Page = 1
+	}
+	if req.PageSize < 1 {
+		req.PageSize = 10
+	}
+	if req.PageSize > 100 {
+		req.PageSize = 100
+	}
+	if req.OrderBy == "" {
+		req.OrderBy = "create_time"
+	}
+	if req.Order == "" {
+		req.Order = "desc"
+	}
+
+	// 构建查询条件
+	query := database.Client.UserRole.Query().
+		WithUser().
+		WithRole()
+
+	// 添加搜索条件
+	if req.UserId != "" {
+		userId := utils.StringToUint64(req.UserId)
+		query = query.Where(userrole.UserID(userId))
+	}
+
+	if req.RoleId != "" {
+		roleId := utils.StringToUint64(req.RoleId)
+		query = query.Where(userrole.RoleID(roleId))
+	}
+
+	// 获取总数
+	total, err := query.Count(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to count user roles: %w", err)
+	}
+
+	// 计算分页信息
+	totalPages := int(math.Ceil(float64(total) / float64(req.PageSize)))
+	offset := (req.Page - 1) * req.PageSize
+
+	// 添加排序和分页
+	switch strings.ToLower(req.OrderBy) {
+	case "id":
+		if strings.ToLower(req.Order) == "desc" {
+			query = query.Order(ent.Desc(userrole.FieldID))
+		} else {
+			query = query.Order(ent.Asc(userrole.FieldID))
+		}
+	case "user_id":
+		if strings.ToLower(req.Order) == "desc" {
+			query = query.Order(ent.Desc(userrole.FieldUserID))
+		} else {
+			query = query.Order(ent.Asc(userrole.FieldUserID))
+		}
+	case "role_id":
+		if strings.ToLower(req.Order) == "desc" {
+			query = query.Order(ent.Desc(userrole.FieldRoleID))
+		} else {
+			query = query.Order(ent.Asc(userrole.FieldRoleID))
+		}
+	case "create_time", "created_at":
+		if strings.ToLower(req.Order) == "desc" {
+			query = query.Order(ent.Desc(userrole.FieldCreateTime))
+		} else {
+			query = query.Order(ent.Asc(userrole.FieldCreateTime))
+		}
+	case "update_time", "updated_at":
+		if strings.ToLower(req.Order) == "desc" {
+			query = query.Order(ent.Desc(userrole.FieldUpdateTime))
+		} else {
+			query = query.Order(ent.Asc(userrole.FieldUpdateTime))
+		}
+	default:
+		// 默认按创建时间降序排列
+		query = query.Order(ent.Desc(userrole.FieldCreateTime))
+	}
+
+	// 执行分页查询
+	userRoles, err := query.
+		Offset(offset).
+		Limit(req.PageSize).
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query user roles: %w", err)
+	}
+
+	// 转换为响应格式
+	userRoleResponses := make([]*models.UserRoleResponse, len(userRoles))
+	for i, ur := range userRoles {
+		userRoleResponses[i] = ConvertUserRoleToResponse(ur)
+	}
+
+	// 构建分页信息
+	pagination := models.Pagination{
+		Page:       req.Page,
+		PageSize:   req.PageSize,
+		Total:      int64(total),
+		TotalPages: totalPages,
+		HasNext:    req.Page < totalPages,
+		HasPrev:    req.Page > 1,
+	}
+
+	return &models.UserRolesListResponse{
+		Data:       userRoleResponses,
+		Pagination: pagination,
+	}, nil
+}
+
 // ConvertUserToResponse 将User实体转换为响应格式
 func ConvertUserToResponse(user *ent.User) *models.UserResponse {
 	return &models.UserResponse{
@@ -454,5 +583,154 @@ func ConvertUserToResponse(user *ent.User) *models.UserResponse {
 		Status:     string(user.Status),
 		CreateTime: utils.FormatDateTime(user.CreateTime),
 		UpdateTime: utils.FormatDateTime(user.UpdateTime),
+	}
+}
+
+// GetUserMenuTree 获取用户的菜单树
+func GetUserMenuTree(ctx context.Context, userID uint64) ([]*models.ScopeResponse, error) {
+	// 1. 获取用户的所有角色
+	userRoles, err := database.Client.UserRole.Query().
+		Where(userrole.UserID(userID)).
+		WithRole().
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query user roles: %w", err)
+	}
+
+	// 2. 收集所有角色ID
+	roleIDs := make([]uint64, len(userRoles))
+	for i, ur := range userRoles {
+		roleIDs[i] = ur.RoleID
+	}
+
+	// 如果用户没有角色，返回空树
+	if len(roleIDs) == 0 {
+		return []*models.ScopeResponse{}, nil
+	}
+
+	// 3. 获取这些角色的所有权限（包括继承的权限）
+	var allPermissions []*ent.Permission
+	for _, roleID := range roleIDs {
+		rolePermissions, err := GetRoleInheritedPermissions(ctx, roleID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to query role permissions for role %d: %w", roleID, err)
+		}
+		allPermissions = append(allPermissions, rolePermissions...)
+	}
+
+	// 4. 去重权限并提取scope ID
+	permissionMap := make(map[uint64]*ent.Permission)
+	scopeIDs := make(map[uint64]bool)
+
+	for _, perm := range allPermissions {
+		permissionMap[perm.ID] = perm
+	}
+
+	// 重新查询权限以获取scope信息
+	for permID := range permissionMap {
+		perm, err := database.Client.Permission.Query().
+			Where(permission.ID(permID)).
+			WithScope().
+			Only(ctx)
+		if err != nil {
+			continue // 忽略查询错误的权限
+		}
+		if perm.Edges.Scope != nil {
+			scopeIDs[perm.Edges.Scope.ID] = true
+		}
+	}
+
+	// 5. 获取所有相关的scope，包括父级scope
+	allScopes, err := database.Client.Scope.Query().
+		WithParent().
+		Order(ent.Asc("order")).
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query scopes: %w", err)
+	}
+
+	// 6. 过滤出用户有权限的scope和它们的父级
+	accessibleScopes := make(map[uint64]*ent.Scope)
+
+	// 首先添加用户直接有权限的scope
+	for _, scope := range allScopes {
+		if scopeIDs[scope.ID] {
+			accessibleScopes[scope.ID] = scope
+		}
+	}
+
+	// 然后添加这些scope的所有父级（确保菜单路径完整）
+	for scopeID := range scopeIDs {
+		scope := findScopeByID(allScopes, scopeID)
+		if scope != nil {
+			addParentScopes(scope, allScopes, accessibleScopes)
+		}
+	}
+
+	// 7. 过滤掉隐藏和禁用的scope，但保留按钮类型的权限
+	filteredScopes := make(map[uint64]*ent.Scope)
+	for id, scope := range accessibleScopes {
+		// 只显示启用且非隐藏的菜单和页面，或者是按钮类型
+		if (!scope.Hidden && !scope.Disabled) || scope.Type == "button" {
+			filteredScopes[id] = scope
+		}
+	}
+
+	// 8. 构建树形结构
+	scopeMap := make(map[uint64]*models.ScopeResponse)
+	var rootScopes []*models.ScopeResponse
+
+	// 创建所有节点
+	for _, scope := range filteredScopes {
+		scopeResp := ConvertScopeToResponseForTree(scope)
+		scopeMap[scope.ID] = scopeResp
+
+		// 如果没有父节点或父节点不在可访问列表中，则为根节点
+		if scope.ParentID == 0 || filteredScopes[scope.ParentID] == nil {
+			// 只有非按钮类型才能作为根节点显示
+			if scope.Type != "button" {
+				rootScopes = append(rootScopes, scopeResp)
+			}
+		}
+	}
+
+	// 构建父子关系
+	for _, scope := range filteredScopes {
+		if scope.ParentID != 0 && filteredScopes[scope.ParentID] != nil {
+			parent := scopeMap[scope.ParentID]
+			child := scopeMap[scope.ID]
+			if parent != nil && child != nil {
+				// 只有非按钮类型才添加到树中
+				if scope.Type != "button" {
+					if parent.Children == nil {
+						parent.Children = make([]*models.ScopeResponse, 0)
+					}
+					parent.Children = append(parent.Children, child)
+				}
+			}
+		}
+	}
+
+	return rootScopes, nil
+}
+
+// findScopeByID 根据ID查找scope
+func findScopeByID(scopes []*ent.Scope, id uint64) *ent.Scope {
+	for _, scope := range scopes {
+		if scope.ID == id {
+			return scope
+		}
+	}
+	return nil
+}
+
+// addParentScopes 递归添加父级scope
+func addParentScopes(scope *ent.Scope, allScopes []*ent.Scope, accessibleScopes map[uint64]*ent.Scope) {
+	if scope.ParentID != 0 {
+		parent := findScopeByID(allScopes, scope.ParentID)
+		if parent != nil {
+			accessibleScopes[parent.ID] = parent
+			addParentScopes(parent, allScopes, accessibleScopes)
+		}
 	}
 }

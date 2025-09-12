@@ -72,7 +72,7 @@ type ResetPasswordResponse struct {
 
 // UserInfo 用户信息
 type UserInfo struct {
-	ID          uint64                `json:"id"`
+	ID          string                `json:"id"`
 	Name        string                `json:"name"`
 	Status      string                `json:"status"`
 	CreateTime  string                `json:"createTime"`
