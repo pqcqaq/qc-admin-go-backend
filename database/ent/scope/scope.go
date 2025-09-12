@@ -56,8 +56,8 @@ const (
 	EdgeParent = "parent"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
 	EdgeChildren = "children"
-	// EdgePermissions holds the string denoting the permissions edge name in mutations.
-	EdgePermissions = "permissions"
+	// EdgePermission holds the string denoting the permission edge name in mutations.
+	EdgePermission = "permission"
 	// Table holds the table name of the scope in the database.
 	Table = "sys_scopes"
 	// ParentTable is the table that holds the parent relation/edge.
@@ -68,13 +68,13 @@ const (
 	ChildrenTable = "sys_scopes"
 	// ChildrenColumn is the table column denoting the children relation/edge.
 	ChildrenColumn = "parent_id"
-	// PermissionsTable is the table that holds the permissions relation/edge.
-	PermissionsTable = "sys_permissions"
-	// PermissionsInverseTable is the table name for the Permission entity.
+	// PermissionTable is the table that holds the permission relation/edge.
+	PermissionTable = "sys_scopes"
+	// PermissionInverseTable is the table name for the Permission entity.
 	// It exists in this package in order to avoid circular dependency with the "permission" package.
-	PermissionsInverseTable = "sys_permissions"
-	// PermissionsColumn is the table column denoting the permissions relation/edge.
-	PermissionsColumn = "scope_permissions"
+	PermissionInverseTable = "sys_permissions"
+	// PermissionColumn is the table column denoting the permission relation/edge.
+	PermissionColumn = "permission_scope"
 )
 
 // Columns holds all SQL columns for scope fields.
@@ -100,10 +100,21 @@ var Columns = []string{
 	FieldParentID,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "sys_scopes"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"permission_scope",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -280,17 +291,10 @@ func ByChildren(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByPermissionsCount orders the results by permissions count.
-func ByPermissionsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByPermissionField orders the results by permission field.
+func ByPermissionField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newPermissionsStep(), opts...)
-	}
-}
-
-// ByPermissions orders the results by permissions terms.
-func ByPermissions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newPermissionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newPermissionStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newParentStep() *sqlgraph.Step {
@@ -307,10 +311,10 @@ func newChildrenStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, ChildrenTable, ChildrenColumn),
 	)
 }
-func newPermissionsStep() *sqlgraph.Step {
+func newPermissionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(PermissionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, PermissionsTable, PermissionsColumn),
+		sqlgraph.To(PermissionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, true, PermissionTable, PermissionColumn),
 	)
 }

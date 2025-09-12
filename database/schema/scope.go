@@ -67,7 +67,9 @@ func (Scope) Edges() []ent.Edge {
 			Field("parent_id").
 			Unique(), // parent关系是唯一的
 
-		// 一个 Scope 可以关联多个权限
-		edge.To("permissions", Permission.Type),
+		// 一个 Scope 属于一个权限
+		edge.From("permission", Permission.Type).
+			Ref("scope").
+			Unique(),
 	}
 }

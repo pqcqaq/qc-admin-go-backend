@@ -4,6 +4,7 @@ package ent
 
 import (
 	"fmt"
+	"go-backend/database/ent/permission"
 	"go-backend/database/ent/scope"
 	"strings"
 	"time"
@@ -56,8 +57,9 @@ type Scope struct {
 	ParentID uint64 `json:"parent_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ScopeQuery when eager-loading is set.
-	Edges        ScopeEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges            ScopeEdges `json:"edges"`
+	permission_scope *uint64
+	selectValues     sql.SelectValues
 }
 
 // ScopeEdges holds the relations/edges for other nodes in the graph.
@@ -66,13 +68,12 @@ type ScopeEdges struct {
 	Parent *Scope `json:"parent,omitempty"`
 	// Children holds the value of the children edge.
 	Children []*Scope `json:"children,omitempty"`
-	// Permissions holds the value of the permissions edge.
-	Permissions []*Permission `json:"permissions,omitempty"`
+	// Permission holds the value of the permission edge.
+	Permission *Permission `json:"permission,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes      [3]bool
-	namedChildren    map[string][]*Scope
-	namedPermissions map[string][]*Permission
+	loadedTypes   [3]bool
+	namedChildren map[string][]*Scope
 }
 
 // ParentOrErr returns the Parent value or an error if the edge
@@ -95,13 +96,15 @@ func (e ScopeEdges) ChildrenOrErr() ([]*Scope, error) {
 	return nil, &NotLoadedError{edge: "children"}
 }
 
-// PermissionsOrErr returns the Permissions value or an error if the edge
-// was not loaded in eager-loading.
-func (e ScopeEdges) PermissionsOrErr() ([]*Permission, error) {
-	if e.loadedTypes[2] {
-		return e.Permissions, nil
+// PermissionOrErr returns the Permission value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ScopeEdges) PermissionOrErr() (*Permission, error) {
+	if e.Permission != nil {
+		return e.Permission, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: permission.Label}
 	}
-	return nil, &NotLoadedError{edge: "permissions"}
+	return nil, &NotLoadedError{edge: "permission"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -117,6 +120,8 @@ func (*Scope) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case scope.FieldCreateTime, scope.FieldUpdateTime, scope.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
+		case scope.ForeignKeys[0]: // permission_scope
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -246,6 +251,13 @@ func (_m *Scope) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ParentID = uint64(value.Int64)
 			}
+		case scope.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field permission_scope", values[i])
+			} else if value.Valid {
+				_m.permission_scope = new(uint64)
+				*_m.permission_scope = uint64(value.Int64)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -269,9 +281,9 @@ func (_m *Scope) QueryChildren() *ScopeQuery {
 	return NewScopeClient(_m.config).QueryChildren(_m)
 }
 
-// QueryPermissions queries the "permissions" edge of the Scope entity.
-func (_m *Scope) QueryPermissions() *PermissionQuery {
-	return NewScopeClient(_m.config).QueryPermissions(_m)
+// QueryPermission queries the "permission" edge of the Scope entity.
+func (_m *Scope) QueryPermission() *PermissionQuery {
+	return NewScopeClient(_m.config).QueryPermission(_m)
 }
 
 // Update returns a builder for updating this Scope.
@@ -375,30 +387,6 @@ func (_m *Scope) appendNamedChildren(name string, edges ...*Scope) {
 		_m.Edges.namedChildren[name] = []*Scope{}
 	} else {
 		_m.Edges.namedChildren[name] = append(_m.Edges.namedChildren[name], edges...)
-	}
-}
-
-// NamedPermissions returns the Permissions named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (_m *Scope) NamedPermissions(name string) ([]*Permission, error) {
-	if _m.Edges.namedPermissions == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := _m.Edges.namedPermissions[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (_m *Scope) appendNamedPermissions(name string, edges ...*Permission) {
-	if _m.Edges.namedPermissions == nil {
-		_m.Edges.namedPermissions = make(map[string][]*Permission)
-	}
-	if len(edges) == 0 {
-		_m.Edges.namedPermissions[name] = []*Permission{}
-	} else {
-		_m.Edges.namedPermissions[name] = append(_m.Edges.namedPermissions[name], edges...)
 	}
 }
 

@@ -21,16 +21,16 @@ import (
 // ScopeQuery is the builder for querying Scope entities.
 type ScopeQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []scope.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.Scope
-	withParent           *ScopeQuery
-	withChildren         *ScopeQuery
-	withPermissions      *PermissionQuery
-	modifiers            []func(*sql.Selector)
-	withNamedChildren    map[string]*ScopeQuery
-	withNamedPermissions map[string]*PermissionQuery
+	ctx               *QueryContext
+	order             []scope.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.Scope
+	withParent        *ScopeQuery
+	withChildren      *ScopeQuery
+	withPermission    *PermissionQuery
+	withFKs           bool
+	modifiers         []func(*sql.Selector)
+	withNamedChildren map[string]*ScopeQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -111,8 +111,8 @@ func (_q *ScopeQuery) QueryChildren() *ScopeQuery {
 	return query
 }
 
-// QueryPermissions chains the current query on the "permissions" edge.
-func (_q *ScopeQuery) QueryPermissions() *PermissionQuery {
+// QueryPermission chains the current query on the "permission" edge.
+func (_q *ScopeQuery) QueryPermission() *PermissionQuery {
 	query := (&PermissionClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -125,7 +125,7 @@ func (_q *ScopeQuery) QueryPermissions() *PermissionQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scope.Table, scope.FieldID, selector),
 			sqlgraph.To(permission.Table, permission.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scope.PermissionsTable, scope.PermissionsColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, scope.PermissionTable, scope.PermissionColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -320,14 +320,14 @@ func (_q *ScopeQuery) Clone() *ScopeQuery {
 		return nil
 	}
 	return &ScopeQuery{
-		config:          _q.config,
-		ctx:             _q.ctx.Clone(),
-		order:           append([]scope.OrderOption{}, _q.order...),
-		inters:          append([]Interceptor{}, _q.inters...),
-		predicates:      append([]predicate.Scope{}, _q.predicates...),
-		withParent:      _q.withParent.Clone(),
-		withChildren:    _q.withChildren.Clone(),
-		withPermissions: _q.withPermissions.Clone(),
+		config:         _q.config,
+		ctx:            _q.ctx.Clone(),
+		order:          append([]scope.OrderOption{}, _q.order...),
+		inters:         append([]Interceptor{}, _q.inters...),
+		predicates:     append([]predicate.Scope{}, _q.predicates...),
+		withParent:     _q.withParent.Clone(),
+		withChildren:   _q.withChildren.Clone(),
+		withPermission: _q.withPermission.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -356,14 +356,14 @@ func (_q *ScopeQuery) WithChildren(opts ...func(*ScopeQuery)) *ScopeQuery {
 	return _q
 }
 
-// WithPermissions tells the query-builder to eager-load the nodes that are connected to
-// the "permissions" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ScopeQuery) WithPermissions(opts ...func(*PermissionQuery)) *ScopeQuery {
+// WithPermission tells the query-builder to eager-load the nodes that are connected to
+// the "permission" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ScopeQuery) WithPermission(opts ...func(*PermissionQuery)) *ScopeQuery {
 	query := (&PermissionClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withPermissions = query
+	_q.withPermission = query
 	return _q
 }
 
@@ -444,13 +444,20 @@ func (_q *ScopeQuery) prepareQuery(ctx context.Context) error {
 func (_q *ScopeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Scope, error) {
 	var (
 		nodes       = []*Scope{}
+		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
 			_q.withParent != nil,
 			_q.withChildren != nil,
-			_q.withPermissions != nil,
+			_q.withPermission != nil,
 		}
 	)
+	if _q.withPermission != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, scope.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Scope).scanValues(nil, columns)
 	}
@@ -485,10 +492,9 @@ func (_q *ScopeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Scope,
 			return nil, err
 		}
 	}
-	if query := _q.withPermissions; query != nil {
-		if err := _q.loadPermissions(ctx, query, nodes,
-			func(n *Scope) { n.Edges.Permissions = []*Permission{} },
-			func(n *Scope, e *Permission) { n.Edges.Permissions = append(n.Edges.Permissions, e) }); err != nil {
+	if query := _q.withPermission; query != nil {
+		if err := _q.loadPermission(ctx, query, nodes, nil,
+			func(n *Scope, e *Permission) { n.Edges.Permission = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -496,13 +502,6 @@ func (_q *ScopeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Scope,
 		if err := _q.loadChildren(ctx, query, nodes,
 			func(n *Scope) { n.appendNamedChildren(name) },
 			func(n *Scope, e *Scope) { n.appendNamedChildren(name, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range _q.withNamedPermissions {
-		if err := _q.loadPermissions(ctx, query, nodes,
-			func(n *Scope) { n.appendNamedPermissions(name) },
-			func(n *Scope, e *Permission) { n.appendNamedPermissions(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -548,6 +547,7 @@ func (_q *ScopeQuery) loadChildren(ctx context.Context, query *ScopeQuery, nodes
 			init(nodes[i])
 		}
 	}
+	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(scope.FieldParentID)
 	}
@@ -568,34 +568,35 @@ func (_q *ScopeQuery) loadChildren(ctx context.Context, query *ScopeQuery, nodes
 	}
 	return nil
 }
-func (_q *ScopeQuery) loadPermissions(ctx context.Context, query *PermissionQuery, nodes []*Scope, init func(*Scope), assign func(*Scope, *Permission)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uint64]*Scope)
+func (_q *ScopeQuery) loadPermission(ctx context.Context, query *PermissionQuery, nodes []*Scope, init func(*Scope), assign func(*Scope, *Permission)) error {
+	ids := make([]uint64, 0, len(nodes))
+	nodeids := make(map[uint64][]*Scope)
 	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
+		if nodes[i].permission_scope == nil {
+			continue
 		}
+		fk := *nodes[i].permission_scope
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.withFKs = true
-	query.Where(predicate.Permission(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(scope.PermissionsColumn), fks...))
-	}))
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(permission.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.scope_permissions
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "scope_permissions" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "scope_permissions" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "permission_scope" returned %v`, n.ID)
 		}
-		assign(node, n)
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }
@@ -727,20 +728,6 @@ func (_q *ScopeQuery) WithNamedChildren(name string, opts ...func(*ScopeQuery)) 
 		_q.withNamedChildren = make(map[string]*ScopeQuery)
 	}
 	_q.withNamedChildren[name] = query
-	return _q
-}
-
-// WithNamedPermissions tells the query-builder to eager-load the nodes that are connected to the "permissions"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (_q *ScopeQuery) WithNamedPermissions(name string, opts ...func(*PermissionQuery)) *ScopeQuery {
-	query := (&PermissionClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	if _q.withNamedPermissions == nil {
-		_q.withNamedPermissions = make(map[string]*PermissionQuery)
-	}
-	_q.withNamedPermissions[name] = query
 	return _q
 }
 

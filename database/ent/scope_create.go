@@ -291,19 +291,23 @@ func (_c *ScopeCreate) AddChildren(v ...*Scope) *ScopeCreate {
 	return _c.AddChildIDs(ids...)
 }
 
-// AddPermissionIDs adds the "permissions" edge to the Permission entity by IDs.
-func (_c *ScopeCreate) AddPermissionIDs(ids ...uint64) *ScopeCreate {
-	_c.mutation.AddPermissionIDs(ids...)
+// SetPermissionID sets the "permission" edge to the Permission entity by ID.
+func (_c *ScopeCreate) SetPermissionID(id uint64) *ScopeCreate {
+	_c.mutation.SetPermissionID(id)
 	return _c
 }
 
-// AddPermissions adds the "permissions" edges to the Permission entity.
-func (_c *ScopeCreate) AddPermissions(v ...*Permission) *ScopeCreate {
-	ids := make([]uint64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
+// SetNillablePermissionID sets the "permission" edge to the Permission entity by ID if the given value is not nil.
+func (_c *ScopeCreate) SetNillablePermissionID(id *uint64) *ScopeCreate {
+	if id != nil {
+		_c = _c.SetPermissionID(*id)
 	}
-	return _c.AddPermissionIDs(ids...)
+	return _c
+}
+
+// SetPermission sets the "permission" edge to the Permission entity.
+func (_c *ScopeCreate) SetPermission(v *Permission) *ScopeCreate {
+	return _c.SetPermissionID(v.ID)
 }
 
 // Mutation returns the ScopeMutation object of the builder.
@@ -542,12 +546,12 @@ func (_c *ScopeCreate) createSpec() (*Scope, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.PermissionsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.PermissionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   scope.PermissionsTable,
-			Columns: []string{scope.PermissionsColumn},
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   scope.PermissionTable,
+			Columns: []string{scope.PermissionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUint64),
@@ -556,6 +560,7 @@ func (_c *ScopeCreate) createSpec() (*Scope, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.permission_scope = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

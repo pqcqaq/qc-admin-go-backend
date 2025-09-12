@@ -19,7 +19,7 @@ func GetAllScopes(ctx context.Context) ([]*ent.Scope, error) {
 	return database.Client.Scope.Query().
 		WithParent().
 		WithChildren().
-		WithPermissions().
+		WithPermission().
 		All(ctx)
 }
 
@@ -29,7 +29,7 @@ func GetScopeByID(ctx context.Context, id uint64) (*ent.Scope, error) {
 		Where(scope.ID(id)).
 		WithParent().
 		WithChildren().
-		WithPermissions().
+		WithPermission().
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -76,6 +76,11 @@ func CreateScope(ctx context.Context, req *models.CreateScopeRequest) (*ent.Scop
 	if req.ParentId != "" {
 		parentId := utils.StringToUint64(req.ParentId)
 		builder = builder.SetParentID(parentId)
+	}
+
+	if req.PermissionId != "" {
+		permissionId := utils.StringToUint64(req.PermissionId)
+		builder = builder.SetPermissionID(permissionId)
 	}
 
 	scope, err := builder.Save(ctx)
@@ -139,6 +144,11 @@ func UpdateScope(ctx context.Context, id uint64, req *models.UpdateScopeRequest)
 		builder = builder.SetParentID(parentId)
 	}
 
+	if req.PermissionId != "" {
+		permissionId := utils.StringToUint64(req.PermissionId)
+		builder = builder.SetPermissionID(permissionId)
+	}
+
 	err := builder.Exec(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -152,13 +162,25 @@ func UpdateScope(ctx context.Context, id uint64, req *models.UpdateScopeRequest)
 
 // DeleteScope 删除权限域
 func DeleteScope(ctx context.Context, id uint64) error {
-	err := database.Client.Scope.DeleteOneID(id).Exec(ctx)
+	tx, err := database.Client.Tx(ctx)
 	if err != nil {
+		return err
+	}
+	_, err = tx.Scope.Delete().Where(scope.ParentIDEQ(id)).Exec(ctx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	err = tx.Scope.DeleteOneID(id).Exec(ctx)
+
+	if err != nil {
+		tx.Rollback()
 		if ent.IsNotFound(err) {
 			return fmt.Errorf("scope not found")
 		}
 		return err
 	}
+	tx.Commit()
 	return nil
 }
 
@@ -167,7 +189,7 @@ func GetScopesWithPagination(ctx context.Context, req *models.GetScopesRequest) 
 	query := database.Client.Scope.Query().
 		WithParent().
 		WithChildren().
-		WithPermissions()
+		WithPermission()
 
 	// 添加搜索条件
 	if req.Name != "" {
@@ -268,7 +290,7 @@ func GetScopeTree(ctx context.Context) (*models.ScopeTreeResponse, error) {
 	// 获取所有权限域
 	allScopes, err := database.Client.Scope.Query().
 		WithParent().
-		WithPermissions().
+		WithPermission().
 		Order(ent.Asc(scope.FieldOrder)).
 		All(ctx)
 	if err != nil {
@@ -363,14 +385,22 @@ func ConvertScopeToResponse(s *ent.Scope) *models.ScopeResponse {
 	}
 
 	// 转换权限（简单信息）
-	if len(s.Edges.Permissions) > 0 {
-		resp.Permissions = make([]*models.PermissionResponse, 0, len(s.Edges.Permissions))
-		for _, permission := range s.Edges.Permissions {
-			resp.Permissions = append(resp.Permissions, &models.PermissionResponse{
-				ID:     utils.Uint64ToString(permission.ID),
-				Name:   permission.Name,
-				Action: permission.Action,
-			})
+	// if len(s.Edges.Permission) > 0 {
+	// 	resp.Permissions = make([]*models.PermissionResponse, 0, len(s.Edges.Permissions))
+	// 	for _, permission := range s.Edges.Permissions {
+	// 		resp.Permissions = append(resp.Permissions, &models.PermissionResponse{
+	// 			ID:     utils.Uint64ToString(permission.ID),
+	// 			Name:   permission.Name,
+	// 			Action: permission.Action,
+	// 		})
+	// 	}
+	// }
+	// 现在是一个scope对应一个permission
+	if s.Edges.Permission != nil {
+		resp.Permission = &models.PermissionResponse{
+			ID:     utils.Uint64ToString(s.Edges.Permission.ID),
+			Name:   s.Edges.Permission.Name,
+			Action: s.Edges.Permission.Action,
 		}
 	}
 
@@ -410,14 +440,22 @@ func ConvertScopeToResponseForTree(s *ent.Scope) *models.ScopeResponse {
 	}
 
 	// 只转换权限信息，不包含Children（树形结构中手动构建）
-	if len(s.Edges.Permissions) > 0 {
-		resp.Permissions = make([]*models.PermissionResponse, 0, len(s.Edges.Permissions))
-		for _, permission := range s.Edges.Permissions {
-			resp.Permissions = append(resp.Permissions, &models.PermissionResponse{
-				ID:     utils.Uint64ToString(permission.ID),
-				Name:   permission.Name,
-				Action: permission.Action,
-			})
+	// if len(s.Edges.Permissions) > 0 {
+	// 	resp.Permissions = make([]*models.PermissionResponse, 0, len(s.Edges.Permissions))
+	// 	for _, permission := range s.Edges.Permissions {
+	// 		resp.Permissions = append(resp.Permissions, &models.PermissionResponse{
+	// 			ID:     utils.Uint64ToString(permission.ID),
+	// 			Name:   permission.Name,
+	// 			Action: permission.Action,
+	// 		})
+	// 	}
+	// }
+
+	if s.Edges.Permission != nil {
+		resp.Permission = &models.PermissionResponse{
+			ID:     utils.Uint64ToString(s.Edges.Permission.ID),
+			Name:   s.Edges.Permission.Name,
+			Action: s.Edges.Permission.Action,
 		}
 	}
 

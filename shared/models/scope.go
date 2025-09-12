@@ -2,56 +2,58 @@ package models
 
 // CreateScopeRequest 创建权限域请求结构
 type CreateScopeRequest struct {
-	Name        string `json:"name" binding:"required"`
-	Type        string `json:"type" binding:"required,oneof=menu page button"`
-	Icon        string `json:"icon,omitempty"`
-	Description string `json:"description,omitempty"`
-	Action      string `json:"action,omitempty"`
-	Path        string `json:"path,omitempty"`
-	Component   string `json:"component,omitempty"`
-	Redirect    string `json:"redirect,omitempty"`
-	Order       int    `json:"order"`
-	Hidden      bool   `json:"hidden"`
-	Disabled    bool   `json:"disabled"`
-	ParentId    string `json:"parentId,omitempty"` // 父级ID
+	Name         string `json:"name" binding:"required"`
+	Type         string `json:"type" binding:"required,oneof=menu page button"`
+	Icon         string `json:"icon,omitempty"`
+	Description  string `json:"description,omitempty"`
+	Action       string `json:"action,omitempty"`
+	Path         string `json:"path,omitempty"`
+	Component    string `json:"component,omitempty"`
+	Redirect     string `json:"redirect,omitempty"`
+	Order        int    `json:"order"`
+	Hidden       bool   `json:"hidden"`
+	Disabled     bool   `json:"disabled"`
+	ParentId     string `json:"parentId,omitempty"`     // 父级ID
+	PermissionId string `json:"permissionId,omitempty"` // 关联的权限ID
 }
 
 // UpdateScopeRequest 更新权限域请求结构
 type UpdateScopeRequest struct {
-	Name        string `json:"name,omitempty"`
-	Type        string `json:"type,omitempty"`
-	Icon        string `json:"icon,omitempty"`
-	Description string `json:"description,omitempty"`
-	Action      string `json:"action,omitempty"`
-	Path        string `json:"path,omitempty"`
-	Component   string `json:"component,omitempty"`
-	Redirect    string `json:"redirect,omitempty"`
-	Order       *int   `json:"order,omitempty"`
-	Hidden      *bool  `json:"hidden,omitempty"`
-	Disabled    *bool  `json:"disabled,omitempty"`
-	ParentId    string `json:"parentId,omitempty"` // 父级ID
+	Name         string `json:"name,omitempty"`
+	Type         string `json:"type,omitempty"`
+	Icon         string `json:"icon,omitempty"`
+	Description  string `json:"description,omitempty"`
+	Action       string `json:"action,omitempty"`
+	Path         string `json:"path,omitempty"`
+	Component    string `json:"component,omitempty"`
+	Redirect     string `json:"redirect,omitempty"`
+	Order        *int   `json:"order,omitempty"`
+	Hidden       *bool  `json:"hidden,omitempty"`
+	Disabled     *bool  `json:"disabled,omitempty"`
+	ParentId     string `json:"parentId,omitempty"`     // 父级ID
+	PermissionId string `json:"permissionId,omitempty"` // 关联的权限ID
 }
 
 // ScopeResponse 权限域响应结构
 type ScopeResponse struct {
-	ID          string                `json:"id"`
-	Name        string                `json:"name"`
-	Type        string                `json:"type"`
-	Icon        string                `json:"icon,omitempty"`
-	Description string                `json:"description,omitempty"`
-	Action      string                `json:"action,omitempty"`
-	Path        string                `json:"path,omitempty"`
-	Component   string                `json:"component,omitempty"`
-	Redirect    string                `json:"redirect,omitempty"`
-	Order       int                   `json:"order"`
-	Hidden      bool                  `json:"hidden"`
-	Disabled    bool                  `json:"disabled"`
-	ParentId    string                `json:"parentId,omitempty"`
-	Parent      *ScopeResponse        `json:"parent,omitempty"`      // 父级权限域
-	Children    []*ScopeResponse      `json:"children,omitempty"`    // 子级权限域
-	Permissions []*PermissionResponse `json:"permissions,omitempty"` // 关联的权限
-	CreateTime  string                `json:"createTime"`
-	UpdateTime  string                `json:"updateTime"`
+	ID          string              `json:"id"`
+	Name        string              `json:"name"`
+	Type        string              `json:"type"`
+	Icon        string              `json:"icon,omitempty"`
+	Description string              `json:"description,omitempty"`
+	Action      string              `json:"action,omitempty"`
+	Path        string              `json:"path,omitempty"`
+	Component   string              `json:"component,omitempty"`
+	Redirect    string              `json:"redirect,omitempty"`
+	Order       int                 `json:"order"`
+	Hidden      bool                `json:"hidden"`
+	Disabled    bool                `json:"disabled"`
+	ParentId    string              `json:"parentId,omitempty"`
+	Parent      *ScopeResponse      `json:"parent,omitempty"`     // 父级权限域
+	Children    []*ScopeResponse    `json:"children,omitempty"`   // 子级权限域
+	Permission  *PermissionResponse `json:"permission,omitempty"` // 关联的权限
+	CreateTime  string              `json:"createTime"`
+	UpdateTime  string              `json:"updateTime"`
 }
 
 // GetScopesRequest 获取权限域列表请求结构

@@ -334,8 +334,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"scope",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   permission.ScopeTable,
 			Columns: []string{permission.ScopeColumn},
 			Bidi:    false,
@@ -452,12 +452,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Scope",
 	)
 	graph.MustAddE(
-		"permissions",
+		"permission",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   scope.PermissionsTable,
-			Columns: []string{scope.PermissionsColumn},
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   scope.PermissionTable,
+			Columns: []string{scope.PermissionColumn},
 			Bidi:    false,
 		},
 		"Scope",
@@ -1555,14 +1555,14 @@ func (f *ScopeFilter) WhereHasChildrenWith(preds ...predicate.Scope) {
 	})))
 }
 
-// WhereHasPermissions applies a predicate to check if query has an edge permissions.
-func (f *ScopeFilter) WhereHasPermissions() {
-	f.Where(entql.HasEdge("permissions"))
+// WhereHasPermission applies a predicate to check if query has an edge permission.
+func (f *ScopeFilter) WhereHasPermission() {
+	f.Where(entql.HasEdge("permission"))
 }
 
-// WhereHasPermissionsWith applies a predicate to check if query has an edge permissions with a given conditions (other predicates).
-func (f *ScopeFilter) WhereHasPermissionsWith(preds ...predicate.Permission) {
-	f.Where(entql.HasEdgeWith("permissions", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasPermissionWith applies a predicate to check if query has an edge permission with a given conditions (other predicates).
+func (f *ScopeFilter) WhereHasPermissionWith(preds ...predicate.Permission) {
+	f.Where(entql.HasEdgeWith("permission", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

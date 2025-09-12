@@ -47,12 +47,12 @@ const (
 	// RolePermissionsColumn is the table column denoting the role_permissions relation/edge.
 	RolePermissionsColumn = "permission_id"
 	// ScopeTable is the table that holds the scope relation/edge.
-	ScopeTable = "sys_permissions"
+	ScopeTable = "sys_scopes"
 	// ScopeInverseTable is the table name for the Scope entity.
 	// It exists in this package in order to avoid circular dependency with the "scope" package.
 	ScopeInverseTable = "sys_scopes"
 	// ScopeColumn is the table column denoting the scope relation/edge.
-	ScopeColumn = "scope_permissions"
+	ScopeColumn = "permission_scope"
 )
 
 // Columns holds all SQL columns for permission fields.
@@ -69,21 +69,10 @@ var Columns = []string{
 	FieldDescription,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "sys_permissions"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"scope_permissions",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -194,6 +183,6 @@ func newScopeStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ScopeInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, ScopeTable, ScopeColumn),
+		sqlgraph.Edge(sqlgraph.O2O, false, ScopeTable, ScopeColumn),
 	)
 }

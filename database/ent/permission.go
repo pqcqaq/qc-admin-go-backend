@@ -39,9 +39,8 @@ type Permission struct {
 	Description string `json:"description,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PermissionQuery when eager-loading is set.
-	Edges             PermissionEdges `json:"edges"`
-	scope_permissions *uint64
-	selectValues      sql.SelectValues
+	Edges        PermissionEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // PermissionEdges holds the relations/edges for other nodes in the graph.
@@ -87,8 +86,6 @@ func (*Permission) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case permission.FieldCreateTime, permission.FieldUpdateTime, permission.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
-		case permission.ForeignKeys[0]: // scope_permissions
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -163,13 +160,6 @@ func (_m *Permission) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				_m.Description = value.String
-			}
-		case permission.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field scope_permissions", values[i])
-			} else if value.Valid {
-				_m.scope_permissions = new(uint64)
-				*_m.scope_permissions = uint64(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])

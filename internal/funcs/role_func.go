@@ -8,6 +8,7 @@ import (
 	"go-backend/database/ent"
 	"go-backend/database/ent/role"
 	"go-backend/database/ent/rolepermission"
+	"go-backend/database/ent/userrole"
 	"go-backend/pkg/database"
 	"go-backend/pkg/utils"
 	"go-backend/shared/models"
@@ -117,12 +118,40 @@ func UpdateRole(ctx context.Context, id uint64, req *models.UpdateRoleRequest) (
 
 // DeleteRole 删除角色
 func DeleteRole(ctx context.Context, id uint64) error {
-	err := database.Client.Role.DeleteOneID(id).Exec(ctx)
+	// 删除的时候先删除管理的sys_role_permission和sys_user_role关联
+	tx, err := database.Client.Tx(ctx)
 	if err != nil {
+		return err
+	}
+	_, err = tx.RolePermission.Delete().Where(rolepermission.RoleID(id)).Exec(ctx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	_, err = tx.UserRole.Delete().Where(userrole.RoleID(id)).Exec(ctx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	// 还要删除子角色的继承关系
+	err = tx.Role.Update().Where(role.HasInheritsFromWith(role.ID(id))).RemoveInheritsFromIDs(id).Exec(ctx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	err = tx.Role.DeleteOneID(id).Exec(ctx)
+	if err != nil {
+		tx.Rollback()
 		if ent.IsNotFound(err) {
 			return fmt.Errorf("role not found")
 		}
 		return err
+	}
+
+	// 提交事务，检查提交错误
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %v", err)
 	}
 	return nil
 }

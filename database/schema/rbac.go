@@ -94,9 +94,8 @@ func (Permission) Indexes() []ent.Index {
 func (Permission) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("role_permissions", RolePermission.Type),
-		// 权限属于一个 Scope (菜单/页面/按钮)
-		edge.From("scope", Scope.Type).
-			Ref("permissions").
+		// 权限包含一个 Scope (菜单/页面/按钮)
+		edge.To("scope", Scope.Type).
 			Unique(),
 	}
 }

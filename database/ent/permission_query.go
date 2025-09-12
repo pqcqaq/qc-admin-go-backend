@@ -28,7 +28,6 @@ type PermissionQuery struct {
 	predicates               []predicate.Permission
 	withRolePermissions      *RolePermissionQuery
 	withScope                *ScopeQuery
-	withFKs                  bool
 	modifiers                []func(*sql.Selector)
 	withNamedRolePermissions map[string]*RolePermissionQuery
 	// intermediate query (i.e. traversal path).
@@ -103,7 +102,7 @@ func (_q *PermissionQuery) QueryScope() *ScopeQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(permission.Table, permission.FieldID, selector),
 			sqlgraph.To(scope.Table, scope.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, permission.ScopeTable, permission.ScopeColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, permission.ScopeTable, permission.ScopeColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -410,19 +409,12 @@ func (_q *PermissionQuery) prepareQuery(ctx context.Context) error {
 func (_q *PermissionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Permission, error) {
 	var (
 		nodes       = []*Permission{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withRolePermissions != nil,
 			_q.withScope != nil,
 		}
 	)
-	if _q.withScope != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, permission.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Permission).scanValues(nil, columns)
 	}
@@ -498,34 +490,30 @@ func (_q *PermissionQuery) loadRolePermissions(ctx context.Context, query *RoleP
 	return nil
 }
 func (_q *PermissionQuery) loadScope(ctx context.Context, query *ScopeQuery, nodes []*Permission, init func(*Permission), assign func(*Permission, *Scope)) error {
-	ids := make([]uint64, 0, len(nodes))
-	nodeids := make(map[uint64][]*Permission)
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*Permission)
 	for i := range nodes {
-		if nodes[i].scope_permissions == nil {
-			continue
-		}
-		fk := *nodes[i].scope_permissions
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
 	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(scope.IDIn(ids...))
+	query.withFKs = true
+	query.Where(predicate.Scope(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(permission.ScopeColumn), fks...))
+	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		fk := n.permission_scope
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "permission_scope" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "scope_permissions" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "permission_scope" returned %v for node %v`, *fk, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
+		assign(node, n)
 	}
 	return nil
 }

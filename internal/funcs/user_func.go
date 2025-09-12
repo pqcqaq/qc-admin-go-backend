@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"go-backend/database/ent"
+	"go-backend/database/ent/credential"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/role"
 	"go-backend/database/ent/user"
@@ -100,6 +101,10 @@ func UpdateUser(ctx context.Context, id uint64, req *models.UpdateUserRequest) (
 
 // DeleteUser 删除用户
 func DeleteUser(ctx context.Context, id uint64) error {
+	tx, err := database.Client.Tx(ctx)
+	if err != nil {
+		return err
+	}
 	// 首先检查用户是否存在
 	exists, err := database.Client.User.Query().Where(user.ID(id)).Exist(ctx)
 	if err != nil {
@@ -109,7 +114,32 @@ func DeleteUser(ctx context.Context, id uint64) error {
 		return fmt.Errorf("user with id %d not found", id)
 	}
 
-	return database.Client.User.DeleteOneID(id).Exec(ctx)
+	// 需要先删除userRole关联
+	_, err = tx.UserRole.Delete().Where(userrole.UserID(id)).Exec(ctx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// 然后删除user_credential关联
+	_, err = tx.Credential.Delete().Where(credential.HasUserWith(user.ID(id))).Exec(ctx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.User.DeleteOneID(id).Exec(ctx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// 提交事务，检查提交错误
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %v", err)
+	}
+	return nil
 }
 
 // GetUsersWithPagination 分页获取用户列表
@@ -626,7 +656,7 @@ func GetUserMenuTree(ctx context.Context, userID uint64) ([]*models.ScopeRespons
 		permissionMap[perm.ID] = perm
 	}
 
-	// 重新查询权限以获取scope信息
+	// 获取权限对应的scope信息，现在是Permission->Scope的关系
 	for permID := range permissionMap {
 		perm, err := database.Client.Permission.Query().
 			Where(permission.ID(permID)).
@@ -642,7 +672,6 @@ func GetUserMenuTree(ctx context.Context, userID uint64) ([]*models.ScopeRespons
 
 	// 5. 获取所有相关的scope，包括父级scope
 	allScopes, err := database.Client.Scope.Query().
-		WithParent().
 		Order(ent.Asc("order")).
 		All(ctx)
 	if err != nil {
@@ -701,12 +730,12 @@ func GetUserMenuTree(ctx context.Context, userID uint64) ([]*models.ScopeRespons
 			child := scopeMap[scope.ID]
 			if parent != nil && child != nil {
 				// 只有非按钮类型才添加到树中
-				if scope.Type != "button" {
-					if parent.Children == nil {
-						parent.Children = make([]*models.ScopeResponse, 0)
-					}
-					parent.Children = append(parent.Children, child)
+				// if scope.Type != "button" {
+				if parent.Children == nil {
+					parent.Children = make([]*models.ScopeResponse, 0)
 				}
+				parent.Children = append(parent.Children, child)
+				// }
 			}
 		}
 	}

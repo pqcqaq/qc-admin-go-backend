@@ -234,21 +234,12 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "action", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "scope_permissions", Type: field.TypeUint64, Nullable: true},
 	}
 	// SysPermissionsTable holds the schema information for the "sys_permissions" table.
 	SysPermissionsTable = &schema.Table{
 		Name:       "sys_permissions",
 		Columns:    SysPermissionsColumns,
 		PrimaryKey: []*schema.Column{SysPermissionsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "sys_permissions_sys_scopes_permissions",
-				Columns:    []*schema.Column{SysPermissionsColumns[10]},
-				RefColumns: []*schema.Column{SysScopesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "permission_delete_time",
@@ -426,6 +417,7 @@ var (
 		{Name: "order", Type: field.TypeInt, Default: 0},
 		{Name: "hidden", Type: field.TypeBool, Default: false},
 		{Name: "disabled", Type: field.TypeBool, Default: false},
+		{Name: "permission_scope", Type: field.TypeUint64, Unique: true, Nullable: true},
 		{Name: "parent_id", Type: field.TypeUint64, Nullable: true},
 	}
 	// SysScopesTable holds the schema information for the "sys_scopes" table.
@@ -435,8 +427,14 @@ var (
 		PrimaryKey: []*schema.Column{SysScopesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "sys_scopes_sys_scopes_children",
+				Symbol:     "sys_scopes_sys_permissions_scope",
 				Columns:    []*schema.Column{SysScopesColumns[18]},
+				RefColumns: []*schema.Column{SysPermissionsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "sys_scopes_sys_scopes_children",
+				Columns:    []*schema.Column{SysScopesColumns[19]},
 				RefColumns: []*schema.Column{SysScopesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -455,7 +453,7 @@ var (
 			{
 				Name:    "scope_parent_id_order",
 				Unique:  false,
-				Columns: []*schema.Column{SysScopesColumns[18], SysScopesColumns[15]},
+				Columns: []*schema.Column{SysScopesColumns[19], SysScopesColumns[15]},
 			},
 			{
 				Name:    "scope_type_hidden_disabled",
@@ -465,7 +463,7 @@ var (
 			{
 				Name:    "scope_type_parent_id",
 				Unique:  false,
-				Columns: []*schema.Column{SysScopesColumns[8], SysScopesColumns[18]},
+				Columns: []*schema.Column{SysScopesColumns[8], SysScopesColumns[19]},
 			},
 			{
 				Name:    "scope_name_delete_time",
@@ -657,7 +655,6 @@ func init() {
 	SysCredentialsTable.Annotation = &entsql.Annotation{
 		Table: "sys_credentials",
 	}
-	SysPermissionsTable.ForeignKeys[0].RefTable = SysScopesTable
 	SysPermissionsTable.Annotation = &entsql.Annotation{
 		Table: "sys_permissions",
 	}
@@ -670,7 +667,8 @@ func init() {
 		Table: "sys_role_permission",
 	}
 	ScansTable.ForeignKeys[0].RefTable = SysAttachmentsTable
-	SysScopesTable.ForeignKeys[0].RefTable = SysScopesTable
+	SysScopesTable.ForeignKeys[0].RefTable = SysPermissionsTable
+	SysScopesTable.ForeignKeys[1].RefTable = SysScopesTable
 	SysScopesTable.Annotation = &entsql.Annotation{
 		Table: "sys_scopes",
 	}

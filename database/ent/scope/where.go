@@ -1091,21 +1091,21 @@ func HasChildrenWith(preds ...predicate.Scope) predicate.Scope {
 	})
 }
 
-// HasPermissions applies the HasEdge predicate on the "permissions" edge.
-func HasPermissions() predicate.Scope {
+// HasPermission applies the HasEdge predicate on the "permission" edge.
+func HasPermission() predicate.Scope {
 	return predicate.Scope(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, PermissionsTable, PermissionsColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, PermissionTable, PermissionColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasPermissionsWith applies the HasEdge predicate on the "permissions" edge with a given conditions (other predicates).
-func HasPermissionsWith(preds ...predicate.Permission) predicate.Scope {
+// HasPermissionWith applies the HasEdge predicate on the "permission" edge with a given conditions (other predicates).
+func HasPermissionWith(preds ...predicate.Permission) predicate.Scope {
 	return predicate.Scope(func(s *sql.Selector) {
-		step := newPermissionsStep()
+		step := newPermissionStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

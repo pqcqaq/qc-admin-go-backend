@@ -9394,42 +9394,41 @@ func (m *ScanMutation) ResetEdge(name string) error {
 // ScopeMutation represents an operation that mutates the Scope nodes in the graph.
 type ScopeMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uint64
-	create_time        *time.Time
-	create_by          *uint64
-	addcreate_by       *int64
-	update_time        *time.Time
-	update_by          *uint64
-	addupdate_by       *int64
-	delete_time        *time.Time
-	delete_by          *uint64
-	adddelete_by       *int64
-	name               *string
-	_type              *scope.Type
-	icon               *string
-	description        *string
-	action             *string
-	_path              *string
-	component          *string
-	redirect           *string
-	_order             *int
-	add_order          *int
-	hidden             *bool
-	disabled           *bool
-	clearedFields      map[string]struct{}
-	parent             *uint64
-	clearedparent      bool
-	children           map[uint64]struct{}
-	removedchildren    map[uint64]struct{}
-	clearedchildren    bool
-	permissions        map[uint64]struct{}
-	removedpermissions map[uint64]struct{}
-	clearedpermissions bool
-	done               bool
-	oldValue           func(context.Context) (*Scope, error)
-	predicates         []predicate.Scope
+	op                Op
+	typ               string
+	id                *uint64
+	create_time       *time.Time
+	create_by         *uint64
+	addcreate_by      *int64
+	update_time       *time.Time
+	update_by         *uint64
+	addupdate_by      *int64
+	delete_time       *time.Time
+	delete_by         *uint64
+	adddelete_by      *int64
+	name              *string
+	_type             *scope.Type
+	icon              *string
+	description       *string
+	action            *string
+	_path             *string
+	component         *string
+	redirect          *string
+	_order            *int
+	add_order         *int
+	hidden            *bool
+	disabled          *bool
+	clearedFields     map[string]struct{}
+	parent            *uint64
+	clearedparent     bool
+	children          map[uint64]struct{}
+	removedchildren   map[uint64]struct{}
+	clearedchildren   bool
+	permission        *uint64
+	clearedpermission bool
+	done              bool
+	oldValue          func(context.Context) (*Scope, error)
+	predicates        []predicate.Scope
 }
 
 var _ ent.Mutation = (*ScopeMutation)(nil)
@@ -10491,58 +10490,43 @@ func (m *ScopeMutation) ResetChildren() {
 	m.removedchildren = nil
 }
 
-// AddPermissionIDs adds the "permissions" edge to the Permission entity by ids.
-func (m *ScopeMutation) AddPermissionIDs(ids ...uint64) {
-	if m.permissions == nil {
-		m.permissions = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		m.permissions[ids[i]] = struct{}{}
-	}
+// SetPermissionID sets the "permission" edge to the Permission entity by id.
+func (m *ScopeMutation) SetPermissionID(id uint64) {
+	m.permission = &id
 }
 
-// ClearPermissions clears the "permissions" edge to the Permission entity.
-func (m *ScopeMutation) ClearPermissions() {
-	m.clearedpermissions = true
+// ClearPermission clears the "permission" edge to the Permission entity.
+func (m *ScopeMutation) ClearPermission() {
+	m.clearedpermission = true
 }
 
-// PermissionsCleared reports if the "permissions" edge to the Permission entity was cleared.
-func (m *ScopeMutation) PermissionsCleared() bool {
-	return m.clearedpermissions
+// PermissionCleared reports if the "permission" edge to the Permission entity was cleared.
+func (m *ScopeMutation) PermissionCleared() bool {
+	return m.clearedpermission
 }
 
-// RemovePermissionIDs removes the "permissions" edge to the Permission entity by IDs.
-func (m *ScopeMutation) RemovePermissionIDs(ids ...uint64) {
-	if m.removedpermissions == nil {
-		m.removedpermissions = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.permissions, ids[i])
-		m.removedpermissions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedPermissions returns the removed IDs of the "permissions" edge to the Permission entity.
-func (m *ScopeMutation) RemovedPermissionsIDs() (ids []uint64) {
-	for id := range m.removedpermissions {
-		ids = append(ids, id)
+// PermissionID returns the "permission" edge ID in the mutation.
+func (m *ScopeMutation) PermissionID() (id uint64, exists bool) {
+	if m.permission != nil {
+		return *m.permission, true
 	}
 	return
 }
 
-// PermissionsIDs returns the "permissions" edge IDs in the mutation.
-func (m *ScopeMutation) PermissionsIDs() (ids []uint64) {
-	for id := range m.permissions {
-		ids = append(ids, id)
+// PermissionIDs returns the "permission" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PermissionID instead. It exists only for internal usage by the builders.
+func (m *ScopeMutation) PermissionIDs() (ids []uint64) {
+	if id := m.permission; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetPermissions resets all changes to the "permissions" edge.
-func (m *ScopeMutation) ResetPermissions() {
-	m.permissions = nil
-	m.clearedpermissions = false
-	m.removedpermissions = nil
+// ResetPermission resets all changes to the "permission" edge.
+func (m *ScopeMutation) ResetPermission() {
+	m.permission = nil
+	m.clearedpermission = false
 }
 
 // Where appends a list predicates to the ScopeMutation builder.
@@ -11094,8 +11078,8 @@ func (m *ScopeMutation) AddedEdges() []string {
 	if m.children != nil {
 		edges = append(edges, scope.EdgeChildren)
 	}
-	if m.permissions != nil {
-		edges = append(edges, scope.EdgePermissions)
+	if m.permission != nil {
+		edges = append(edges, scope.EdgePermission)
 	}
 	return edges
 }
@@ -11114,12 +11098,10 @@ func (m *ScopeMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case scope.EdgePermissions:
-		ids := make([]ent.Value, 0, len(m.permissions))
-		for id := range m.permissions {
-			ids = append(ids, id)
+	case scope.EdgePermission:
+		if id := m.permission; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -11129,9 +11111,6 @@ func (m *ScopeMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.removedchildren != nil {
 		edges = append(edges, scope.EdgeChildren)
-	}
-	if m.removedpermissions != nil {
-		edges = append(edges, scope.EdgePermissions)
 	}
 	return edges
 }
@@ -11143,12 +11122,6 @@ func (m *ScopeMutation) RemovedIDs(name string) []ent.Value {
 	case scope.EdgeChildren:
 		ids := make([]ent.Value, 0, len(m.removedchildren))
 		for id := range m.removedchildren {
-			ids = append(ids, id)
-		}
-		return ids
-	case scope.EdgePermissions:
-		ids := make([]ent.Value, 0, len(m.removedpermissions))
-		for id := range m.removedpermissions {
 			ids = append(ids, id)
 		}
 		return ids
@@ -11165,8 +11138,8 @@ func (m *ScopeMutation) ClearedEdges() []string {
 	if m.clearedchildren {
 		edges = append(edges, scope.EdgeChildren)
 	}
-	if m.clearedpermissions {
-		edges = append(edges, scope.EdgePermissions)
+	if m.clearedpermission {
+		edges = append(edges, scope.EdgePermission)
 	}
 	return edges
 }
@@ -11179,8 +11152,8 @@ func (m *ScopeMutation) EdgeCleared(name string) bool {
 		return m.clearedparent
 	case scope.EdgeChildren:
 		return m.clearedchildren
-	case scope.EdgePermissions:
-		return m.clearedpermissions
+	case scope.EdgePermission:
+		return m.clearedpermission
 	}
 	return false
 }
@@ -11191,6 +11164,9 @@ func (m *ScopeMutation) ClearEdge(name string) error {
 	switch name {
 	case scope.EdgeParent:
 		m.ClearParent()
+		return nil
+	case scope.EdgePermission:
+		m.ClearPermission()
 		return nil
 	}
 	return fmt.Errorf("unknown Scope unique edge %s", name)
@@ -11206,8 +11182,8 @@ func (m *ScopeMutation) ResetEdge(name string) error {
 	case scope.EdgeChildren:
 		m.ResetChildren()
 		return nil
-	case scope.EdgePermissions:
-		m.ResetPermissions()
+	case scope.EdgePermission:
+		m.ResetPermission()
 		return nil
 	}
 	return fmt.Errorf("unknown Scope edge %s", name)

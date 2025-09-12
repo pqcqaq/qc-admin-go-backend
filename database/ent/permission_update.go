@@ -415,8 +415,8 @@ func (_u *PermissionUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if _u.mutation.ScopeCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   permission.ScopeTable,
 			Columns: []string{permission.ScopeColumn},
 			Bidi:    false,
@@ -428,8 +428,8 @@ func (_u *PermissionUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if nodes := _u.mutation.ScopeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   permission.ScopeTable,
 			Columns: []string{permission.ScopeColumn},
 			Bidi:    false,
@@ -877,8 +877,8 @@ func (_u *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission, 
 	}
 	if _u.mutation.ScopeCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   permission.ScopeTable,
 			Columns: []string{permission.ScopeColumn},
 			Bidi:    false,
@@ -890,8 +890,8 @@ func (_u *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission, 
 	}
 	if nodes := _u.mutation.ScopeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   permission.ScopeTable,
 			Columns: []string{permission.ScopeColumn},
 			Bidi:    false,

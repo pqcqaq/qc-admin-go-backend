@@ -613,7 +613,7 @@ func HasScope() predicate.Permission {
 	return predicate.Permission(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ScopeTable, ScopeColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, ScopeTable, ScopeColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

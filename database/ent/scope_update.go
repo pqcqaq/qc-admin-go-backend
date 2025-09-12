@@ -373,19 +373,23 @@ func (_u *ScopeUpdate) AddChildren(v ...*Scope) *ScopeUpdate {
 	return _u.AddChildIDs(ids...)
 }
 
-// AddPermissionIDs adds the "permissions" edge to the Permission entity by IDs.
-func (_u *ScopeUpdate) AddPermissionIDs(ids ...uint64) *ScopeUpdate {
-	_u.mutation.AddPermissionIDs(ids...)
+// SetPermissionID sets the "permission" edge to the Permission entity by ID.
+func (_u *ScopeUpdate) SetPermissionID(id uint64) *ScopeUpdate {
+	_u.mutation.SetPermissionID(id)
 	return _u
 }
 
-// AddPermissions adds the "permissions" edges to the Permission entity.
-func (_u *ScopeUpdate) AddPermissions(v ...*Permission) *ScopeUpdate {
-	ids := make([]uint64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
+// SetNillablePermissionID sets the "permission" edge to the Permission entity by ID if the given value is not nil.
+func (_u *ScopeUpdate) SetNillablePermissionID(id *uint64) *ScopeUpdate {
+	if id != nil {
+		_u = _u.SetPermissionID(*id)
 	}
-	return _u.AddPermissionIDs(ids...)
+	return _u
+}
+
+// SetPermission sets the "permission" edge to the Permission entity.
+func (_u *ScopeUpdate) SetPermission(v *Permission) *ScopeUpdate {
+	return _u.SetPermissionID(v.ID)
 }
 
 // Mutation returns the ScopeMutation object of the builder.
@@ -420,25 +424,10 @@ func (_u *ScopeUpdate) RemoveChildren(v ...*Scope) *ScopeUpdate {
 	return _u.RemoveChildIDs(ids...)
 }
 
-// ClearPermissions clears all "permissions" edges to the Permission entity.
-func (_u *ScopeUpdate) ClearPermissions() *ScopeUpdate {
-	_u.mutation.ClearPermissions()
+// ClearPermission clears the "permission" edge to the Permission entity.
+func (_u *ScopeUpdate) ClearPermission() *ScopeUpdate {
+	_u.mutation.ClearPermission()
 	return _u
-}
-
-// RemovePermissionIDs removes the "permissions" edge to Permission entities by IDs.
-func (_u *ScopeUpdate) RemovePermissionIDs(ids ...uint64) *ScopeUpdate {
-	_u.mutation.RemovePermissionIDs(ids...)
-	return _u
-}
-
-// RemovePermissions removes "permissions" edges to Permission entities.
-func (_u *ScopeUpdate) RemovePermissions(v ...*Permission) *ScopeUpdate {
-	ids := make([]uint64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemovePermissionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -674,12 +663,12 @@ func (_u *ScopeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.PermissionsCleared() {
+	if _u.mutation.PermissionCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   scope.PermissionsTable,
-			Columns: []string{scope.PermissionsColumn},
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   scope.PermissionTable,
+			Columns: []string{scope.PermissionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUint64),
@@ -687,28 +676,12 @@ func (_u *ScopeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedPermissionsIDs(); len(nodes) > 0 && !_u.mutation.PermissionsCleared() {
+	if nodes := _u.mutation.PermissionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   scope.PermissionsTable,
-			Columns: []string{scope.PermissionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.PermissionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   scope.PermissionsTable,
-			Columns: []string{scope.PermissionsColumn},
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   scope.PermissionTable,
+			Columns: []string{scope.PermissionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUint64),
@@ -1083,19 +1056,23 @@ func (_u *ScopeUpdateOne) AddChildren(v ...*Scope) *ScopeUpdateOne {
 	return _u.AddChildIDs(ids...)
 }
 
-// AddPermissionIDs adds the "permissions" edge to the Permission entity by IDs.
-func (_u *ScopeUpdateOne) AddPermissionIDs(ids ...uint64) *ScopeUpdateOne {
-	_u.mutation.AddPermissionIDs(ids...)
+// SetPermissionID sets the "permission" edge to the Permission entity by ID.
+func (_u *ScopeUpdateOne) SetPermissionID(id uint64) *ScopeUpdateOne {
+	_u.mutation.SetPermissionID(id)
 	return _u
 }
 
-// AddPermissions adds the "permissions" edges to the Permission entity.
-func (_u *ScopeUpdateOne) AddPermissions(v ...*Permission) *ScopeUpdateOne {
-	ids := make([]uint64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
+// SetNillablePermissionID sets the "permission" edge to the Permission entity by ID if the given value is not nil.
+func (_u *ScopeUpdateOne) SetNillablePermissionID(id *uint64) *ScopeUpdateOne {
+	if id != nil {
+		_u = _u.SetPermissionID(*id)
 	}
-	return _u.AddPermissionIDs(ids...)
+	return _u
+}
+
+// SetPermission sets the "permission" edge to the Permission entity.
+func (_u *ScopeUpdateOne) SetPermission(v *Permission) *ScopeUpdateOne {
+	return _u.SetPermissionID(v.ID)
 }
 
 // Mutation returns the ScopeMutation object of the builder.
@@ -1130,25 +1107,10 @@ func (_u *ScopeUpdateOne) RemoveChildren(v ...*Scope) *ScopeUpdateOne {
 	return _u.RemoveChildIDs(ids...)
 }
 
-// ClearPermissions clears all "permissions" edges to the Permission entity.
-func (_u *ScopeUpdateOne) ClearPermissions() *ScopeUpdateOne {
-	_u.mutation.ClearPermissions()
+// ClearPermission clears the "permission" edge to the Permission entity.
+func (_u *ScopeUpdateOne) ClearPermission() *ScopeUpdateOne {
+	_u.mutation.ClearPermission()
 	return _u
-}
-
-// RemovePermissionIDs removes the "permissions" edge to Permission entities by IDs.
-func (_u *ScopeUpdateOne) RemovePermissionIDs(ids ...uint64) *ScopeUpdateOne {
-	_u.mutation.RemovePermissionIDs(ids...)
-	return _u
-}
-
-// RemovePermissions removes "permissions" edges to Permission entities.
-func (_u *ScopeUpdateOne) RemovePermissions(v ...*Permission) *ScopeUpdateOne {
-	ids := make([]uint64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemovePermissionIDs(ids...)
 }
 
 // Where appends a list predicates to the ScopeUpdate builder.
@@ -1414,12 +1376,12 @@ func (_u *ScopeUpdateOne) sqlSave(ctx context.Context) (_node *Scope, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.PermissionsCleared() {
+	if _u.mutation.PermissionCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   scope.PermissionsTable,
-			Columns: []string{scope.PermissionsColumn},
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   scope.PermissionTable,
+			Columns: []string{scope.PermissionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUint64),
@@ -1427,28 +1389,12 @@ func (_u *ScopeUpdateOne) sqlSave(ctx context.Context) (_node *Scope, err error)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedPermissionsIDs(); len(nodes) > 0 && !_u.mutation.PermissionsCleared() {
+	if nodes := _u.mutation.PermissionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   scope.PermissionsTable,
-			Columns: []string{scope.PermissionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.PermissionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   scope.PermissionsTable,
-			Columns: []string{scope.PermissionsColumn},
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   scope.PermissionTable,
+			Columns: []string{scope.PermissionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUint64),

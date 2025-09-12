@@ -843,7 +843,7 @@ func (c *PermissionClient) QueryScope(_m *Permission) *ScopeQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(permission.Table, permission.FieldID, id),
 			sqlgraph.To(scope.Table, scope.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, permission.ScopeTable, permission.ScopeColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, permission.ScopeTable, permission.ScopeColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1535,15 +1535,15 @@ func (c *ScopeClient) QueryChildren(_m *Scope) *ScopeQuery {
 	return query
 }
 
-// QueryPermissions queries the permissions edge of a Scope.
-func (c *ScopeClient) QueryPermissions(_m *Scope) *PermissionQuery {
+// QueryPermission queries the permission edge of a Scope.
+func (c *ScopeClient) QueryPermission(_m *Scope) *PermissionQuery {
 	query := (&PermissionClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scope.Table, scope.FieldID, id),
 			sqlgraph.To(permission.Table, permission.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scope.PermissionsTable, scope.PermissionsColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, scope.PermissionTable, scope.PermissionColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
