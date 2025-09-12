@@ -19,10 +19,6 @@ import (
 // GetAllPermissions 获取所有权限
 func GetAllPermissions(ctx context.Context) ([]*ent.Permission, error) {
 	return database.Client.Permission.Query().
-		WithScope().
-		WithRolePermissions(func(rp *ent.RolePermissionQuery) {
-			rp.WithRole()
-		}).
 		All(ctx)
 }
 

@@ -79,6 +79,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			credential.FieldCredentialType: {Type: field.TypeEnum, Column: credential.FieldCredentialType},
 			credential.FieldIdentifier:     {Type: field.TypeString, Column: credential.FieldIdentifier},
 			credential.FieldSecret:         {Type: field.TypeString, Column: credential.FieldSecret},
+			credential.FieldSalt:           {Type: field.TypeString, Column: credential.FieldSalt},
 			credential.FieldProvider:       {Type: field.TypeString, Column: credential.FieldProvider},
 			credential.FieldIsVerified:     {Type: field.TypeBool, Column: credential.FieldIsVerified},
 			credential.FieldVerifiedAt:     {Type: field.TypeTime, Column: credential.FieldVerifiedAt},
@@ -760,6 +761,11 @@ func (f *CredentialFilter) WhereIdentifier(p entql.StringP) {
 // WhereSecret applies the entql string predicate on the secret field.
 func (f *CredentialFilter) WhereSecret(p entql.StringP) {
 	f.Where(p.Field(credential.FieldSecret))
+}
+
+// WhereSalt applies the entql string predicate on the salt field.
+func (f *CredentialFilter) WhereSalt(p entql.StringP) {
+	f.Where(p.Field(credential.FieldSalt))
 }
 
 // WhereProvider applies the entql string predicate on the provider field.

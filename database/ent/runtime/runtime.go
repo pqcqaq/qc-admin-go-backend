@@ -120,16 +120,20 @@ func init() {
 	credentialDescSecret := credentialFields[3].Descriptor()
 	// credential.SecretValidator is a validator for the "secret" field. It is called by the builders before save.
 	credential.SecretValidator = credentialDescSecret.Validators[0].(func(string) error)
+	// credentialDescSalt is the schema descriptor for salt field.
+	credentialDescSalt := credentialFields[4].Descriptor()
+	// credential.SaltValidator is a validator for the "salt" field. It is called by the builders before save.
+	credential.SaltValidator = credentialDescSalt.Validators[0].(func(string) error)
 	// credentialDescProvider is the schema descriptor for provider field.
-	credentialDescProvider := credentialFields[4].Descriptor()
+	credentialDescProvider := credentialFields[5].Descriptor()
 	// credential.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	credential.ProviderValidator = credentialDescProvider.Validators[0].(func(string) error)
 	// credentialDescIsVerified is the schema descriptor for is_verified field.
-	credentialDescIsVerified := credentialFields[5].Descriptor()
+	credentialDescIsVerified := credentialFields[6].Descriptor()
 	// credential.DefaultIsVerified holds the default value on creation for the is_verified field.
 	credential.DefaultIsVerified = credentialDescIsVerified.Default.(bool)
 	// credentialDescFailedAttempts is the schema descriptor for failed_attempts field.
-	credentialDescFailedAttempts := credentialFields[9].Descriptor()
+	credentialDescFailedAttempts := credentialFields[10].Descriptor()
 	// credential.DefaultFailedAttempts holds the default value on creation for the failed_attempts field.
 	credential.DefaultFailedAttempts = credentialDescFailedAttempts.Default.(int)
 	loggingMixin := schema.Logging{}.Mixin()

@@ -100,6 +100,11 @@ func Secret(v string) predicate.Credential {
 	return predicate.Credential(sql.FieldEQ(FieldSecret, v))
 }
 
+// Salt applies equality check predicate on the "salt" field. It's identical to SaltEQ.
+func Salt(v string) predicate.Credential {
+	return predicate.Credential(sql.FieldEQ(FieldSalt, v))
+}
+
 // Provider applies equality check predicate on the "provider" field. It's identical to ProviderEQ.
 func Provider(v string) predicate.Credential {
 	return predicate.Credential(sql.FieldEQ(FieldProvider, v))
@@ -593,6 +598,81 @@ func SecretEqualFold(v string) predicate.Credential {
 // SecretContainsFold applies the ContainsFold predicate on the "secret" field.
 func SecretContainsFold(v string) predicate.Credential {
 	return predicate.Credential(sql.FieldContainsFold(FieldSecret, v))
+}
+
+// SaltEQ applies the EQ predicate on the "salt" field.
+func SaltEQ(v string) predicate.Credential {
+	return predicate.Credential(sql.FieldEQ(FieldSalt, v))
+}
+
+// SaltNEQ applies the NEQ predicate on the "salt" field.
+func SaltNEQ(v string) predicate.Credential {
+	return predicate.Credential(sql.FieldNEQ(FieldSalt, v))
+}
+
+// SaltIn applies the In predicate on the "salt" field.
+func SaltIn(vs ...string) predicate.Credential {
+	return predicate.Credential(sql.FieldIn(FieldSalt, vs...))
+}
+
+// SaltNotIn applies the NotIn predicate on the "salt" field.
+func SaltNotIn(vs ...string) predicate.Credential {
+	return predicate.Credential(sql.FieldNotIn(FieldSalt, vs...))
+}
+
+// SaltGT applies the GT predicate on the "salt" field.
+func SaltGT(v string) predicate.Credential {
+	return predicate.Credential(sql.FieldGT(FieldSalt, v))
+}
+
+// SaltGTE applies the GTE predicate on the "salt" field.
+func SaltGTE(v string) predicate.Credential {
+	return predicate.Credential(sql.FieldGTE(FieldSalt, v))
+}
+
+// SaltLT applies the LT predicate on the "salt" field.
+func SaltLT(v string) predicate.Credential {
+	return predicate.Credential(sql.FieldLT(FieldSalt, v))
+}
+
+// SaltLTE applies the LTE predicate on the "salt" field.
+func SaltLTE(v string) predicate.Credential {
+	return predicate.Credential(sql.FieldLTE(FieldSalt, v))
+}
+
+// SaltContains applies the Contains predicate on the "salt" field.
+func SaltContains(v string) predicate.Credential {
+	return predicate.Credential(sql.FieldContains(FieldSalt, v))
+}
+
+// SaltHasPrefix applies the HasPrefix predicate on the "salt" field.
+func SaltHasPrefix(v string) predicate.Credential {
+	return predicate.Credential(sql.FieldHasPrefix(FieldSalt, v))
+}
+
+// SaltHasSuffix applies the HasSuffix predicate on the "salt" field.
+func SaltHasSuffix(v string) predicate.Credential {
+	return predicate.Credential(sql.FieldHasSuffix(FieldSalt, v))
+}
+
+// SaltIsNil applies the IsNil predicate on the "salt" field.
+func SaltIsNil() predicate.Credential {
+	return predicate.Credential(sql.FieldIsNull(FieldSalt))
+}
+
+// SaltNotNil applies the NotNil predicate on the "salt" field.
+func SaltNotNil() predicate.Credential {
+	return predicate.Credential(sql.FieldNotNull(FieldSalt))
+}
+
+// SaltEqualFold applies the EqualFold predicate on the "salt" field.
+func SaltEqualFold(v string) predicate.Credential {
+	return predicate.Credential(sql.FieldEqualFold(FieldSalt, v))
+}
+
+// SaltContainsFold applies the ContainsFold predicate on the "salt" field.
+func SaltContainsFold(v string) predicate.Credential {
+	return predicate.Credential(sql.FieldContainsFold(FieldSalt, v))
 }
 
 // ProviderEQ applies the EQ predicate on the "provider" field.

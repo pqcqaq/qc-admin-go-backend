@@ -1773,6 +1773,7 @@ type CredentialMutation struct {
 	credential_type    *credential.CredentialType
 	identifier         *string
 	secret             *string
+	salt               *string
 	provider           *string
 	is_verified        *bool
 	verified_at        *time.Time
@@ -2382,6 +2383,55 @@ func (m *CredentialMutation) ResetSecret() {
 	delete(m.clearedFields, credential.FieldSecret)
 }
 
+// SetSalt sets the "salt" field.
+func (m *CredentialMutation) SetSalt(s string) {
+	m.salt = &s
+}
+
+// Salt returns the value of the "salt" field in the mutation.
+func (m *CredentialMutation) Salt() (r string, exists bool) {
+	v := m.salt
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSalt returns the old "salt" field's value of the Credential entity.
+// If the Credential object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CredentialMutation) OldSalt(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSalt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSalt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSalt: %w", err)
+	}
+	return oldValue.Salt, nil
+}
+
+// ClearSalt clears the value of the "salt" field.
+func (m *CredentialMutation) ClearSalt() {
+	m.salt = nil
+	m.clearedFields[credential.FieldSalt] = struct{}{}
+}
+
+// SaltCleared returns if the "salt" field was cleared in this mutation.
+func (m *CredentialMutation) SaltCleared() bool {
+	_, ok := m.clearedFields[credential.FieldSalt]
+	return ok
+}
+
+// ResetSalt resets all changes to the "salt" field.
+func (m *CredentialMutation) ResetSalt() {
+	m.salt = nil
+	delete(m.clearedFields, credential.FieldSalt)
+}
+
 // SetProvider sets the "provider" field.
 func (m *CredentialMutation) SetProvider(s string) {
 	m.provider = &s
@@ -2829,7 +2879,7 @@ func (m *CredentialMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CredentialMutation) Fields() []string {
-	fields := make([]string, 0, 18)
+	fields := make([]string, 0, 19)
 	if m.create_time != nil {
 		fields = append(fields, credential.FieldCreateTime)
 	}
@@ -2859,6 +2909,9 @@ func (m *CredentialMutation) Fields() []string {
 	}
 	if m.secret != nil {
 		fields = append(fields, credential.FieldSecret)
+	}
+	if m.salt != nil {
+		fields = append(fields, credential.FieldSalt)
 	}
 	if m.provider != nil {
 		fields = append(fields, credential.FieldProvider)
@@ -2912,6 +2965,8 @@ func (m *CredentialMutation) Field(name string) (ent.Value, bool) {
 		return m.Identifier()
 	case credential.FieldSecret:
 		return m.Secret()
+	case credential.FieldSalt:
+		return m.Salt()
 	case credential.FieldProvider:
 		return m.Provider()
 	case credential.FieldIsVerified:
@@ -2957,6 +3012,8 @@ func (m *CredentialMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldIdentifier(ctx)
 	case credential.FieldSecret:
 		return m.OldSecret(ctx)
+	case credential.FieldSalt:
+		return m.OldSalt(ctx)
 	case credential.FieldProvider:
 		return m.OldProvider(ctx)
 	case credential.FieldIsVerified:
@@ -3051,6 +3108,13 @@ func (m *CredentialMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSecret(v)
+		return nil
+	case credential.FieldSalt:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSalt(v)
 		return nil
 	case credential.FieldProvider:
 		v, ok := value.(string)
@@ -3204,6 +3268,9 @@ func (m *CredentialMutation) ClearedFields() []string {
 	if m.FieldCleared(credential.FieldSecret) {
 		fields = append(fields, credential.FieldSecret)
 	}
+	if m.FieldCleared(credential.FieldSalt) {
+		fields = append(fields, credential.FieldSalt)
+	}
 	if m.FieldCleared(credential.FieldProvider) {
 		fields = append(fields, credential.FieldProvider)
 	}
@@ -3250,6 +3317,9 @@ func (m *CredentialMutation) ClearField(name string) error {
 		return nil
 	case credential.FieldSecret:
 		m.ClearSecret()
+		return nil
+	case credential.FieldSalt:
+		m.ClearSalt()
 		return nil
 	case credential.FieldProvider:
 		m.ClearProvider()
@@ -3306,6 +3376,9 @@ func (m *CredentialMutation) ResetField(name string) error {
 		return nil
 	case credential.FieldSecret:
 		m.ResetSecret()
+		return nil
+	case credential.FieldSalt:
+		m.ResetSalt()
 		return nil
 	case credential.FieldProvider:
 		m.ResetProvider()

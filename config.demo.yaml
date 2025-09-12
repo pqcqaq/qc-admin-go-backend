@@ -68,7 +68,7 @@ server:
     max_age: 86400
   middleware:
     delay:
-      enabled: true   # 是否启用延迟中间件
+      enabled: false   # 是否启用延迟中间件
       min: 0s          # 最小延迟时间
       max: 1s          # 最大延迟时间
 

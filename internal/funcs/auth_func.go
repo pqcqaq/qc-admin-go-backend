@@ -46,21 +46,46 @@ const (
 )
 
 // hashPassword 哈希密码
-func hashPassword(password string) (string, error) {
+func hashPassword(password string) (string, string, error) {
 	salt := make([]byte, argonSaltLen)
 	if _, err := rand.Read(salt); err != nil {
-		return "", fmt.Errorf("生成盐值失败: %w", err)
+		return "", "", fmt.Errorf("生成盐值失败: %w", err)
 	}
 
 	hash := argon2.IDKey([]byte(password), salt, argonTime, argonMemory, argonThreads, argonKeyLen)
 
-	// 将盐值和哈希值组合并编码
-	combined := append(salt, hash...)
-	return base64.StdEncoding.EncodeToString(combined), nil
+	// 返回哈希值和盐值
+	saltStr := base64.StdEncoding.EncodeToString(salt)
+	hashStr := base64.StdEncoding.EncodeToString(hash)
+	return hashStr, saltStr, nil
 }
 
 // verifyPassword 验证密码
-func verifyPassword(password, hashedPassword string) (bool, error) {
+func verifyPassword(password, hashedPassword, saltStr string) (bool, error) {
+	// 如果没有盐值，尝试使用旧格式（向后兼容）
+	if saltStr == "" {
+		return verifyPasswordLegacy(password, hashedPassword)
+	}
+
+	// 解码盐值和哈希值
+	salt, err := base64.StdEncoding.DecodeString(saltStr)
+	if err != nil {
+		return false, fmt.Errorf("解码盐值失败: %w", err)
+	}
+
+	hash, err := base64.StdEncoding.DecodeString(hashedPassword)
+	if err != nil {
+		return false, fmt.Errorf("解码哈希值失败: %w", err)
+	}
+
+	// 计算新的哈希值进行比较
+	newHash := argon2.IDKey([]byte(password), salt, argonTime, argonMemory, argonThreads, argonKeyLen)
+
+	return subtle.ConstantTimeCompare(hash, newHash) == 1, nil
+}
+
+// verifyPasswordLegacy 验证旧格式的密码（向后兼容）
+func verifyPasswordLegacy(password, hashedPassword string) (bool, error) {
 	decoded, err := base64.StdEncoding.DecodeString(hashedPassword)
 	if err != nil {
 		return false, fmt.Errorf("解码哈希密码失败: %w", err)
@@ -120,7 +145,7 @@ func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCo
 			return nil, fmt.Errorf("未设置密码")
 		}
 
-		match, err := verifyPassword(secret, credentialRecord.Secret)
+		match, err := verifyPassword(secret, credentialRecord.Secret, credentialRecord.Salt)
 		if err != nil {
 			return nil, fmt.Errorf("密码验证失败: %w", err)
 		}
@@ -225,26 +250,48 @@ func UserRegister(ctx context.Context, credentialType, identifier, secret, verif
 	}
 
 	// 处理密码哈希
-	var hashedSecret string
+	var hashedSecret, saltStr string
 	if secret != "" {
-		hashed, err := hashPassword(secret)
+		hash, salt, err := hashPassword(secret)
 		if err != nil {
 			return nil, fmt.Errorf("密码哈希失败: %w", err)
 		}
-		hashedSecret = hashed
+		hashedSecret = hash
+		saltStr = salt
 	}
 
-	// 创建认证记录
+	// 创建主认证记录（用户注册的认证方式）
 	credBuilder := tx.Credential.Create().
 		SetUserID(userRecord.ID).
 		SetCredentialType(credential.CredentialType(credentialType)).
 		SetIdentifier(identifier).
-		SetSecret(hashedSecret).
 		SetIsVerified(true) // 注册成功即为已验证
+
+	// 如果有盐值，设置盐值字段
+	if saltStr != "" && hashedSecret != "" && credentialType == CredentialTypePassword {
+		credBuilder = credBuilder.SetSecret(hashedSecret)
+		credBuilder = credBuilder.SetSalt(saltStr)
+	}
 
 	_, err = credBuilder.Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("创建认证记录失败: %w", err)
+	}
+
+	// 如果提供了密码且注册方式不是密码注册，创建额外的密码认证记录
+	if secret != "" && credentialType != CredentialTypePassword {
+		_, err = tx.Credential.Create().
+			SetUserID(userRecord.ID).
+			SetCredentialType(credential.CredentialTypePassword).
+			SetIdentifier(username). // 使用用户名作为密码登录的标识符
+			SetSecret(hashedSecret).
+			SetSalt(saltStr).
+			SetIsVerified(true).
+			SetFailedAttempts(0).
+			Save(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("创建密码认证记录失败: %w", err)
+		}
 	}
 
 	// 提交事务
@@ -258,13 +305,18 @@ func UserRegister(ctx context.Context, credentialType, identifier, secret, verif
 
 // ResetPassword 重置密码
 func ResetPassword(ctx context.Context, credentialType, identifier, newPassword, verifyCodeStr, oldPassword string) error {
+	tx, err := database.Client.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("开始事务失败: %w", err)
+	}
+	defer tx.Rollback()
+
 	// 查找用户认证信息
-	credentialRecord, err := database.Client.Credential.Query().
+	credentialRecord, err := tx.Credential.Query().
 		Where(
 			credential.CredentialTypeEQ(credential.CredentialType(credentialType)),
 			credential.Identifier(identifier),
-		).
-		First(ctx)
+		).Only(ctx)
 
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -284,7 +336,7 @@ func ResetPassword(ctx context.Context, credentialType, identifier, newPassword,
 			return fmt.Errorf("未设置密码")
 		}
 
-		match, err := verifyPassword(oldPassword, credentialRecord.Secret)
+		match, err := verifyPassword(oldPassword, credentialRecord.Secret, credentialRecord.Salt)
 		if err != nil {
 			return fmt.Errorf("原密码验证失败: %w", err)
 		}
@@ -305,20 +357,59 @@ func ResetPassword(ctx context.Context, credentialType, identifier, newPassword,
 	}
 
 	// 哈希新密码
-	hashedPassword, err := hashPassword(newPassword)
+	hashedPassword, saltStr, err := hashPassword(newPassword)
 	if err != nil {
 		return fmt.Errorf("新密码哈希失败: %w", err)
 	}
 
-	// 更新密码
-	_, err = credentialRecord.Update().
-		SetSecret(hashedPassword).
-		SetFailedAttempts(0).
-		ClearLockedUntil().
-		Save(ctx)
+	// 查找用户的密码认证记录
+	passwordCredential, err := tx.Credential.Query().
+		Where(
+			credential.UserIDEQ(credentialRecord.UserID),
+			credential.CredentialTypeEQ(credential.CredentialTypePassword),
+		).
+		Only(ctx)
 
 	if err != nil {
-		return fmt.Errorf("更新密码失败: %w", err)
+		if ent.IsNotFound(err) {
+			// 如果不存在密码认证记录，则创建一个新的
+			// identifier是登录用户 的用户名
+			user, err := tx.User.Get(ctx, credentialRecord.UserID)
+			if err != nil {
+				return fmt.Errorf("查询用户信息失败: %w", err)
+			}
+			_, err = tx.Credential.Create().
+				SetUserID(credentialRecord.UserID).
+				SetCredentialType(credential.CredentialTypePassword).
+				SetIdentifier(user.Name).
+				SetSecret(hashedPassword).
+				SetSalt(saltStr).
+				SetIsVerified(true).
+				SetFailedAttempts(0).
+				Save(ctx)
+			if err != nil {
+				return fmt.Errorf("创建密码认证记录失败: %w", err)
+			}
+		} else {
+			return fmt.Errorf("查询密码认证记录失败: %w", err)
+		}
+	} else {
+		// 如果存在密码认证记录，则更新
+		_, err = passwordCredential.Update().
+			SetSecret(hashedPassword).
+			SetSalt(saltStr).
+			SetFailedAttempts(0).
+			ClearLockedUntil().
+			Save(ctx)
+		if err != nil {
+			return fmt.Errorf("更新密码失败: %w", err)
+		}
+	}
+
+	// 提交事务
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("提交事务失败: %w", err)
 	}
 
 	return nil

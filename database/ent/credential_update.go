@@ -198,6 +198,26 @@ func (_u *CredentialUpdate) ClearSecret() *CredentialUpdate {
 	return _u
 }
 
+// SetSalt sets the "salt" field.
+func (_u *CredentialUpdate) SetSalt(v string) *CredentialUpdate {
+	_u.mutation.SetSalt(v)
+	return _u
+}
+
+// SetNillableSalt sets the "salt" field if the given value is not nil.
+func (_u *CredentialUpdate) SetNillableSalt(v *string) *CredentialUpdate {
+	if v != nil {
+		_u.SetSalt(*v)
+	}
+	return _u
+}
+
+// ClearSalt clears the value of the "salt" field.
+func (_u *CredentialUpdate) ClearSalt() *CredentialUpdate {
+	_u.mutation.ClearSalt()
+	return _u
+}
+
 // SetProvider sets the "provider" field.
 func (_u *CredentialUpdate) SetProvider(v string) *CredentialUpdate {
 	_u.mutation.SetProvider(v)
@@ -420,6 +440,11 @@ func (_u *CredentialUpdate) check() error {
 			return &ValidationError{Name: "secret", err: fmt.Errorf(`ent: validator failed for field "Credential.secret": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Salt(); ok {
+		if err := credential.SaltValidator(v); err != nil {
+			return &ValidationError{Name: "salt", err: fmt.Errorf(`ent: validator failed for field "Credential.salt": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Provider(); ok {
 		if err := credential.ProviderValidator(v); err != nil {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "Credential.provider": %w`, err)}
@@ -490,6 +515,12 @@ func (_u *CredentialUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if _u.mutation.SecretCleared() {
 		_spec.ClearField(credential.FieldSecret, field.TypeString)
+	}
+	if value, ok := _u.mutation.Salt(); ok {
+		_spec.SetField(credential.FieldSalt, field.TypeString, value)
+	}
+	if _u.mutation.SaltCleared() {
+		_spec.ClearField(credential.FieldSalt, field.TypeString)
 	}
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(credential.FieldProvider, field.TypeString, value)
@@ -754,6 +785,26 @@ func (_u *CredentialUpdateOne) ClearSecret() *CredentialUpdateOne {
 	return _u
 }
 
+// SetSalt sets the "salt" field.
+func (_u *CredentialUpdateOne) SetSalt(v string) *CredentialUpdateOne {
+	_u.mutation.SetSalt(v)
+	return _u
+}
+
+// SetNillableSalt sets the "salt" field if the given value is not nil.
+func (_u *CredentialUpdateOne) SetNillableSalt(v *string) *CredentialUpdateOne {
+	if v != nil {
+		_u.SetSalt(*v)
+	}
+	return _u
+}
+
+// ClearSalt clears the value of the "salt" field.
+func (_u *CredentialUpdateOne) ClearSalt() *CredentialUpdateOne {
+	_u.mutation.ClearSalt()
+	return _u
+}
+
 // SetProvider sets the "provider" field.
 func (_u *CredentialUpdateOne) SetProvider(v string) *CredentialUpdateOne {
 	_u.mutation.SetProvider(v)
@@ -989,6 +1040,11 @@ func (_u *CredentialUpdateOne) check() error {
 			return &ValidationError{Name: "secret", err: fmt.Errorf(`ent: validator failed for field "Credential.secret": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Salt(); ok {
+		if err := credential.SaltValidator(v); err != nil {
+			return &ValidationError{Name: "salt", err: fmt.Errorf(`ent: validator failed for field "Credential.salt": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Provider(); ok {
 		if err := credential.ProviderValidator(v); err != nil {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "Credential.provider": %w`, err)}
@@ -1076,6 +1132,12 @@ func (_u *CredentialUpdateOne) sqlSave(ctx context.Context) (_node *Credential, 
 	}
 	if _u.mutation.SecretCleared() {
 		_spec.ClearField(credential.FieldSecret, field.TypeString)
+	}
+	if value, ok := _u.mutation.Salt(); ok {
+		_spec.SetField(credential.FieldSalt, field.TypeString, value)
+	}
+	if _u.mutation.SaltCleared() {
+		_spec.ClearField(credential.FieldSalt, field.TypeString)
 	}
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(credential.FieldProvider, field.TypeString, value)

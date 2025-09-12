@@ -46,6 +46,11 @@ func (Credential) Fields() []ent.Field {
 			Optional().
 			Sensitive().
 			Comment("认证密钥(密码hash/token等)"),
+		field.String("salt").
+			MaxLen(100).
+			Optional().
+			Sensitive().
+			Comment("密码盐值"),
 		field.String("provider").
 			MaxLen(50).
 			Optional().

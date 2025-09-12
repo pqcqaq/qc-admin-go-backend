@@ -122,6 +122,7 @@ var (
 		{Name: "credential_type", Type: field.TypeEnum, Enums: []string{"password", "email", "oauth", "phone", "totp"}},
 		{Name: "identifier", Type: field.TypeString, Size: 255},
 		{Name: "secret", Type: field.TypeString, Nullable: true, Size: 500},
+		{Name: "salt", Type: field.TypeString, Nullable: true, Size: 100},
 		{Name: "provider", Type: field.TypeString, Nullable: true, Size: 50},
 		{Name: "is_verified", Type: field.TypeBool, Default: false},
 		{Name: "verified_at", Type: field.TypeTime, Nullable: true},
@@ -140,7 +141,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "sys_credentials_sys_users_credentials",
-				Columns:    []*schema.Column{SysCredentialsColumns[18]},
+				Columns:    []*schema.Column{SysCredentialsColumns[19]},
 				RefColumns: []*schema.Column{SysUsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -159,7 +160,7 @@ var (
 			{
 				Name:    "credential_user_id_credential_type_delete_time",
 				Unique:  false,
-				Columns: []*schema.Column{SysCredentialsColumns[18], SysCredentialsColumns[7], SysCredentialsColumns[5]},
+				Columns: []*schema.Column{SysCredentialsColumns[19], SysCredentialsColumns[7], SysCredentialsColumns[5]},
 			},
 			{
 				Name:    "credential_credential_type_identifier_delete_time",
@@ -169,17 +170,17 @@ var (
 			{
 				Name:    "credential_provider_identifier_delete_time",
 				Unique:  false,
-				Columns: []*schema.Column{SysCredentialsColumns[10], SysCredentialsColumns[8], SysCredentialsColumns[5]},
+				Columns: []*schema.Column{SysCredentialsColumns[11], SysCredentialsColumns[8], SysCredentialsColumns[5]},
 			},
 			{
 				Name:    "credential_is_verified_credential_type_delete_time",
 				Unique:  false,
-				Columns: []*schema.Column{SysCredentialsColumns[11], SysCredentialsColumns[7], SysCredentialsColumns[5]},
+				Columns: []*schema.Column{SysCredentialsColumns[12], SysCredentialsColumns[7], SysCredentialsColumns[5]},
 			},
 			{
 				Name:    "credential_expires_at_delete_time",
 				Unique:  false,
-				Columns: []*schema.Column{SysCredentialsColumns[14], SysCredentialsColumns[5]},
+				Columns: []*schema.Column{SysCredentialsColumns[15], SysCredentialsColumns[5]},
 			},
 		},
 	}

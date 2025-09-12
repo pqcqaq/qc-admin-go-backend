@@ -188,8 +188,14 @@ func GetAttachmentsWithPagination(ctx context.Context, req *models.GetAttachment
 	if req.StorageProvider != "" {
 		query = query.Where(attachment.StorageProviderContains(req.StorageProvider))
 	}
-	if req.Tags != "" {
-		query = query.Where(attachment.Or(attachment.Tag1Contains(req.Tags), attachment.Tag2Contains(req.Tags), attachment.Tag3Contains(req.Tags)))
+	if req.Tag1 != "" {
+		query = query.Where(attachment.Tag1Contains(req.Tag1))
+	}
+	if req.Tag2 != "" {
+		query = query.Where(attachment.Tag2Contains(req.Tag2))
+	}
+	if req.Tag3 != "" {
+		query = query.Where(attachment.Tag3Contains(req.Tag3))
 	}
 
 	// 获取总数

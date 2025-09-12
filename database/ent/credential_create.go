@@ -137,6 +137,20 @@ func (_c *CredentialCreate) SetNillableSecret(v *string) *CredentialCreate {
 	return _c
 }
 
+// SetSalt sets the "salt" field.
+func (_c *CredentialCreate) SetSalt(v string) *CredentialCreate {
+	_c.mutation.SetSalt(v)
+	return _c
+}
+
+// SetNillableSalt sets the "salt" field if the given value is not nil.
+func (_c *CredentialCreate) SetNillableSalt(v *string) *CredentialCreate {
+	if v != nil {
+		_c.SetSalt(*v)
+	}
+	return _c
+}
+
 // SetProvider sets the "provider" field.
 func (_c *CredentialCreate) SetProvider(v string) *CredentialCreate {
 	_c.mutation.SetProvider(v)
@@ -346,6 +360,11 @@ func (_c *CredentialCreate) check() error {
 			return &ValidationError{Name: "secret", err: fmt.Errorf(`ent: validator failed for field "Credential.secret": %w`, err)}
 		}
 	}
+	if v, ok := _c.mutation.Salt(); ok {
+		if err := credential.SaltValidator(v); err != nil {
+			return &ValidationError{Name: "salt", err: fmt.Errorf(`ent: validator failed for field "Credential.salt": %w`, err)}
+		}
+	}
 	if v, ok := _c.mutation.Provider(); ok {
 		if err := credential.ProviderValidator(v); err != nil {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "Credential.provider": %w`, err)}
@@ -427,6 +446,10 @@ func (_c *CredentialCreate) createSpec() (*Credential, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Secret(); ok {
 		_spec.SetField(credential.FieldSecret, field.TypeString, value)
 		_node.Secret = value
+	}
+	if value, ok := _c.mutation.Salt(); ok {
+		_spec.SetField(credential.FieldSalt, field.TypeString, value)
+		_node.Salt = value
 	}
 	if value, ok := _c.mutation.Provider(); ok {
 		_spec.SetField(credential.FieldProvider, field.TypeString, value)

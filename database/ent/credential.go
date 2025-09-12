@@ -40,6 +40,8 @@ type Credential struct {
 	Identifier string `json:"identifier,omitempty"`
 	// 认证密钥(密码hash/token等)
 	Secret string `json:"-"`
+	// 密码盐值
+	Salt string `json:"-"`
 	// OAuth提供商(google/github/wechat等)
 	Provider string `json:"provider,omitempty"`
 	// 是否已验证
@@ -93,7 +95,7 @@ func (*Credential) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case credential.FieldID, credential.FieldCreateBy, credential.FieldUpdateBy, credential.FieldDeleteBy, credential.FieldUserID, credential.FieldFailedAttempts:
 			values[i] = new(sql.NullInt64)
-		case credential.FieldCredentialType, credential.FieldIdentifier, credential.FieldSecret, credential.FieldProvider:
+		case credential.FieldCredentialType, credential.FieldIdentifier, credential.FieldSecret, credential.FieldSalt, credential.FieldProvider:
 			values[i] = new(sql.NullString)
 		case credential.FieldCreateTime, credential.FieldUpdateTime, credential.FieldDeleteTime, credential.FieldVerifiedAt, credential.FieldLastUsedAt, credential.FieldExpiresAt, credential.FieldLockedUntil:
 			values[i] = new(sql.NullTime)
@@ -177,6 +179,12 @@ func (_m *Credential) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field secret", values[i])
 			} else if value.Valid {
 				_m.Secret = value.String
+			}
+		case credential.FieldSalt:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field salt", values[i])
+			} else if value.Valid {
+				_m.Salt = value.String
 			}
 		case credential.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -301,6 +309,8 @@ func (_m *Credential) String() string {
 	builder.WriteString(_m.Identifier)
 	builder.WriteString(", ")
 	builder.WriteString("secret=<sensitive>")
+	builder.WriteString(", ")
+	builder.WriteString("salt=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("provider=")
 	builder.WriteString(_m.Provider)

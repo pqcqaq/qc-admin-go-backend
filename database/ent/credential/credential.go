@@ -36,6 +36,8 @@ const (
 	FieldIdentifier = "identifier"
 	// FieldSecret holds the string denoting the secret field in the database.
 	FieldSecret = "secret"
+	// FieldSalt holds the string denoting the salt field in the database.
+	FieldSalt = "salt"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
 	// FieldIsVerified holds the string denoting the is_verified field in the database.
@@ -78,6 +80,7 @@ var Columns = []string{
 	FieldCredentialType,
 	FieldIdentifier,
 	FieldSecret,
+	FieldSalt,
 	FieldProvider,
 	FieldIsVerified,
 	FieldVerifiedAt,
@@ -116,6 +119,8 @@ var (
 	IdentifierValidator func(string) error
 	// SecretValidator is a validator for the "secret" field. It is called by the builders before save.
 	SecretValidator func(string) error
+	// SaltValidator is a validator for the "salt" field. It is called by the builders before save.
+	SaltValidator func(string) error
 	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	ProviderValidator func(string) error
 	// DefaultIsVerified holds the default value on creation for the "is_verified" field.
@@ -206,6 +211,11 @@ func ByIdentifier(opts ...sql.OrderTermOption) OrderOption {
 // BySecret orders the results by the secret field.
 func BySecret(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSecret, opts...).ToFunc()
+}
+
+// BySalt orders the results by the salt field.
+func BySalt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSalt, opts...).ToFunc()
 }
 
 // ByProvider orders the results by the provider field.
