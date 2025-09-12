@@ -16,6 +16,8 @@ import (
 	"go-backend/pkg/database"
 	"go-backend/pkg/utils"
 	"go-backend/shared/models"
+
+	"entgo.io/ent/dialect/sql"
 )
 
 // UserService 用户服务
@@ -229,6 +231,13 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 	// 执行分页查询
 	users, err := query.
 		Offset(offset).
+		WithUserRoles(func(urq *ent.UserRoleQuery) {
+			// 不多查询其他字段
+			urq.Select(userrole.FieldUserID, userrole.FieldRoleID).
+				WithRole(func(rq *ent.RoleQuery) {
+					rq.Select(role.FieldID, role.FieldName)
+				})
+		}).
 		Limit(req.PageSize).
 		All(ctx)
 	if err != nil {
@@ -243,6 +252,16 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 			age = &u.Age
 		}
 
+		// 提取用户角色名称
+		var roles []string = make([]string, 0)
+		if u.Edges.UserRoles != nil {
+			for _, userRole := range u.Edges.UserRoles {
+				if userRole.Edges.Role != nil {
+					roles = append(roles, userRole.Edges.Role.Name)
+				}
+			}
+		}
+
 		userResponses[i] = &models.UserResponse{
 			ID:         utils.Uint64ToString(u.ID),
 			Name:       u.Name,
@@ -251,6 +270,7 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 			Status:     string(u.Status),
 			CreateTime: utils.FormatDateTime(u.CreateTime),
 			UpdateTime: utils.FormatDateTime(u.UpdateTime),
+			Roles:      roles,
 		}
 	}
 
@@ -384,7 +404,9 @@ func GetRoleUsers(ctx context.Context, roleID uint64) ([]*ent.User, error) {
 
 	// 获取拥有该角色的所有用户
 	users, err := database.Client.User.Query().
-		Where(user.HasUserRolesWith(userrole.RoleID(roleID))).
+		Where(user.HasUserRolesWith(func(s *sql.Selector) {
+			s.Where(sql.EQ("role_id", roleID)).Where(sql.IsNull("delete_time"))
+		})).
 		All(ctx)
 	if err != nil {
 		return nil, err

@@ -631,3 +631,457 @@ func (h *PermissionHandler) DeletePermission(c *gin.Context) {
 		"message": "权限删除成功",
 	})
 }
+
+// === 新增的RBAC管理页面接口 ===
+
+// GetRoleTree 获取角色树形结构
+// @Summary      获取角色树形结构
+// @Description  获取角色的层级树形结构，包含用户统计信息
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  object{success=bool,data=[]models.RoleTreeResponse}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/tree [get]
+func (h *RoleHandler) GetRoleTree(c *gin.Context) {
+	roleTree, err := funcs.GetRoleTree(context.Background())
+	if err != nil {
+		middleware.ThrowError(c, middleware.DatabaseError("获取角色树失败", err.Error()))
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"data":    roleTree,
+	})
+}
+
+// GetRoleWithPermissions 获取角色详细权限信息
+// @Summary      获取角色详细权限信息
+// @Description  获取角色的详细权限信息，区分直接分配和继承的权限
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "角色ID"
+// @Success      200  {object}  object{success=bool,data=models.RoleDetailedPermissionsResponse}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/{id}/permissions/detailed [get]
+func (h *RoleHandler) GetRoleWithPermissions(c *gin.Context) {
+	idStr := c.Param("id")
+
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("角色ID格式无效", map[string]any{
+			"provided_id": idStr,
+		}))
+		return
+	}
+
+	detailedPermissions, err := funcs.GetRoleWithPermissions(context.Background(), id)
+	if err != nil {
+		if err.Error() == "role not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
+				"id": id,
+			}))
+		} else {
+			middleware.ThrowError(c, middleware.DatabaseError("获取角色权限详情失败", err.Error()))
+		}
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"data":    detailedPermissions,
+	})
+}
+
+// CreateChildRole 创建子角色
+// @Summary      创建子角色
+// @Description  在指定父角色下创建子角色，自动建立继承关系
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        parentId  path      int                           true  "父角色ID"
+// @Param        role      body      models.CreateChildRoleRequest true  "子角色信息"
+// @Success      201       {object}  object{success=bool,data=models.RoleResponse,message=string}
+// @Failure      400       {object}  object{success=bool,message=string}
+// @Failure      404       {object}  object{success=bool,message=string}
+// @Failure      500       {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/{parentId}/children [post]
+func (h *RoleHandler) CreateChildRole(c *gin.Context) {
+	parentIDStr := c.Param("id")
+
+	parentID, err := strconv.ParseUint(parentIDStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("父角色ID格式无效", map[string]any{
+			"provided_parent_id": parentIDStr,
+		}))
+		return
+	}
+
+	var req models.CreateChildRoleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+		return
+	}
+
+	if req.Name == "" {
+		middleware.ThrowError(c, middleware.BadRequestError("角色名称不能为空", nil))
+		return
+	}
+
+	role, err := funcs.CreateChildRole(context.Background(), parentID, &req)
+	if err != nil {
+		if err.Error() == "parent role not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("父角色不存在", map[string]any{
+				"parent_id": parentID,
+			}))
+		} else if err.Error() == "role already exists" {
+			middleware.ThrowError(c, middleware.BadRequestError("角色已存在", map[string]any{
+				"name": req.Name,
+			}))
+		} else {
+			middleware.ThrowError(c, middleware.DatabaseError("创建子角色失败", err.Error()))
+		}
+		return
+	}
+
+	c.JSON(201, gin.H{
+		"success": true,
+		"data":    funcs.ConvertRoleToResponse(role),
+		"message": "子角色创建成功",
+	})
+}
+
+// RemoveParentRole 解除父角色依赖
+// @Summary      解除父角色依赖
+// @Description  解除指定角色对某个父角色的继承关系
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        id       path      int  true  "角色ID"
+// @Param        parentId path      int  true  "父角色ID"
+// @Success      200      {object}  object{success=bool,message=string}
+// @Failure      400      {object}  object{success=bool,message=string}
+// @Failure      404      {object}  object{success=bool,message=string}
+// @Failure      500      {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/{id}/parents/{parentId} [delete]
+func (h *RoleHandler) RemoveParentRole(c *gin.Context) {
+	roleIDStr := c.Param("id")
+	parentIDStr := c.Param("parentId")
+
+	roleID, err := strconv.ParseUint(roleIDStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("角色ID格式无效", map[string]any{
+			"provided_role_id": roleIDStr,
+		}))
+		return
+	}
+
+	parentID, err := strconv.ParseUint(parentIDStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("父角色ID格式无效", map[string]any{
+			"provided_parent_id": parentIDStr,
+		}))
+		return
+	}
+
+	err = funcs.RemoveParentRole(context.Background(), roleID, parentID)
+	if err != nil {
+		if err.Error() == "role not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
+				"role_id": roleID,
+			}))
+		} else if err.Error() == "parent role not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("父角色不存在", map[string]any{
+				"parent_id": parentID,
+			}))
+		} else if err.Error() == "inheritance relationship not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("继承关系不存在", map[string]any{
+				"role_id":   roleID,
+				"parent_id": parentID,
+			}))
+		} else {
+			middleware.ThrowError(c, middleware.DatabaseError("解除继承关系失败", err.Error()))
+		}
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"message": "解除继承关系成功",
+	})
+}
+
+// AddParentRole 添加父角色依赖
+// @Summary      添加父角色依赖
+// @Description  为指定角色添加父角色继承关系
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        id       path      int  true  "角色ID"
+// @Param        parentId path      int  true  "父角色ID"
+// @Success      200      {object}  object{success=bool,message=string}
+// @Failure      400      {object}  object{success=bool,message=string}
+// @Failure      404      {object}  object{success=bool,message=string}
+// @Failure      500      {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/{id}/parents/{parentId} [post]
+func (h *RoleHandler) AddParentRole(c *gin.Context) {
+	roleIDStr := c.Param("id")
+	parentIDStr := c.Param("parentId")
+
+	roleID, err := strconv.ParseUint(roleIDStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("角色ID格式无效", map[string]any{
+			"provided_role_id": roleIDStr,
+		}))
+		return
+	}
+
+	parentID, err := strconv.ParseUint(parentIDStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("父角色ID格式无效", map[string]any{
+			"provided_parent_id": parentIDStr,
+		}))
+		return
+	}
+
+	err = funcs.AddParentRole(context.Background(), roleID, parentID)
+	if err != nil {
+		if err.Error() == "role not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
+				"role_id": roleID,
+			}))
+		} else if err.Error() == "parent role not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("父角色不存在", map[string]any{
+				"parent_id": parentID,
+			}))
+		} else if err.Error() == "circular inheritance detected" {
+			middleware.ThrowError(c, middleware.BadRequestError("检测到循环继承", map[string]any{
+				"role_id":   roleID,
+				"parent_id": parentID,
+			}))
+		} else if err.Error() == "inheritance relationship already exists" {
+			middleware.ThrowError(c, middleware.BadRequestError("继承关系已存在", map[string]any{
+				"role_id":   roleID,
+				"parent_id": parentID,
+			}))
+		} else {
+			middleware.ThrowError(c, middleware.DatabaseError("添加继承关系失败", err.Error()))
+		}
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"message": "添加继承关系成功",
+	})
+}
+
+// GetAssignablePermissions 获取可分配的权限
+// @Summary      获取可分配的权限
+// @Description  获取角色可以分配的权限（排除已有的直接权限和继承权限）
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "角色ID"
+// @Success      200  {object}  object{success=bool,data=[]models.PermissionResponse}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/{id}/permissions/assignable [get]
+func (h *RoleHandler) GetAssignablePermissions(c *gin.Context) {
+	idStr := c.Param("id")
+
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("角色ID格式无效", map[string]any{
+			"provided_id": idStr,
+		}))
+		return
+	}
+
+	permissions, err := funcs.GetAssignablePermissions(context.Background(), id)
+	if err != nil {
+		if err.Error() == "role not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
+				"id": id,
+			}))
+		} else {
+			middleware.ThrowError(c, middleware.DatabaseError("获取可分配权限失败", err.Error()))
+		}
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"data":    permissions,
+	})
+}
+
+// GetRoleUsers 获取拥有指定角色的用户（支持分页）
+// @Summary      获取拥有指定角色的用户
+// @Description  获取拥有指定角色的用户列表，支持分页和搜索
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        id        path      int     true   "角色ID"
+// @Param        page      query     int     false  "页码"     default(1)
+// @Param        page_size query     int     false  "每页数量"  default(10)
+// @Param        keyword   query     string  false  "搜索关键字"
+// @Success      200       {object}  object{success=bool,data=[]models.RoleUserResponse,pagination=object}
+// @Failure      400       {object}  object{success=bool,message=string}
+// @Failure      404       {object}  object{success=bool,message=string}
+// @Failure      500       {object}  object{success=bool,message=string}
+// @Router       /rbac/user-roles/roles/{id}/users [get]
+func (h *RoleHandler) GetRoleUsersWithPagination(c *gin.Context) {
+	idStr := c.Param("id")
+
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("角色ID格式无效", map[string]any{
+			"provided_id": idStr,
+		}))
+		return
+	}
+
+	var req models.GetRoleUsersRequest
+
+	// 设置默认值
+	req.Page = 1
+	req.PageSize = 10
+	req.Order = "asc"
+	req.OrderBy = "id"
+
+	// 绑定查询参数
+	if err := c.ShouldBindQuery(&req); err != nil {
+		middleware.ThrowError(c, middleware.ValidationError("查询参数格式错误", err.Error()))
+		return
+	}
+
+	result, err := funcs.GetRoleUsersWithPagination(context.Background(), id, &req)
+	if err != nil {
+		if err.Error() == "role not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
+				"id": id,
+			}))
+		} else {
+			middleware.ThrowError(c, middleware.DatabaseError("获取角色用户列表失败", err.Error()))
+		}
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success":    true,
+		"data":       result.Users,
+		"pagination": result.Pagination,
+	})
+}
+
+// BatchAssignUsersToRole 批量分配用户到角色
+// @Summary      批量分配用户到角色
+// @Description  批量将用户分配到指定角色
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int                                 true  "角色ID"
+// @Param        users body      models.BatchAssignUsersToRoleRequest true  "用户ID列表"
+// @Success      200   {object}  object{success=bool,message=string}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      404   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/{id}/users/batch [post]
+func (h *RoleHandler) BatchAssignUsersToRole(c *gin.Context) {
+	idStr := c.Param("id")
+
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("角色ID格式无效", map[string]any{
+			"provided_id": idStr,
+		}))
+		return
+	}
+
+	var req models.BatchAssignUsersToRoleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+		return
+	}
+
+	if len(req.UserIds) == 0 {
+		middleware.ThrowError(c, middleware.BadRequestError("用户ID列表不能为空", nil))
+		return
+	}
+
+	err = funcs.BatchAssignUsersToRole(context.Background(), id, &req)
+	if err != nil {
+		if err.Error() == "role not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
+				"id": id,
+			}))
+		} else {
+			middleware.ThrowError(c, middleware.DatabaseError("批量分配用户失败", err.Error()))
+		}
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"message": "批量分配用户成功",
+	})
+}
+
+// BatchRemoveUsersFromRole 批量从角色移除用户
+// @Summary      批量从角色移除用户
+// @Description  批量从指定角色移除用户
+// @Tags         rbac-roles
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int                                    true  "角色ID"
+// @Param        users body      models.BatchRemoveUsersFromRoleRequest true  "用户ID列表"
+// @Success      200   {object}  object{success=bool,message=string}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      404   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /rbac/roles/{id}/users/batch [delete]
+func (h *RoleHandler) BatchRemoveUsersFromRole(c *gin.Context) {
+	idStr := c.Param("id")
+
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("角色ID格式无效", map[string]any{
+			"provided_id": idStr,
+		}))
+		return
+	}
+
+	var req models.BatchRemoveUsersFromRoleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+		return
+	}
+
+	if len(req.UserIds) == 0 {
+		middleware.ThrowError(c, middleware.BadRequestError("用户ID列表不能为空", nil))
+		return
+	}
+
+	err = funcs.BatchRemoveUsersFromRole(context.Background(), id, &req)
+	if err != nil {
+		if err.Error() == "role not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
+				"id": id,
+			}))
+		} else {
+			middleware.ThrowError(c, middleware.DatabaseError("批量移除用户失败", err.Error()))
+		}
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"message": "批量移除用户成功",
+	})
+}

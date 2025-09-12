@@ -236,30 +236,51 @@ func GetRolesWithPagination(ctx context.Context, req *models.GetRolesRequest) (*
 	}, nil
 }
 
-// AssignRolePermissions 分配角色权限
+// AssignRolePermissions 分配角色权限（添加新权限，不移除现有权限）
 func AssignRolePermissions(ctx context.Context, roleID uint64, req *models.AssignRolePermissionsRequest) error {
-	// 先删除现有的角色权限关联
-	_, err := database.Client.RolePermission.Delete().
-		Where(rolepermission.RoleID(roleID)).
-		Exec(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to clear existing permissions: %v", err)
+	if len(req.PermissionIds) == 0 {
+		return nil
 	}
 
-	// 创建新的角色权限关联
-	if len(req.PermissionIds) > 0 {
-		bulk := make([]*ent.RolePermissionCreate, 0, len(req.PermissionIds))
-		for _, permissionIdStr := range req.PermissionIds {
-			permissionId := utils.StringToUint64(permissionIdStr)
-			bulk = append(bulk, database.Client.RolePermission.Create().
-				SetRoleID(roleID).
-				SetPermissionID(permissionId))
-		}
+	// 获取当前角色已有的权限ID列表
+	existingPermissions, err := database.Client.RolePermission.Query().
+		Where(rolepermission.RoleID(roleID)).
+		All(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get existing permissions: %v", err)
+	}
 
-		_, err = database.Client.RolePermission.CreateBulk(bulk...).Save(ctx)
-		if err != nil {
-			return fmt.Errorf("failed to assign permissions: %v", err)
+	// 构建已存在的权限ID映射
+	existingPermissionMap := make(map[uint64]bool)
+	for _, rp := range existingPermissions {
+		existingPermissionMap[rp.PermissionID] = true
+	}
+
+	// 过滤出需要新增的权限
+	var newPermissionIds []uint64
+	for _, permissionIdStr := range req.PermissionIds {
+		permissionId := utils.StringToUint64(permissionIdStr)
+		if !existingPermissionMap[permissionId] {
+			newPermissionIds = append(newPermissionIds, permissionId)
 		}
+	}
+
+	// 如果没有新权限需要添加，直接返回
+	if len(newPermissionIds) == 0 {
+		return nil
+	}
+
+	// 批量创建新的角色权限关联
+	bulk := make([]*ent.RolePermissionCreate, 0, len(newPermissionIds))
+	for _, permissionId := range newPermissionIds {
+		bulk = append(bulk, database.Client.RolePermission.Create().
+			SetRoleID(roleID).
+			SetPermissionID(permissionId))
+	}
+
+	_, err = database.Client.RolePermission.CreateBulk(bulk...).Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to assign permissions: %v", err)
 	}
 
 	return nil

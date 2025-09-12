@@ -145,3 +145,101 @@ type RolePermissionsListResponse struct {
 	Data       []*RolePermissionResponse `json:"data"`
 	Pagination Pagination                `json:"pagination"`
 }
+
+// === 新增的RBAC管理页面接口模型 ===
+
+// RoleTreeResponse 角色树响应结构
+type RoleTreeResponse struct {
+	ID           string              `json:"id"`
+	Name         string              `json:"name"`
+	Description  string              `json:"description,omitempty"`
+	UserCount    int                 `json:"userCount"`              // 拥有该角色的用户数量
+	InheritsFrom []*RoleResponse     `json:"inheritsFrom,omitempty"` // 继承的父角色
+	Children     []*RoleTreeResponse `json:"children,omitempty"`     // 子角色
+	CreateTime   string              `json:"createTime"`
+	UpdateTime   string              `json:"updateTime"`
+}
+
+// RoleDetailedPermissionsResponse 角色详细权限响应结构
+type RoleDetailedPermissionsResponse struct {
+	Role                 *RoleResponse           `json:"role"`
+	DirectPermissions    []*PermissionWithSource `json:"directPermissions"`    // 直接分配的权限
+	InheritedPermissions []*PermissionWithSource `json:"inheritedPermissions"` // 继承的权限
+	AllPermissions       []*PermissionResponse   `json:"allPermissions"`       // 所有权限
+}
+
+// PermissionWithSource 权限来源信息
+type PermissionWithSource struct {
+	Permission *PermissionResponse `json:"permission"`
+	Source     string              `json:"source"`     // 来源类型: "直接分配" | "角色继承"
+	SourceRole *RoleResponse       `json:"sourceRole"` // 来源角色
+}
+
+// InheritedPermissionInfo 继承权限信息
+type InheritedPermissionInfo struct {
+	Permission *PermissionResponse `json:"permission"`
+	FromRole   *RoleResponse       `json:"fromRole"` // 来源角色
+}
+
+// CreateChildRoleRequest 创建子角色请求结构
+type CreateChildRoleRequest struct {
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description,omitempty"`
+}
+
+// GetRoleUsersRequest 获取角色用户请求结构
+type GetRoleUsersRequest struct {
+	PaginationRequest
+	Keyword string `form:"keyword" json:"keyword"` // 搜索关键字（用户名）
+}
+
+// RoleUsersResponse 角色用户响应结构
+type RoleUsersResponse struct {
+	Users      []*UserResponse `json:"users"`
+	Pagination Pagination      `json:"pagination"`
+}
+
+// RoleUserResponse 角色用户响应结构
+type RoleUserResponse struct {
+	ID         string          `json:"id"`
+	Name       string          `json:"name"`
+	Nickname   string          `json:"nickname,omitempty"`
+	OtherRoles []*RoleResponse `json:"otherRoles,omitempty"` // 除当前角色外的其他角色
+	CreateTime string          `json:"createTime"`
+	UpdateTime string          `json:"updateTime"`
+}
+
+// RoleUsersListResponse 角色用户列表响应结构
+type RoleUsersListResponse struct {
+	Data       []*RoleUserResponse `json:"data"`
+	Pagination Pagination          `json:"pagination"`
+}
+
+// BatchAssignUsersToRoleRequest 批量分配用户到角色请求结构
+type BatchAssignUsersToRoleRequest struct {
+	UserIds []string `json:"userIds" binding:"required"` // 用户ID列表
+}
+
+// BatchRemoveUsersFromRoleRequest 批量从角色移除用户请求结构
+type BatchRemoveUsersFromRoleRequest struct {
+	UserIds []string `json:"userIds" binding:"required"` // 用户ID列表
+}
+
+// UserWithRolesResponse 带角色信息的用户响应结构
+type UserWithRolesResponse struct {
+	ID         string          `json:"id"`
+	Name       string          `json:"name"`
+	Nickname   string          `json:"nickname,omitempty"`
+	Age        int             `json:"age,omitempty"`
+	Sex        string          `json:"sex,omitempty"`
+	Status     string          `json:"status,omitempty"`
+	Roles      []*RoleResponse `json:"roles,omitempty"` // 用户的所有角色
+	CreateTime string          `json:"createTime"`
+	UpdateTime string          `json:"updateTime"`
+}
+
+// UsersWithRolesListResponse 带角色信息的用户列表响应结构
+type UsersWithRolesListResponse struct {
+	Data       []*UserWithRolesResponse `json:"data"`
+	Pagination Pagination               `json:"pagination"`
+}

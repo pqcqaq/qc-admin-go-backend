@@ -3,8 +3,15 @@ package funcs
 import (
 	"context"
 	"fmt"
+	"math"
+
 	"go-backend/database/ent"
-	"go-backend/database/ent/role"
+	entRole "go-backend/database/ent/role"
+	"go-backend/database/ent/user"
+	"go-backend/database/ent/userrole"
+	"go-backend/pkg/database"
+	"go-backend/pkg/utils"
+	"go-backend/shared/models"
 )
 
 // HasCircularInheritance 检查角色继承是否存在循环引用
@@ -48,7 +55,7 @@ func dfsCheckCircular(ctx context.Context, client *ent.Client, currentID, target
 
 	// 查询当前角色的所有父角色（inherits_from关系）
 	parentRoles, err := client.Role.Query().
-		Where(role.HasInheritedByWith(role.ID(currentID))).
+		Where(entRole.HasInheritedByWith(entRole.ID(currentID))).
 		All(ctx)
 
 	if err != nil {
@@ -95,7 +102,7 @@ func collectAncestors(ctx context.Context, client *ent.Client, roleID uint64, vi
 
 	// 查询当前角色的父角色（inherits_from关系）
 	parentRoles, err := client.Role.Query().
-		Where(role.HasInheritedByWith(role.ID(roleID))).
+		Where(entRole.HasInheritedByWith(entRole.ID(roleID))).
 		All(ctx)
 
 	if err != nil {
@@ -108,6 +115,468 @@ func collectAncestors(ctx context.Context, client *ent.Client, roleID uint64, vi
 		if err := collectAncestors(ctx, client, parentRole.ID, visited, ancestors, depth+1); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// GetRoleTree 获取角色树结构
+func GetRoleTree(ctx context.Context) ([]*models.RoleTreeResponse, error) {
+	// 获取所有角色
+	roles, err := database.Client.Role.Query().
+		WithInheritsFrom().
+		WithInheritedBy().
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query roles: %v", err)
+	}
+
+	// 创建角色映射
+	roleMap := make(map[uint64]*models.RoleTreeResponse)
+	for _, r := range roles {
+		roleMap[r.ID] = &models.RoleTreeResponse{
+			ID:          utils.Uint64ToString(r.ID),
+			Name:        r.Name,
+			Description: r.Description,
+			Children:    []*models.RoleTreeResponse{},
+		}
+	}
+
+	// 构建树结构
+	var rootRoles []*models.RoleTreeResponse
+	for _, r := range roles {
+		node := roleMap[r.ID]
+
+		// 如果有父角色，将自己添加到父角色的children中
+		if len(r.Edges.InheritsFrom) > 0 {
+			for _, parent := range r.Edges.InheritsFrom {
+				if parentNode, exists := roleMap[parent.ID]; exists {
+					parentNode.Children = append(parentNode.Children, node)
+				}
+			}
+		} else {
+			// 没有父角色，作为根节点
+			rootRoles = append(rootRoles, node)
+		}
+	}
+
+	return rootRoles, nil
+}
+
+// GetRoleWithPermissions 获取角色详细权限信息
+func GetRoleWithPermissions(ctx context.Context, roleID uint64) (*models.RoleDetailedPermissionsResponse, error) {
+	// 获取角色基本信息
+	role, err := database.Client.Role.Query().
+		Where(entRole.ID(roleID)).
+		WithInheritsFrom().
+		WithRolePermissions(func(rp *ent.RolePermissionQuery) {
+			rp.WithPermission()
+		}).
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("role not found")
+		}
+		return nil, err
+	}
+
+	// 获取直接权限
+	var directPermissions []*models.PermissionWithSource
+	if role.Edges.RolePermissions != nil {
+		for _, rp := range role.Edges.RolePermissions {
+			if rp.Edges.Permission != nil {
+				directPermissions = append(directPermissions, &models.PermissionWithSource{
+					Permission: ConvertPermissionToResponse(rp.Edges.Permission),
+					Source:     "direct",
+					SourceRole: &models.RoleResponse{
+						ID:          utils.Uint64ToString(role.ID),
+						Name:        role.Name,
+						Description: role.Description,
+					},
+				})
+			}
+		}
+	}
+
+	// 获取继承权限
+	var inheritedPermissions []*models.PermissionWithSource
+	if role.Edges.InheritsFrom != nil {
+		for _, parentRole := range role.Edges.InheritsFrom {
+			parentRoleWithPerms, err := database.Client.Role.Query().
+				Where(entRole.ID(parentRole.ID)).
+				WithRolePermissions(func(rp *ent.RolePermissionQuery) {
+					rp.WithPermission()
+				}).
+				Only(ctx)
+			if err != nil {
+				continue
+			}
+
+			if parentRoleWithPerms.Edges.RolePermissions != nil {
+				for _, rp := range parentRoleWithPerms.Edges.RolePermissions {
+					if rp.Edges.Permission != nil {
+						inheritedPermissions = append(inheritedPermissions, &models.PermissionWithSource{
+							Permission: ConvertPermissionToResponse(rp.Edges.Permission),
+							Source:     "inherit",
+							SourceRole: &models.RoleResponse{
+								ID:          utils.Uint64ToString(parentRole.ID),
+								Name:        parentRole.Name,
+								Description: parentRole.Description,
+							},
+						})
+					}
+				}
+			}
+		}
+	}
+
+	return &models.RoleDetailedPermissionsResponse{
+		Role:                 ConvertRoleToResponse(role),
+		DirectPermissions:    directPermissions,
+		InheritedPermissions: inheritedPermissions,
+	}, nil
+}
+
+// CreateChildRole 创建子角色
+func CreateChildRole(ctx context.Context, parentID uint64, req *models.CreateChildRoleRequest) (*ent.Role, error) {
+	// 检查父角色是否存在
+	_, err := database.Client.Role.Query().
+		Where(entRole.ID(parentID)).
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("parent role not found")
+		}
+		return nil, err
+	}
+
+	// 创建子角色
+	childRole, err := database.Client.Role.Create().
+		SetName(req.Name).
+		SetDescription(req.Description).
+		AddInheritsFromIDs(parentID).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create child role: %v", err)
+	}
+
+	// 返回完整的角色信息
+	return GetRoleByID(ctx, childRole.ID)
+}
+
+// RemoveParentRole 移除父角色继承关系
+func RemoveParentRole(ctx context.Context, roleID, parentID uint64) error {
+	// 检查角色是否存在
+	exists, err := database.Client.Role.Query().
+		Where(entRole.ID(roleID)).
+		Exist(ctx)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("role not found")
+	}
+
+	// 检查父角色是否存在
+	parentExists, err := database.Client.Role.Query().
+		Where(entRole.ID(parentID)).
+		Exist(ctx)
+	if err != nil {
+		return err
+	}
+	if !parentExists {
+		return fmt.Errorf("parent role not found")
+	}
+
+	// 移除继承关系
+	err = database.Client.Role.UpdateOneID(roleID).
+		RemoveInheritsFromIDs(parentID).
+		Exec(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to remove parent role: %v", err)
+	}
+
+	return nil
+}
+
+// AddParentRole 添加父角色继承关系
+func AddParentRole(ctx context.Context, roleID, parentID uint64) error {
+	// 检查循环继承
+	if err := HasCircularInheritance(ctx, database.Client, roleID, parentID); err != nil {
+		return err
+	}
+
+	// 检查角色是否存在
+	exists, err := database.Client.Role.Query().
+		Where(entRole.ID(roleID)).
+		Exist(ctx)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("role not found")
+	}
+
+	// 检查父角色是否存在
+	parentExists, err := database.Client.Role.Query().
+		Where(entRole.ID(parentID)).
+		Exist(ctx)
+	if err != nil {
+		return err
+	}
+	if !parentExists {
+		return fmt.Errorf("parent role not found")
+	}
+
+	// 添加继承关系
+	err = database.Client.Role.UpdateOneID(roleID).
+		AddInheritsFromIDs(parentID).
+		Exec(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to add parent role: %v", err)
+	}
+
+	return nil
+}
+
+// GetAssignablePermissions 获取可分配的权限列表（排除已分配的权限）
+func GetAssignablePermissions(ctx context.Context, roleID uint64) ([]*models.PermissionResponse, error) {
+	// 获取所有权限
+	allPermissions, err := database.Client.Permission.Query().All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query permissions: %v", err)
+	}
+
+	// 获取角色已有的权限
+	rolePermissions, err := GetRolePermissions(ctx, roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	// 创建已分配权限的映射
+	assignedPermissions := make(map[uint64]bool)
+	for _, perm := range rolePermissions {
+		assignedPermissions[perm.ID] = true
+	}
+
+	// 过滤出可分配的权限
+	var assignablePermissions []*models.PermissionResponse
+	for _, perm := range allPermissions {
+		if !assignedPermissions[perm.ID] {
+			assignablePermissions = append(assignablePermissions, ConvertPermissionToResponse(perm))
+		}
+	}
+
+	return assignablePermissions, nil
+}
+
+// GetRoleUsersWithPagination 获取角色下的用户（分页）
+func GetRoleUsersWithPagination(ctx context.Context, roleID uint64, req *models.GetRoleUsersRequest) (*models.RoleUsersResponse, error) {
+	// 检查角色是否存在
+	exists, err := database.Client.Role.Query().
+		Where(entRole.ID(roleID)).
+		Exist(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, fmt.Errorf("role not found")
+	}
+
+	// 第一步：查询用户角色关联表，获取所有属于该角色的用户ID
+	userRoles, err := database.Client.UserRole.Query().
+		Where(userrole.RoleID(roleID)).
+		WithRole(func(rq *ent.RoleQuery) {
+			rq.Select(entRole.FieldID, entRole.FieldName)
+		}).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// 第二步：提取用户ID
+	userIDs := make([]uint64, len(userRoles))
+	for i, ur := range userRoles {
+		userIDs[i] = ur.UserID
+	}
+
+	if len(userIDs) == 0 {
+		// 如果没有用户，直接返回空结果
+		return &models.RoleUsersResponse{
+			Users: []*models.UserResponse{},
+			Pagination: models.Pagination{
+				Page:       req.Page,
+				PageSize:   req.PageSize,
+				Total:      0,
+				TotalPages: 0,
+				HasNext:    false,
+				HasPrev:    false,
+			},
+		}, nil
+	}
+
+	// 第三步：构建用户查询，使用IN过滤
+	query := database.Client.User.Query().
+		Where(user.IDIn(userIDs...))
+
+	// 添加搜索条件
+	if req.Keyword != "" {
+		query = query.Where(user.NameContains(req.Keyword))
+	}
+
+	// 获取总数
+	total, err := query.Count(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// 计算分页
+	offset := (req.Page - 1) * req.PageSize
+	totalPages := int(math.Ceil(float64(total) / float64(req.PageSize)))
+
+	// 第四步：分页查询用户
+	users, err := query.Offset(offset).Limit(req.PageSize).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// 第五步：创建用户角色映射
+	userRoleMap := make(map[uint64][]*ent.UserRole)
+	for _, ur := range userRoles {
+		userRoleMap[ur.UserID] = append(userRoleMap[ur.UserID], ur)
+	}
+
+	// 转换为响应格式
+	userResponses := make([]*models.UserResponse, len(users))
+	for i, u := range users {
+		var age *int
+		if u.Age != 0 { // age为0表示未设置
+			age = &u.Age
+		}
+
+		// 从映射中提取用户角色名称
+		var roles []string = make([]string, 0)
+		if userRoleList, exists := userRoleMap[u.ID]; exists {
+			for _, userRole := range userRoleList {
+				if userRole.Edges.Role != nil {
+					roles = append(roles, userRole.Edges.Role.Name)
+				}
+			}
+		}
+
+		userResponses[i] = &models.UserResponse{
+			ID:         utils.Uint64ToString(u.ID),
+			Name:       u.Name,
+			Age:        age,
+			Sex:        string(u.Sex),
+			Status:     string(u.Status),
+			CreateTime: utils.FormatDateTime(u.CreateTime),
+			UpdateTime: utils.FormatDateTime(u.UpdateTime),
+			Roles:      roles,
+		}
+	}
+
+	return &models.RoleUsersResponse{
+		Users: userResponses,
+		Pagination: models.Pagination{
+			Page:       req.Page,
+			PageSize:   req.PageSize,
+			Total:      int64(total),
+			TotalPages: totalPages,
+			HasNext:    req.Page < totalPages,
+			HasPrev:    req.Page > 1,
+		},
+	}, nil
+}
+
+// BatchAssignUsersToRole 批量分配用户到角色
+func BatchAssignUsersToRole(ctx context.Context, roleID uint64, req *models.BatchAssignUsersToRoleRequest) error {
+	// 检查角色是否存在
+	exists, err := database.Client.Role.Query().
+		Where(entRole.ID(roleID)).
+		Exist(ctx)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("role not found")
+	}
+
+	// 转换用户ID
+	userIDs := make([]uint64, 0, len(req.UserIds))
+	for _, userIDStr := range req.UserIds {
+		userID := utils.StringToUint64(userIDStr)
+		userIDs = append(userIDs, userID)
+	}
+
+	// 检查用户是否存在
+	existingUsers, err := database.Client.User.Query().
+		Where(user.IDIn(userIDs...)).
+		All(ctx)
+	if err != nil {
+		return err
+	}
+	if len(existingUsers) != len(userIDs) {
+		return fmt.Errorf("some users not found")
+	}
+
+	// 批量创建用户角色关联
+	bulk := make([]*ent.UserRoleCreate, 0, len(userIDs))
+	for _, userID := range userIDs {
+		// 检查是否已经存在关联
+		exists, err := database.Client.UserRole.Query().
+			Where(
+				userrole.UserID(userID),
+				userrole.RoleID(roleID),
+			).Exist(ctx)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			bulk = append(bulk, database.Client.UserRole.Create().
+				SetUserID(userID).
+				SetRoleID(roleID))
+		}
+	}
+
+	if len(bulk) > 0 {
+		_, err = database.Client.UserRole.CreateBulk(bulk...).Save(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to assign users to role: %v", err)
+		}
+	}
+
+	return nil
+}
+
+// BatchRemoveUsersFromRole 批量移除用户从角色
+func BatchRemoveUsersFromRole(ctx context.Context, roleID uint64, req *models.BatchRemoveUsersFromRoleRequest) error {
+	// 检查角色是否存在
+	exists, err := database.Client.Role.Query().
+		Where(entRole.ID(roleID)).
+		Exist(ctx)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("role not found")
+	}
+
+	// 转换用户ID
+	userIDs := make([]uint64, 0, len(req.UserIds))
+	for _, userIDStr := range req.UserIds {
+		userID := utils.StringToUint64(userIDStr)
+		userIDs = append(userIDs, userID)
+	}
+
+	// 删除用户角色关联
+	_, err = database.Client.UserRole.Delete().
+		Where(
+			userrole.RoleID(roleID),
+			userrole.UserIDIn(userIDs...),
+		).Exec(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to remove users from role: %v", err)
 	}
 
 	return nil

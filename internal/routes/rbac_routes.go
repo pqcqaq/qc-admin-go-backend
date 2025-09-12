@@ -25,12 +25,25 @@ func (r *Router) setupRBACRoutes(rg *gin.RouterGroup) {
 		{
 			roleGroup.GET("", roleHandler.GetRoles)                                              // 获取角色列表(分页)
 			roleGroup.GET("/all", roleHandler.GetAllRoles)                                       // 获取所有角色(不分页)
+			roleGroup.GET("/tree", roleHandler.GetRoleTree)                                      // 获取角色树结构
 			roleGroup.POST("", roleHandler.CreateRole)                                           // 创建角色
 			roleGroup.GET("/:id", roleHandler.GetRole)                                           // 获取单个角色
+			roleGroup.GET("/:id/permissions/detailed", roleHandler.GetRoleWithPermissions)       // 获取角色详细权限信息
 			roleGroup.PUT("/:id", roleHandler.UpdateRole)                                        // 更新角色
 			roleGroup.DELETE("/:id", roleHandler.DeleteRole)                                     // 删除角色
 			roleGroup.POST("/:id/permissions", roleHandler.AssignRolePermissions)                // 分配角色权限
 			roleGroup.DELETE("/:id/permissions/:permissionId", roleHandler.RevokeRolePermission) // 撤销角色权限
+			roleGroup.GET("/:id/assignable-permissions", roleHandler.GetAssignablePermissions)   // 获取可分配的权限
+
+			// 角色继承管理
+			roleGroup.POST("/:id/children", roleHandler.CreateChildRole)             // 创建子角色
+			roleGroup.DELETE("/:id/parents/:parentId", roleHandler.RemoveParentRole) // 移除父角色继承关系
+			roleGroup.POST("/:id/parents/:parentId", roleHandler.AddParentRole)      // 添加父角色继承关系
+
+			// 角色用户管理
+			roleGroup.GET("/:id/users", roleHandler.GetRoleUsersWithPagination)             // 获取角色下的用户（分页）
+			roleGroup.POST("/:id/users/batch-assign", roleHandler.BatchAssignUsersToRole)   // 批量分配用户到角色
+			roleGroup.POST("/:id/users/batch-remove", roleHandler.BatchRemoveUsersFromRole) // 批量从角色移除用户
 		}
 
 		// 权限路由
