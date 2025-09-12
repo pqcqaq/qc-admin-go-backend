@@ -188,14 +188,8 @@ func GetAttachmentsWithPagination(ctx context.Context, req *models.GetAttachment
 	if req.StorageProvider != "" {
 		query = query.Where(attachment.StorageProviderContains(req.StorageProvider))
 	}
-	if req.Tag1 != "" {
-		query = query.Where(attachment.Tag1Contains(req.Tag1))
-	}
-	if req.Tag2 != "" {
-		query = query.Where(attachment.Tag2Contains(req.Tag2))
-	}
-	if req.Tag3 != "" {
-		query = query.Where(attachment.Tag3Contains(req.Tag3))
+	if req.Tags != "" {
+		query = query.Where(attachment.Or(attachment.Tag1Contains(req.Tags), attachment.Tag2Contains(req.Tags), attachment.Tag3Contains(req.Tags)))
 	}
 
 	// 获取总数
@@ -357,7 +351,7 @@ func PrepareUpload(ctx context.Context, req *models.PrepareUploadRequest) (*mode
 		UploadURL:       uploadURL,
 		UploadSessionID: uploadSessionID,
 		ExpiresAt:       time.Now().Add(time.Hour).Unix(),
-		AttachmentID:    attachmentRecord.ID,
+		AttachmentID:    utils.ToString(attachmentRecord.ID),
 	}, nil
 }
 
@@ -392,12 +386,14 @@ func ConfirmUpload(ctx context.Context, req *models.ConfirmUploadRequest) (*ent.
 	// 生成文件的访问URL
 	var fileURL string
 	if config.S3.Endpoint != "" {
-		// 使用自定义端点（如MinIO）
-		if config.S3.UseSSL {
-			fileURL = fmt.Sprintf("https://%s/%s/%s", config.S3.Endpoint, attachmentRecord.Bucket, attachmentRecord.Path)
+		var trueEndpoint string
+		if utils.IsEmpty(config.S3.PublicEndpoint) {
+			trueEndpoint = config.S3.Endpoint
 		} else {
-			fileURL = fmt.Sprintf("http://%s/%s/%s", config.S3.Endpoint, attachmentRecord.Bucket, attachmentRecord.Path)
+			trueEndpoint = config.S3.PublicEndpoint
 		}
+		// 使用自定义端点（如MinIO）
+		fileURL = fmt.Sprintf("%s/%s/%s", trueEndpoint, attachmentRecord.Bucket, attachmentRecord.Path)
 	} else {
 		// 使用AWS S3标准URL格式
 		fileURL = fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", attachmentRecord.Bucket, config.S3.Region, attachmentRecord.Path)

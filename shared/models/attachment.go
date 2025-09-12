@@ -65,9 +65,7 @@ type GetAttachmentsRequest struct {
 	Status          string `form:"status" json:"status"`                   // 按状态过滤
 	Bucket          string `form:"bucket" json:"bucket"`                   // 按存储桶过滤
 	StorageProvider string `form:"storageProvider" json:"storageProvider"` // 按存储提供商过滤
-	Tag1            string `form:"tag1" json:"tag1"`                       // 按标签1过滤
-	Tag2            string `form:"tag2" json:"tag2"`                       // 按标签2过滤
-	Tag3            string `form:"tag3" json:"tag3"`                       // 按标签3过滤
+	Tags            string `form:"tags" json:"tags"`                       // 按标签过滤
 }
 
 // AttachmentsListResponse 附件列表响应结构
@@ -93,7 +91,7 @@ type PrepareUploadResponse struct {
 	UploadSessionID string         `json:"uploadSessionId"`
 	Fields          map[string]any `json:"fields,omitempty"` // 用于表单上传的额外字段
 	ExpiresAt       int64          `json:"expiresAt"`
-	AttachmentID    uint64         `json:"attachmentId"`
+	AttachmentID    string         `json:"attachmentId"`
 }
 
 // ConfirmUploadRequest 确认上传请求结构

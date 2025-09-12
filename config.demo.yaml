@@ -93,8 +93,8 @@ s3:
   secret_access_key: "minioadmin123"        # AWS访问密钥
   session_token: ""            # AWS会话令牌（可选）
   bucket: "default-bucket"     # 默认存储桶
-  use_ssl: true               # 是否使用HTTPS
-  force_path_style: false     # 是否强制使用路径样式URL
+  use_ssl: false               # 是否使用HTTPS
+  force_path_style: true     # 是否强制使用路径样式URL
   disable_ssl: false          # 是否禁用SSL
   timeout: 30                 # 超时时间（秒）
   max_retries: 3              # 最大重试次数
