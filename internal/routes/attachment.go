@@ -17,7 +17,7 @@ func (r *Router) setupAttachmentRoutes(rg *gin.RouterGroup) {
 	attachments.Use(middleware.JWTAuthMiddleware())
 	{
 		attachments.GET("", attachmentHandler.GetAttachments)
-		attachments.GET("/paginated", attachmentHandler.GetAttachmentsWithPagination) // 分页查询路由
+		attachments.GET("/page", attachmentHandler.GetAttachmentsWithPagination) // 分页查询路由
 		attachments.GET("/:id", attachmentHandler.GetAttachment)
 		attachments.GET("/:id/url", attachmentHandler.GetAttachmentURL) // 获取文件预签名URL
 		attachments.POST("", attachmentHandler.CreateAttachment)
