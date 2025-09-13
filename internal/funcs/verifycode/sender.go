@@ -13,7 +13,6 @@ type SenderType string
 const (
 	EmailSender SenderType = "email"
 	PhoneSender SenderType = "phone"
-	SMSSender   SenderType = "sms"
 )
 
 // Sender 验证码发送器接口
@@ -36,7 +35,6 @@ func NewSenderFactory() *SenderFactory {
 	// 注册默认发送器
 	factory.RegisterSender(EmailSender, &EmailCodeSender{})
 	factory.RegisterSender(PhoneSender, &PhoneCodeSender{})
-	factory.RegisterSender(SMSSender, &SMSCodeSender{})
 
 	return factory
 }

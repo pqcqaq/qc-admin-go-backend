@@ -44,22 +44,3 @@ func (s *PhoneCodeSender) Send(ctx context.Context, identifier, code, purpose st
 func (s *PhoneCodeSender) GetType() SenderType {
 	return PhoneSender
 }
-
-// SMSCodeSender SMS验证码发送器
-type SMSCodeSender struct{}
-
-func (s *SMSCodeSender) Send(ctx context.Context, identifier, code, purpose string) error {
-	// 使用短信服务发送简单验证码
-	err := sms.SendSimpleVerificationCode(identifier, code)
-	if err != nil {
-		logging.Error("SMS验证码发送失败: identifier=%s, purpose=%s, error=%v", identifier, purpose, err)
-		return err
-	}
-
-	logging.Info("SMS验证码发送成功: identifier=%s, purpose=%s", identifier, purpose)
-	return nil
-}
-
-func (s *SMSCodeSender) GetType() SenderType {
-	return SMSSender
-}

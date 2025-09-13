@@ -382,7 +382,10 @@ func GetUserRoles(ctx context.Context, userID uint64) ([]*ent.Role, error) {
 
 	// 获取用户的所有角色
 	roles, err := database.Client.Role.Query().
-		Where(role.HasUserRolesWith(userrole.UserID(userID))).
+		Where(role.HasUserRolesWith(func(s *sql.Selector) {
+			// userrole.UserID(userID)
+			s.Where(sql.EQ("user_id", userID)).Where(sql.IsNull("delete_time"))
+		})).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -428,7 +431,9 @@ func GetUserPermissions(ctx context.Context, userID uint64) ([]*ent.Permission, 
 
 	// 获取用户的所有角色
 	userRoles, err := database.Client.Role.Query().
-		Where(role.HasUserRolesWith(userrole.UserID(userID))).
+		Where(role.HasUserRolesWith(func(s *sql.Selector) {
+			s.Where(sql.EQ("user_id", userID)).Where(sql.IsNull("delete_time"))
+		})).
 		All(ctx)
 	if err != nil {
 		return nil, err
