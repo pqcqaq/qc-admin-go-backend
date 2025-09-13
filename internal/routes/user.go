@@ -22,5 +22,7 @@ func (r *Router) setupUserRoutes(rg *gin.RouterGroup) {
 		users.POST("", userHandler.CreateUser)
 		users.PUT("/:id", userHandler.UpdateUser)
 		users.DELETE("/:id", userHandler.DeleteUser)
+		// 配置用户头像
+		users.POST("/:id/avatar/:attachment_id", userHandler.SetUserAvatar)
 	}
 }

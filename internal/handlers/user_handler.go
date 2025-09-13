@@ -270,3 +270,59 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 		"message": "用户删除成功",
 	})
 }
+
+// 设置用户头像接口，接收用户id和attachment id
+// @Summary      设置用户头像
+// @Description  设置用户头像
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id             path      int  true  "用户ID"
+// @Param        attachment_id  path      int  true  "附件ID"
+// @Success      200  {object}  object{success=bool,message=string}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /users/{id}/avatar/{attachment_id} [put]
+func (h *UserHandler) SetUserAvatar(c *gin.Context) {
+	userIDStr := c.Param("id")
+	attachmentIDStr := c.Param("attachment_id")
+	userID, err := strconv.ParseUint(userIDStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("用户ID格式无效", map[string]any{
+			"provided_id": userIDStr,
+		}))
+		return
+	}
+	attachmentID, err := strconv.ParseUint(attachmentIDStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("附件ID格式无效", map[string]any{
+			"provided_id": attachmentIDStr,
+		}))
+		return
+	}
+	_, err = funcs.UpdateUserAvatar(context.Background(), userID, attachmentID)
+	if err != nil {
+		if err.Error() == "user not found" {
+			middleware.ThrowError(c, middleware.UserNotFoundError(map[string]any{
+				"id": userID,
+			}))
+		}
+		if err.Error() == "attachment not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("附件未找到", map[string]any{
+				"id": attachmentID,
+			}))
+		}
+		if err.Error() == "attachment not uploaded" {
+			middleware.ThrowError(c, middleware.BadRequestError("附件未上传完成，无法设置为头像", map[string]any{
+				"id": attachmentID,
+			}))
+		}
+		middleware.ThrowError(c, middleware.DatabaseError("设置用户头像失败", err.Error()))
+		return
+	}
+	c.JSON(200, gin.H{
+		"success": true,
+		"message": "用户头像设置成功",
+	})
+}
