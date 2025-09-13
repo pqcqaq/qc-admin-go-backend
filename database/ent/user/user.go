@@ -34,23 +34,18 @@ const (
 	FieldAge = "age"
 	// FieldSex holds the string denoting the sex field in the database.
 	FieldSex = "sex"
+	// FieldAvatarID holds the string denoting the avatar_id field in the database.
+	FieldAvatarID = "avatar_id"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
-	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
-	EdgeAttachments = "attachments"
 	// EdgeUserRoles holds the string denoting the user_roles edge name in mutations.
 	EdgeUserRoles = "user_roles"
 	// EdgeCredentials holds the string denoting the credentials edge name in mutations.
 	EdgeCredentials = "credentials"
+	// EdgeAvatar holds the string denoting the avatar edge name in mutations.
+	EdgeAvatar = "avatar"
 	// Table holds the table name of the user in the database.
 	Table = "sys_users"
-	// AttachmentsTable is the table that holds the attachments relation/edge.
-	AttachmentsTable = "sys_attachments"
-	// AttachmentsInverseTable is the table name for the Attachment entity.
-	// It exists in this package in order to avoid circular dependency with the "attachment" package.
-	AttachmentsInverseTable = "sys_attachments"
-	// AttachmentsColumn is the table column denoting the attachments relation/edge.
-	AttachmentsColumn = "user_attachments"
 	// UserRolesTable is the table that holds the user_roles relation/edge.
 	UserRolesTable = "sys_user_role"
 	// UserRolesInverseTable is the table name for the UserRole entity.
@@ -65,6 +60,13 @@ const (
 	CredentialsInverseTable = "sys_credentials"
 	// CredentialsColumn is the table column denoting the credentials relation/edge.
 	CredentialsColumn = "user_id"
+	// AvatarTable is the table that holds the avatar relation/edge.
+	AvatarTable = "sys_users"
+	// AvatarInverseTable is the table name for the Attachment entity.
+	// It exists in this package in order to avoid circular dependency with the "attachment" package.
+	AvatarInverseTable = "sys_attachments"
+	// AvatarColumn is the table column denoting the avatar relation/edge.
+	AvatarColumn = "avatar_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -79,6 +81,7 @@ var Columns = []string{
 	FieldName,
 	FieldAge,
 	FieldSex,
+	FieldAvatarID,
 	FieldStatus,
 }
 
@@ -219,23 +222,14 @@ func BySex(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSex, opts...).ToFunc()
 }
 
+// ByAvatarID orders the results by the avatar_id field.
+func ByAvatarID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAvatarID, opts...).ToFunc()
+}
+
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
-}
-
-// ByAttachmentsCount orders the results by attachments count.
-func ByAttachmentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAttachmentsStep(), opts...)
-	}
-}
-
-// ByAttachments orders the results by attachments terms.
-func ByAttachments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAttachmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
 }
 
 // ByUserRolesCount orders the results by user_roles count.
@@ -265,12 +259,12 @@ func ByCredentials(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newCredentialsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newAttachmentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AttachmentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, AttachmentsTable, AttachmentsColumn),
-	)
+
+// ByAvatarField orders the results by avatar field.
+func ByAvatarField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAvatarStep(), sql.OrderByField(field, opts...))
+	}
 }
 func newUserRolesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
@@ -284,5 +278,12 @@ func newCredentialsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CredentialsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, CredentialsTable, CredentialsColumn),
+	)
+}
+func newAvatarStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AvatarInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, AvatarTable, AvatarColumn),
 	)
 }

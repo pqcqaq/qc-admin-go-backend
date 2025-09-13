@@ -58,9 +58,8 @@ type Attachment struct {
 	// 标签2
 	Tag2 string `json:"tag2,omitempty"`
 	// 标签3
-	Tag3             string `json:"tag3,omitempty"`
-	user_attachments *uint64
-	selectValues     sql.SelectValues
+	Tag3         string `json:"tag3,omitempty"`
+	selectValues sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -76,8 +75,6 @@ func (*Attachment) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case attachment.FieldCreateTime, attachment.FieldUpdateTime, attachment.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
-		case attachment.ForeignKeys[0]: // user_attachments
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -220,13 +217,6 @@ func (_m *Attachment) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field tag3", values[i])
 			} else if value.Valid {
 				_m.Tag3 = value.String
-			}
-		case attachment.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field user_attachments", values[i])
-			} else if value.Valid {
-				_m.user_attachments = new(uint64)
-				*_m.user_attachments = uint64(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])

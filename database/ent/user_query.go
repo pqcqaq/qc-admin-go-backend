@@ -27,11 +27,10 @@ type UserQuery struct {
 	order                []user.OrderOption
 	inters               []Interceptor
 	predicates           []predicate.User
-	withAttachments      *AttachmentQuery
 	withUserRoles        *UserRoleQuery
 	withCredentials      *CredentialQuery
+	withAvatar           *AttachmentQuery
 	modifiers            []func(*sql.Selector)
-	withNamedAttachments map[string]*AttachmentQuery
 	withNamedUserRoles   map[string]*UserRoleQuery
 	withNamedCredentials map[string]*CredentialQuery
 	// intermediate query (i.e. traversal path).
@@ -68,28 +67,6 @@ func (_q *UserQuery) Unique(unique bool) *UserQuery {
 func (_q *UserQuery) Order(o ...user.OrderOption) *UserQuery {
 	_q.order = append(_q.order, o...)
 	return _q
-}
-
-// QueryAttachments chains the current query on the "attachments" edge.
-func (_q *UserQuery) QueryAttachments() *AttachmentQuery {
-	query := (&AttachmentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(attachment.Table, attachment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.AttachmentsTable, user.AttachmentsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryUserRoles chains the current query on the "user_roles" edge.
@@ -129,6 +106,28 @@ func (_q *UserQuery) QueryCredentials() *CredentialQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(credential.Table, credential.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.CredentialsTable, user.CredentialsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAvatar chains the current query on the "avatar" edge.
+func (_q *UserQuery) QueryAvatar() *AttachmentQuery {
+	query := (&AttachmentClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(attachment.Table, attachment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, user.AvatarTable, user.AvatarColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -328,24 +327,13 @@ func (_q *UserQuery) Clone() *UserQuery {
 		order:           append([]user.OrderOption{}, _q.order...),
 		inters:          append([]Interceptor{}, _q.inters...),
 		predicates:      append([]predicate.User{}, _q.predicates...),
-		withAttachments: _q.withAttachments.Clone(),
 		withUserRoles:   _q.withUserRoles.Clone(),
 		withCredentials: _q.withCredentials.Clone(),
+		withAvatar:      _q.withAvatar.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
-}
-
-// WithAttachments tells the query-builder to eager-load the nodes that are connected to
-// the "attachments" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserQuery) WithAttachments(opts ...func(*AttachmentQuery)) *UserQuery {
-	query := (&AttachmentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withAttachments = query
-	return _q
 }
 
 // WithUserRoles tells the query-builder to eager-load the nodes that are connected to
@@ -367,6 +355,17 @@ func (_q *UserQuery) WithCredentials(opts ...func(*CredentialQuery)) *UserQuery 
 		opt(query)
 	}
 	_q.withCredentials = query
+	return _q
+}
+
+// WithAvatar tells the query-builder to eager-load the nodes that are connected to
+// the "avatar" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithAvatar(opts ...func(*AttachmentQuery)) *UserQuery {
+	query := (&AttachmentClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAvatar = query
 	return _q
 }
 
@@ -449,9 +448,9 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
-			_q.withAttachments != nil,
 			_q.withUserRoles != nil,
 			_q.withCredentials != nil,
+			_q.withAvatar != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -475,13 +474,6 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withAttachments; query != nil {
-		if err := _q.loadAttachments(ctx, query, nodes,
-			func(n *User) { n.Edges.Attachments = []*Attachment{} },
-			func(n *User, e *Attachment) { n.Edges.Attachments = append(n.Edges.Attachments, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withUserRoles; query != nil {
 		if err := _q.loadUserRoles(ctx, query, nodes,
 			func(n *User) { n.Edges.UserRoles = []*UserRole{} },
@@ -496,10 +488,9 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
-	for name, query := range _q.withNamedAttachments {
-		if err := _q.loadAttachments(ctx, query, nodes,
-			func(n *User) { n.appendNamedAttachments(name) },
-			func(n *User, e *Attachment) { n.appendNamedAttachments(name, e) }); err != nil {
+	if query := _q.withAvatar; query != nil {
+		if err := _q.loadAvatar(ctx, query, nodes, nil,
+			func(n *User, e *Attachment) { n.Edges.Avatar = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -520,37 +511,6 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	return nodes, nil
 }
 
-func (_q *UserQuery) loadAttachments(ctx context.Context, query *AttachmentQuery, nodes []*User, init func(*User), assign func(*User, *Attachment)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uint64]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.Attachment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.AttachmentsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.user_attachments
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_attachments" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_attachments" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (_q *UserQuery) loadUserRoles(ctx context.Context, query *UserRoleQuery, nodes []*User, init func(*User), assign func(*User, *UserRole)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uint64]*User)
@@ -611,6 +571,35 @@ func (_q *UserQuery) loadCredentials(ctx context.Context, query *CredentialQuery
 	}
 	return nil
 }
+func (_q *UserQuery) loadAvatar(ctx context.Context, query *AttachmentQuery, nodes []*User, init func(*User), assign func(*User, *Attachment)) error {
+	ids := make([]uint64, 0, len(nodes))
+	nodeids := make(map[uint64][]*User)
+	for i := range nodes {
+		fk := nodes[i].AvatarID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(attachment.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "avatar_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (_q *UserQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -639,6 +628,9 @@ func (_q *UserQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != user.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withAvatar != nil {
+			_spec.Node.AddColumnOnce(user.FieldAvatarID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -722,20 +714,6 @@ func (_q *UserQuery) ForShare(opts ...sql.LockOption) *UserQuery {
 	_q.modifiers = append(_q.modifiers, func(s *sql.Selector) {
 		s.ForShare(opts...)
 	})
-	return _q
-}
-
-// WithNamedAttachments tells the query-builder to eager-load the nodes that are connected to the "attachments"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserQuery) WithNamedAttachments(name string, opts ...func(*AttachmentQuery)) *UserQuery {
-	query := (&AttachmentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	if _q.withNamedAttachments == nil {
-		_q.withNamedAttachments = make(map[string]*AttachmentQuery)
-	}
-	_q.withNamedAttachments[name] = query
 	return _q
 }
 

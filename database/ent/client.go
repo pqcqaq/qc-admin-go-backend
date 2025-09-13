@@ -1686,22 +1686,6 @@ func (c *UserClient) GetX(ctx context.Context, id uint64) *User {
 	return obj
 }
 
-// QueryAttachments queries the attachments edge of a User.
-func (c *UserClient) QueryAttachments(_m *User) *AttachmentQuery {
-	query := (&AttachmentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(attachment.Table, attachment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.AttachmentsTable, user.AttachmentsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryUserRoles queries the user_roles edge of a User.
 func (c *UserClient) QueryUserRoles(_m *User) *UserRoleQuery {
 	query := (&UserRoleClient{config: c.config}).Query()
@@ -1727,6 +1711,22 @@ func (c *UserClient) QueryCredentials(_m *User) *CredentialQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(credential.Table, credential.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.CredentialsTable, user.CredentialsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAvatar queries the avatar edge of a User.
+func (c *UserClient) QueryAvatar(_m *User) *AttachmentQuery {
+	query := (&AttachmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(attachment.Table, attachment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, user.AvatarTable, user.AvatarColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

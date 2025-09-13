@@ -26,8 +26,6 @@ func (User) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixins.BaseMixin{},
 		mixins.SoftDeleteMixin{},
-		// 用户对象所包含的图片
-		MultiAttachmentsMixin{},
 	}
 }
 
@@ -39,6 +37,7 @@ func (User) Fields() []ent.Field {
 			MaxLen(100),
 		field.Int("age").
 			Positive().
+			Comment("年龄").
 			Optional(),
 		field.Enum("sex").
 			Values("male", "female", "other").
@@ -55,5 +54,9 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user_roles", UserRole.Type),    // 一对多: 一个用户对应多个 user_roles
 		edge.To("credentials", Credential.Type), // 一对多: 一个用户对应多个 credentials
+		edge.To("avatar", Attachment.Type).
+			Unique().           // 一对一关系
+			Field("avatar_id"). // 绑定到 avatar_id 字段
+			Comment("用户头像"),
 	}
 }

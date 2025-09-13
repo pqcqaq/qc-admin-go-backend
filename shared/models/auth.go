@@ -77,6 +77,9 @@ type UserInfo struct {
 	Status      string                `json:"status"`
 	CreateTime  string                `json:"createTime"`
 	UpdateTime  string                `json:"updateTime"`
+	Avatar      string                `json:"avatar,omitempty"`      // 头像
 	Roles       []*RoleResponse       `json:"roles,omitempty"`       // 用户角色
+	Sex         string                `json:"sex,omitempty"`         // 性别
+	Age         int                   `json:"age,omitempty"`         // 年龄
 	Permissions []*PermissionResponse `json:"permissions,omitempty"` // 用户权限（通过角色继承）
 }

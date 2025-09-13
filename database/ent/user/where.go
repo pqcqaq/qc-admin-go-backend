@@ -95,6 +95,11 @@ func Age(v int) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAge, v))
 }
 
+// AvatarID applies equality check predicate on the "avatar_id" field. It's identical to AvatarIDEQ.
+func AvatarID(v uint64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAvatarID, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreateTime, v))
@@ -510,6 +515,36 @@ func SexNotIn(vs ...Sex) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldSex, vs...))
 }
 
+// AvatarIDEQ applies the EQ predicate on the "avatar_id" field.
+func AvatarIDEQ(v uint64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAvatarID, v))
+}
+
+// AvatarIDNEQ applies the NEQ predicate on the "avatar_id" field.
+func AvatarIDNEQ(v uint64) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldAvatarID, v))
+}
+
+// AvatarIDIn applies the In predicate on the "avatar_id" field.
+func AvatarIDIn(vs ...uint64) predicate.User {
+	return predicate.User(sql.FieldIn(FieldAvatarID, vs...))
+}
+
+// AvatarIDNotIn applies the NotIn predicate on the "avatar_id" field.
+func AvatarIDNotIn(vs ...uint64) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldAvatarID, vs...))
+}
+
+// AvatarIDIsNil applies the IsNil predicate on the "avatar_id" field.
+func AvatarIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldAvatarID))
+}
+
+// AvatarIDNotNil applies the NotNil predicate on the "avatar_id" field.
+func AvatarIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldAvatarID))
+}
+
 // StatusEQ applies the EQ predicate on the "status" field.
 func StatusEQ(v Status) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldStatus, v))
@@ -528,29 +563,6 @@ func StatusIn(vs ...Status) predicate.User {
 // StatusNotIn applies the NotIn predicate on the "status" field.
 func StatusNotIn(vs ...Status) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldStatus, vs...))
-}
-
-// HasAttachments applies the HasEdge predicate on the "attachments" edge.
-func HasAttachments() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AttachmentsTable, AttachmentsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAttachmentsWith applies the HasEdge predicate on the "attachments" edge with a given conditions (other predicates).
-func HasAttachmentsWith(preds ...predicate.Attachment) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := newAttachmentsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
 }
 
 // HasUserRoles applies the HasEdge predicate on the "user_roles" edge.
@@ -591,6 +603,29 @@ func HasCredentials() predicate.User {
 func HasCredentialsWith(preds ...predicate.Credential) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newCredentialsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAvatar applies the HasEdge predicate on the "avatar" edge.
+func HasAvatar() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, AvatarTable, AvatarColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAvatarWith applies the HasEdge predicate on the "avatar" edge with a given conditions (other predicates).
+func HasAvatarWith(preds ...predicate.Attachment) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newAvatarStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

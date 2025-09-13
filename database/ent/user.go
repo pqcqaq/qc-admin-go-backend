@@ -4,6 +4,7 @@ package ent
 
 import (
 	"fmt"
+	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/user"
 	"strings"
 	"time"
@@ -32,10 +33,12 @@ type User struct {
 	DeleteBy uint64 `json:"delete_by,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Age holds the value of the "age" field.
+	// 年龄
 	Age int `json:"age,omitempty"`
 	// 性别
 	Sex user.Sex `json:"sex,omitempty"`
+	// 头像ID,关联sys_attachments表
+	AvatarID uint64 `json:"avatar_id,omitempty"`
 	// 用户状态
 	Status user.Status `json:"status,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -46,33 +49,23 @@ type User struct {
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
-	// Attachments holds the value of the attachments edge.
-	Attachments []*Attachment `json:"attachments,omitempty"`
 	// UserRoles holds the value of the user_roles edge.
 	UserRoles []*UserRole `json:"user_roles,omitempty"`
 	// Credentials holds the value of the credentials edge.
 	Credentials []*Credential `json:"credentials,omitempty"`
+	// 用户头像
+	Avatar *Attachment `json:"avatar,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes      [3]bool
-	namedAttachments map[string][]*Attachment
 	namedUserRoles   map[string][]*UserRole
 	namedCredentials map[string][]*Credential
-}
-
-// AttachmentsOrErr returns the Attachments value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) AttachmentsOrErr() ([]*Attachment, error) {
-	if e.loadedTypes[0] {
-		return e.Attachments, nil
-	}
-	return nil, &NotLoadedError{edge: "attachments"}
 }
 
 // UserRolesOrErr returns the UserRoles value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) UserRolesOrErr() ([]*UserRole, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.UserRoles, nil
 	}
 	return nil, &NotLoadedError{edge: "user_roles"}
@@ -81,10 +74,21 @@ func (e UserEdges) UserRolesOrErr() ([]*UserRole, error) {
 // CredentialsOrErr returns the Credentials value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) CredentialsOrErr() ([]*Credential, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Credentials, nil
 	}
 	return nil, &NotLoadedError{edge: "credentials"}
+}
+
+// AvatarOrErr returns the Avatar value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) AvatarOrErr() (*Attachment, error) {
+	if e.Avatar != nil {
+		return e.Avatar, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: attachment.Label}
+	}
+	return nil, &NotLoadedError{edge: "avatar"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -92,7 +96,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldID, user.FieldCreateBy, user.FieldUpdateBy, user.FieldDeleteBy, user.FieldAge:
+		case user.FieldID, user.FieldCreateBy, user.FieldUpdateBy, user.FieldDeleteBy, user.FieldAge, user.FieldAvatarID:
 			values[i] = new(sql.NullInt64)
 		case user.FieldName, user.FieldSex, user.FieldStatus:
 			values[i] = new(sql.NullString)
@@ -173,6 +177,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Sex = user.Sex(value.String)
 			}
+		case user.FieldAvatarID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field avatar_id", values[i])
+			} else if value.Valid {
+				_m.AvatarID = uint64(value.Int64)
+			}
 		case user.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
@@ -192,11 +202,6 @@ func (_m *User) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryAttachments queries the "attachments" edge of the User entity.
-func (_m *User) QueryAttachments() *AttachmentQuery {
-	return NewUserClient(_m.config).QueryAttachments(_m)
-}
-
 // QueryUserRoles queries the "user_roles" edge of the User entity.
 func (_m *User) QueryUserRoles() *UserRoleQuery {
 	return NewUserClient(_m.config).QueryUserRoles(_m)
@@ -205,6 +210,11 @@ func (_m *User) QueryUserRoles() *UserRoleQuery {
 // QueryCredentials queries the "credentials" edge of the User entity.
 func (_m *User) QueryCredentials() *CredentialQuery {
 	return NewUserClient(_m.config).QueryCredentials(_m)
+}
+
+// QueryAvatar queries the "avatar" edge of the User entity.
+func (_m *User) QueryAvatar() *AttachmentQuery {
+	return NewUserClient(_m.config).QueryAvatar(_m)
 }
 
 // Update returns a builder for updating this User.
@@ -257,34 +267,13 @@ func (_m *User) String() string {
 	builder.WriteString("sex=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Sex))
 	builder.WriteString(", ")
+	builder.WriteString("avatar_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AvatarID))
+	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
 	builder.WriteByte(')')
 	return builder.String()
-}
-
-// NamedAttachments returns the Attachments named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (_m *User) NamedAttachments(name string) ([]*Attachment, error) {
-	if _m.Edges.namedAttachments == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := _m.Edges.namedAttachments[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (_m *User) appendNamedAttachments(name string, edges ...*Attachment) {
-	if _m.Edges.namedAttachments == nil {
-		_m.Edges.namedAttachments = make(map[string][]*Attachment)
-	}
-	if len(edges) == 0 {
-		_m.Edges.namedAttachments[name] = []*Attachment{}
-	} else {
-		_m.Edges.namedAttachments[name] = append(_m.Edges.namedAttachments[name], edges...)
-	}
 }
 
 // NamedUserRoles returns the UserRoles named value or an error if the edge was not

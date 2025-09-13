@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"go-backend/database/ent"
+	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/role"
@@ -97,6 +98,10 @@ func UpdateUser(ctx context.Context, id uint64, req *models.UpdateUserRequest) (
 	if req.Status != "" {
 		builder = builder.SetStatus(user.Status(req.Status))
 	}
+	// avatarId
+	if req.AvatarId != "" {
+		builder = builder.SetAvatarID(utils.StringToUint64(req.AvatarId))
+	}
 
 	return builder.Save(ctx)
 }
@@ -142,6 +147,32 @@ func DeleteUser(ctx context.Context, id uint64) error {
 		return fmt.Errorf("failed to commit transaction: %v", err)
 	}
 	return nil
+}
+
+// 设置头像
+func UpdateUserAvatar(ctx context.Context, userID, avatarID uint64) (*ent.User, error) {
+	// 首先检查用户是否存在
+	exists, err := database.Client.User.Query().Where(user.ID(userID)).Exist(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, fmt.Errorf("user with id %d not found", userID)
+	}
+	// 检查附件是否存在
+	exists, err = database.Client.Attachment.Query().Where(attachment.ID(avatarID)).Exist(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, fmt.Errorf("attachment with id %d not found", avatarID)
+	}
+	// 更新用户头像
+	user, err := database.Client.User.UpdateOneID(userID).SetAvatarID(avatarID).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 // GetUsersWithPagination 分页获取用户列表
@@ -238,6 +269,9 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 					rq.Select(role.FieldID, role.FieldName)
 				})
 		}).
+		WithAvatar(func(aq *ent.AttachmentQuery) {
+			aq.Select(attachment.FieldID, attachment.FieldURL)
+		}).
 		Limit(req.PageSize).
 		All(ctx)
 	if err != nil {
@@ -262,6 +296,11 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 			}
 		}
 
+		var avatarUrl string
+		if u.Edges.Avatar != nil {
+			avatarUrl = u.Edges.Avatar.URL
+		}
+
 		userResponses[i] = &models.UserResponse{
 			ID:         utils.Uint64ToString(u.ID),
 			Name:       u.Name,
@@ -271,6 +310,7 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 			CreateTime: utils.FormatDateTime(u.CreateTime),
 			UpdateTime: utils.FormatDateTime(u.UpdateTime),
 			Roles:      roles,
+			Avatar:     avatarUrl, // 头像URL
 		}
 	}
 

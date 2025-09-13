@@ -141,6 +141,20 @@ func (_c *UserCreate) SetNillableSex(v *user.Sex) *UserCreate {
 	return _c
 }
 
+// SetAvatarID sets the "avatar_id" field.
+func (_c *UserCreate) SetAvatarID(v uint64) *UserCreate {
+	_c.mutation.SetAvatarID(v)
+	return _c
+}
+
+// SetNillableAvatarID sets the "avatar_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableAvatarID(v *uint64) *UserCreate {
+	if v != nil {
+		_c.SetAvatarID(*v)
+	}
+	return _c
+}
+
 // SetStatus sets the "status" field.
 func (_c *UserCreate) SetStatus(v user.Status) *UserCreate {
 	_c.mutation.SetStatus(v)
@@ -159,21 +173,6 @@ func (_c *UserCreate) SetNillableStatus(v *user.Status) *UserCreate {
 func (_c *UserCreate) SetID(v uint64) *UserCreate {
 	_c.mutation.SetID(v)
 	return _c
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
-func (_c *UserCreate) AddAttachmentIDs(ids ...uint64) *UserCreate {
-	_c.mutation.AddAttachmentIDs(ids...)
-	return _c
-}
-
-// AddAttachments adds the "attachments" edges to the Attachment entity.
-func (_c *UserCreate) AddAttachments(v ...*Attachment) *UserCreate {
-	ids := make([]uint64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAttachmentIDs(ids...)
 }
 
 // AddUserRoleIDs adds the "user_roles" edge to the UserRole entity by IDs.
@@ -204,6 +203,11 @@ func (_c *UserCreate) AddCredentials(v ...*Credential) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddCredentialIDs(ids...)
+}
+
+// SetAvatar sets the "avatar" edge to the Attachment entity.
+func (_c *UserCreate) SetAvatar(v *Attachment) *UserCreate {
+	return _c.SetAvatarID(v.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -377,22 +381,6 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
 	}
-	if nodes := _c.mutation.AttachmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.AttachmentsTable,
-			Columns: []string{user.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.UserRolesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -423,6 +411,23 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AvatarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.AvatarTable,
+			Columns: []string{user.AvatarColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.AvatarID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

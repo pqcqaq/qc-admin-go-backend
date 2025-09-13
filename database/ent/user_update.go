@@ -193,6 +193,26 @@ func (_u *UserUpdate) SetNillableSex(v *user.Sex) *UserUpdate {
 	return _u
 }
 
+// SetAvatarID sets the "avatar_id" field.
+func (_u *UserUpdate) SetAvatarID(v uint64) *UserUpdate {
+	_u.mutation.SetAvatarID(v)
+	return _u
+}
+
+// SetNillableAvatarID sets the "avatar_id" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableAvatarID(v *uint64) *UserUpdate {
+	if v != nil {
+		_u.SetAvatarID(*v)
+	}
+	return _u
+}
+
+// ClearAvatarID clears the value of the "avatar_id" field.
+func (_u *UserUpdate) ClearAvatarID() *UserUpdate {
+	_u.mutation.ClearAvatarID()
+	return _u
+}
+
 // SetStatus sets the "status" field.
 func (_u *UserUpdate) SetStatus(v user.Status) *UserUpdate {
 	_u.mutation.SetStatus(v)
@@ -205,21 +225,6 @@ func (_u *UserUpdate) SetNillableStatus(v *user.Status) *UserUpdate {
 		_u.SetStatus(*v)
 	}
 	return _u
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
-func (_u *UserUpdate) AddAttachmentIDs(ids ...uint64) *UserUpdate {
-	_u.mutation.AddAttachmentIDs(ids...)
-	return _u
-}
-
-// AddAttachments adds the "attachments" edges to the Attachment entity.
-func (_u *UserUpdate) AddAttachments(v ...*Attachment) *UserUpdate {
-	ids := make([]uint64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAttachmentIDs(ids...)
 }
 
 // AddUserRoleIDs adds the "user_roles" edge to the UserRole entity by IDs.
@@ -252,30 +257,14 @@ func (_u *UserUpdate) AddCredentials(v ...*Credential) *UserUpdate {
 	return _u.AddCredentialIDs(ids...)
 }
 
+// SetAvatar sets the "avatar" edge to the Attachment entity.
+func (_u *UserUpdate) SetAvatar(v *Attachment) *UserUpdate {
+	return _u.SetAvatarID(v.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
-}
-
-// ClearAttachments clears all "attachments" edges to the Attachment entity.
-func (_u *UserUpdate) ClearAttachments() *UserUpdate {
-	_u.mutation.ClearAttachments()
-	return _u
-}
-
-// RemoveAttachmentIDs removes the "attachments" edge to Attachment entities by IDs.
-func (_u *UserUpdate) RemoveAttachmentIDs(ids ...uint64) *UserUpdate {
-	_u.mutation.RemoveAttachmentIDs(ids...)
-	return _u
-}
-
-// RemoveAttachments removes "attachments" edges to Attachment entities.
-func (_u *UserUpdate) RemoveAttachments(v ...*Attachment) *UserUpdate {
-	ids := make([]uint64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAttachmentIDs(ids...)
 }
 
 // ClearUserRoles clears all "user_roles" edges to the UserRole entity.
@@ -318,6 +307,12 @@ func (_u *UserUpdate) RemoveCredentials(v ...*Credential) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveCredentialIDs(ids...)
+}
+
+// ClearAvatar clears the "avatar" edge to the Attachment entity.
+func (_u *UserUpdate) ClearAvatar() *UserUpdate {
+	_u.mutation.ClearAvatar()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -453,51 +448,6 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(user.FieldStatus, field.TypeEnum, value)
 	}
-	if _u.mutation.AttachmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.AttachmentsTable,
-			Columns: []string{user.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedAttachmentsIDs(); len(nodes) > 0 && !_u.mutation.AttachmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.AttachmentsTable,
-			Columns: []string{user.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AttachmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.AttachmentsTable,
-			Columns: []string{user.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.UserRolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -581,6 +531,35 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(credential.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AvatarCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.AvatarTable,
+			Columns: []string{user.AvatarColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AvatarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.AvatarTable,
+			Columns: []string{user.AvatarColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
@@ -770,6 +749,26 @@ func (_u *UserUpdateOne) SetNillableSex(v *user.Sex) *UserUpdateOne {
 	return _u
 }
 
+// SetAvatarID sets the "avatar_id" field.
+func (_u *UserUpdateOne) SetAvatarID(v uint64) *UserUpdateOne {
+	_u.mutation.SetAvatarID(v)
+	return _u
+}
+
+// SetNillableAvatarID sets the "avatar_id" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableAvatarID(v *uint64) *UserUpdateOne {
+	if v != nil {
+		_u.SetAvatarID(*v)
+	}
+	return _u
+}
+
+// ClearAvatarID clears the value of the "avatar_id" field.
+func (_u *UserUpdateOne) ClearAvatarID() *UserUpdateOne {
+	_u.mutation.ClearAvatarID()
+	return _u
+}
+
 // SetStatus sets the "status" field.
 func (_u *UserUpdateOne) SetStatus(v user.Status) *UserUpdateOne {
 	_u.mutation.SetStatus(v)
@@ -782,21 +781,6 @@ func (_u *UserUpdateOne) SetNillableStatus(v *user.Status) *UserUpdateOne {
 		_u.SetStatus(*v)
 	}
 	return _u
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
-func (_u *UserUpdateOne) AddAttachmentIDs(ids ...uint64) *UserUpdateOne {
-	_u.mutation.AddAttachmentIDs(ids...)
-	return _u
-}
-
-// AddAttachments adds the "attachments" edges to the Attachment entity.
-func (_u *UserUpdateOne) AddAttachments(v ...*Attachment) *UserUpdateOne {
-	ids := make([]uint64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAttachmentIDs(ids...)
 }
 
 // AddUserRoleIDs adds the "user_roles" edge to the UserRole entity by IDs.
@@ -829,30 +813,14 @@ func (_u *UserUpdateOne) AddCredentials(v ...*Credential) *UserUpdateOne {
 	return _u.AddCredentialIDs(ids...)
 }
 
+// SetAvatar sets the "avatar" edge to the Attachment entity.
+func (_u *UserUpdateOne) SetAvatar(v *Attachment) *UserUpdateOne {
+	return _u.SetAvatarID(v.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
-}
-
-// ClearAttachments clears all "attachments" edges to the Attachment entity.
-func (_u *UserUpdateOne) ClearAttachments() *UserUpdateOne {
-	_u.mutation.ClearAttachments()
-	return _u
-}
-
-// RemoveAttachmentIDs removes the "attachments" edge to Attachment entities by IDs.
-func (_u *UserUpdateOne) RemoveAttachmentIDs(ids ...uint64) *UserUpdateOne {
-	_u.mutation.RemoveAttachmentIDs(ids...)
-	return _u
-}
-
-// RemoveAttachments removes "attachments" edges to Attachment entities.
-func (_u *UserUpdateOne) RemoveAttachments(v ...*Attachment) *UserUpdateOne {
-	ids := make([]uint64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAttachmentIDs(ids...)
 }
 
 // ClearUserRoles clears all "user_roles" edges to the UserRole entity.
@@ -895,6 +863,12 @@ func (_u *UserUpdateOne) RemoveCredentials(v ...*Credential) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveCredentialIDs(ids...)
+}
+
+// ClearAvatar clears the "avatar" edge to the Attachment entity.
+func (_u *UserUpdateOne) ClearAvatar() *UserUpdateOne {
+	_u.mutation.ClearAvatar()
+	return _u
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1060,51 +1034,6 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(user.FieldStatus, field.TypeEnum, value)
 	}
-	if _u.mutation.AttachmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.AttachmentsTable,
-			Columns: []string{user.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedAttachmentsIDs(); len(nodes) > 0 && !_u.mutation.AttachmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.AttachmentsTable,
-			Columns: []string{user.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AttachmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.AttachmentsTable,
-			Columns: []string{user.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.UserRolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1188,6 +1117,35 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(credential.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AvatarCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.AvatarTable,
+			Columns: []string{user.AvatarColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AvatarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.AvatarTable,
+			Columns: []string{user.AvatarColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

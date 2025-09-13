@@ -32,21 +32,12 @@ var (
 		{Name: "tag1", Type: field.TypeString, Nullable: true, Size: 100},
 		{Name: "tag2", Type: field.TypeString, Nullable: true, Size: 100},
 		{Name: "tag3", Type: field.TypeString, Nullable: true, Size: 100},
-		{Name: "user_attachments", Type: field.TypeUint64, Nullable: true},
 	}
 	// SysAttachmentsTable holds the schema information for the "sys_attachments" table.
 	SysAttachmentsTable = &schema.Table{
 		Name:       "sys_attachments",
 		Columns:    SysAttachmentsColumns,
 		PrimaryKey: []*schema.Column{SysAttachmentsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "sys_attachments_sys_users_attachments",
-				Columns:    []*schema.Column{SysAttachmentsColumns[21]},
-				RefColumns: []*schema.Column{SysUsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "attachment_delete_time",
@@ -486,12 +477,21 @@ var (
 		{Name: "age", Type: field.TypeInt, Nullable: true},
 		{Name: "sex", Type: field.TypeEnum, Enums: []string{"male", "female", "other"}, Default: "other"},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "inactive", "banned"}, Default: "active"},
+		{Name: "avatar_id", Type: field.TypeUint64, Nullable: true},
 	}
 	// SysUsersTable holds the schema information for the "sys_users" table.
 	SysUsersTable = &schema.Table{
 		Name:       "sys_users",
 		Columns:    SysUsersColumns,
 		PrimaryKey: []*schema.Column{SysUsersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_users_sys_attachments_avatar",
+				Columns:    []*schema.Column{SysUsersColumns[11]},
+				RefColumns: []*schema.Column{SysAttachmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "user_delete_time",
@@ -648,7 +648,6 @@ var (
 )
 
 func init() {
-	SysAttachmentsTable.ForeignKeys[0].RefTable = SysUsersTable
 	SysAttachmentsTable.Annotation = &entsql.Annotation{
 		Table: "sys_attachments",
 	}
@@ -673,6 +672,7 @@ func init() {
 	SysScopesTable.Annotation = &entsql.Annotation{
 		Table: "sys_scopes",
 	}
+	SysUsersTable.ForeignKeys[0].RefTable = SysAttachmentsTable
 	SysUsersTable.Annotation = &entsql.Annotation{
 		Table: "sys_users",
 	}

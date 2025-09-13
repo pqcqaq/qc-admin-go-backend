@@ -12,10 +12,11 @@ type CreateUserRequest struct {
 
 // UpdateUserRequest 更新用户请求结构
 type UpdateUserRequest struct {
-	Name   string `json:"name,omitempty"`
-	Age    *int   `json:"age,omitempty"`
-	Sex    string `json:"sex,omitempty"`
-	Status string `json:"status,omitempty"` // 用户状态
+	Name     string `json:"name,omitempty"`
+	Age      *int   `json:"age,omitempty"`
+	Sex      string `json:"sex,omitempty"`
+	Status   string `json:"status,omitempty"`   // 用户状态
+	AvatarId string `json:"avatarId,omitempty"` // 头像ID
 }
 
 // UserResponse 用户响应结构
@@ -27,6 +28,7 @@ type UserResponse struct {
 	Status     string   `json:"status,omitempty"`     // 用户状态
 	CreateTime string   `json:"createTime,omitempty"` // 创建时间
 	UpdateTime string   `json:"updateTime,omitempty"` // 更新时间
+	Avatar     string   `json:"avatar,omitempty"`     // 头像
 	Roles      []string `json:"roles,omitempty"`      // 角色列表
 }
 

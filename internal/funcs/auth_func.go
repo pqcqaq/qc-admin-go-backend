@@ -132,8 +132,43 @@ func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCo
 	}
 
 	// 检查认证是否锁定
-	if credentialRecord.LockedUntil != nil && credentialRecord.LockedUntil.After(time.Now()) {
-		return nil, fmt.Errorf("账号已锁定，请稍后再试")
+	now := time.Now()
+	if credentialRecord.LockedUntil != nil && credentialRecord.LockedUntil.After(now) {
+		// 在锁定期内，记录尝试次数但不进行认证
+		_, updateErr := credentialRecord.Update().
+			SetLastUsedAt(now).
+			Save(ctx)
+		if updateErr != nil {
+			logging.Warn("更新锁定期间的尝试记录失败: %v\n", updateErr)
+		}
+
+		remainingTime := credentialRecord.LockedUntil.Sub(now)
+		return nil, fmt.Errorf("账号已锁定，剩余时间: %v", remainingTime.Round(time.Minute))
+	}
+
+	// 如果锁定时间已过期，自动解锁并重置失败次数
+	if credentialRecord.LockedUntil != nil && !credentialRecord.LockedUntil.After(now) {
+		_, err = credentialRecord.Update().
+			SetFailedAttempts(0).
+			ClearLockedUntil().
+			SetLastUsedAt(now).
+			Save(ctx)
+		if err != nil {
+			logging.Warn("自动解锁失败: %v\n", err)
+		} else {
+			logging.Info("账号自动解锁: %s", credentialRecord.Identifier)
+		}
+		// 重新查询更新后的记录
+		credentialRecord, err = database.Client.Credential.Query().
+			Where(
+				credential.CredentialTypeEQ(credential.CredentialType(credentialType)),
+				credential.Identifier(identifier),
+			).
+			WithUser().
+			First(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("重新查询认证信息失败: %w", err)
+		}
 	}
 
 	// 根据认证类型进行验证
@@ -423,6 +458,18 @@ func BuildUserInfoWithToken(ctx context.Context, user *ent.User, includeToken bo
 		Status:     string(user.Status),
 		CreateTime: user.CreateTime.Format("2006-01-02 15:04:05"),
 		UpdateTime: user.UpdateTime.Format("2006-01-02 15:04:05"),
+		Age:        user.Age,
+		Sex:        string(user.Sex),
+	}
+
+	// 查询头像
+	avatar, err := database.Client.User.QueryAvatar(user).Only(ctx)
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			return nil, "", fmt.Errorf("查询头像信息失败: %w", err)
+		}
+	} else if avatar != nil {
+		userInfo.Avatar = avatar.URL
 	}
 
 	// 获取用户角色
@@ -448,6 +495,8 @@ func BuildUserInfoWithToken(ctx context.Context, user *ent.User, includeToken bo
 	for i, permission := range permissions {
 		userInfo.Permissions[i] = ConvertPermissionToResponse(permission)
 	}
+
+	// 查找头像
 
 	// 生成JWT Token
 	var token string

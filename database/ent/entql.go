@@ -257,6 +257,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldName:       {Type: field.TypeString, Column: user.FieldName},
 			user.FieldAge:        {Type: field.TypeInt, Column: user.FieldAge},
 			user.FieldSex:        {Type: field.TypeEnum, Column: user.FieldSex},
+			user.FieldAvatarID:   {Type: field.TypeUint64, Column: user.FieldAvatarID},
 			user.FieldStatus:     {Type: field.TypeEnum, Column: user.FieldStatus},
 		},
 	}
@@ -465,18 +466,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Permission",
 	)
 	graph.MustAddE(
-		"attachments",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.AttachmentsTable,
-			Columns: []string{user.AttachmentsColumn},
-			Bidi:    false,
-		},
-		"User",
-		"Attachment",
-	)
-	graph.MustAddE(
 		"user_roles",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -499,6 +488,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"User",
 		"Credential",
+	)
+	graph.MustAddE(
+		"avatar",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.AvatarTable,
+			Columns: []string{user.AvatarColumn},
+			Bidi:    false,
+		},
+		"User",
+		"Attachment",
 	)
 	graph.MustAddE(
 		"user",
@@ -1660,23 +1661,14 @@ func (f *UserFilter) WhereSex(p entql.StringP) {
 	f.Where(p.Field(user.FieldSex))
 }
 
+// WhereAvatarID applies the entql uint64 predicate on the avatar_id field.
+func (f *UserFilter) WhereAvatarID(p entql.Uint64P) {
+	f.Where(p.Field(user.FieldAvatarID))
+}
+
 // WhereStatus applies the entql string predicate on the status field.
 func (f *UserFilter) WhereStatus(p entql.StringP) {
 	f.Where(p.Field(user.FieldStatus))
-}
-
-// WhereHasAttachments applies a predicate to check if query has an edge attachments.
-func (f *UserFilter) WhereHasAttachments() {
-	f.Where(entql.HasEdge("attachments"))
-}
-
-// WhereHasAttachmentsWith applies a predicate to check if query has an edge attachments with a given conditions (other predicates).
-func (f *UserFilter) WhereHasAttachmentsWith(preds ...predicate.Attachment) {
-	f.Where(entql.HasEdgeWith("attachments", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
 }
 
 // WhereHasUserRoles applies a predicate to check if query has an edge user_roles.
@@ -1701,6 +1693,20 @@ func (f *UserFilter) WhereHasCredentials() {
 // WhereHasCredentialsWith applies a predicate to check if query has an edge credentials with a given conditions (other predicates).
 func (f *UserFilter) WhereHasCredentialsWith(preds ...predicate.Credential) {
 	f.Where(entql.HasEdgeWith("credentials", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasAvatar applies a predicate to check if query has an edge avatar.
+func (f *UserFilter) WhereHasAvatar() {
+	f.Where(entql.HasEdge("avatar"))
+}
+
+// WhereHasAvatarWith applies a predicate to check if query has an edge avatar with a given conditions (other predicates).
+func (f *UserFilter) WhereHasAvatarWith(preds ...predicate.Attachment) {
+	f.Where(entql.HasEdgeWith("avatar", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

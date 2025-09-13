@@ -11283,15 +11283,14 @@ type UserMutation struct {
 	sex                *user.Sex
 	status             *user.Status
 	clearedFields      map[string]struct{}
-	attachments        map[uint64]struct{}
-	removedattachments map[uint64]struct{}
-	clearedattachments bool
 	user_roles         map[uint64]struct{}
 	removeduser_roles  map[uint64]struct{}
 	cleareduser_roles  bool
 	credentials        map[uint64]struct{}
 	removedcredentials map[uint64]struct{}
 	clearedcredentials bool
+	avatar             *uint64
+	clearedavatar      bool
 	done               bool
 	oldValue           func(context.Context) (*User, error)
 	predicates         []predicate.User
@@ -11874,6 +11873,55 @@ func (m *UserMutation) ResetSex() {
 	m.sex = nil
 }
 
+// SetAvatarID sets the "avatar_id" field.
+func (m *UserMutation) SetAvatarID(u uint64) {
+	m.avatar = &u
+}
+
+// AvatarID returns the value of the "avatar_id" field in the mutation.
+func (m *UserMutation) AvatarID() (r uint64, exists bool) {
+	v := m.avatar
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAvatarID returns the old "avatar_id" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldAvatarID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAvatarID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAvatarID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAvatarID: %w", err)
+	}
+	return oldValue.AvatarID, nil
+}
+
+// ClearAvatarID clears the value of the "avatar_id" field.
+func (m *UserMutation) ClearAvatarID() {
+	m.avatar = nil
+	m.clearedFields[user.FieldAvatarID] = struct{}{}
+}
+
+// AvatarIDCleared returns if the "avatar_id" field was cleared in this mutation.
+func (m *UserMutation) AvatarIDCleared() bool {
+	_, ok := m.clearedFields[user.FieldAvatarID]
+	return ok
+}
+
+// ResetAvatarID resets all changes to the "avatar_id" field.
+func (m *UserMutation) ResetAvatarID() {
+	m.avatar = nil
+	delete(m.clearedFields, user.FieldAvatarID)
+}
+
 // SetStatus sets the "status" field.
 func (m *UserMutation) SetStatus(u user.Status) {
 	m.status = &u
@@ -11908,60 +11956,6 @@ func (m *UserMutation) OldStatus(ctx context.Context) (v user.Status, err error)
 // ResetStatus resets all changes to the "status" field.
 func (m *UserMutation) ResetStatus() {
 	m.status = nil
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by ids.
-func (m *UserMutation) AddAttachmentIDs(ids ...uint64) {
-	if m.attachments == nil {
-		m.attachments = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		m.attachments[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAttachments clears the "attachments" edge to the Attachment entity.
-func (m *UserMutation) ClearAttachments() {
-	m.clearedattachments = true
-}
-
-// AttachmentsCleared reports if the "attachments" edge to the Attachment entity was cleared.
-func (m *UserMutation) AttachmentsCleared() bool {
-	return m.clearedattachments
-}
-
-// RemoveAttachmentIDs removes the "attachments" edge to the Attachment entity by IDs.
-func (m *UserMutation) RemoveAttachmentIDs(ids ...uint64) {
-	if m.removedattachments == nil {
-		m.removedattachments = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.attachments, ids[i])
-		m.removedattachments[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAttachments returns the removed IDs of the "attachments" edge to the Attachment entity.
-func (m *UserMutation) RemovedAttachmentsIDs() (ids []uint64) {
-	for id := range m.removedattachments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AttachmentsIDs returns the "attachments" edge IDs in the mutation.
-func (m *UserMutation) AttachmentsIDs() (ids []uint64) {
-	for id := range m.attachments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAttachments resets all changes to the "attachments" edge.
-func (m *UserMutation) ResetAttachments() {
-	m.attachments = nil
-	m.clearedattachments = false
-	m.removedattachments = nil
 }
 
 // AddUserRoleIDs adds the "user_roles" edge to the UserRole entity by ids.
@@ -12072,6 +12066,33 @@ func (m *UserMutation) ResetCredentials() {
 	m.removedcredentials = nil
 }
 
+// ClearAvatar clears the "avatar" edge to the Attachment entity.
+func (m *UserMutation) ClearAvatar() {
+	m.clearedavatar = true
+	m.clearedFields[user.FieldAvatarID] = struct{}{}
+}
+
+// AvatarCleared reports if the "avatar" edge to the Attachment entity was cleared.
+func (m *UserMutation) AvatarCleared() bool {
+	return m.AvatarIDCleared() || m.clearedavatar
+}
+
+// AvatarIDs returns the "avatar" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AvatarID instead. It exists only for internal usage by the builders.
+func (m *UserMutation) AvatarIDs() (ids []uint64) {
+	if id := m.avatar; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAvatar resets all changes to the "avatar" edge.
+func (m *UserMutation) ResetAvatar() {
+	m.avatar = nil
+	m.clearedavatar = false
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -12106,7 +12127,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.create_time != nil {
 		fields = append(fields, user.FieldCreateTime)
 	}
@@ -12133,6 +12154,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.sex != nil {
 		fields = append(fields, user.FieldSex)
+	}
+	if m.avatar != nil {
+		fields = append(fields, user.FieldAvatarID)
 	}
 	if m.status != nil {
 		fields = append(fields, user.FieldStatus)
@@ -12163,6 +12187,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Age()
 	case user.FieldSex:
 		return m.Sex()
+	case user.FieldAvatarID:
+		return m.AvatarID()
 	case user.FieldStatus:
 		return m.Status()
 	}
@@ -12192,6 +12218,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldAge(ctx)
 	case user.FieldSex:
 		return m.OldSex(ctx)
+	case user.FieldAvatarID:
+		return m.OldAvatarID(ctx)
 	case user.FieldStatus:
 		return m.OldStatus(ctx)
 	}
@@ -12265,6 +12293,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSex(v)
+		return nil
+	case user.FieldAvatarID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAvatarID(v)
 		return nil
 	case user.FieldStatus:
 		v, ok := value.(user.Status)
@@ -12369,6 +12404,9 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldAge) {
 		fields = append(fields, user.FieldAge)
 	}
+	if m.FieldCleared(user.FieldAvatarID) {
+		fields = append(fields, user.FieldAvatarID)
+	}
 	return fields
 }
 
@@ -12397,6 +12435,9 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldAge:
 		m.ClearAge()
+		return nil
+	case user.FieldAvatarID:
+		m.ClearAvatarID()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -12433,6 +12474,9 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldSex:
 		m.ResetSex()
 		return nil
+	case user.FieldAvatarID:
+		m.ResetAvatarID()
+		return nil
 	case user.FieldStatus:
 		m.ResetStatus()
 		return nil
@@ -12443,14 +12487,14 @@ func (m *UserMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.attachments != nil {
-		edges = append(edges, user.EdgeAttachments)
-	}
 	if m.user_roles != nil {
 		edges = append(edges, user.EdgeUserRoles)
 	}
 	if m.credentials != nil {
 		edges = append(edges, user.EdgeCredentials)
+	}
+	if m.avatar != nil {
+		edges = append(edges, user.EdgeAvatar)
 	}
 	return edges
 }
@@ -12459,12 +12503,6 @@ func (m *UserMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case user.EdgeAttachments:
-		ids := make([]ent.Value, 0, len(m.attachments))
-		for id := range m.attachments {
-			ids = append(ids, id)
-		}
-		return ids
 	case user.EdgeUserRoles:
 		ids := make([]ent.Value, 0, len(m.user_roles))
 		for id := range m.user_roles {
@@ -12477,6 +12515,10 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeAvatar:
+		if id := m.avatar; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
@@ -12484,9 +12526,6 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.removedattachments != nil {
-		edges = append(edges, user.EdgeAttachments)
-	}
 	if m.removeduser_roles != nil {
 		edges = append(edges, user.EdgeUserRoles)
 	}
@@ -12500,12 +12539,6 @@ func (m *UserMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case user.EdgeAttachments:
-		ids := make([]ent.Value, 0, len(m.removedattachments))
-		for id := range m.removedattachments {
-			ids = append(ids, id)
-		}
-		return ids
 	case user.EdgeUserRoles:
 		ids := make([]ent.Value, 0, len(m.removeduser_roles))
 		for id := range m.removeduser_roles {
@@ -12525,14 +12558,14 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.clearedattachments {
-		edges = append(edges, user.EdgeAttachments)
-	}
 	if m.cleareduser_roles {
 		edges = append(edges, user.EdgeUserRoles)
 	}
 	if m.clearedcredentials {
 		edges = append(edges, user.EdgeCredentials)
+	}
+	if m.clearedavatar {
+		edges = append(edges, user.EdgeAvatar)
 	}
 	return edges
 }
@@ -12541,12 +12574,12 @@ func (m *UserMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
-	case user.EdgeAttachments:
-		return m.clearedattachments
 	case user.EdgeUserRoles:
 		return m.cleareduser_roles
 	case user.EdgeCredentials:
 		return m.clearedcredentials
+	case user.EdgeAvatar:
+		return m.clearedavatar
 	}
 	return false
 }
@@ -12555,6 +12588,9 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
 	switch name {
+	case user.EdgeAvatar:
+		m.ClearAvatar()
+		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
@@ -12563,14 +12599,14 @@ func (m *UserMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
-	case user.EdgeAttachments:
-		m.ResetAttachments()
-		return nil
 	case user.EdgeUserRoles:
 		m.ResetUserRoles()
 		return nil
 	case user.EdgeCredentials:
 		m.ResetCredentials()
+		return nil
+	case user.EdgeAvatar:
+		m.ResetAvatar()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

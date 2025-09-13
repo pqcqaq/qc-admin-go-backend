@@ -23,7 +23,6 @@ type AttachmentQuery struct {
 	order      []attachment.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Attachment
-	withFKs    bool
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -335,13 +334,9 @@ func (_q *AttachmentQuery) prepareQuery(ctx context.Context) error {
 
 func (_q *AttachmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Attachment, error) {
 	var (
-		nodes   = []*Attachment{}
-		withFKs = _q.withFKs
-		_spec   = _q.querySpec()
+		nodes = []*Attachment{}
+		_spec = _q.querySpec()
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, attachment.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Attachment).scanValues(nil, columns)
 	}
