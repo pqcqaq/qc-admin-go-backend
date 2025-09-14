@@ -34,14 +34,16 @@ const (
 	FieldAge = "age"
 	// FieldSex holds the string denoting the sex field in the database.
 	FieldSex = "sex"
-	// FieldAvatarID holds the string denoting the avatar_id field in the database.
-	FieldAvatarID = "avatar_id"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldAvatarID holds the string denoting the avatar_id field in the database.
+	FieldAvatarID = "avatar_id"
 	// EdgeUserRoles holds the string denoting the user_roles edge name in mutations.
 	EdgeUserRoles = "user_roles"
 	// EdgeCredentials holds the string denoting the credentials edge name in mutations.
 	EdgeCredentials = "credentials"
+	// EdgeLoginRecords holds the string denoting the login_records edge name in mutations.
+	EdgeLoginRecords = "login_records"
 	// EdgeAvatar holds the string denoting the avatar edge name in mutations.
 	EdgeAvatar = "avatar"
 	// Table holds the table name of the user in the database.
@@ -60,6 +62,13 @@ const (
 	CredentialsInverseTable = "sys_credentials"
 	// CredentialsColumn is the table column denoting the credentials relation/edge.
 	CredentialsColumn = "user_id"
+	// LoginRecordsTable is the table that holds the login_records relation/edge.
+	LoginRecordsTable = "sys_login_records"
+	// LoginRecordsInverseTable is the table name for the LoginRecord entity.
+	// It exists in this package in order to avoid circular dependency with the "loginrecord" package.
+	LoginRecordsInverseTable = "sys_login_records"
+	// LoginRecordsColumn is the table column denoting the login_records relation/edge.
+	LoginRecordsColumn = "user_id"
 	// AvatarTable is the table that holds the avatar relation/edge.
 	AvatarTable = "sys_users"
 	// AvatarInverseTable is the table name for the Attachment entity.
@@ -81,8 +90,8 @@ var Columns = []string{
 	FieldName,
 	FieldAge,
 	FieldSex,
-	FieldAvatarID,
 	FieldStatus,
+	FieldAvatarID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -222,14 +231,14 @@ func BySex(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSex, opts...).ToFunc()
 }
 
-// ByAvatarID orders the results by the avatar_id field.
-func ByAvatarID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAvatarID, opts...).ToFunc()
-}
-
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByAvatarID orders the results by the avatar_id field.
+func ByAvatarID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAvatarID, opts...).ToFunc()
 }
 
 // ByUserRolesCount orders the results by user_roles count.
@@ -260,6 +269,20 @@ func ByCredentials(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByLoginRecordsCount orders the results by login_records count.
+func ByLoginRecordsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLoginRecordsStep(), opts...)
+	}
+}
+
+// ByLoginRecords orders the results by login_records terms.
+func ByLoginRecords(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLoginRecordsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByAvatarField orders the results by avatar field.
 func ByAvatarField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -278,6 +301,13 @@ func newCredentialsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CredentialsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, CredentialsTable, CredentialsColumn),
+	)
+}
+func newLoginRecordsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LoginRecordsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, LoginRecordsTable, LoginRecordsColumn),
 	)
 }
 func newAvatarStep() *sqlgraph.Step {

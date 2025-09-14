@@ -83,3 +83,22 @@ type UserInfo struct {
 	Age         int                   `json:"age,omitempty"`         // 年龄
 	Permissions []*PermissionResponse `json:"permissions,omitempty"` // 用户权限（通过角色继承）
 }
+
+// LoginRecordResponse 登录记录响应
+type LoginRecordResponse struct {
+	ID             uint64                 `json:"id"`
+	UserID         uint64                 `json:"userId"`
+	Identifier     string                 `json:"identifier"`
+	CredentialType string                 `json:"credentialType"`
+	IPAddress      string                 `json:"ipAddress"`
+	UserAgent      string                 `json:"userAgent,omitempty"`
+	DeviceInfo     string                 `json:"deviceInfo,omitempty"`
+	Location       string                 `json:"location,omitempty"`
+	Status         string                 `json:"status"`
+	FailureReason  string                 `json:"failureReason,omitempty"`
+	SessionID      string                 `json:"sessionId,omitempty"`
+	LoginTime      string                 `json:"loginTime"`
+	LogoutTime     string                 `json:"logoutTime,omitempty"`
+	Duration       int                    `json:"duration,omitempty"` // 会话持续时间(秒)
+	Metadata       map[string]interface{} `json:"metadata,omitempty"`
+}

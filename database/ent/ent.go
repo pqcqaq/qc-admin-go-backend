@@ -9,6 +9,7 @@ import (
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
+	"go-backend/database/ent/loginrecord"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/role"
 	"go-backend/database/ent/rolepermission"
@@ -86,6 +87,7 @@ func checkColumn(t, c string) error {
 			attachment.Table:     attachment.ValidColumn,
 			credential.Table:     credential.ValidColumn,
 			logging.Table:        logging.ValidColumn,
+			loginrecord.Table:    loginrecord.ValidColumn,
 			permission.Table:     permission.ValidColumn,
 			role.Table:           role.ValidColumn,
 			rolepermission.Table: rolepermission.ValidColumn,

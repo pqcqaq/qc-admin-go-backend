@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/credential"
+	"go-backend/database/ent/loginrecord"
 	"go-backend/database/ent/predicate"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
@@ -193,6 +194,20 @@ func (_u *UserUpdate) SetNillableSex(v *user.Sex) *UserUpdate {
 	return _u
 }
 
+// SetStatus sets the "status" field.
+func (_u *UserUpdate) SetStatus(v user.Status) *UserUpdate {
+	_u.mutation.SetStatus(v)
+	return _u
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableStatus(v *user.Status) *UserUpdate {
+	if v != nil {
+		_u.SetStatus(*v)
+	}
+	return _u
+}
+
 // SetAvatarID sets the "avatar_id" field.
 func (_u *UserUpdate) SetAvatarID(v uint64) *UserUpdate {
 	_u.mutation.SetAvatarID(v)
@@ -210,20 +225,6 @@ func (_u *UserUpdate) SetNillableAvatarID(v *uint64) *UserUpdate {
 // ClearAvatarID clears the value of the "avatar_id" field.
 func (_u *UserUpdate) ClearAvatarID() *UserUpdate {
 	_u.mutation.ClearAvatarID()
-	return _u
-}
-
-// SetStatus sets the "status" field.
-func (_u *UserUpdate) SetStatus(v user.Status) *UserUpdate {
-	_u.mutation.SetStatus(v)
-	return _u
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableStatus(v *user.Status) *UserUpdate {
-	if v != nil {
-		_u.SetStatus(*v)
-	}
 	return _u
 }
 
@@ -255,6 +256,21 @@ func (_u *UserUpdate) AddCredentials(v ...*Credential) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddCredentialIDs(ids...)
+}
+
+// AddLoginRecordIDs adds the "login_records" edge to the LoginRecord entity by IDs.
+func (_u *UserUpdate) AddLoginRecordIDs(ids ...uint64) *UserUpdate {
+	_u.mutation.AddLoginRecordIDs(ids...)
+	return _u
+}
+
+// AddLoginRecords adds the "login_records" edges to the LoginRecord entity.
+func (_u *UserUpdate) AddLoginRecords(v ...*LoginRecord) *UserUpdate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLoginRecordIDs(ids...)
 }
 
 // SetAvatar sets the "avatar" edge to the Attachment entity.
@@ -307,6 +323,27 @@ func (_u *UserUpdate) RemoveCredentials(v ...*Credential) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveCredentialIDs(ids...)
+}
+
+// ClearLoginRecords clears all "login_records" edges to the LoginRecord entity.
+func (_u *UserUpdate) ClearLoginRecords() *UserUpdate {
+	_u.mutation.ClearLoginRecords()
+	return _u
+}
+
+// RemoveLoginRecordIDs removes the "login_records" edge to LoginRecord entities by IDs.
+func (_u *UserUpdate) RemoveLoginRecordIDs(ids ...uint64) *UserUpdate {
+	_u.mutation.RemoveLoginRecordIDs(ids...)
+	return _u
+}
+
+// RemoveLoginRecords removes "login_records" edges to LoginRecord entities.
+func (_u *UserUpdate) RemoveLoginRecords(v ...*LoginRecord) *UserUpdate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLoginRecordIDs(ids...)
 }
 
 // ClearAvatar clears the "avatar" edge to the Attachment entity.
@@ -538,6 +575,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.LoginRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LoginRecordsTable,
+			Columns: []string{user.LoginRecordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loginrecord.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLoginRecordsIDs(); len(nodes) > 0 && !_u.mutation.LoginRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LoginRecordsTable,
+			Columns: []string{user.LoginRecordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loginrecord.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LoginRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LoginRecordsTable,
+			Columns: []string{user.LoginRecordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loginrecord.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.AvatarCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -749,6 +831,20 @@ func (_u *UserUpdateOne) SetNillableSex(v *user.Sex) *UserUpdateOne {
 	return _u
 }
 
+// SetStatus sets the "status" field.
+func (_u *UserUpdateOne) SetStatus(v user.Status) *UserUpdateOne {
+	_u.mutation.SetStatus(v)
+	return _u
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableStatus(v *user.Status) *UserUpdateOne {
+	if v != nil {
+		_u.SetStatus(*v)
+	}
+	return _u
+}
+
 // SetAvatarID sets the "avatar_id" field.
 func (_u *UserUpdateOne) SetAvatarID(v uint64) *UserUpdateOne {
 	_u.mutation.SetAvatarID(v)
@@ -766,20 +862,6 @@ func (_u *UserUpdateOne) SetNillableAvatarID(v *uint64) *UserUpdateOne {
 // ClearAvatarID clears the value of the "avatar_id" field.
 func (_u *UserUpdateOne) ClearAvatarID() *UserUpdateOne {
 	_u.mutation.ClearAvatarID()
-	return _u
-}
-
-// SetStatus sets the "status" field.
-func (_u *UserUpdateOne) SetStatus(v user.Status) *UserUpdateOne {
-	_u.mutation.SetStatus(v)
-	return _u
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableStatus(v *user.Status) *UserUpdateOne {
-	if v != nil {
-		_u.SetStatus(*v)
-	}
 	return _u
 }
 
@@ -811,6 +893,21 @@ func (_u *UserUpdateOne) AddCredentials(v ...*Credential) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.AddCredentialIDs(ids...)
+}
+
+// AddLoginRecordIDs adds the "login_records" edge to the LoginRecord entity by IDs.
+func (_u *UserUpdateOne) AddLoginRecordIDs(ids ...uint64) *UserUpdateOne {
+	_u.mutation.AddLoginRecordIDs(ids...)
+	return _u
+}
+
+// AddLoginRecords adds the "login_records" edges to the LoginRecord entity.
+func (_u *UserUpdateOne) AddLoginRecords(v ...*LoginRecord) *UserUpdateOne {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLoginRecordIDs(ids...)
 }
 
 // SetAvatar sets the "avatar" edge to the Attachment entity.
@@ -863,6 +960,27 @@ func (_u *UserUpdateOne) RemoveCredentials(v ...*Credential) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveCredentialIDs(ids...)
+}
+
+// ClearLoginRecords clears all "login_records" edges to the LoginRecord entity.
+func (_u *UserUpdateOne) ClearLoginRecords() *UserUpdateOne {
+	_u.mutation.ClearLoginRecords()
+	return _u
+}
+
+// RemoveLoginRecordIDs removes the "login_records" edge to LoginRecord entities by IDs.
+func (_u *UserUpdateOne) RemoveLoginRecordIDs(ids ...uint64) *UserUpdateOne {
+	_u.mutation.RemoveLoginRecordIDs(ids...)
+	return _u
+}
+
+// RemoveLoginRecords removes "login_records" edges to LoginRecord entities.
+func (_u *UserUpdateOne) RemoveLoginRecords(v ...*LoginRecord) *UserUpdateOne {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLoginRecordIDs(ids...)
 }
 
 // ClearAvatar clears the "avatar" edge to the Attachment entity.
@@ -1117,6 +1235,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(credential.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LoginRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LoginRecordsTable,
+			Columns: []string{user.LoginRecordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loginrecord.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLoginRecordsIDs(); len(nodes) > 0 && !_u.mutation.LoginRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LoginRecordsTable,
+			Columns: []string{user.LoginRecordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loginrecord.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LoginRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LoginRecordsTable,
+			Columns: []string{user.LoginRecordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loginrecord.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

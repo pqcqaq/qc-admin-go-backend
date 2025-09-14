@@ -20,6 +20,8 @@ type Tx struct {
 	Credential *CredentialClient
 	// Logging is the client for interacting with the Logging builders.
 	Logging *LoggingClient
+	// LoginRecord is the client for interacting with the LoginRecord builders.
+	LoginRecord *LoginRecordClient
 	// Permission is the client for interacting with the Permission builders.
 	Permission *PermissionClient
 	// Role is the client for interacting with the Role builders.
@@ -170,6 +172,7 @@ func (tx *Tx) init() {
 	tx.Attachment = NewAttachmentClient(tx.config)
 	tx.Credential = NewCredentialClient(tx.config)
 	tx.Logging = NewLoggingClient(tx.config)
+	tx.LoginRecord = NewLoginRecordClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
 	tx.RolePermission = NewRolePermissionClient(tx.config)

@@ -515,6 +515,26 @@ func SexNotIn(vs ...Sex) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldSex, vs...))
 }
 
+// StatusEQ applies the EQ predicate on the "status" field.
+func StatusEQ(v Status) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldStatus, v))
+}
+
+// StatusNEQ applies the NEQ predicate on the "status" field.
+func StatusNEQ(v Status) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldStatus, v))
+}
+
+// StatusIn applies the In predicate on the "status" field.
+func StatusIn(vs ...Status) predicate.User {
+	return predicate.User(sql.FieldIn(FieldStatus, vs...))
+}
+
+// StatusNotIn applies the NotIn predicate on the "status" field.
+func StatusNotIn(vs ...Status) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldStatus, vs...))
+}
+
 // AvatarIDEQ applies the EQ predicate on the "avatar_id" field.
 func AvatarIDEQ(v uint64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAvatarID, v))
@@ -543,26 +563,6 @@ func AvatarIDIsNil() predicate.User {
 // AvatarIDNotNil applies the NotNil predicate on the "avatar_id" field.
 func AvatarIDNotNil() predicate.User {
 	return predicate.User(sql.FieldNotNull(FieldAvatarID))
-}
-
-// StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v Status) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldStatus, v))
-}
-
-// StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v Status) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldStatus, v))
-}
-
-// StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...Status) predicate.User {
-	return predicate.User(sql.FieldIn(FieldStatus, vs...))
-}
-
-// StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...Status) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldStatus, vs...))
 }
 
 // HasUserRoles applies the HasEdge predicate on the "user_roles" edge.
@@ -603,6 +603,29 @@ func HasCredentials() predicate.User {
 func HasCredentialsWith(preds ...predicate.Credential) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newCredentialsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasLoginRecords applies the HasEdge predicate on the "login_records" edge.
+func HasLoginRecords() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LoginRecordsTable, LoginRecordsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLoginRecordsWith applies the HasEdge predicate on the "login_records" edge with a given conditions (other predicates).
+func HasLoginRecordsWith(preds ...predicate.LoginRecord) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newLoginRecordsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

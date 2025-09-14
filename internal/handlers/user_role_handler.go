@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"strconv"
 
 	"go-backend/internal/funcs"
@@ -51,7 +50,7 @@ func (h *UserRoleHandler) GetUserRolesWithPagination(c *gin.Context) {
 		return
 	}
 
-	result, err := funcs.GetUserRolesWithPagination(context.Background(), &req)
+	result, err := funcs.GetUserRolesWithPagination(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取用户角色列表失败", err.Error()))
 		return
@@ -94,7 +93,7 @@ func (h *UserRoleHandler) AssignRole(c *gin.Context) {
 		return
 	}
 
-	userRole, err := funcs.AssignUserRole(context.Background(), &req)
+	userRole, err := funcs.AssignUserRole(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		if err.Error() == "user role already exists" {
 			middleware.ThrowError(c, middleware.BadRequestError("用户已拥有此角色", map[string]any{
@@ -155,7 +154,7 @@ func (h *UserRoleHandler) RevokeRole(c *gin.Context) {
 		return
 	}
 
-	err = funcs.RevokeUserRole(context.Background(), userID, roleID)
+	err = funcs.RevokeUserRole(middleware.GetRequestContext(c), userID, roleID)
 	if err != nil {
 		if err.Error() == "user role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("用户角色关联不存在", map[string]any{
@@ -197,7 +196,7 @@ func (h *UserRoleHandler) GetUserRoles(c *gin.Context) {
 		return
 	}
 
-	roles, err := funcs.GetUserRoles(context.Background(), userID)
+	roles, err := funcs.GetUserRoles(middleware.GetRequestContext(c), userID)
 	if err != nil {
 		if err.Error() == "user not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("用户不存在", map[string]any{
@@ -245,7 +244,7 @@ func (h *UserRoleHandler) GetRoleUsers(c *gin.Context) {
 		return
 	}
 
-	users, err := funcs.GetRoleUsers(context.Background(), roleID)
+	users, err := funcs.GetRoleUsers(middleware.GetRequestContext(c), roleID)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -293,7 +292,7 @@ func (h *UserRoleHandler) GetUserPermissions(c *gin.Context) {
 		return
 	}
 
-	permissions, err := funcs.GetUserPermissions(context.Background(), userID)
+	permissions, err := funcs.GetUserPermissions(middleware.GetRequestContext(c), userID)
 	if err != nil {
 		if err.Error() == "user not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("用户不存在", map[string]any{
@@ -350,7 +349,7 @@ func (h *UserRoleHandler) CheckUserPermission(c *gin.Context) {
 		return
 	}
 
-	hasPermission, err := funcs.CheckUserPermission(context.Background(), userID, permissionID)
+	hasPermission, err := funcs.CheckUserPermission(middleware.GetRequestContext(c), userID, permissionID)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("检查用户权限失败", err.Error()))
 		return

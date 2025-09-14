@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/credential"
+	"go-backend/database/ent/loginrecord"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
 	"time"
@@ -141,20 +142,6 @@ func (_c *UserCreate) SetNillableSex(v *user.Sex) *UserCreate {
 	return _c
 }
 
-// SetAvatarID sets the "avatar_id" field.
-func (_c *UserCreate) SetAvatarID(v uint64) *UserCreate {
-	_c.mutation.SetAvatarID(v)
-	return _c
-}
-
-// SetNillableAvatarID sets the "avatar_id" field if the given value is not nil.
-func (_c *UserCreate) SetNillableAvatarID(v *uint64) *UserCreate {
-	if v != nil {
-		_c.SetAvatarID(*v)
-	}
-	return _c
-}
-
 // SetStatus sets the "status" field.
 func (_c *UserCreate) SetStatus(v user.Status) *UserCreate {
 	_c.mutation.SetStatus(v)
@@ -165,6 +152,20 @@ func (_c *UserCreate) SetStatus(v user.Status) *UserCreate {
 func (_c *UserCreate) SetNillableStatus(v *user.Status) *UserCreate {
 	if v != nil {
 		_c.SetStatus(*v)
+	}
+	return _c
+}
+
+// SetAvatarID sets the "avatar_id" field.
+func (_c *UserCreate) SetAvatarID(v uint64) *UserCreate {
+	_c.mutation.SetAvatarID(v)
+	return _c
+}
+
+// SetNillableAvatarID sets the "avatar_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableAvatarID(v *uint64) *UserCreate {
+	if v != nil {
+		_c.SetAvatarID(*v)
 	}
 	return _c
 }
@@ -203,6 +204,21 @@ func (_c *UserCreate) AddCredentials(v ...*Credential) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddCredentialIDs(ids...)
+}
+
+// AddLoginRecordIDs adds the "login_records" edge to the LoginRecord entity by IDs.
+func (_c *UserCreate) AddLoginRecordIDs(ids ...uint64) *UserCreate {
+	_c.mutation.AddLoginRecordIDs(ids...)
+	return _c
+}
+
+// AddLoginRecords adds the "login_records" edges to the LoginRecord entity.
+func (_c *UserCreate) AddLoginRecords(v ...*LoginRecord) *UserCreate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddLoginRecordIDs(ids...)
 }
 
 // SetAvatar sets the "avatar" edge to the Attachment entity.
@@ -406,6 +422,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(credential.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.LoginRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LoginRecordsTable,
+			Columns: []string{user.LoginRecordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(loginrecord.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

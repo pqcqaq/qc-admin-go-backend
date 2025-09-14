@@ -47,13 +47,17 @@ func (User) Fields() []ent.Field {
 			Values("active", "inactive", "banned").
 			Default("active").
 			Comment("用户状态"),
+		field.Uint64("avatar_id").
+			Optional().
+			Comment("头像ID"),
 	}
 }
 
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("user_roles", UserRole.Type),    // 一对多: 一个用户对应多个 user_roles
-		edge.To("credentials", Credential.Type), // 一对多: 一个用户对应多个 credentials
+		edge.To("user_roles", UserRole.Type),       // 一对多: 一个用户对应多个 user_roles
+		edge.To("credentials", Credential.Type),    // 一对多: 一个用户对应多个 credentials
+		edge.To("login_records", LoginRecord.Type), // 一对多: 一个用户对应多个登录记录
 		edge.To("avatar", Attachment.Type).
 			Unique().           // 一对一关系
 			Field("avatar_id"). // 绑定到 avatar_id 字段

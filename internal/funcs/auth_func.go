@@ -17,6 +17,7 @@ import (
 	"go-backend/pkg/utils"
 	"go-backend/shared/models"
 
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/argon2"
 )
 
@@ -105,6 +106,44 @@ func verifyPasswordLegacy(password, hashedPassword string) (bool, error) {
 
 // UserLogin 用户登录
 func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCodeStr string) (*ent.User, error) {
+	return UserLoginWithContext(ctx, nil, credentialType, identifier, secret, verifyCodeStr)
+}
+
+// UserLoginWithContext 用户登录（带上下文记录）
+func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialType, identifier, secret, verifyCodeStr string) (*ent.User, error) {
+	var userRecord *ent.User
+	var sessionID string
+	var loginStatus = LoginStatusFailed
+	var failureReason string
+
+	// 生成会话ID
+	if ginCtx != nil {
+		sessionID = generateSessionID()
+	}
+
+	// 函数结束时记录登录日志
+	defer func() {
+		if ginCtx != nil && userRecord != nil {
+			// 只在有用户记录时记录日志
+			_, logErr := CreateLoginRecordFromGinContext(
+				ctx, ginCtx, userRecord.ID, identifier, credentialType,
+				loginStatus, failureReason, sessionID,
+			)
+			if logErr != nil {
+				logging.Warn("记录登录日志失败: %v", logErr)
+			}
+		} else if ginCtx != nil {
+			// 即使没有用户记录也要记录失败尝试（使用0作为用户ID）
+			_, logErr := CreateLoginRecordFromGinContext(
+				ctx, ginCtx, 0, identifier, credentialType,
+				loginStatus, failureReason, "",
+			)
+			if logErr != nil {
+				logging.Warn("记录登录失败日志失败: %v", logErr)
+			}
+		}
+	}()
+
 	// 首先查找用户认证信息
 	credentialRecord, err := database.Client.Credential.Query().
 		Where(
@@ -116,19 +155,23 @@ func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCo
 
 	if err != nil {
 		if ent.IsNotFound(err) {
-			return nil, fmt.Errorf("用户不存在或认证信息无效")
+			failureReason = "用户不存在或认证信息无效"
+			return nil, fmt.Errorf(failureReason)
 		}
-		return nil, fmt.Errorf("查询用户认证信息失败: %w", err)
+		failureReason = "查询用户认证信息失败"
+		return nil, fmt.Errorf("%s: %w", failureReason, err)
 	}
 
 	// 检查用户状态
-	userRecord := credentialRecord.Edges.User
+	userRecord = credentialRecord.Edges.User
 	if userRecord == nil {
-		return nil, fmt.Errorf("用户信息异常")
+		failureReason = "用户信息异常"
+		return nil, fmt.Errorf(failureReason)
 	}
 
 	if userRecord.Status == user.StatusInactive {
-		return nil, fmt.Errorf("用户账号已禁用")
+		failureReason = "用户账号已禁用"
+		return nil, fmt.Errorf(failureReason)
 	}
 
 	// 检查认证是否锁定
@@ -143,7 +186,9 @@ func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCo
 		}
 
 		remainingTime := credentialRecord.LockedUntil.Sub(now)
-		return nil, fmt.Errorf("账号已锁定，剩余时间: %v", remainingTime.Round(time.Minute))
+		loginStatus = LoginStatusLocked
+		failureReason = fmt.Sprintf("账号已锁定，剩余时间: %v", remainingTime.Round(time.Minute))
+		return nil, fmt.Errorf(failureReason)
 	}
 
 	// 如果锁定时间已过期，自动解锁并重置失败次数
@@ -167,7 +212,8 @@ func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCo
 			WithUser().
 			First(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("重新查询认证信息失败: %w", err)
+			failureReason = "重新查询认证信息失败"
+			return nil, fmt.Errorf("%s: %w", failureReason, err)
 		}
 	}
 
@@ -177,23 +223,30 @@ func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCo
 	if credentialType == CredentialTypePassword {
 		// 密码登录直接校验密码
 		if credentialRecord.Secret == "" {
-			return nil, fmt.Errorf("未设置密码")
+			failureReason = "未设置密码"
+			return nil, fmt.Errorf(failureReason)
 		}
 
 		match, err := verifyPassword(secret, credentialRecord.Secret, credentialRecord.Salt)
 		if err != nil {
-			return nil, fmt.Errorf("密码验证失败: %w", err)
+			failureReason = "密码验证失败"
+			return nil, fmt.Errorf("%s: %w", failureReason, err)
 		}
 		authSuccess = match
+		if !authSuccess {
+			failureReason = "用户名或密码错误"
+		}
 	} else {
 		// 其他认证方式需要验证码
 		if verifyCodeStr == "" {
-			return nil, fmt.Errorf("请提供验证码")
+			failureReason = "请提供验证码"
+			return nil, fmt.Errorf(failureReason)
 		}
 
 		err = VerifyCode(ctx, credentialType, PurposeLogin, identifier, verifyCodeStr)
 		if err != nil {
 			authSuccess = false
+			failureReason = "验证码错误或已过期"
 		} else {
 			authSuccess = true
 		}
@@ -208,6 +261,8 @@ func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCo
 		updateBuilder = updateBuilder.
 			SetFailedAttempts(0).
 			ClearLockedUntil()
+		loginStatus = LoginStatusSuccess
+		failureReason = "" // 清空失败原因
 	} else {
 		// 认证失败，增加失败次数
 		failedAttempts := credentialRecord.FailedAttempts + 1
@@ -217,6 +272,8 @@ func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCo
 		if failedAttempts >= 5 {
 			lockUntil := time.Now().Add(30 * time.Minute)
 			updateBuilder = updateBuilder.SetLockedUntil(lockUntil)
+			loginStatus = LoginStatusLocked
+			failureReason = "账号因多次失败尝试被锁定"
 		}
 	}
 
@@ -227,14 +284,32 @@ func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCo
 	}
 
 	if !authSuccess {
-		if credentialType == CredentialTypePassword {
-			return nil, fmt.Errorf("用户名或密码错误")
-		} else {
-			return nil, fmt.Errorf("验证码错误或已过期")
+		if failureReason == "" {
+			if credentialType == CredentialTypePassword {
+				failureReason = "用户名或密码错误"
+			} else {
+				failureReason = "验证码错误或已过期"
+			}
 		}
+		return nil, fmt.Errorf(failureReason)
+	}
+
+	// 如果有gin上下文，将sessionID存储到上下文中，后续可以用于退出登录时更新记录
+	if ginCtx != nil && sessionID != "" {
+		ginCtx.Set("session_id", sessionID)
 	}
 
 	return userRecord, nil
+}
+
+// generateSessionID 生成会话ID
+func generateSessionID() string {
+	randomStr, err := utils.GenerateRandomString(16)
+	if err != nil {
+		// 如果生成随机字符串失败，使用时间戳作为替代
+		randomStr = fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	return fmt.Sprintf("session_%d_%s", time.Now().UnixNano(), randomStr)
 }
 
 // UserRegister 用户注册

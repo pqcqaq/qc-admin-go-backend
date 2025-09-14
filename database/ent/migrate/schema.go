@@ -214,6 +214,68 @@ var (
 			},
 		},
 	}
+	// SysLoginRecordsColumns holds the columns for the "sys_login_records" table.
+	SysLoginRecordsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "identifier", Type: field.TypeString, Size: 255},
+		{Name: "credential_type", Type: field.TypeEnum, Enums: []string{"password", "email", "oauth", "phone", "totp"}},
+		{Name: "ip_address", Type: field.TypeString, Size: 45},
+		{Name: "user_agent", Type: field.TypeString, Nullable: true, Size: 512},
+		{Name: "device_info", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "location", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"success", "failed", "locked"}},
+		{Name: "failure_reason", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "session_id", Type: field.TypeString, Nullable: true, Size: 128},
+		{Name: "logout_time", Type: field.TypeTime, Nullable: true},
+		{Name: "duration", Type: field.TypeInt, Nullable: true},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true},
+		{Name: "user_id", Type: field.TypeUint64},
+	}
+	// SysLoginRecordsTable holds the schema information for the "sys_login_records" table.
+	SysLoginRecordsTable = &schema.Table{
+		Name:       "sys_login_records",
+		Columns:    SysLoginRecordsColumns,
+		PrimaryKey: []*schema.Column{SysLoginRecordsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_login_records_sys_users_login_records",
+				Columns:    []*schema.Column{SysLoginRecordsColumns[17]},
+				RefColumns: []*schema.Column{SysUsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "loginrecord_user_id_create_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysLoginRecordsColumns[17], SysLoginRecordsColumns[1]},
+			},
+			{
+				Name:    "loginrecord_status_create_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysLoginRecordsColumns[11], SysLoginRecordsColumns[1]},
+			},
+			{
+				Name:    "loginrecord_credential_type_create_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysLoginRecordsColumns[6], SysLoginRecordsColumns[1]},
+			},
+			{
+				Name:    "loginrecord_ip_address_create_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysLoginRecordsColumns[7], SysLoginRecordsColumns[1]},
+			},
+			{
+				Name:    "loginrecord_session_id",
+				Unique:  false,
+				Columns: []*schema.Column{SysLoginRecordsColumns[13]},
+			},
+		},
+	}
 	// SysPermissionsColumns holds the columns for the "sys_permissions" table.
 	SysPermissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -635,6 +697,7 @@ var (
 		SysAttachmentsTable,
 		SysCredentialsTable,
 		LoggingsTable,
+		SysLoginRecordsTable,
 		SysPermissionsTable,
 		SysRolesTable,
 		SysRolePermissionTable,
@@ -654,6 +717,10 @@ func init() {
 	SysCredentialsTable.ForeignKeys[0].RefTable = SysUsersTable
 	SysCredentialsTable.Annotation = &entsql.Annotation{
 		Table: "sys_credentials",
+	}
+	SysLoginRecordsTable.ForeignKeys[0].RefTable = SysUsersTable
+	SysLoginRecordsTable.Annotation = &entsql.Annotation{
+		Table: "sys_login_records",
 	}
 	SysPermissionsTable.Annotation = &entsql.Annotation{
 		Table: "sys_permissions",

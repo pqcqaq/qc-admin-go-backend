@@ -25,6 +25,7 @@ func (r *Router) setupAuthRoutes(rg *gin.RouterGroup) {
 		protected.Use(middleware.JWTAuthMiddleware())
 		{
 			protected.POST("/refresh-token", authHandler.RefreshToken)
+			protected.POST("/logout", authHandler.Logout)
 			protected.GET("/user-info", authHandler.GetUserInfo)
 			protected.GET("/user-menu-tree", authHandler.GetUserMenuTree)
 		}

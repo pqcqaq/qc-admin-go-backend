@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"context"
 
 	"go-backend/internal/funcs"
 	"go-backend/internal/middleware"
 	"go-backend/pkg/jwt"
+	"go-backend/pkg/logging"
 	"go-backend/shared/models"
 
 	"github.com/gin-gonic/gin"
@@ -38,7 +38,7 @@ func (h *AuthHandler) SendVerifyCode(c *gin.Context) {
 		return
 	}
 
-	err := funcs.SendVerificationCode(context.Background(), req.SenderType, req.Purpose, req.Identifier)
+	err := funcs.SendVerificationCode(middleware.GetRequestContext(c), req.SenderType, req.Purpose, req.Identifier)
 	if err != nil {
 		middleware.ThrowError(c, middleware.BusinessError("发送验证码失败", err.Error()))
 		return
@@ -70,7 +70,7 @@ func (h *AuthHandler) VerifyCode(c *gin.Context) {
 		return
 	}
 
-	err := funcs.VerifyCode(context.Background(), req.SenderType, req.Purpose, req.Identifier, req.Code)
+	err := funcs.VerifyCode(middleware.GetRequestContext(c), req.SenderType, req.Purpose, req.Identifier, req.Code)
 	if err != nil {
 		middleware.ThrowError(c, middleware.BusinessError("验证码验证失败", err.Error()))
 		return
@@ -113,14 +113,14 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := funcs.UserLogin(context.Background(), req.CredentialType, req.Identifier, req.Secret, req.VerifyCode)
+	user, err := funcs.UserLoginWithContext(middleware.GetRequestContext(c), c, req.CredentialType, req.Identifier, req.Secret, req.VerifyCode)
 	if err != nil {
 		middleware.ThrowError(c, middleware.UnauthorizedError("登录失败", err.Error()))
 		return
 	}
 
 	// 构建用户信息和Token
-	userInfo, token, err := funcs.BuildUserInfoWithToken(context.Background(), user, true)
+	userInfo, token, err := funcs.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, true)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("构建用户信息失败", err.Error()))
 		return
@@ -165,7 +165,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	user, err := funcs.UserRegister(context.Background(), req.CredentialType, req.Identifier, req.Secret, req.VerifyCode, req.Username)
+	user, err := funcs.UserRegister(middleware.GetRequestContext(c), req.CredentialType, req.Identifier, req.Secret, req.VerifyCode, req.Username)
 	if err != nil {
 		if err.Error() == "用户已存在" {
 			middleware.ThrowError(c, middleware.UserExistsError(err.Error()))
@@ -176,7 +176,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	// 构建用户信息，注册时可选择是否生成Token
-	userInfo, token, err := funcs.BuildUserInfoWithToken(context.Background(), user, true)
+	userInfo, token, err := funcs.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, true)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("构建用户信息失败", err.Error()))
 		return
@@ -222,7 +222,7 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	err := funcs.ResetPassword(context.Background(), req.CredentialType, req.Identifier, req.NewPassword, req.VerifyCode, req.OldPassword)
+	err := funcs.ResetPassword(middleware.GetRequestContext(c), req.CredentialType, req.Identifier, req.NewPassword, req.VerifyCode, req.OldPassword)
 	if err != nil {
 		if err.Error() == "用户不存在" {
 			middleware.ThrowError(c, middleware.UserNotFoundError(err.Error()))
@@ -299,14 +299,14 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	}
 
 	// 获取用户信息
-	user, err := funcs.GetUserByID(context.Background(), userID)
+	user, err := funcs.GetUserByID(middleware.GetRequestContext(c), userID)
 	if err != nil {
 		middleware.ThrowError(c, middleware.NotFoundError("用户不存在", err.Error()))
 		return
 	}
 
 	// 构建完整的用户信息（包含角色和权限，但不包含新token）
-	userInfo, _, err := funcs.BuildUserInfoWithToken(context.Background(), user, false)
+	userInfo, _, err := funcs.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, false)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("构建用户信息失败", err.Error()))
 		return
@@ -315,6 +315,36 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"success": true,
 		"data":    userInfo,
+	})
+}
+
+// Logout 用户登出
+// @Summary      用户登出
+// @Description  用户登出，更新登录记录
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200 {object} object{success=bool,data=object{message=string}}
+// @Failure      401 {object} object{success=bool,message=string}
+// @Router       /auth/logout [post]
+func (h *AuthHandler) Logout(c *gin.Context) {
+	// 尝试获取会话ID
+	sessionID, exists := c.Get("session_id")
+	if exists && sessionID != "" {
+		// 更新登录记录的退出时间
+		err := funcs.UpdateLoginRecordLogout(middleware.GetRequestContext(c), sessionID.(string))
+		if err != nil {
+			// 记录错误但不影响登出响应
+			logging.Warn("更新登录记录退出信息失败: %v", err)
+		}
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"data": gin.H{
+			"message": "登出成功",
+		},
 	})
 }
 
@@ -338,7 +368,7 @@ func (h *AuthHandler) GetUserMenuTree(c *gin.Context) {
 	}
 
 	// 获取用户的菜单树
-	menuTree, err := funcs.GetUserMenuTree(context.Background(), userID)
+	menuTree, err := funcs.GetUserMenuTree(middleware.GetRequestContext(c), userID)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("获取用户菜单树失败", err.Error()))
 		return

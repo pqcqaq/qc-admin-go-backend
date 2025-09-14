@@ -37,10 +37,10 @@ type User struct {
 	Age int `json:"age,omitempty"`
 	// 性别
 	Sex user.Sex `json:"sex,omitempty"`
-	// 头像ID,关联sys_attachments表
-	AvatarID uint64 `json:"avatar_id,omitempty"`
 	// 用户状态
 	Status user.Status `json:"status,omitempty"`
+	// 头像ID
+	AvatarID uint64 `json:"avatar_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -53,13 +53,16 @@ type UserEdges struct {
 	UserRoles []*UserRole `json:"user_roles,omitempty"`
 	// Credentials holds the value of the credentials edge.
 	Credentials []*Credential `json:"credentials,omitempty"`
+	// LoginRecords holds the value of the login_records edge.
+	LoginRecords []*LoginRecord `json:"login_records,omitempty"`
 	// 用户头像
 	Avatar *Attachment `json:"avatar,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes      [3]bool
-	namedUserRoles   map[string][]*UserRole
-	namedCredentials map[string][]*Credential
+	loadedTypes       [4]bool
+	namedUserRoles    map[string][]*UserRole
+	namedCredentials  map[string][]*Credential
+	namedLoginRecords map[string][]*LoginRecord
 }
 
 // UserRolesOrErr returns the UserRoles value or an error if the edge
@@ -80,12 +83,21 @@ func (e UserEdges) CredentialsOrErr() ([]*Credential, error) {
 	return nil, &NotLoadedError{edge: "credentials"}
 }
 
+// LoginRecordsOrErr returns the LoginRecords value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) LoginRecordsOrErr() ([]*LoginRecord, error) {
+	if e.loadedTypes[2] {
+		return e.LoginRecords, nil
+	}
+	return nil, &NotLoadedError{edge: "login_records"}
+}
+
 // AvatarOrErr returns the Avatar value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e UserEdges) AvatarOrErr() (*Attachment, error) {
 	if e.Avatar != nil {
 		return e.Avatar, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: attachment.Label}
 	}
 	return nil, &NotLoadedError{edge: "avatar"}
@@ -177,17 +189,17 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Sex = user.Sex(value.String)
 			}
-		case user.FieldAvatarID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field avatar_id", values[i])
-			} else if value.Valid {
-				_m.AvatarID = uint64(value.Int64)
-			}
 		case user.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				_m.Status = user.Status(value.String)
+			}
+		case user.FieldAvatarID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field avatar_id", values[i])
+			} else if value.Valid {
+				_m.AvatarID = uint64(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -210,6 +222,11 @@ func (_m *User) QueryUserRoles() *UserRoleQuery {
 // QueryCredentials queries the "credentials" edge of the User entity.
 func (_m *User) QueryCredentials() *CredentialQuery {
 	return NewUserClient(_m.config).QueryCredentials(_m)
+}
+
+// QueryLoginRecords queries the "login_records" edge of the User entity.
+func (_m *User) QueryLoginRecords() *LoginRecordQuery {
+	return NewUserClient(_m.config).QueryLoginRecords(_m)
 }
 
 // QueryAvatar queries the "avatar" edge of the User entity.
@@ -267,11 +284,11 @@ func (_m *User) String() string {
 	builder.WriteString("sex=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Sex))
 	builder.WriteString(", ")
-	builder.WriteString("avatar_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.AvatarID))
-	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
+	builder.WriteString(", ")
+	builder.WriteString("avatar_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AvatarID))
 	builder.WriteByte(')')
 	return builder.String()
 }
@@ -321,6 +338,30 @@ func (_m *User) appendNamedCredentials(name string, edges ...*Credential) {
 		_m.Edges.namedCredentials[name] = []*Credential{}
 	} else {
 		_m.Edges.namedCredentials[name] = append(_m.Edges.namedCredentials[name], edges...)
+	}
+}
+
+// NamedLoginRecords returns the LoginRecords named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *User) NamedLoginRecords(name string) ([]*LoginRecord, error) {
+	if _m.Edges.namedLoginRecords == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedLoginRecords[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *User) appendNamedLoginRecords(name string, edges ...*LoginRecord) {
+	if _m.Edges.namedLoginRecords == nil {
+		_m.Edges.namedLoginRecords = make(map[string][]*LoginRecord)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedLoginRecords[name] = []*LoginRecord{}
+	} else {
+		_m.Edges.namedLoginRecords[name] = append(_m.Edges.namedLoginRecords[name], edges...)
 	}
 }
 

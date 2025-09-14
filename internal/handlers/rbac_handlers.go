@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"strconv"
 
 	"go-backend/internal/funcs"
@@ -41,7 +40,7 @@ func NewPermissionHandler() *PermissionHandler {
 // @Failure      500  {object}  object{success=bool,message=string}
 // @Router       /rbac/roles/all [get]
 func (h *RoleHandler) GetAllRoles(c *gin.Context) {
-	roles, err := funcs.GetAllRoles(context.Background())
+	roles, err := funcs.GetAllRoles(middleware.GetRequestContext(c))
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取角色列表失败", err.Error()))
 		return
@@ -89,7 +88,7 @@ func (h *RoleHandler) GetRoles(c *gin.Context) {
 		return
 	}
 
-	result, err := funcs.GetRolesWithPagination(context.Background(), &req)
+	result, err := funcs.GetRolesWithPagination(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取角色列表失败", err.Error()))
 		return
@@ -130,7 +129,7 @@ func (h *RoleHandler) GetRole(c *gin.Context) {
 		return
 	}
 
-	role, err := funcs.GetRoleByID(context.Background(), id)
+	role, err := funcs.GetRoleByID(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -172,7 +171,7 @@ func (h *RoleHandler) CreateRole(c *gin.Context) {
 		return
 	}
 
-	role, err := funcs.CreateRole(context.Background(), &req)
+	role, err := funcs.CreateRole(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		if err.Error() == "role already exists" {
 			middleware.ThrowError(c, middleware.BadRequestError("角色已存在", map[string]any{
@@ -221,7 +220,7 @@ func (h *RoleHandler) UpdateRole(c *gin.Context) {
 		return
 	}
 
-	role, err := funcs.UpdateRole(context.Background(), id, &req)
+	role, err := funcs.UpdateRole(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -263,7 +262,7 @@ func (h *RoleHandler) DeleteRole(c *gin.Context) {
 		return
 	}
 
-	err = funcs.DeleteRole(context.Background(), id)
+	err = funcs.DeleteRole(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -310,7 +309,7 @@ func (h *RoleHandler) AssignRolePermissions(c *gin.Context) {
 		return
 	}
 
-	err = funcs.AssignRolePermissions(context.Background(), id, &req)
+	err = funcs.AssignRolePermissions(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("分配角色权限失败", err.Error()))
 		return
@@ -355,7 +354,7 @@ func (h *RoleHandler) RevokeRolePermission(c *gin.Context) {
 		return
 	}
 
-	err = funcs.RevokeRolePermission(context.Background(), roleID, permissionID)
+	err = funcs.RevokeRolePermission(middleware.GetRequestContext(c), roleID, permissionID)
 	if err != nil {
 		if err.Error() == "role permission not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色权限关联不存在", map[string]any{
@@ -386,7 +385,7 @@ func (h *RoleHandler) RevokeRolePermission(c *gin.Context) {
 // @Failure      500  {object}  object{success=bool,message=string}
 // @Router       /rbac/permissions/all [get]
 func (h *PermissionHandler) GetAllPermissions(c *gin.Context) {
-	permissions, err := funcs.GetAllPermissions(context.Background())
+	permissions, err := funcs.GetAllPermissions(middleware.GetRequestContext(c))
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取权限列表失败", err.Error()))
 		return
@@ -434,7 +433,7 @@ func (h *PermissionHandler) GetPermissions(c *gin.Context) {
 		return
 	}
 
-	result, err := funcs.GetPermissionsWithPagination(context.Background(), &req)
+	result, err := funcs.GetPermissionsWithPagination(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取权限列表失败", err.Error()))
 		return
@@ -475,7 +474,7 @@ func (h *PermissionHandler) GetPermission(c *gin.Context) {
 		return
 	}
 
-	permission, err := funcs.GetPermissionByID(context.Background(), id)
+	permission, err := funcs.GetPermissionByID(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "permission not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("权限不存在", map[string]any{
@@ -522,7 +521,7 @@ func (h *PermissionHandler) CreatePermission(c *gin.Context) {
 		return
 	}
 
-	permission, err := funcs.CreatePermission(context.Background(), &req)
+	permission, err := funcs.CreatePermission(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		if err.Error() == "permission already exists" {
 			middleware.ThrowError(c, middleware.BadRequestError("权限已存在", map[string]any{
@@ -572,7 +571,7 @@ func (h *PermissionHandler) UpdatePermission(c *gin.Context) {
 		return
 	}
 
-	permission, err := funcs.UpdatePermission(context.Background(), id, &req)
+	permission, err := funcs.UpdatePermission(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		if err.Error() == "permission not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("权限不存在", map[string]any{
@@ -614,7 +613,7 @@ func (h *PermissionHandler) DeletePermission(c *gin.Context) {
 		return
 	}
 
-	err = funcs.DeletePermission(context.Background(), id)
+	err = funcs.DeletePermission(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "permission not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("权限不存在", map[string]any{
@@ -644,7 +643,7 @@ func (h *PermissionHandler) DeletePermission(c *gin.Context) {
 // @Failure      500  {object}  object{success=bool,message=string}
 // @Router       /rbac/roles/tree [get]
 func (h *RoleHandler) GetRoleTree(c *gin.Context) {
-	roleTree, err := funcs.GetRoleTree(context.Background())
+	roleTree, err := funcs.GetRoleTree(middleware.GetRequestContext(c))
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取角色树失败", err.Error()))
 		return
@@ -679,7 +678,7 @@ func (h *RoleHandler) GetRoleWithPermissions(c *gin.Context) {
 		return
 	}
 
-	detailedPermissions, err := funcs.GetRoleWithPermissions(context.Background(), id)
+	detailedPermissions, err := funcs.GetRoleWithPermissions(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -732,7 +731,7 @@ func (h *RoleHandler) CreateChildRole(c *gin.Context) {
 		return
 	}
 
-	role, err := funcs.CreateChildRole(context.Background(), parentID, &req)
+	role, err := funcs.CreateChildRole(middleware.GetRequestContext(c), parentID, &req)
 	if err != nil {
 		if err.Error() == "parent role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("父角色不存在", map[string]any{
@@ -788,7 +787,7 @@ func (h *RoleHandler) RemoveParentRole(c *gin.Context) {
 		return
 	}
 
-	err = funcs.RemoveParentRole(context.Background(), roleID, parentID)
+	err = funcs.RemoveParentRole(middleware.GetRequestContext(c), roleID, parentID)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -848,7 +847,7 @@ func (h *RoleHandler) AddParentRole(c *gin.Context) {
 		return
 	}
 
-	err = funcs.AddParentRole(context.Background(), roleID, parentID)
+	err = funcs.AddParentRole(middleware.GetRequestContext(c), roleID, parentID)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -903,7 +902,7 @@ func (h *RoleHandler) GetAssignablePermissions(c *gin.Context) {
 		return
 	}
 
-	permissions, err := funcs.GetAssignablePermissions(context.Background(), id)
+	permissions, err := funcs.GetAssignablePermissions(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -961,7 +960,7 @@ func (h *RoleHandler) GetRoleUsersWithPagination(c *gin.Context) {
 		return
 	}
 
-	result, err := funcs.GetRoleUsersWithPagination(context.Background(), id, &req)
+	result, err := funcs.GetRoleUsersWithPagination(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -1015,7 +1014,7 @@ func (h *RoleHandler) BatchAssignUsersToRole(c *gin.Context) {
 		return
 	}
 
-	err = funcs.BatchAssignUsersToRole(context.Background(), id, &req)
+	err = funcs.BatchAssignUsersToRole(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -1068,7 +1067,7 @@ func (h *RoleHandler) BatchRemoveUsersFromRole(c *gin.Context) {
 		return
 	}
 
-	err = funcs.BatchRemoveUsersFromRole(context.Background(), id, &req)
+	err = funcs.BatchRemoveUsersFromRole(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{

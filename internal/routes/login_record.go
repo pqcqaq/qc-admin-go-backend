@@ -1,0 +1,27 @@
+package routes
+
+import (
+	"go-backend/internal/handlers"
+	"go-backend/internal/middleware"
+
+	"github.com/gin-gonic/gin"
+)
+
+// setupLoginRecordRoutes 设置登录记录相关路由
+func (r *Router) setupLoginRecordRoutes(rg *gin.RouterGroup) {
+	loginRecordHandler := handlers.NewLoginRecordHandler()
+
+	// 用户可以查看自己的登录记录
+	auth := rg.Group("/auth")
+	auth.Use(middleware.JWTAuthMiddleware())
+	{
+		auth.GET("/login-records", loginRecordHandler.GetUserLoginRecords)
+	}
+
+	// 管理员可以查看所有登录记录
+	admin := rg.Group("/admin")
+	admin.Use(middleware.JWTAuthMiddleware())
+	{
+		admin.GET("/login-records", loginRecordHandler.GetLoginRecords)
+	}
+}

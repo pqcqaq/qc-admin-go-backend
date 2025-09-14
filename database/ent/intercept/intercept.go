@@ -10,6 +10,7 @@ import (
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
+	"go-backend/database/ent/loginrecord"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/predicate"
 	"go-backend/database/ent/role"
@@ -158,6 +159,33 @@ func (f TraverseLogging) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.LoggingQuery", q)
+}
+
+// The LoginRecordFunc type is an adapter to allow the use of ordinary function as a Querier.
+type LoginRecordFunc func(context.Context, *ent.LoginRecordQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f LoginRecordFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.LoginRecordQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.LoginRecordQuery", q)
+}
+
+// The TraverseLoginRecord type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseLoginRecord func(context.Context, *ent.LoginRecordQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseLoginRecord) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseLoginRecord) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.LoginRecordQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.LoginRecordQuery", q)
 }
 
 // The PermissionFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -385,6 +413,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.CredentialQuery, predicate.Credential, credential.OrderOption]{typ: ent.TypeCredential, tq: q}, nil
 	case *ent.LoggingQuery:
 		return &query[*ent.LoggingQuery, predicate.Logging, logging.OrderOption]{typ: ent.TypeLogging, tq: q}, nil
+	case *ent.LoginRecordQuery:
+		return &query[*ent.LoginRecordQuery, predicate.LoginRecord, loginrecord.OrderOption]{typ: ent.TypeLoginRecord, tq: q}, nil
 	case *ent.PermissionQuery:
 		return &query[*ent.PermissionQuery, predicate.Permission, permission.OrderOption]{typ: ent.TypePermission, tq: q}, nil
 	case *ent.RoleQuery:

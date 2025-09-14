@@ -49,5 +49,6 @@ func (r *Router) SetupRoutes(config *configs.AppConfig, engine *gin.Engine) {
 		r.setupScanRoutes(api)
 		r.setupDemoRoutes(api)
 		r.setupRBACRoutes(api)
+		r.setupLoginRecordRoutes(api)
 	}
 }

@@ -1,11 +1,19 @@
 package middleware
 
 import (
+	"context"
 	"strings"
 
 	"go-backend/pkg/jwt"
 
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	// UserIDKey 用户ID的context key
+	UserIDKey string = "user_id"
+	// JWTClaimsKey JWT Claims的context key
+	JWTClaimsKey string = "jwt_claims"
 )
 
 // JWTAuthMiddleware JWT认证中间件
@@ -96,4 +104,38 @@ func RequireAuth(c *gin.Context) (uint64, bool) {
 		return 0, false
 	}
 	return userID, true
+}
+
+// GetRequestContext 从gin.Context获取带有用户信息的context.Context
+// 这是统一处理context传递的核心函数
+func GetRequestContext(c *gin.Context) context.Context {
+	ctx := c.Request.Context()
+
+	// 如果有用户ID，将其添加到context中
+	if userID, exists := GetCurrentUserID(c); exists {
+		ctx = context.WithValue(ctx, UserIDKey, userID)
+	}
+
+	// 如果有JWT Claims，将其添加到context中
+	if claims, exists := GetJWTClaims(c); exists {
+		ctx = context.WithValue(ctx, JWTClaimsKey, claims)
+	}
+
+	return ctx
+}
+
+// GetUserIDFromContext 从context中获取用户ID
+func GetUserIDFromContext(ctx context.Context) (uint64, bool) {
+	if userID, ok := ctx.Value(UserIDKey).(uint64); ok {
+		return userID, true
+	}
+	return 0, false
+}
+
+// GetJWTClaimsFromContext 从context中获取JWT Claims
+func GetJWTClaimsFromContext(ctx context.Context) (*jwt.Claims, bool) {
+	if claims, ok := ctx.Value(JWTClaimsKey).(*jwt.Claims); ok {
+		return claims, true
+	}
+	return nil, false
 }

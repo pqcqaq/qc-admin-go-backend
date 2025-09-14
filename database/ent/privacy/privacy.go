@@ -183,6 +183,30 @@ func (f LoggingMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutatio
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.LoggingMutation", m)
 }
 
+// The LoginRecordQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type LoginRecordQueryRuleFunc func(context.Context, *ent.LoginRecordQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f LoginRecordQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.LoginRecordQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.LoginRecordQuery", q)
+}
+
+// The LoginRecordMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type LoginRecordMutationRuleFunc func(context.Context, *ent.LoginRecordMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f LoginRecordMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.LoginRecordMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.LoginRecordMutation", m)
+}
+
 // The PermissionQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type PermissionQueryRuleFunc func(context.Context, *ent.PermissionQuery) error
@@ -416,6 +440,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.LoggingQuery:
 		return q.Filter(), nil
+	case *ent.LoginRecordQuery:
+		return q.Filter(), nil
 	case *ent.PermissionQuery:
 		return q.Filter(), nil
 	case *ent.RoleQuery:
@@ -444,6 +470,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.CredentialMutation:
 		return m.Filter(), nil
 	case *ent.LoggingMutation:
+		return m.Filter(), nil
+	case *ent.LoginRecordMutation:
 		return m.Filter(), nil
 	case *ent.PermissionMutation:
 		return m.Filter(), nil

@@ -15,6 +15,9 @@ type Credential func(*sql.Selector)
 // Logging is the predicate function for logging builders.
 type Logging func(*sql.Selector)
 
+// LoginRecord is the predicate function for loginrecord builders.
+type LoginRecord func(*sql.Selector)
+
 // Permission is the predicate function for permission builders.
 type Permission func(*sql.Selector)
 

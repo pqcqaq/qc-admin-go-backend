@@ -238,12 +238,16 @@ func AuditHook(next ent.Mutator) ent.Mutator {
 	})
 }
 
+const (
+	// UserIDKey 用户ID的context key
+	UserIDKey string = "user_id"
+	// JWTClaimsKey JWT Claims的context key
+	JWTClaimsKey string = "jwt_claims"
+)
+
 // getUserIDFromContext 从上下文中获取用户ID
 func getUserIDFromContext(ctx context.Context) uint64 {
-	if userID, ok := ctx.Value("user_id").(uint64); ok {
-		return userID
-	}
-	if userID, ok := ctx.Value("UserIDKey").(uint64); ok {
+	if userID, ok := ctx.Value(UserIDKey).(uint64); ok {
 		return userID
 	}
 	return 0

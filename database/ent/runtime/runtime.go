@@ -6,6 +6,7 @@ import (
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
+	"go-backend/database/ent/loginrecord"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/role"
 	"go-backend/database/ent/rolepermission"
@@ -204,6 +205,52 @@ func init() {
 	loggingDescStack := loggingFields[10].Descriptor()
 	// logging.StackValidator is a validator for the "stack" field. It is called by the builders before save.
 	logging.StackValidator = loggingDescStack.Validators[0].(func(string) error)
+	loginrecordMixin := schema.LoginRecord{}.Mixin()
+	loginrecordMixinHooks0 := loginrecordMixin[0].Hooks()
+	loginrecord.Hooks[0] = loginrecordMixinHooks0[0]
+	loginrecord.Hooks[1] = loginrecordMixinHooks0[1]
+	loginrecordMixinFields0 := loginrecordMixin[0].Fields()
+	_ = loginrecordMixinFields0
+	loginrecordFields := schema.LoginRecord{}.Fields()
+	_ = loginrecordFields
+	// loginrecordDescCreateTime is the schema descriptor for create_time field.
+	loginrecordDescCreateTime := loginrecordMixinFields0[1].Descriptor()
+	// loginrecord.DefaultCreateTime holds the default value on creation for the create_time field.
+	loginrecord.DefaultCreateTime = loginrecordDescCreateTime.Default.(func() time.Time)
+	// loginrecordDescUpdateTime is the schema descriptor for update_time field.
+	loginrecordDescUpdateTime := loginrecordMixinFields0[3].Descriptor()
+	// loginrecord.DefaultUpdateTime holds the default value on creation for the update_time field.
+	loginrecord.DefaultUpdateTime = loginrecordDescUpdateTime.Default.(func() time.Time)
+	// loginrecord.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	loginrecord.UpdateDefaultUpdateTime = loginrecordDescUpdateTime.UpdateDefault.(func() time.Time)
+	// loginrecordDescIdentifier is the schema descriptor for identifier field.
+	loginrecordDescIdentifier := loginrecordFields[1].Descriptor()
+	// loginrecord.IdentifierValidator is a validator for the "identifier" field. It is called by the builders before save.
+	loginrecord.IdentifierValidator = loginrecordDescIdentifier.Validators[0].(func(string) error)
+	// loginrecordDescIPAddress is the schema descriptor for ip_address field.
+	loginrecordDescIPAddress := loginrecordFields[3].Descriptor()
+	// loginrecord.IPAddressValidator is a validator for the "ip_address" field. It is called by the builders before save.
+	loginrecord.IPAddressValidator = loginrecordDescIPAddress.Validators[0].(func(string) error)
+	// loginrecordDescUserAgent is the schema descriptor for user_agent field.
+	loginrecordDescUserAgent := loginrecordFields[4].Descriptor()
+	// loginrecord.UserAgentValidator is a validator for the "user_agent" field. It is called by the builders before save.
+	loginrecord.UserAgentValidator = loginrecordDescUserAgent.Validators[0].(func(string) error)
+	// loginrecordDescDeviceInfo is the schema descriptor for device_info field.
+	loginrecordDescDeviceInfo := loginrecordFields[5].Descriptor()
+	// loginrecord.DeviceInfoValidator is a validator for the "device_info" field. It is called by the builders before save.
+	loginrecord.DeviceInfoValidator = loginrecordDescDeviceInfo.Validators[0].(func(string) error)
+	// loginrecordDescLocation is the schema descriptor for location field.
+	loginrecordDescLocation := loginrecordFields[6].Descriptor()
+	// loginrecord.LocationValidator is a validator for the "location" field. It is called by the builders before save.
+	loginrecord.LocationValidator = loginrecordDescLocation.Validators[0].(func(string) error)
+	// loginrecordDescFailureReason is the schema descriptor for failure_reason field.
+	loginrecordDescFailureReason := loginrecordFields[8].Descriptor()
+	// loginrecord.FailureReasonValidator is a validator for the "failure_reason" field. It is called by the builders before save.
+	loginrecord.FailureReasonValidator = loginrecordDescFailureReason.Validators[0].(func(string) error)
+	// loginrecordDescSessionID is the schema descriptor for session_id field.
+	loginrecordDescSessionID := loginrecordFields[9].Descriptor()
+	// loginrecord.SessionIDValidator is a validator for the "session_id" field. It is called by the builders before save.
+	loginrecord.SessionIDValidator = loginrecordDescSessionID.Validators[0].(func(string) error)
 	permissionMixin := schema.Permission{}.Mixin()
 	permissionMixinHooks0 := permissionMixin[0].Hooks()
 	permissionMixinHooks1 := permissionMixin[1].Hooks()

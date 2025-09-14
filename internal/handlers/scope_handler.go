@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"strconv"
 
 	"go-backend/internal/funcs"
@@ -30,7 +29,7 @@ func NewScopeHandler() *ScopeHandler {
 // @Failure      500  {object}  object{success=bool,message=string}
 // @Router       /rbac/scopes/all [get]
 func (h *ScopeHandler) GetScopes(c *gin.Context) {
-	scopes, err := funcs.GetAllScopes(context.Background())
+	scopes, err := funcs.GetAllScopes(middleware.GetRequestContext(c))
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取权限域列表失败", err.Error()))
 		return
@@ -78,7 +77,7 @@ func (h *ScopeHandler) GetScopesWithPagination(c *gin.Context) {
 		return
 	}
 
-	result, err := funcs.GetScopesWithPagination(context.Background(), &req)
+	result, err := funcs.GetScopesWithPagination(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取权限域列表失败", err.Error()))
 		return
@@ -119,7 +118,7 @@ func (h *ScopeHandler) GetScope(c *gin.Context) {
 		return
 	}
 
-	scope, err := funcs.GetScopeByID(context.Background(), id)
+	scope, err := funcs.GetScopeByID(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "scope not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("权限域不存在", map[string]any{
@@ -166,7 +165,7 @@ func (h *ScopeHandler) CreateScope(c *gin.Context) {
 		return
 	}
 
-	scope, err := funcs.CreateScope(context.Background(), &req)
+	scope, err := funcs.CreateScope(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		if err.Error() == "scope already exists" {
 			middleware.ThrowError(c, middleware.BadRequestError("权限域已存在", map[string]any{
@@ -215,7 +214,7 @@ func (h *ScopeHandler) UpdateScope(c *gin.Context) {
 		return
 	}
 
-	scope, err := funcs.UpdateScope(context.Background(), id, &req)
+	scope, err := funcs.UpdateScope(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		if err.Error() == "scope not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("权限域不存在", map[string]any{
@@ -257,7 +256,7 @@ func (h *ScopeHandler) DeleteScope(c *gin.Context) {
 		return
 	}
 
-	err = funcs.DeleteScope(context.Background(), id)
+	err = funcs.DeleteScope(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "scope not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("权限域不存在", map[string]any{
@@ -285,7 +284,7 @@ func (h *ScopeHandler) DeleteScope(c *gin.Context) {
 // @Failure      500  {object}  object{success=bool,message=string}
 // @Router       /rbac/scopes/tree [get]
 func (h *ScopeHandler) GetScopeTree(c *gin.Context) {
-	result, err := funcs.GetScopeTree(context.Background())
+	result, err := funcs.GetScopeTree(middleware.GetRequestContext(c))
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取权限域树失败", err.Error()))
 		return

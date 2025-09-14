@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/credential"
+	"go-backend/database/ent/loginrecord"
 	"go-backend/database/ent/predicate"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
@@ -23,16 +24,18 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []user.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.User
-	withUserRoles        *UserRoleQuery
-	withCredentials      *CredentialQuery
-	withAvatar           *AttachmentQuery
-	modifiers            []func(*sql.Selector)
-	withNamedUserRoles   map[string]*UserRoleQuery
-	withNamedCredentials map[string]*CredentialQuery
+	ctx                   *QueryContext
+	order                 []user.OrderOption
+	inters                []Interceptor
+	predicates            []predicate.User
+	withUserRoles         *UserRoleQuery
+	withCredentials       *CredentialQuery
+	withLoginRecords      *LoginRecordQuery
+	withAvatar            *AttachmentQuery
+	modifiers             []func(*sql.Selector)
+	withNamedUserRoles    map[string]*UserRoleQuery
+	withNamedCredentials  map[string]*CredentialQuery
+	withNamedLoginRecords map[string]*LoginRecordQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -106,6 +109,28 @@ func (_q *UserQuery) QueryCredentials() *CredentialQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(credential.Table, credential.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.CredentialsTable, user.CredentialsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLoginRecords chains the current query on the "login_records" edge.
+func (_q *UserQuery) QueryLoginRecords() *LoginRecordQuery {
+	query := (&LoginRecordClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(loginrecord.Table, loginrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.LoginRecordsTable, user.LoginRecordsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -322,14 +347,15 @@ func (_q *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:          _q.config,
-		ctx:             _q.ctx.Clone(),
-		order:           append([]user.OrderOption{}, _q.order...),
-		inters:          append([]Interceptor{}, _q.inters...),
-		predicates:      append([]predicate.User{}, _q.predicates...),
-		withUserRoles:   _q.withUserRoles.Clone(),
-		withCredentials: _q.withCredentials.Clone(),
-		withAvatar:      _q.withAvatar.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]user.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.User{}, _q.predicates...),
+		withUserRoles:    _q.withUserRoles.Clone(),
+		withCredentials:  _q.withCredentials.Clone(),
+		withLoginRecords: _q.withLoginRecords.Clone(),
+		withAvatar:       _q.withAvatar.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -355,6 +381,17 @@ func (_q *UserQuery) WithCredentials(opts ...func(*CredentialQuery)) *UserQuery 
 		opt(query)
 	}
 	_q.withCredentials = query
+	return _q
+}
+
+// WithLoginRecords tells the query-builder to eager-load the nodes that are connected to
+// the "login_records" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithLoginRecords(opts ...func(*LoginRecordQuery)) *UserQuery {
+	query := (&LoginRecordClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withLoginRecords = query
 	return _q
 }
 
@@ -447,9 +484,10 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withUserRoles != nil,
 			_q.withCredentials != nil,
+			_q.withLoginRecords != nil,
 			_q.withAvatar != nil,
 		}
 	)
@@ -488,6 +526,13 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
+	if query := _q.withLoginRecords; query != nil {
+		if err := _q.loadLoginRecords(ctx, query, nodes,
+			func(n *User) { n.Edges.LoginRecords = []*LoginRecord{} },
+			func(n *User, e *LoginRecord) { n.Edges.LoginRecords = append(n.Edges.LoginRecords, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := _q.withAvatar; query != nil {
 		if err := _q.loadAvatar(ctx, query, nodes, nil,
 			func(n *User, e *Attachment) { n.Edges.Avatar = e }); err != nil {
@@ -505,6 +550,13 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadCredentials(ctx, query, nodes,
 			func(n *User) { n.appendNamedCredentials(name) },
 			func(n *User, e *Credential) { n.appendNamedCredentials(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range _q.withNamedLoginRecords {
+		if err := _q.loadLoginRecords(ctx, query, nodes,
+			func(n *User) { n.appendNamedLoginRecords(name) },
+			func(n *User, e *LoginRecord) { n.appendNamedLoginRecords(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -556,6 +608,36 @@ func (_q *UserQuery) loadCredentials(ctx context.Context, query *CredentialQuery
 	}
 	query.Where(predicate.Credential(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.CredentialsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadLoginRecords(ctx context.Context, query *LoginRecordQuery, nodes []*User, init func(*User), assign func(*User, *LoginRecord)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(loginrecord.FieldUserID)
+	}
+	query.Where(predicate.LoginRecord(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.LoginRecordsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -742,6 +824,20 @@ func (_q *UserQuery) WithNamedCredentials(name string, opts ...func(*CredentialQ
 		_q.withNamedCredentials = make(map[string]*CredentialQuery)
 	}
 	_q.withNamedCredentials[name] = query
+	return _q
+}
+
+// WithNamedLoginRecords tells the query-builder to eager-load the nodes that are connected to the "login_records"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithNamedLoginRecords(name string, opts ...func(*LoginRecordQuery)) *UserQuery {
+	query := (&LoginRecordClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if _q.withNamedLoginRecords == nil {
+		_q.withNamedLoginRecords = make(map[string]*LoginRecordQuery)
+	}
+	_q.withNamedLoginRecords[name] = query
 	return _q
 }
 
