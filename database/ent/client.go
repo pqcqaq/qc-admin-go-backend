@@ -11,6 +11,7 @@ import (
 
 	"go-backend/database/ent/migrate"
 
+	"go-backend/database/ent/apiauth"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
@@ -37,6 +38,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// APIAuth is the client for interacting with the APIAuth builders.
+	APIAuth *APIAuthClient
 	// Attachment is the client for interacting with the Attachment builders.
 	Attachment *AttachmentClient
 	// Credential is the client for interacting with the Credential builders.
@@ -72,6 +75,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.APIAuth = NewAPIAuthClient(c.config)
 	c.Attachment = NewAttachmentClient(c.config)
 	c.Credential = NewCredentialClient(c.config)
 	c.Logging = NewLoggingClient(c.config)
@@ -176,6 +180,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:            ctx,
 		config:         cfg,
+		APIAuth:        NewAPIAuthClient(cfg),
 		Attachment:     NewAttachmentClient(cfg),
 		Credential:     NewCredentialClient(cfg),
 		Logging:        NewLoggingClient(cfg),
@@ -207,6 +212,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:            ctx,
 		config:         cfg,
+		APIAuth:        NewAPIAuthClient(cfg),
 		Attachment:     NewAttachmentClient(cfg),
 		Credential:     NewCredentialClient(cfg),
 		Logging:        NewLoggingClient(cfg),
@@ -225,7 +231,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Attachment.
+//		APIAuth.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -248,8 +254,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Attachment, c.Credential, c.Logging, c.LoginRecord, c.Permission, c.Role,
-		c.RolePermission, c.Scan, c.Scope, c.User, c.UserRole, c.VerifyCode,
+		c.APIAuth, c.Attachment, c.Credential, c.Logging, c.LoginRecord, c.Permission,
+		c.Role, c.RolePermission, c.Scan, c.Scope, c.User, c.UserRole, c.VerifyCode,
 	} {
 		n.Use(hooks...)
 	}
@@ -259,8 +265,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Attachment, c.Credential, c.Logging, c.LoginRecord, c.Permission, c.Role,
-		c.RolePermission, c.Scan, c.Scope, c.User, c.UserRole, c.VerifyCode,
+		c.APIAuth, c.Attachment, c.Credential, c.Logging, c.LoginRecord, c.Permission,
+		c.Role, c.RolePermission, c.Scan, c.Scope, c.User, c.UserRole, c.VerifyCode,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -269,6 +275,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *APIAuthMutation:
+		return c.APIAuth.mutate(ctx, m)
 	case *AttachmentMutation:
 		return c.Attachment.mutate(ctx, m)
 	case *CredentialMutation:
@@ -295,6 +303,157 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.VerifyCode.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// APIAuthClient is a client for the APIAuth schema.
+type APIAuthClient struct {
+	config
+}
+
+// NewAPIAuthClient returns a client for the APIAuth from the given config.
+func NewAPIAuthClient(c config) *APIAuthClient {
+	return &APIAuthClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `apiauth.Hooks(f(g(h())))`.
+func (c *APIAuthClient) Use(hooks ...Hook) {
+	c.hooks.APIAuth = append(c.hooks.APIAuth, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `apiauth.Intercept(f(g(h())))`.
+func (c *APIAuthClient) Intercept(interceptors ...Interceptor) {
+	c.inters.APIAuth = append(c.inters.APIAuth, interceptors...)
+}
+
+// Create returns a builder for creating a APIAuth entity.
+func (c *APIAuthClient) Create() *APIAuthCreate {
+	mutation := newAPIAuthMutation(c.config, OpCreate)
+	return &APIAuthCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of APIAuth entities.
+func (c *APIAuthClient) CreateBulk(builders ...*APIAuthCreate) *APIAuthCreateBulk {
+	return &APIAuthCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *APIAuthClient) MapCreateBulk(slice any, setFunc func(*APIAuthCreate, int)) *APIAuthCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &APIAuthCreateBulk{err: fmt.Errorf("calling to APIAuthClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*APIAuthCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &APIAuthCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for APIAuth.
+func (c *APIAuthClient) Update() *APIAuthUpdate {
+	mutation := newAPIAuthMutation(c.config, OpUpdate)
+	return &APIAuthUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *APIAuthClient) UpdateOne(_m *APIAuth) *APIAuthUpdateOne {
+	mutation := newAPIAuthMutation(c.config, OpUpdateOne, withAPIAuth(_m))
+	return &APIAuthUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *APIAuthClient) UpdateOneID(id uint64) *APIAuthUpdateOne {
+	mutation := newAPIAuthMutation(c.config, OpUpdateOne, withAPIAuthID(id))
+	return &APIAuthUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for APIAuth.
+func (c *APIAuthClient) Delete() *APIAuthDelete {
+	mutation := newAPIAuthMutation(c.config, OpDelete)
+	return &APIAuthDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *APIAuthClient) DeleteOne(_m *APIAuth) *APIAuthDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *APIAuthClient) DeleteOneID(id uint64) *APIAuthDeleteOne {
+	builder := c.Delete().Where(apiauth.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &APIAuthDeleteOne{builder}
+}
+
+// Query returns a query builder for APIAuth.
+func (c *APIAuthClient) Query() *APIAuthQuery {
+	return &APIAuthQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAPIAuth},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a APIAuth entity by its id.
+func (c *APIAuthClient) Get(ctx context.Context, id uint64) (*APIAuth, error) {
+	return c.Query().Where(apiauth.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *APIAuthClient) GetX(ctx context.Context, id uint64) *APIAuth {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryPermissions queries the permissions edge of a APIAuth.
+func (c *APIAuthClient) QueryPermissions(_m *APIAuth) *PermissionQuery {
+	query := (&PermissionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(apiauth.Table, apiauth.FieldID, id),
+			sqlgraph.To(permission.Table, permission.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, apiauth.PermissionsTable, apiauth.PermissionsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *APIAuthClient) Hooks() []Hook {
+	hooks := c.hooks.APIAuth
+	return append(hooks[:len(hooks):len(hooks)], apiauth.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *APIAuthClient) Interceptors() []Interceptor {
+	inters := c.inters.APIAuth
+	return append(inters[:len(inters):len(inters)], apiauth.Interceptors[:]...)
+}
+
+func (c *APIAuthClient) mutate(ctx context.Context, m *APIAuthMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&APIAuthCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&APIAuthUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&APIAuthUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&APIAuthDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown APIAuth mutation op: %q", m.Op())
 	}
 }
 
@@ -1002,6 +1161,22 @@ func (c *PermissionClient) QueryScope(_m *Permission) *ScopeQuery {
 			sqlgraph.From(permission.Table, permission.FieldID, id),
 			sqlgraph.To(scope.Table, scope.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, permission.ScopeTable, permission.ScopeColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAPIAuths queries the api_auths edge of a Permission.
+func (c *PermissionClient) QueryAPIAuths(_m *Permission) *APIAuthQuery {
+	query := (&APIAuthClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(permission.Table, permission.FieldID, id),
+			sqlgraph.To(apiauth.Table, apiauth.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, permission.APIAuthsTable, permission.APIAuthsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2240,12 +2415,12 @@ func (c *VerifyCodeClient) mutate(ctx context.Context, m *VerifyCodeMutation) (V
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Attachment, Credential, Logging, LoginRecord, Permission, Role, RolePermission,
-		Scan, Scope, User, UserRole, VerifyCode []ent.Hook
+		APIAuth, Attachment, Credential, Logging, LoginRecord, Permission, Role,
+		RolePermission, Scan, Scope, User, UserRole, VerifyCode []ent.Hook
 	}
 	inters struct {
-		Attachment, Credential, Logging, LoginRecord, Permission, Role, RolePermission,
-		Scan, Scope, User, UserRole, VerifyCode []ent.Interceptor
+		APIAuth, Attachment, Credential, Logging, LoginRecord, Permission, Role,
+		RolePermission, Scan, Scope, User, UserRole, VerifyCode []ent.Interceptor
 	}
 )
 

@@ -3,6 +3,7 @@
 package runtime
 
 import (
+	"go-backend/database/ent/apiauth"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
@@ -23,6 +24,50 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	apiauthMixin := schema.APIAuth{}.Mixin()
+	apiauthMixinHooks0 := apiauthMixin[0].Hooks()
+	apiauthMixinHooks1 := apiauthMixin[1].Hooks()
+	apiauthMixinHooks2 := apiauthMixin[2].Hooks()
+	apiauth.Hooks[0] = apiauthMixinHooks0[0]
+	apiauth.Hooks[1] = apiauthMixinHooks0[1]
+	apiauth.Hooks[2] = apiauthMixinHooks1[0]
+	apiauth.Hooks[3] = apiauthMixinHooks2[0]
+	apiauthMixinInters1 := apiauthMixin[1].Interceptors()
+	apiauth.Interceptors[0] = apiauthMixinInters1[0]
+	apiauthMixinFields0 := apiauthMixin[0].Fields()
+	_ = apiauthMixinFields0
+	apiauthFields := schema.APIAuth{}.Fields()
+	_ = apiauthFields
+	// apiauthDescCreateTime is the schema descriptor for create_time field.
+	apiauthDescCreateTime := apiauthMixinFields0[1].Descriptor()
+	// apiauth.DefaultCreateTime holds the default value on creation for the create_time field.
+	apiauth.DefaultCreateTime = apiauthDescCreateTime.Default.(func() time.Time)
+	// apiauthDescUpdateTime is the schema descriptor for update_time field.
+	apiauthDescUpdateTime := apiauthMixinFields0[3].Descriptor()
+	// apiauth.DefaultUpdateTime holds the default value on creation for the update_time field.
+	apiauth.DefaultUpdateTime = apiauthDescUpdateTime.Default.(func() time.Time)
+	// apiauth.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	apiauth.UpdateDefaultUpdateTime = apiauthDescUpdateTime.UpdateDefault.(func() time.Time)
+	// apiauthDescName is the schema descriptor for name field.
+	apiauthDescName := apiauthFields[0].Descriptor()
+	// apiauth.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	apiauth.NameValidator = apiauthDescName.Validators[0].(func(string) error)
+	// apiauthDescMethod is the schema descriptor for method field.
+	apiauthDescMethod := apiauthFields[2].Descriptor()
+	// apiauth.MethodValidator is a validator for the "method" field. It is called by the builders before save.
+	apiauth.MethodValidator = apiauthDescMethod.Validators[0].(func(string) error)
+	// apiauthDescPath is the schema descriptor for path field.
+	apiauthDescPath := apiauthFields[3].Descriptor()
+	// apiauth.PathValidator is a validator for the "path" field. It is called by the builders before save.
+	apiauth.PathValidator = apiauthDescPath.Validators[0].(func(string) error)
+	// apiauthDescIsPublic is the schema descriptor for is_public field.
+	apiauthDescIsPublic := apiauthFields[4].Descriptor()
+	// apiauth.DefaultIsPublic holds the default value on creation for the is_public field.
+	apiauth.DefaultIsPublic = apiauthDescIsPublic.Default.(bool)
+	// apiauthDescIsActive is the schema descriptor for is_active field.
+	apiauthDescIsActive := apiauthFields[5].Descriptor()
+	// apiauth.DefaultIsActive holds the default value on creation for the is_active field.
+	apiauth.DefaultIsActive = apiauthDescIsActive.Default.(bool)
 	attachmentMixin := schema.Attachment{}.Mixin()
 	attachmentMixinHooks0 := attachmentMixin[0].Hooks()
 	attachmentMixinHooks1 := attachmentMixin[1].Hooks()

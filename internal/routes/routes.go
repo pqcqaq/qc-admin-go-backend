@@ -27,6 +27,9 @@ func (r *Router) SetupRoutes(config *configs.AppConfig, engine *gin.Engine) {
 	// 注册错误处理中间件
 	engine.Use(middleware.ErrorHandlerMiddleware()) // 处理panic恢复
 	engine.Use(middleware.ErrorHandler())           // 处理gin.Error
+	// 注册API认证中间件
+	engine.Use(middleware.APIAuthMiddleware(engine))
+	engine.Use(middleware.JWTAuthMiddleware())
 
 	middleware.RegisterConfigMiddlewares(engine)
 
@@ -50,5 +53,6 @@ func (r *Router) SetupRoutes(config *configs.AppConfig, engine *gin.Engine) {
 		r.setupDemoRoutes(api)
 		r.setupRBACRoutes(api)
 		r.setupLoginRecordRoutes(api)
+		r.setupAPIAuthRoutes(api)
 	}
 }

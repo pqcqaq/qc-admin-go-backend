@@ -8,6 +8,18 @@ import (
 	"go-backend/database/ent"
 )
 
+// The APIAuthFunc type is an adapter to allow the use of ordinary
+// function as APIAuth mutator.
+type APIAuthFunc func(context.Context, *ent.APIAuthMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f APIAuthFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.APIAuthMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.APIAuthMutation", m)
+}
+
 // The AttachmentFunc type is an adapter to allow the use of ordinary
 // function as Attachment mutator.
 type AttachmentFunc func(context.Context, *ent.AttachmentMutation) (ent.Value, error)

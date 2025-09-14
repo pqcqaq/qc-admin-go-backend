@@ -111,6 +111,30 @@ func DenyMutationOperationRule(op ent.Op) MutationRule {
 	return OnMutationOperation(rule, op)
 }
 
+// The APIAuthQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type APIAuthQueryRuleFunc func(context.Context, *ent.APIAuthQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f APIAuthQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.APIAuthQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.APIAuthQuery", q)
+}
+
+// The APIAuthMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type APIAuthMutationRuleFunc func(context.Context, *ent.APIAuthMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f APIAuthMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.APIAuthMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.APIAuthMutation", m)
+}
+
 // The AttachmentQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AttachmentQueryRuleFunc func(context.Context, *ent.AttachmentQuery) error
@@ -434,6 +458,8 @@ var _ QueryMutationRule = FilterFunc(nil)
 
 func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
+	case *ent.APIAuthQuery:
+		return q.Filter(), nil
 	case *ent.AttachmentQuery:
 		return q.Filter(), nil
 	case *ent.CredentialQuery:
@@ -465,6 +491,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
+	case *ent.APIAuthMutation:
+		return m.Filter(), nil
 	case *ent.AttachmentMutation:
 		return m.Filter(), nil
 	case *ent.CredentialMutation:

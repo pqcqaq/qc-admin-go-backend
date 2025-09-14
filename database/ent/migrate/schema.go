@@ -9,6 +9,71 @@ import (
 )
 
 var (
+	// SysAPIAuthColumns holds the columns for the "sys_api_auth" table.
+	SysAPIAuthColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "method", Type: field.TypeString},
+		{Name: "path", Type: field.TypeString},
+		{Name: "is_public", Type: field.TypeBool, Default: false},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true},
+	}
+	// SysAPIAuthTable holds the schema information for the "sys_api_auth" table.
+	SysAPIAuthTable = &schema.Table{
+		Name:       "sys_api_auth",
+		Columns:    SysAPIAuthColumns,
+		PrimaryKey: []*schema.Column{SysAPIAuthColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "apiauth_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysAPIAuthColumns[5]},
+			},
+			{
+				Name:    "apiauth_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysAPIAuthColumns[6]},
+			},
+			{
+				Name:    "apiauth_method_path_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysAPIAuthColumns[9], SysAPIAuthColumns[10], SysAPIAuthColumns[5]},
+			},
+			{
+				Name:    "apiauth_name_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysAPIAuthColumns[7], SysAPIAuthColumns[5]},
+			},
+			{
+				Name:    "apiauth_is_public",
+				Unique:  false,
+				Columns: []*schema.Column{SysAPIAuthColumns[11]},
+			},
+			{
+				Name:    "apiauth_is_active",
+				Unique:  false,
+				Columns: []*schema.Column{SysAPIAuthColumns[12]},
+			},
+			{
+				Name:    "apiauth_method",
+				Unique:  false,
+				Columns: []*schema.Column{SysAPIAuthColumns[9]},
+			},
+			{
+				Name:    "apiauth_path",
+				Unique:  false,
+				Columns: []*schema.Column{SysAPIAuthColumns[10]},
+			},
+		},
+	}
 	// SysAttachmentsColumns holds the columns for the "sys_attachments" table.
 	SysAttachmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -667,6 +732,31 @@ var (
 			},
 		},
 	}
+	// APIAuthPermissionsColumns holds the columns for the "api_auth_permissions" table.
+	APIAuthPermissionsColumns = []*schema.Column{
+		{Name: "api_auth_id", Type: field.TypeUint64},
+		{Name: "permission_id", Type: field.TypeUint64},
+	}
+	// APIAuthPermissionsTable holds the schema information for the "api_auth_permissions" table.
+	APIAuthPermissionsTable = &schema.Table{
+		Name:       "api_auth_permissions",
+		Columns:    APIAuthPermissionsColumns,
+		PrimaryKey: []*schema.Column{APIAuthPermissionsColumns[0], APIAuthPermissionsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "api_auth_permissions_api_auth_id",
+				Columns:    []*schema.Column{APIAuthPermissionsColumns[0]},
+				RefColumns: []*schema.Column{SysAPIAuthColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "api_auth_permissions_permission_id",
+				Columns:    []*schema.Column{APIAuthPermissionsColumns[1]},
+				RefColumns: []*schema.Column{SysPermissionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// RoleInheritsFromColumns holds the columns for the "role_inherits_from" table.
 	RoleInheritsFromColumns = []*schema.Column{
 		{Name: "role_id", Type: field.TypeUint64},
@@ -694,6 +784,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		SysAPIAuthTable,
 		SysAttachmentsTable,
 		SysCredentialsTable,
 		LoggingsTable,
@@ -706,11 +797,15 @@ var (
 		SysUsersTable,
 		SysUserRoleTable,
 		SysVerifyCodesTable,
+		APIAuthPermissionsTable,
 		RoleInheritsFromTable,
 	}
 )
 
 func init() {
+	SysAPIAuthTable.Annotation = &entsql.Annotation{
+		Table: "sys_api_auth",
+	}
 	SysAttachmentsTable.Annotation = &entsql.Annotation{
 		Table: "sys_attachments",
 	}
@@ -751,6 +846,8 @@ func init() {
 	SysVerifyCodesTable.Annotation = &entsql.Annotation{
 		Table: "sys_verify_codes",
 	}
+	APIAuthPermissionsTable.ForeignKeys[0].RefTable = SysAPIAuthTable
+	APIAuthPermissionsTable.ForeignKeys[1].RefTable = SysPermissionsTable
 	RoleInheritsFromTable.ForeignKeys[0].RefTable = SysRolesTable
 	RoleInheritsFromTable.ForeignKeys[1].RefTable = SysRolesTable
 }

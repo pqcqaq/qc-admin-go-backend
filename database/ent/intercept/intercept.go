@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"go-backend/database/ent"
+	"go-backend/database/ent/apiauth"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
@@ -78,6 +79,33 @@ func (f TraverseFunc) Traverse(ctx context.Context, q ent.Query) error {
 		return err
 	}
 	return f(ctx, query)
+}
+
+// The APIAuthFunc type is an adapter to allow the use of ordinary function as a Querier.
+type APIAuthFunc func(context.Context, *ent.APIAuthQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f APIAuthFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.APIAuthQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.APIAuthQuery", q)
+}
+
+// The TraverseAPIAuth type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAPIAuth func(context.Context, *ent.APIAuthQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAPIAuth) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAPIAuth) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.APIAuthQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.APIAuthQuery", q)
 }
 
 // The AttachmentFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -407,6 +435,8 @@ func (f TraverseVerifyCode) Traverse(ctx context.Context, q ent.Query) error {
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
+	case *ent.APIAuthQuery:
+		return &query[*ent.APIAuthQuery, predicate.APIAuth, apiauth.OrderOption]{typ: ent.TypeAPIAuth, tq: q}, nil
 	case *ent.AttachmentQuery:
 		return &query[*ent.AttachmentQuery, predicate.Attachment, attachment.OrderOption]{typ: ent.TypeAttachment, tq: q}, nil
 	case *ent.CredentialQuery:

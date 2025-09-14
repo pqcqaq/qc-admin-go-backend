@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-backend/database/ent/apiauth"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
@@ -35,6 +36,7 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeAPIAuth        = "APIAuth"
 	TypeAttachment     = "Attachment"
 	TypeCredential     = "Credential"
 	TypeLogging        = "Logging"
@@ -48,6 +50,1301 @@ const (
 	TypeUserRole       = "UserRole"
 	TypeVerifyCode     = "VerifyCode"
 )
+
+// APIAuthMutation represents an operation that mutates the APIAuth nodes in the graph.
+type APIAuthMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *uint64
+	create_time        *time.Time
+	create_by          *uint64
+	addcreate_by       *int64
+	update_time        *time.Time
+	update_by          *uint64
+	addupdate_by       *int64
+	delete_time        *time.Time
+	delete_by          *uint64
+	adddelete_by       *int64
+	name               *string
+	description        *string
+	method             *string
+	_path              *string
+	is_public          *bool
+	is_active          *bool
+	metadata           *map[string]interface{}
+	clearedFields      map[string]struct{}
+	permissions        map[uint64]struct{}
+	removedpermissions map[uint64]struct{}
+	clearedpermissions bool
+	done               bool
+	oldValue           func(context.Context) (*APIAuth, error)
+	predicates         []predicate.APIAuth
+}
+
+var _ ent.Mutation = (*APIAuthMutation)(nil)
+
+// apiauthOption allows management of the mutation configuration using functional options.
+type apiauthOption func(*APIAuthMutation)
+
+// newAPIAuthMutation creates new mutation for the APIAuth entity.
+func newAPIAuthMutation(c config, op Op, opts ...apiauthOption) *APIAuthMutation {
+	m := &APIAuthMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAPIAuth,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAPIAuthID sets the ID field of the mutation.
+func withAPIAuthID(id uint64) apiauthOption {
+	return func(m *APIAuthMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *APIAuth
+		)
+		m.oldValue = func(ctx context.Context) (*APIAuth, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().APIAuth.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAPIAuth sets the old APIAuth of the mutation.
+func withAPIAuth(node *APIAuth) apiauthOption {
+	return func(m *APIAuthMutation) {
+		m.oldValue = func(context.Context) (*APIAuth, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m APIAuthMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m APIAuthMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of APIAuth entities.
+func (m *APIAuthMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *APIAuthMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *APIAuthMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().APIAuth.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *APIAuthMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *APIAuthMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *APIAuthMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *APIAuthMutation) SetCreateBy(u uint64) {
+	m.create_by = &u
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *APIAuthMutation) CreateBy() (r uint64, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldCreateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds u to the "create_by" field.
+func (m *APIAuthMutation) AddCreateBy(u int64) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += u
+	} else {
+		m.addcreate_by = &u
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *APIAuthMutation) AddedCreateBy() (r int64, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *APIAuthMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[apiauth.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *APIAuthMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[apiauth.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *APIAuthMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, apiauth.FieldCreateBy)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *APIAuthMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *APIAuthMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *APIAuthMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (m *APIAuthMutation) SetUpdateBy(u uint64) {
+	m.update_by = &u
+	m.addupdate_by = nil
+}
+
+// UpdateBy returns the value of the "update_by" field in the mutation.
+func (m *APIAuthMutation) UpdateBy() (r uint64, exists bool) {
+	v := m.update_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateBy returns the old "update_by" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldUpdateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateBy: %w", err)
+	}
+	return oldValue.UpdateBy, nil
+}
+
+// AddUpdateBy adds u to the "update_by" field.
+func (m *APIAuthMutation) AddUpdateBy(u int64) {
+	if m.addupdate_by != nil {
+		*m.addupdate_by += u
+	} else {
+		m.addupdate_by = &u
+	}
+}
+
+// AddedUpdateBy returns the value that was added to the "update_by" field in this mutation.
+func (m *APIAuthMutation) AddedUpdateBy() (r int64, exists bool) {
+	v := m.addupdate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (m *APIAuthMutation) ClearUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	m.clearedFields[apiauth.FieldUpdateBy] = struct{}{}
+}
+
+// UpdateByCleared returns if the "update_by" field was cleared in this mutation.
+func (m *APIAuthMutation) UpdateByCleared() bool {
+	_, ok := m.clearedFields[apiauth.FieldUpdateBy]
+	return ok
+}
+
+// ResetUpdateBy resets all changes to the "update_by" field.
+func (m *APIAuthMutation) ResetUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	delete(m.clearedFields, apiauth.FieldUpdateBy)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *APIAuthMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *APIAuthMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *APIAuthMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[apiauth.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *APIAuthMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[apiauth.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *APIAuthMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, apiauth.FieldDeleteTime)
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (m *APIAuthMutation) SetDeleteBy(u uint64) {
+	m.delete_by = &u
+	m.adddelete_by = nil
+}
+
+// DeleteBy returns the value of the "delete_by" field in the mutation.
+func (m *APIAuthMutation) DeleteBy() (r uint64, exists bool) {
+	v := m.delete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteBy returns the old "delete_by" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldDeleteBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteBy: %w", err)
+	}
+	return oldValue.DeleteBy, nil
+}
+
+// AddDeleteBy adds u to the "delete_by" field.
+func (m *APIAuthMutation) AddDeleteBy(u int64) {
+	if m.adddelete_by != nil {
+		*m.adddelete_by += u
+	} else {
+		m.adddelete_by = &u
+	}
+}
+
+// AddedDeleteBy returns the value that was added to the "delete_by" field in this mutation.
+func (m *APIAuthMutation) AddedDeleteBy() (r int64, exists bool) {
+	v := m.adddelete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (m *APIAuthMutation) ClearDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	m.clearedFields[apiauth.FieldDeleteBy] = struct{}{}
+}
+
+// DeleteByCleared returns if the "delete_by" field was cleared in this mutation.
+func (m *APIAuthMutation) DeleteByCleared() bool {
+	_, ok := m.clearedFields[apiauth.FieldDeleteBy]
+	return ok
+}
+
+// ResetDeleteBy resets all changes to the "delete_by" field.
+func (m *APIAuthMutation) ResetDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	delete(m.clearedFields, apiauth.FieldDeleteBy)
+}
+
+// SetName sets the "name" field.
+func (m *APIAuthMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *APIAuthMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *APIAuthMutation) ResetName() {
+	m.name = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *APIAuthMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *APIAuthMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *APIAuthMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[apiauth.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *APIAuthMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[apiauth.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *APIAuthMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, apiauth.FieldDescription)
+}
+
+// SetMethod sets the "method" field.
+func (m *APIAuthMutation) SetMethod(s string) {
+	m.method = &s
+}
+
+// Method returns the value of the "method" field in the mutation.
+func (m *APIAuthMutation) Method() (r string, exists bool) {
+	v := m.method
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMethod returns the old "method" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldMethod(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMethod is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMethod requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMethod: %w", err)
+	}
+	return oldValue.Method, nil
+}
+
+// ResetMethod resets all changes to the "method" field.
+func (m *APIAuthMutation) ResetMethod() {
+	m.method = nil
+}
+
+// SetPath sets the "path" field.
+func (m *APIAuthMutation) SetPath(s string) {
+	m._path = &s
+}
+
+// Path returns the value of the "path" field in the mutation.
+func (m *APIAuthMutation) Path() (r string, exists bool) {
+	v := m._path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPath returns the old "path" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPath: %w", err)
+	}
+	return oldValue.Path, nil
+}
+
+// ResetPath resets all changes to the "path" field.
+func (m *APIAuthMutation) ResetPath() {
+	m._path = nil
+}
+
+// SetIsPublic sets the "is_public" field.
+func (m *APIAuthMutation) SetIsPublic(b bool) {
+	m.is_public = &b
+}
+
+// IsPublic returns the value of the "is_public" field in the mutation.
+func (m *APIAuthMutation) IsPublic() (r bool, exists bool) {
+	v := m.is_public
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsPublic returns the old "is_public" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldIsPublic(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsPublic is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsPublic requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsPublic: %w", err)
+	}
+	return oldValue.IsPublic, nil
+}
+
+// ResetIsPublic resets all changes to the "is_public" field.
+func (m *APIAuthMutation) ResetIsPublic() {
+	m.is_public = nil
+}
+
+// SetIsActive sets the "is_active" field.
+func (m *APIAuthMutation) SetIsActive(b bool) {
+	m.is_active = &b
+}
+
+// IsActive returns the value of the "is_active" field in the mutation.
+func (m *APIAuthMutation) IsActive() (r bool, exists bool) {
+	v := m.is_active
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsActive returns the old "is_active" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldIsActive(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsActive is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsActive requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsActive: %w", err)
+	}
+	return oldValue.IsActive, nil
+}
+
+// ResetIsActive resets all changes to the "is_active" field.
+func (m *APIAuthMutation) ResetIsActive() {
+	m.is_active = nil
+}
+
+// SetMetadata sets the "metadata" field.
+func (m *APIAuthMutation) SetMetadata(value map[string]interface{}) {
+	m.metadata = &value
+}
+
+// Metadata returns the value of the "metadata" field in the mutation.
+func (m *APIAuthMutation) Metadata() (r map[string]interface{}, exists bool) {
+	v := m.metadata
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetadata returns the old "metadata" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldMetadata(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetadata requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
+	}
+	return oldValue.Metadata, nil
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (m *APIAuthMutation) ClearMetadata() {
+	m.metadata = nil
+	m.clearedFields[apiauth.FieldMetadata] = struct{}{}
+}
+
+// MetadataCleared returns if the "metadata" field was cleared in this mutation.
+func (m *APIAuthMutation) MetadataCleared() bool {
+	_, ok := m.clearedFields[apiauth.FieldMetadata]
+	return ok
+}
+
+// ResetMetadata resets all changes to the "metadata" field.
+func (m *APIAuthMutation) ResetMetadata() {
+	m.metadata = nil
+	delete(m.clearedFields, apiauth.FieldMetadata)
+}
+
+// AddPermissionIDs adds the "permissions" edge to the Permission entity by ids.
+func (m *APIAuthMutation) AddPermissionIDs(ids ...uint64) {
+	if m.permissions == nil {
+		m.permissions = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.permissions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPermissions clears the "permissions" edge to the Permission entity.
+func (m *APIAuthMutation) ClearPermissions() {
+	m.clearedpermissions = true
+}
+
+// PermissionsCleared reports if the "permissions" edge to the Permission entity was cleared.
+func (m *APIAuthMutation) PermissionsCleared() bool {
+	return m.clearedpermissions
+}
+
+// RemovePermissionIDs removes the "permissions" edge to the Permission entity by IDs.
+func (m *APIAuthMutation) RemovePermissionIDs(ids ...uint64) {
+	if m.removedpermissions == nil {
+		m.removedpermissions = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.permissions, ids[i])
+		m.removedpermissions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPermissions returns the removed IDs of the "permissions" edge to the Permission entity.
+func (m *APIAuthMutation) RemovedPermissionsIDs() (ids []uint64) {
+	for id := range m.removedpermissions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PermissionsIDs returns the "permissions" edge IDs in the mutation.
+func (m *APIAuthMutation) PermissionsIDs() (ids []uint64) {
+	for id := range m.permissions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPermissions resets all changes to the "permissions" edge.
+func (m *APIAuthMutation) ResetPermissions() {
+	m.permissions = nil
+	m.clearedpermissions = false
+	m.removedpermissions = nil
+}
+
+// Where appends a list predicates to the APIAuthMutation builder.
+func (m *APIAuthMutation) Where(ps ...predicate.APIAuth) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the APIAuthMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *APIAuthMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.APIAuth, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *APIAuthMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *APIAuthMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (APIAuth).
+func (m *APIAuthMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *APIAuthMutation) Fields() []string {
+	fields := make([]string, 0, 13)
+	if m.create_time != nil {
+		fields = append(fields, apiauth.FieldCreateTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, apiauth.FieldCreateBy)
+	}
+	if m.update_time != nil {
+		fields = append(fields, apiauth.FieldUpdateTime)
+	}
+	if m.update_by != nil {
+		fields = append(fields, apiauth.FieldUpdateBy)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, apiauth.FieldDeleteTime)
+	}
+	if m.delete_by != nil {
+		fields = append(fields, apiauth.FieldDeleteBy)
+	}
+	if m.name != nil {
+		fields = append(fields, apiauth.FieldName)
+	}
+	if m.description != nil {
+		fields = append(fields, apiauth.FieldDescription)
+	}
+	if m.method != nil {
+		fields = append(fields, apiauth.FieldMethod)
+	}
+	if m._path != nil {
+		fields = append(fields, apiauth.FieldPath)
+	}
+	if m.is_public != nil {
+		fields = append(fields, apiauth.FieldIsPublic)
+	}
+	if m.is_active != nil {
+		fields = append(fields, apiauth.FieldIsActive)
+	}
+	if m.metadata != nil {
+		fields = append(fields, apiauth.FieldMetadata)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *APIAuthMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case apiauth.FieldCreateTime:
+		return m.CreateTime()
+	case apiauth.FieldCreateBy:
+		return m.CreateBy()
+	case apiauth.FieldUpdateTime:
+		return m.UpdateTime()
+	case apiauth.FieldUpdateBy:
+		return m.UpdateBy()
+	case apiauth.FieldDeleteTime:
+		return m.DeleteTime()
+	case apiauth.FieldDeleteBy:
+		return m.DeleteBy()
+	case apiauth.FieldName:
+		return m.Name()
+	case apiauth.FieldDescription:
+		return m.Description()
+	case apiauth.FieldMethod:
+		return m.Method()
+	case apiauth.FieldPath:
+		return m.Path()
+	case apiauth.FieldIsPublic:
+		return m.IsPublic()
+	case apiauth.FieldIsActive:
+		return m.IsActive()
+	case apiauth.FieldMetadata:
+		return m.Metadata()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *APIAuthMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case apiauth.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case apiauth.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case apiauth.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case apiauth.FieldUpdateBy:
+		return m.OldUpdateBy(ctx)
+	case apiauth.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case apiauth.FieldDeleteBy:
+		return m.OldDeleteBy(ctx)
+	case apiauth.FieldName:
+		return m.OldName(ctx)
+	case apiauth.FieldDescription:
+		return m.OldDescription(ctx)
+	case apiauth.FieldMethod:
+		return m.OldMethod(ctx)
+	case apiauth.FieldPath:
+		return m.OldPath(ctx)
+	case apiauth.FieldIsPublic:
+		return m.OldIsPublic(ctx)
+	case apiauth.FieldIsActive:
+		return m.OldIsActive(ctx)
+	case apiauth.FieldMetadata:
+		return m.OldMetadata(ctx)
+	}
+	return nil, fmt.Errorf("unknown APIAuth field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *APIAuthMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case apiauth.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case apiauth.FieldCreateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case apiauth.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case apiauth.FieldUpdateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateBy(v)
+		return nil
+	case apiauth.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case apiauth.FieldDeleteBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteBy(v)
+		return nil
+	case apiauth.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case apiauth.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case apiauth.FieldMethod:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMethod(v)
+		return nil
+	case apiauth.FieldPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPath(v)
+		return nil
+	case apiauth.FieldIsPublic:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsPublic(v)
+		return nil
+	case apiauth.FieldIsActive:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsActive(v)
+		return nil
+	case apiauth.FieldMetadata:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetadata(v)
+		return nil
+	}
+	return fmt.Errorf("unknown APIAuth field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *APIAuthMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, apiauth.FieldCreateBy)
+	}
+	if m.addupdate_by != nil {
+		fields = append(fields, apiauth.FieldUpdateBy)
+	}
+	if m.adddelete_by != nil {
+		fields = append(fields, apiauth.FieldDeleteBy)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *APIAuthMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case apiauth.FieldCreateBy:
+		return m.AddedCreateBy()
+	case apiauth.FieldUpdateBy:
+		return m.AddedUpdateBy()
+	case apiauth.FieldDeleteBy:
+		return m.AddedDeleteBy()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *APIAuthMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case apiauth.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case apiauth.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdateBy(v)
+		return nil
+	case apiauth.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeleteBy(v)
+		return nil
+	}
+	return fmt.Errorf("unknown APIAuth numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *APIAuthMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(apiauth.FieldCreateBy) {
+		fields = append(fields, apiauth.FieldCreateBy)
+	}
+	if m.FieldCleared(apiauth.FieldUpdateBy) {
+		fields = append(fields, apiauth.FieldUpdateBy)
+	}
+	if m.FieldCleared(apiauth.FieldDeleteTime) {
+		fields = append(fields, apiauth.FieldDeleteTime)
+	}
+	if m.FieldCleared(apiauth.FieldDeleteBy) {
+		fields = append(fields, apiauth.FieldDeleteBy)
+	}
+	if m.FieldCleared(apiauth.FieldDescription) {
+		fields = append(fields, apiauth.FieldDescription)
+	}
+	if m.FieldCleared(apiauth.FieldMetadata) {
+		fields = append(fields, apiauth.FieldMetadata)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *APIAuthMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *APIAuthMutation) ClearField(name string) error {
+	switch name {
+	case apiauth.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case apiauth.FieldUpdateBy:
+		m.ClearUpdateBy()
+		return nil
+	case apiauth.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case apiauth.FieldDeleteBy:
+		m.ClearDeleteBy()
+		return nil
+	case apiauth.FieldDescription:
+		m.ClearDescription()
+		return nil
+	case apiauth.FieldMetadata:
+		m.ClearMetadata()
+		return nil
+	}
+	return fmt.Errorf("unknown APIAuth nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *APIAuthMutation) ResetField(name string) error {
+	switch name {
+	case apiauth.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case apiauth.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case apiauth.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case apiauth.FieldUpdateBy:
+		m.ResetUpdateBy()
+		return nil
+	case apiauth.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case apiauth.FieldDeleteBy:
+		m.ResetDeleteBy()
+		return nil
+	case apiauth.FieldName:
+		m.ResetName()
+		return nil
+	case apiauth.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case apiauth.FieldMethod:
+		m.ResetMethod()
+		return nil
+	case apiauth.FieldPath:
+		m.ResetPath()
+		return nil
+	case apiauth.FieldIsPublic:
+		m.ResetIsPublic()
+		return nil
+	case apiauth.FieldIsActive:
+		m.ResetIsActive()
+		return nil
+	case apiauth.FieldMetadata:
+		m.ResetMetadata()
+		return nil
+	}
+	return fmt.Errorf("unknown APIAuth field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *APIAuthMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.permissions != nil {
+		edges = append(edges, apiauth.EdgePermissions)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *APIAuthMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case apiauth.EdgePermissions:
+		ids := make([]ent.Value, 0, len(m.permissions))
+		for id := range m.permissions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *APIAuthMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedpermissions != nil {
+		edges = append(edges, apiauth.EdgePermissions)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *APIAuthMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case apiauth.EdgePermissions:
+		ids := make([]ent.Value, 0, len(m.removedpermissions))
+		for id := range m.removedpermissions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *APIAuthMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedpermissions {
+		edges = append(edges, apiauth.EdgePermissions)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *APIAuthMutation) EdgeCleared(name string) bool {
+	switch name {
+	case apiauth.EdgePermissions:
+		return m.clearedpermissions
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *APIAuthMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown APIAuth unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *APIAuthMutation) ResetEdge(name string) error {
+	switch name {
+	case apiauth.EdgePermissions:
+		m.ResetPermissions()
+		return nil
+	}
+	return fmt.Errorf("unknown APIAuth edge %s", name)
+}
 
 // AttachmentMutation represents an operation that mutates the Attachment nodes in the graph.
 type AttachmentMutation struct {
@@ -6622,6 +7919,9 @@ type PermissionMutation struct {
 	clearedrole_permissions bool
 	scope                   *uint64
 	clearedscope            bool
+	api_auths               map[uint64]struct{}
+	removedapi_auths        map[uint64]struct{}
+	clearedapi_auths        bool
 	done                    bool
 	oldValue                func(context.Context) (*Permission, error)
 	predicates              []predicate.Permission
@@ -7276,6 +8576,60 @@ func (m *PermissionMutation) ResetScope() {
 	m.clearedscope = false
 }
 
+// AddAPIAuthIDs adds the "api_auths" edge to the APIAuth entity by ids.
+func (m *PermissionMutation) AddAPIAuthIDs(ids ...uint64) {
+	if m.api_auths == nil {
+		m.api_auths = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.api_auths[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAPIAuths clears the "api_auths" edge to the APIAuth entity.
+func (m *PermissionMutation) ClearAPIAuths() {
+	m.clearedapi_auths = true
+}
+
+// APIAuthsCleared reports if the "api_auths" edge to the APIAuth entity was cleared.
+func (m *PermissionMutation) APIAuthsCleared() bool {
+	return m.clearedapi_auths
+}
+
+// RemoveAPIAuthIDs removes the "api_auths" edge to the APIAuth entity by IDs.
+func (m *PermissionMutation) RemoveAPIAuthIDs(ids ...uint64) {
+	if m.removedapi_auths == nil {
+		m.removedapi_auths = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.api_auths, ids[i])
+		m.removedapi_auths[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAPIAuths returns the removed IDs of the "api_auths" edge to the APIAuth entity.
+func (m *PermissionMutation) RemovedAPIAuthsIDs() (ids []uint64) {
+	for id := range m.removedapi_auths {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// APIAuthsIDs returns the "api_auths" edge IDs in the mutation.
+func (m *PermissionMutation) APIAuthsIDs() (ids []uint64) {
+	for id := range m.api_auths {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAPIAuths resets all changes to the "api_auths" edge.
+func (m *PermissionMutation) ResetAPIAuths() {
+	m.api_auths = nil
+	m.clearedapi_auths = false
+	m.removedapi_auths = nil
+}
+
 // Where appends a list predicates to the PermissionMutation builder.
 func (m *PermissionMutation) Where(ps ...predicate.Permission) {
 	m.predicates = append(m.predicates, ps...)
@@ -7617,12 +8971,15 @@ func (m *PermissionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PermissionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.role_permissions != nil {
 		edges = append(edges, permission.EdgeRolePermissions)
 	}
 	if m.scope != nil {
 		edges = append(edges, permission.EdgeScope)
+	}
+	if m.api_auths != nil {
+		edges = append(edges, permission.EdgeAPIAuths)
 	}
 	return edges
 }
@@ -7641,15 +8998,24 @@ func (m *PermissionMutation) AddedIDs(name string) []ent.Value {
 		if id := m.scope; id != nil {
 			return []ent.Value{*id}
 		}
+	case permission.EdgeAPIAuths:
+		ids := make([]ent.Value, 0, len(m.api_auths))
+		for id := range m.api_auths {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PermissionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedrole_permissions != nil {
 		edges = append(edges, permission.EdgeRolePermissions)
+	}
+	if m.removedapi_auths != nil {
+		edges = append(edges, permission.EdgeAPIAuths)
 	}
 	return edges
 }
@@ -7664,18 +9030,27 @@ func (m *PermissionMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case permission.EdgeAPIAuths:
+		ids := make([]ent.Value, 0, len(m.removedapi_auths))
+		for id := range m.removedapi_auths {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PermissionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedrole_permissions {
 		edges = append(edges, permission.EdgeRolePermissions)
 	}
 	if m.clearedscope {
 		edges = append(edges, permission.EdgeScope)
+	}
+	if m.clearedapi_auths {
+		edges = append(edges, permission.EdgeAPIAuths)
 	}
 	return edges
 }
@@ -7688,6 +9063,8 @@ func (m *PermissionMutation) EdgeCleared(name string) bool {
 		return m.clearedrole_permissions
 	case permission.EdgeScope:
 		return m.clearedscope
+	case permission.EdgeAPIAuths:
+		return m.clearedapi_auths
 	}
 	return false
 }
@@ -7712,6 +9089,9 @@ func (m *PermissionMutation) ResetEdge(name string) error {
 		return nil
 	case permission.EdgeScope:
 		m.ResetScope()
+		return nil
+	case permission.EdgeAPIAuths:
+		m.ResetAPIAuths()
 		return nil
 	}
 	return fmt.Errorf("unknown Permission edge %s", name)

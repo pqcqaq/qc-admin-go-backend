@@ -631,6 +631,29 @@ func HasScopeWith(preds ...predicate.Scope) predicate.Permission {
 	})
 }
 
+// HasAPIAuths applies the HasEdge predicate on the "api_auths" edge.
+func HasAPIAuths() predicate.Permission {
+	return predicate.Permission(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, APIAuthsTable, APIAuthsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAPIAuthsWith applies the HasEdge predicate on the "api_auths" edge with a given conditions (other predicates).
+func HasAPIAuthsWith(preds ...predicate.APIAuth) predicate.Permission {
+	return predicate.Permission(func(s *sql.Selector) {
+		step := newAPIAuthsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Permission) predicate.Permission {
 	return predicate.Permission(sql.AndPredicates(predicates...))

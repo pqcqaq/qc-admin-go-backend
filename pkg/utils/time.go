@@ -59,6 +59,9 @@ func ParseDate(dateStr string) (time.Time, error) {
 
 // ParseTime 解析时间字符串
 func ParseTime(timeStr string) (time.Time, error) {
+	if IsEmpty(timeStr) {
+		return time.Time{}, nil
+	}
 	return time.Parse(TimeFormat, timeStr)
 }
 

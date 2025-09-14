@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"go-backend/internal/funcs"
 	"go-backend/pkg/jwt"
 
 	"github.com/gin-gonic/gin"
@@ -54,23 +55,41 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		c.Set("user_id", claims.UserID)
 		c.Set("jwt_claims", claims)
 
-		c.Next()
-	}
-}
+		record, exists := c.Get(string(ApiAuthRecord))
 
-// OptionalJWTAuthMiddleware 可选的JWT认证中间件（不强制要求token）
-func OptionalJWTAuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
-			tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-			if tokenString != "" {
-				if claims, err := jwt.ValidateToken(tokenString); err == nil {
-					c.Set("user_id", claims.UserID)
-					c.Set("jwt_claims", claims)
-				}
-			}
+		if !exists || record == nil {
+			ThrowError(c, ForbiddenError("未找到API认证权限", nil))
+			c.Abort()
+			return
 		}
+
+		apiAuthRecord := record.(*APIAuthRecord)
+
+		if apiAuthRecord == nil {
+			ThrowError(c, ForbiddenError("未找到API认证权限", nil))
+			c.Abort()
+			return
+		}
+
+		if apiAuthRecord.IsPublic {
+			// 公开API，直接放行
+			c.Next()
+			return
+		}
+
+		// 需要认证的接口
+		res, err := funcs.HasAnyPermissionsOptimized(context.Background(), claims.UserID, apiAuthRecord.Permissions)
+		if err != nil {
+			ThrowError(c, InternalServerError("权限检查失败", err.Error()))
+			c.Abort()
+			return
+		}
+		if !res {
+			ThrowError(c, ForbiddenError("没有访问此API的权限", nil))
+			c.Abort()
+			return
+		}
+
 		c.Next()
 	}
 }

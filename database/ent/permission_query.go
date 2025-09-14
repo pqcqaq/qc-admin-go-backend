@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"go-backend/database/ent/apiauth"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/predicate"
 	"go-backend/database/ent/rolepermission"
@@ -28,8 +29,10 @@ type PermissionQuery struct {
 	predicates               []predicate.Permission
 	withRolePermissions      *RolePermissionQuery
 	withScope                *ScopeQuery
+	withAPIAuths             *APIAuthQuery
 	modifiers                []func(*sql.Selector)
 	withNamedRolePermissions map[string]*RolePermissionQuery
+	withNamedAPIAuths        map[string]*APIAuthQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -103,6 +106,28 @@ func (_q *PermissionQuery) QueryScope() *ScopeQuery {
 			sqlgraph.From(permission.Table, permission.FieldID, selector),
 			sqlgraph.To(scope.Table, scope.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, permission.ScopeTable, permission.ScopeColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAPIAuths chains the current query on the "api_auths" edge.
+func (_q *PermissionQuery) QueryAPIAuths() *APIAuthQuery {
+	query := (&APIAuthClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(permission.Table, permission.FieldID, selector),
+			sqlgraph.To(apiauth.Table, apiauth.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, permission.APIAuthsTable, permission.APIAuthsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -304,6 +329,7 @@ func (_q *PermissionQuery) Clone() *PermissionQuery {
 		predicates:          append([]predicate.Permission{}, _q.predicates...),
 		withRolePermissions: _q.withRolePermissions.Clone(),
 		withScope:           _q.withScope.Clone(),
+		withAPIAuths:        _q.withAPIAuths.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -329,6 +355,17 @@ func (_q *PermissionQuery) WithScope(opts ...func(*ScopeQuery)) *PermissionQuery
 		opt(query)
 	}
 	_q.withScope = query
+	return _q
+}
+
+// WithAPIAuths tells the query-builder to eager-load the nodes that are connected to
+// the "api_auths" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *PermissionQuery) WithAPIAuths(opts ...func(*APIAuthQuery)) *PermissionQuery {
+	query := (&APIAuthClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAPIAuths = query
 	return _q
 }
 
@@ -410,9 +447,10 @@ func (_q *PermissionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*P
 	var (
 		nodes       = []*Permission{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withRolePermissions != nil,
 			_q.withScope != nil,
+			_q.withAPIAuths != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -449,10 +487,24 @@ func (_q *PermissionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*P
 			return nil, err
 		}
 	}
+	if query := _q.withAPIAuths; query != nil {
+		if err := _q.loadAPIAuths(ctx, query, nodes,
+			func(n *Permission) { n.Edges.APIAuths = []*APIAuth{} },
+			func(n *Permission, e *APIAuth) { n.Edges.APIAuths = append(n.Edges.APIAuths, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range _q.withNamedRolePermissions {
 		if err := _q.loadRolePermissions(ctx, query, nodes,
 			func(n *Permission) { n.appendNamedRolePermissions(name) },
 			func(n *Permission, e *RolePermission) { n.appendNamedRolePermissions(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range _q.withNamedAPIAuths {
+		if err := _q.loadAPIAuths(ctx, query, nodes,
+			func(n *Permission) { n.appendNamedAPIAuths(name) },
+			func(n *Permission, e *APIAuth) { n.appendNamedAPIAuths(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -514,6 +566,67 @@ func (_q *PermissionQuery) loadScope(ctx context.Context, query *ScopeQuery, nod
 			return fmt.Errorf(`unexpected referenced foreign-key "permission_scope" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (_q *PermissionQuery) loadAPIAuths(ctx context.Context, query *APIAuthQuery, nodes []*Permission, init func(*Permission), assign func(*Permission, *APIAuth)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uint64]*Permission)
+	nids := make(map[uint64]map[*Permission]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(permission.APIAuthsTable)
+		s.Join(joinT).On(s.C(apiauth.FieldID), joinT.C(permission.APIAuthsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(permission.APIAuthsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(permission.APIAuthsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := uint64(values[0].(*sql.NullInt64).Int64)
+				inValue := uint64(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Permission]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*APIAuth](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "api_auths" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
@@ -642,6 +755,20 @@ func (_q *PermissionQuery) WithNamedRolePermissions(name string, opts ...func(*R
 		_q.withNamedRolePermissions = make(map[string]*RolePermissionQuery)
 	}
 	_q.withNamedRolePermissions[name] = query
+	return _q
+}
+
+// WithNamedAPIAuths tells the query-builder to eager-load the nodes that are connected to the "api_auths"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (_q *PermissionQuery) WithNamedAPIAuths(name string, opts ...func(*APIAuthQuery)) *PermissionQuery {
+	query := (&APIAuthClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if _q.withNamedAPIAuths == nil {
+		_q.withNamedAPIAuths = make(map[string]*APIAuthQuery)
+	}
+	_q.withNamedAPIAuths[name] = query
 	return _q
 }
 

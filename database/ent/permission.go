@@ -49,10 +49,13 @@ type PermissionEdges struct {
 	RolePermissions []*RolePermission `json:"role_permissions,omitempty"`
 	// Scope holds the value of the scope edge.
 	Scope *Scope `json:"scope,omitempty"`
+	// APIAuths holds the value of the api_auths edge.
+	APIAuths []*APIAuth `json:"api_auths,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes          [2]bool
+	loadedTypes          [3]bool
 	namedRolePermissions map[string][]*RolePermission
+	namedAPIAuths        map[string][]*APIAuth
 }
 
 // RolePermissionsOrErr returns the RolePermissions value or an error if the edge
@@ -73,6 +76,15 @@ func (e PermissionEdges) ScopeOrErr() (*Scope, error) {
 		return nil, &NotFoundError{label: scope.Label}
 	}
 	return nil, &NotLoadedError{edge: "scope"}
+}
+
+// APIAuthsOrErr returns the APIAuths value or an error if the edge
+// was not loaded in eager-loading.
+func (e PermissionEdges) APIAuthsOrErr() ([]*APIAuth, error) {
+	if e.loadedTypes[2] {
+		return e.APIAuths, nil
+	}
+	return nil, &NotLoadedError{edge: "api_auths"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -184,6 +196,11 @@ func (_m *Permission) QueryScope() *ScopeQuery {
 	return NewPermissionClient(_m.config).QueryScope(_m)
 }
 
+// QueryAPIAuths queries the "api_auths" edge of the Permission entity.
+func (_m *Permission) QueryAPIAuths() *APIAuthQuery {
+	return NewPermissionClient(_m.config).QueryAPIAuths(_m)
+}
+
 // Update returns a builder for updating this Permission.
 // Note that you need to call Permission.Unwrap() before calling this method if this Permission
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -258,6 +275,30 @@ func (_m *Permission) appendNamedRolePermissions(name string, edges ...*RolePerm
 		_m.Edges.namedRolePermissions[name] = []*RolePermission{}
 	} else {
 		_m.Edges.namedRolePermissions[name] = append(_m.Edges.namedRolePermissions[name], edges...)
+	}
+}
+
+// NamedAPIAuths returns the APIAuths named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *Permission) NamedAPIAuths(name string) ([]*APIAuth, error) {
+	if _m.Edges.namedAPIAuths == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedAPIAuths[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *Permission) appendNamedAPIAuths(name string, edges ...*APIAuth) {
+	if _m.Edges.namedAPIAuths == nil {
+		_m.Edges.namedAPIAuths = make(map[string][]*APIAuth)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedAPIAuths[name] = []*APIAuth{}
+	} else {
+		_m.Edges.namedAPIAuths[name] = append(_m.Edges.namedAPIAuths[name], edges...)
 	}
 }
 

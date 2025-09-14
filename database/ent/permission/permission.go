@@ -37,6 +37,8 @@ const (
 	EdgeRolePermissions = "role_permissions"
 	// EdgeScope holds the string denoting the scope edge name in mutations.
 	EdgeScope = "scope"
+	// EdgeAPIAuths holds the string denoting the api_auths edge name in mutations.
+	EdgeAPIAuths = "api_auths"
 	// Table holds the table name of the permission in the database.
 	Table = "sys_permissions"
 	// RolePermissionsTable is the table that holds the role_permissions relation/edge.
@@ -53,6 +55,11 @@ const (
 	ScopeInverseTable = "sys_scopes"
 	// ScopeColumn is the table column denoting the scope relation/edge.
 	ScopeColumn = "permission_scope"
+	// APIAuthsTable is the table that holds the api_auths relation/edge. The primary key declared below.
+	APIAuthsTable = "api_auth_permissions"
+	// APIAuthsInverseTable is the table name for the APIAuth entity.
+	// It exists in this package in order to avoid circular dependency with the "apiauth" package.
+	APIAuthsInverseTable = "sys_api_auth"
 )
 
 // Columns holds all SQL columns for permission fields.
@@ -68,6 +75,12 @@ var Columns = []string{
 	FieldAction,
 	FieldDescription,
 }
+
+var (
+	// APIAuthsPrimaryKey and APIAuthsColumn2 are the table columns denoting the
+	// primary key for the api_auths relation (M2M).
+	APIAuthsPrimaryKey = []string{"api_auth_id", "permission_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -172,6 +185,20 @@ func ByScopeField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newScopeStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByAPIAuthsCount orders the results by api_auths count.
+func ByAPIAuthsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAPIAuthsStep(), opts...)
+	}
+}
+
+// ByAPIAuths orders the results by api_auths terms.
+func ByAPIAuths(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAPIAuthsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newRolePermissionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -184,5 +211,12 @@ func newScopeStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ScopeInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, ScopeTable, ScopeColumn),
+	)
+}
+func newAPIAuthsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(APIAuthsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, APIAuthsTable, APIAuthsPrimaryKey...),
 	)
 }

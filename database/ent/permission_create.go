@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-backend/database/ent/apiauth"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scope"
@@ -170,6 +171,21 @@ func (_c *PermissionCreate) SetNillableScopeID(id *uint64) *PermissionCreate {
 // SetScope sets the "scope" edge to the Scope entity.
 func (_c *PermissionCreate) SetScope(v *Scope) *PermissionCreate {
 	return _c.SetScopeID(v.ID)
+}
+
+// AddAPIAuthIDs adds the "api_auths" edge to the APIAuth entity by IDs.
+func (_c *PermissionCreate) AddAPIAuthIDs(ids ...uint64) *PermissionCreate {
+	_c.mutation.AddAPIAuthIDs(ids...)
+	return _c
+}
+
+// AddAPIAuths adds the "api_auths" edges to the APIAuth entity.
+func (_c *PermissionCreate) AddAPIAuths(v ...*APIAuth) *PermissionCreate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAPIAuthIDs(ids...)
 }
 
 // Mutation returns the PermissionMutation object of the builder.
@@ -343,6 +359,22 @@ func (_c *PermissionCreate) createSpec() (*Permission, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(scope.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.APIAuthsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   permission.APIAuthsTable,
+			Columns: permission.APIAuthsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apiauth.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

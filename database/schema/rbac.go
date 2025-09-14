@@ -97,6 +97,9 @@ func (Permission) Edges() []ent.Edge {
 		// 权限包含一个 Scope (菜单/页面/按钮)
 		edge.To("scope", Scope.Type).
 			Unique(),
+		// 一个权限可以被多个APIAuth引用
+		edge.From("api_auths", APIAuth.Type).
+			Ref("permissions"),
 	}
 }
 

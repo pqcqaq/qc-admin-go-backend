@@ -2,7 +2,6 @@ package routes
 
 import (
 	"go-backend/internal/handlers"
-	"go-backend/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,15 +12,9 @@ func (r *Router) setupLoginRecordRoutes(rg *gin.RouterGroup) {
 
 	// 用户可以查看自己的登录记录
 	auth := rg.Group("/auth")
-	auth.Use(middleware.JWTAuthMiddleware())
-	{
-		auth.GET("/login-records", loginRecordHandler.GetUserLoginRecords)
-	}
+	auth.GET("/login-records", loginRecordHandler.GetUserLoginRecords)
 
 	// 管理员可以查看所有登录记录
 	admin := rg.Group("/admin")
-	admin.Use(middleware.JWTAuthMiddleware())
-	{
-		admin.GET("/login-records", loginRecordHandler.GetLoginRecords)
-	}
+	admin.GET("/login-records", loginRecordHandler.GetLoginRecords)
 }

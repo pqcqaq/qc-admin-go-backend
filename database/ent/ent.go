@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-backend/database/ent/apiauth"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
@@ -84,6 +85,7 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			apiauth.Table:        apiauth.ValidColumn,
 			attachment.Table:     attachment.ValidColumn,
 			credential.Table:     credential.ValidColumn,
 			logging.Table:        logging.ValidColumn,

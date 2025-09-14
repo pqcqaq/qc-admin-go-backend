@@ -151,3 +151,10 @@ func UserNotFoundError(data any) *CustomError {
 func UserExistsError(data any) *CustomError {
 	return NewCustomError(ErrCodeUserExists, GetErrorMessage(ErrCodeUserExists), data)
 }
+
+func ForbiddenError(message string, data any) *CustomError {
+	if message == "" {
+		message = GetErrorMessage(ErrCodeForbidden)
+	}
+	return NewCustomError(ErrCodeForbidden, message, data)
+}

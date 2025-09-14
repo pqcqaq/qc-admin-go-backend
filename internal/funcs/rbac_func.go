@@ -6,12 +6,17 @@ import (
 	"math"
 
 	"go-backend/database/ent"
+	"go-backend/database/ent/permission"
+	"go-backend/database/ent/role"
 	entRole "go-backend/database/ent/role"
+	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
 	"go-backend/pkg/database"
 	"go-backend/pkg/utils"
 	"go-backend/shared/models"
+
+	"entgo.io/ent/dialect/sql"
 )
 
 // HasCircularInheritance 检查角色继承是否存在循环引用
@@ -577,6 +582,175 @@ func BatchRemoveUsersFromRole(ctx context.Context, roleID uint64, req *models.Ba
 		).Exec(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to remove users from role: %v", err)
+	}
+
+	return nil
+}
+
+// collectRolePermissions 递归收集角色权限（处理角色继承）
+func collectRolePermissions(ctx context.Context, roleID uint64, visited map[uint64]bool, permissionMap map[uint64]*ent.Permission) error {
+	// 防止循环继承
+	if visited[roleID] {
+		return nil
+	}
+	visited[roleID] = true
+
+	// 获取当前角色的直接权限
+	directPermissions, err := database.Client.Permission.Query().
+		Where(permission.HasRolePermissionsWith(
+			rolepermission.RoleID(roleID),
+		)).
+		All(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get direct permissions for role %d: %w", roleID, err)
+	}
+
+	// 添加直接权限到映射中
+	for _, perm := range directPermissions {
+		permissionMap[perm.ID] = perm
+	}
+
+	// 获取当前角色继承的角色
+	inheritedRoles, err := database.Client.Role.Query().
+		Where(role.HasInheritedByWith(role.ID(roleID))).
+		All(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get inherited roles for role %d: %w", roleID, err)
+	}
+
+	// 递归处理继承的角色
+	for _, inheritedRole := range inheritedRoles {
+		err = collectRolePermissions(ctx, inheritedRole.ID, visited, permissionMap)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// HasAnyPermissions 检查用户是否拥有指定权限列表中的任何一个权限（支持角色继承）
+func HasAnyPermissions(ctx context.Context, userID uint64, permissions []string) (bool, error) {
+	if len(permissions) == 0 {
+		return false, nil
+	}
+
+	// 获取用户所有权限
+	userPermissions, err := GetUserPermissions(ctx, userID)
+	if err != nil {
+		return false, err
+	}
+
+	// 检查是否有任何匹配的权限
+	for _, userPerm := range userPermissions {
+		for _, requiredPerm := range permissions {
+			if userPerm.Name == requiredPerm || userPerm.Action == requiredPerm {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
+}
+
+// HasAnyPermissionsOptimized 更高效的版本：直接通过数据库查询检查权限
+func HasAnyPermissionsOptimized(ctx context.Context, userID uint64, permissions []string) (bool, error) {
+	if len(permissions) == 0 {
+		return false, nil
+	}
+
+	// 检查用户是否存在
+	exists, err := database.Client.User.Query().Where(user.ID(userID)).Exist(ctx)
+	if err != nil {
+		return false, err
+	}
+	if !exists {
+		return false, fmt.Errorf("user not found")
+	}
+
+	// 获取用户的所有角色ID（包括继承的角色）
+	roleIDs, err := getAllUserRoleIDs(ctx, userID)
+	if err != nil {
+		return false, err
+	}
+
+	if len(roleIDs) == 0 {
+		return false, nil
+	}
+
+	// 检查这些角色是否有任何所需的权限
+	count, err := database.Client.Permission.Query().
+		Where(
+			permission.Or(
+				permission.NameIn(permissions...),
+				permission.ActionIn(permissions...),
+			),
+		).
+		Where(permission.HasRolePermissionsWith(
+			rolepermission.RoleIDIn(roleIDs...),
+		)).
+		Count(ctx)
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
+// getAllUserRoleIDs 获取用户所有角色ID（包括继承的角色）
+func getAllUserRoleIDs(ctx context.Context, userID uint64) ([]uint64, error) {
+	// 获取用户的直接角色
+	directRoles, err := database.Client.Role.Query().
+		Where(role.HasUserRolesWith(func(s *sql.Selector) {
+			s.Where(sql.EQ("user_id", userID)).Where(sql.IsNull("delete_time"))
+		})).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	roleIDSet := make(map[uint64]bool)
+	visited := make(map[uint64]bool)
+
+	// 收集所有角色ID（包括继承的）
+	for _, role := range directRoles {
+		err = collectInheritedRoleIDs(ctx, role.ID, visited, roleIDSet)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// 转换为切片
+	roleIDs := make([]uint64, 0, len(roleIDSet))
+	for roleID := range roleIDSet {
+		roleIDs = append(roleIDs, roleID)
+	}
+
+	return roleIDs, nil
+}
+
+// collectInheritedRoleIDs 递归收集角色ID
+func collectInheritedRoleIDs(ctx context.Context, roleID uint64, visited map[uint64]bool, roleIDSet map[uint64]bool) error {
+	if visited[roleID] {
+		return nil
+	}
+	visited[roleID] = true
+	roleIDSet[roleID] = true
+
+	// 获取继承的角色
+	inheritedRoles, err := database.Client.Role.Query().
+		Where(role.HasInheritedByWith(role.ID(roleID))).
+		All(ctx)
+	if err != nil {
+		return err
+	}
+
+	// 递归处理
+	for _, inheritedRole := range inheritedRoles {
+		err = collectInheritedRoleIDs(ctx, inheritedRole.ID, visited, roleIDSet)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

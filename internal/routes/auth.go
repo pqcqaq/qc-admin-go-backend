@@ -2,7 +2,6 @@ package routes
 
 import (
 	"go-backend/internal/handlers"
-	"go-backend/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,14 +19,10 @@ func (r *Router) setupAuthRoutes(rg *gin.RouterGroup) {
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/reset-password", authHandler.ResetPassword)
 
-		// 需要认证的路由
-		protected := auth.Group("")
-		protected.Use(middleware.JWTAuthMiddleware())
-		{
-			protected.POST("/refresh-token", authHandler.RefreshToken)
-			protected.POST("/logout", authHandler.Logout)
-			protected.GET("/user-info", authHandler.GetUserInfo)
-			protected.GET("/user-menu-tree", authHandler.GetUserMenuTree)
-		}
+		// 需要认证（配置为非public）的路由
+		auth.POST("/refresh-token", authHandler.RefreshToken)
+		auth.POST("/logout", authHandler.Logout)
+		auth.GET("/user-info", authHandler.GetUserInfo)
+		auth.GET("/user-menu-tree", authHandler.GetUserMenuTree)
 	}
 }

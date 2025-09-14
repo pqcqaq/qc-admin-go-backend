@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-backend/database/ent/apiauth"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/predicate"
 	"go-backend/database/ent/rolepermission"
@@ -219,6 +220,21 @@ func (_u *PermissionUpdate) SetScope(v *Scope) *PermissionUpdate {
 	return _u.SetScopeID(v.ID)
 }
 
+// AddAPIAuthIDs adds the "api_auths" edge to the APIAuth entity by IDs.
+func (_u *PermissionUpdate) AddAPIAuthIDs(ids ...uint64) *PermissionUpdate {
+	_u.mutation.AddAPIAuthIDs(ids...)
+	return _u
+}
+
+// AddAPIAuths adds the "api_auths" edges to the APIAuth entity.
+func (_u *PermissionUpdate) AddAPIAuths(v ...*APIAuth) *PermissionUpdate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAPIAuthIDs(ids...)
+}
+
 // Mutation returns the PermissionMutation object of the builder.
 func (_u *PermissionUpdate) Mutation() *PermissionMutation {
 	return _u.mutation
@@ -249,6 +265,27 @@ func (_u *PermissionUpdate) RemoveRolePermissions(v ...*RolePermission) *Permiss
 func (_u *PermissionUpdate) ClearScope() *PermissionUpdate {
 	_u.mutation.ClearScope()
 	return _u
+}
+
+// ClearAPIAuths clears all "api_auths" edges to the APIAuth entity.
+func (_u *PermissionUpdate) ClearAPIAuths() *PermissionUpdate {
+	_u.mutation.ClearAPIAuths()
+	return _u
+}
+
+// RemoveAPIAuthIDs removes the "api_auths" edge to APIAuth entities by IDs.
+func (_u *PermissionUpdate) RemoveAPIAuthIDs(ids ...uint64) *PermissionUpdate {
+	_u.mutation.RemoveAPIAuthIDs(ids...)
+	return _u
+}
+
+// RemoveAPIAuths removes "api_auths" edges to APIAuth entities.
+func (_u *PermissionUpdate) RemoveAPIAuths(v ...*APIAuth) *PermissionUpdate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAPIAuthIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -435,6 +472,51 @@ func (_u *PermissionUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(scope.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.APIAuthsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   permission.APIAuthsTable,
+			Columns: permission.APIAuthsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apiauth.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAPIAuthsIDs(); len(nodes) > 0 && !_u.mutation.APIAuthsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   permission.APIAuthsTable,
+			Columns: permission.APIAuthsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apiauth.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.APIAuthsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   permission.APIAuthsTable,
+			Columns: permission.APIAuthsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apiauth.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
@@ -651,6 +733,21 @@ func (_u *PermissionUpdateOne) SetScope(v *Scope) *PermissionUpdateOne {
 	return _u.SetScopeID(v.ID)
 }
 
+// AddAPIAuthIDs adds the "api_auths" edge to the APIAuth entity by IDs.
+func (_u *PermissionUpdateOne) AddAPIAuthIDs(ids ...uint64) *PermissionUpdateOne {
+	_u.mutation.AddAPIAuthIDs(ids...)
+	return _u
+}
+
+// AddAPIAuths adds the "api_auths" edges to the APIAuth entity.
+func (_u *PermissionUpdateOne) AddAPIAuths(v ...*APIAuth) *PermissionUpdateOne {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAPIAuthIDs(ids...)
+}
+
 // Mutation returns the PermissionMutation object of the builder.
 func (_u *PermissionUpdateOne) Mutation() *PermissionMutation {
 	return _u.mutation
@@ -681,6 +778,27 @@ func (_u *PermissionUpdateOne) RemoveRolePermissions(v ...*RolePermission) *Perm
 func (_u *PermissionUpdateOne) ClearScope() *PermissionUpdateOne {
 	_u.mutation.ClearScope()
 	return _u
+}
+
+// ClearAPIAuths clears all "api_auths" edges to the APIAuth entity.
+func (_u *PermissionUpdateOne) ClearAPIAuths() *PermissionUpdateOne {
+	_u.mutation.ClearAPIAuths()
+	return _u
+}
+
+// RemoveAPIAuthIDs removes the "api_auths" edge to APIAuth entities by IDs.
+func (_u *PermissionUpdateOne) RemoveAPIAuthIDs(ids ...uint64) *PermissionUpdateOne {
+	_u.mutation.RemoveAPIAuthIDs(ids...)
+	return _u
+}
+
+// RemoveAPIAuths removes "api_auths" edges to APIAuth entities.
+func (_u *PermissionUpdateOne) RemoveAPIAuths(v ...*APIAuth) *PermissionUpdateOne {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAPIAuthIDs(ids...)
 }
 
 // Where appends a list predicates to the PermissionUpdate builder.
@@ -897,6 +1015,51 @@ func (_u *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission, 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(scope.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.APIAuthsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   permission.APIAuthsTable,
+			Columns: permission.APIAuthsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apiauth.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAPIAuthsIDs(); len(nodes) > 0 && !_u.mutation.APIAuthsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   permission.APIAuthsTable,
+			Columns: permission.APIAuthsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apiauth.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.APIAuthsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   permission.APIAuthsTable,
+			Columns: permission.APIAuthsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apiauth.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
