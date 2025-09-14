@@ -342,3 +342,31 @@ func checkDatabaseConnection(client *database.Client) {
 		}
 	}
 }
+
+// ExportAllTablesGlobal 导出所有表数据到JSON文件（使用全局客户端实例）
+func ExportAllTablesGlobal(outputDir string) (*ExportResult, error) {
+	if Client == nil {
+		return nil, fmt.Errorf("database client is not initialized, call InitInstance first")
+	}
+
+	config := &ExportConfig{
+		OutputDir:    outputDir,
+		PrettyFormat: true,
+		Context:      context.Background(),
+	}
+
+	if config.OutputDir == "" {
+		config.OutputDir = "./exports"
+	}
+
+	return ExportAllTables(Client, config)
+}
+
+// ExportSpecificTablesGlobal 使用全局客户端导出指定表
+func ExportSpecificTablesGlobal(entityNames []string, outputDir string) (*ExportResult, error) {
+	if Client == nil {
+		return nil, fmt.Errorf("database client is not initialized, call InitInstance first")
+	}
+
+	return ExportSpecificTables(Client, entityNames, outputDir)
+}
