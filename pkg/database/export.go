@@ -254,7 +254,7 @@ func exportSingleEntity(clientInterface interface{}, entityName string, config *
 	}
 
 	// 写入文件
-	fileName := fmt.Sprintf("%s.json", strings.ToLower(entityName))
+	fileName := fmt.Sprintf("%s.json", entityName)
 	filePath := filepath.Join(config.OutputDir, fileName)
 
 	if err := os.WriteFile(filePath, jsonData, 0644); err != nil {

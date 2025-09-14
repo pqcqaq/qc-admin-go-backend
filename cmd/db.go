@@ -23,6 +23,18 @@ var (
 	excludeFields string
 )
 
+// import命令的参数变量
+var (
+	inputDir          string
+	importInclude     string
+	importExclude     string
+	importTimeout     time.Duration
+	importShowResult  bool
+	batchSize         int
+	skipExisting      bool
+	clearBeforeImport bool
+)
+
 // dbCmd 数据库相关命令
 var dbCmd = &cobra.Command{
 	Use:   "db",
@@ -213,6 +225,95 @@ var exportDbCmd = &cobra.Command{
 	},
 }
 
+var importDbCmd = &cobra.Command{
+	Use:   "import",
+	Short: "从JSON文件导入数据库表数据",
+	Long:  "从JSON文件中读取数据并导入到数据库表中，支持多种配置选项",
+	RunE: func(cmd *cobra.Command, args []string) error {
+
+		// 加载配置
+		resolvedConfigPath, err := configs.ResolveConfigPath(configFile)
+		if err != nil {
+			return fmt.Errorf("解析配置文件路径失败: %w", err)
+		}
+
+		config, err := configs.LoadConfig(resolvedConfigPath)
+		if err != nil {
+			return fmt.Errorf("加载配置失败: %w", err)
+		}
+
+		// 设置日志
+		logging.SetLevel(logging.ParseLogLevel(config.Logging.Level))
+		logging.SetPrefix(config.Logging.Prefix)
+		pkgdatabase.SetLogger(logging.WithName("Database"))
+
+		// 创建数据库客户端
+		client, err := pkgdatabase.NewClient(&config.Database)
+		if err != nil {
+			return fmt.Errorf("创建数据库客户端失败: %v", err)
+		}
+		defer client.Close()
+
+		// 创建导入配置
+		ctx, cancel := context.WithTimeout(context.Background(), importTimeout)
+		defer cancel()
+
+		importConfig := &pkgdatabase.ImportConfig{
+			InputDir:          inputDir,
+			Context:           ctx,
+			BatchSize:         batchSize,
+			SkipExisting:      skipExisting,
+			ClearBeforeImport: clearBeforeImport,
+		}
+
+		// 处理包含和排除列表
+		if importInclude != "" {
+			importConfig.IncludeEntities = strings.Split(importInclude, ",")
+			for i, entity := range importConfig.IncludeEntities {
+				importConfig.IncludeEntities[i] = strings.TrimSpace(entity)
+			}
+		}
+
+		if importExclude != "" {
+			importConfig.ExcludeEntities = strings.Split(importExclude, ",")
+			for i, entity := range importConfig.ExcludeEntities {
+				importConfig.ExcludeEntities[i] = strings.TrimSpace(entity)
+			}
+		}
+
+		// 执行导入
+		result, err := pkgdatabase.ImportAllTables(client, importConfig)
+		if err != nil {
+			return fmt.Errorf("导入表失败: %v", err)
+		}
+
+		// 显示导入结果
+		fmt.Printf("导入完成！\n")
+		fmt.Printf("总实体数: %d\n", result.TotalEntities)
+		fmt.Printf("成功: %d\n", result.SuccessCount)
+		fmt.Printf("失败: %d\n", result.FailedCount)
+		fmt.Printf("输入目录: %s\n", result.InputDirectory)
+		fmt.Printf("总记录数: %d\n", result.TotalRecords)
+		fmt.Printf("导入记录数: %d\n", result.ImportedRecords)
+		fmt.Printf("跳过记录数: %d\n", result.SkippedRecords)
+
+		if importShowResult {
+			fmt.Println("\n详细结果:")
+			for _, entityResult := range result.Results {
+				if entityResult.Success {
+					fmt.Printf("✓ %s: 总计=%d条, 成功=%d条, 跳过=%d条, 失败=%d条 <- %s\n",
+						entityResult.EntityName, entityResult.RecordCount, entityResult.SuccessCount,
+						entityResult.SkippedCount, entityResult.FailedCount, entityResult.FilePath)
+				} else {
+					fmt.Printf("✗ %s: %s\n", entityResult.EntityName, entityResult.Error)
+				}
+			}
+		}
+
+		return nil
+	},
+}
+
 func init() {
 	// 添加db命令到root
 	rootCmd.AddCommand(dbCmd)
@@ -221,6 +322,7 @@ func init() {
 	dbCmd.AddCommand(migrateDbCmd)
 	dbCmd.AddCommand(checkDbCmd)
 	dbCmd.AddCommand(exportDbCmd)
+	dbCmd.AddCommand(importDbCmd)
 
 	// 为export命令添加参数
 	exportDbCmd.Flags().StringVarP(&outputDir, "output", "o", "./exports", "输出目录")
@@ -230,4 +332,14 @@ func init() {
 	exportDbCmd.Flags().DurationVarP(&timeout, "timeout", "t", time.Minute*10, "导出超时时间")
 	exportDbCmd.Flags().BoolVarP(&showResult, "result", "r", false, "是否显示详细导出结果")
 	exportDbCmd.Flags().StringVarP(&excludeFields, "exclude-fields", "f", "", "导出时排除指定的字段，多个字段用逗号分隔")
+
+	// 为import命令添加参数
+	importDbCmd.Flags().StringVarP(&inputDir, "input", "d", "./exports", "输入目录")
+	importDbCmd.Flags().StringVarP(&importInclude, "include", "i", "", "仅导入指定的实体，用逗号分隔")
+	importDbCmd.Flags().StringVarP(&importExclude, "exclude", "e", "", "排除指定的实体，用逗号分隔")
+	importDbCmd.Flags().DurationVarP(&importTimeout, "timeout", "t", time.Minute*30, "导入超时时间")
+	importDbCmd.Flags().BoolVarP(&importShowResult, "result", "r", false, "是否显示详细导入结果")
+	importDbCmd.Flags().IntVarP(&batchSize, "batch-size", "b", 100, "批量插入的批次大小")
+	importDbCmd.Flags().BoolVarP(&skipExisting, "skip-existing", "s", false, "是否跳过已存在的记录")
+	importDbCmd.Flags().BoolVar(&clearBeforeImport, "clear", false, "导入前是否清空表")
 }

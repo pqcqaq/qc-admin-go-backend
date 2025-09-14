@@ -370,3 +370,21 @@ func ExportSpecificTablesGlobal(entityNames []string, outputDir string) (*Export
 
 	return ExportSpecificTables(Client, entityNames, outputDir)
 }
+
+// ImportAllTablesGlobalFromDatabase 导入所有表数据到数据库（使用全局客户端实例）
+func ImportAllTablesGlobalFromDatabase(inputDir string) (*ImportResult, error) {
+	if Client == nil {
+		return nil, fmt.Errorf("database client is not initialized, call InitInstance first")
+	}
+
+	return ImportAllTablesGlobal(inputDir)
+}
+
+// ImportSpecificTablesGlobalFromDatabase 使用全局客户端导入指定表
+func ImportSpecificTablesGlobalFromDatabase(entityNames []string, inputDir string) (*ImportResult, error) {
+	if Client == nil {
+		return nil, fmt.Errorf("database client is not initialized, call InitInstance first")
+	}
+
+	return ImportSpecificTablesGlobal(entityNames, inputDir)
+}
