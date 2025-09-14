@@ -352,7 +352,7 @@ func importBatch(tx *database.Tx, clientField reflect.Value, entityName string, 
 		// 调用Create方法获取创建器
 		createMethod := txClientField.MethodByName("Create")
 		if !createMethod.IsValid() {
-			return 0, 0, fmt.Errorf("Create method not found for entity: %s", entityName)
+			return 0, 0, fmt.Errorf("create method not found for entity: %s", entityName)
 		}
 
 		creatorResults := createMethod.Call(nil)
@@ -389,7 +389,7 @@ func importBatch(tx *database.Tx, clientField reflect.Value, entityName string, 
 	// 调用Save方法执行批量插入
 	saveMethod := bulk.MethodByName("Save")
 	if !saveMethod.IsValid() {
-		return successCount, skippedCount, fmt.Errorf("Save method not found on bulk creator for entity: %s", entityName)
+		return successCount, skippedCount, fmt.Errorf("save method not found on bulk creator for entity: %s", entityName)
 	}
 
 	ctxValue := reflect.ValueOf(config.Context)
@@ -479,13 +479,13 @@ func findSetMethod(creator reflect.Value, fieldName string) reflect.Value {
 		methodFieldName := strings.TrimPrefix(methodName, "Set")
 
 		// 将字段名和方法字段名都转换为小写进行比较
-		if strings.ToLower(methodFieldName) == strings.ToLower(strings.ReplaceAll(fieldName, "_", "")) {
+		if strings.EqualFold(methodFieldName, strings.ReplaceAll(fieldName, "_", "")) {
 			return creator.MethodByName(methodName)
 		}
 
 		// 也尝试直接匹配（处理下划线转驼峰的情况）
 		camelCaseFieldName := toCamelCase(fieldName)
-		if strings.ToLower(methodFieldName) == strings.ToLower(camelCaseFieldName) {
+		if strings.EqualFold(methodFieldName, camelCaseFieldName) {
 			return creator.MethodByName(methodName)
 		}
 	}
@@ -599,16 +599,8 @@ func toCamelCase(s string) string {
 	return strings.Join(parts, "")
 }
 
-// toTitleCase 转换为首字母大写的格式
-func toTitleCase(s string) string {
-	if len(s) == 0 {
-		return s
-	}
-	return strings.ToUpper(s[:1]) + s[1:]
-}
-
 // clearEntityTable 清空实体表
-func clearEntityTable(tx *database.Tx, clientField reflect.Value, entityName string) error {
+func clearEntityTable(tx *database.Tx, _ reflect.Value, entityName string) error {
 	// 获取事务中的客户端
 	txValue := reflect.ValueOf(tx)
 	// 直接使用实体名称，不需要转换
@@ -619,7 +611,7 @@ func clearEntityTable(tx *database.Tx, clientField reflect.Value, entityName str
 	} // 调用Delete方法
 	deleteMethod := txClientField.MethodByName("Delete")
 	if !deleteMethod.IsValid() {
-		return fmt.Errorf("Delete method not found for entity: %s", entityName)
+		return fmt.Errorf("delete method not found for entity: %s", entityName)
 	}
 
 	deleteResults := deleteMethod.Call(nil)
@@ -635,7 +627,7 @@ func clearEntityTable(tx *database.Tx, clientField reflect.Value, entityName str
 		// 如果没有Where方法，直接调用Exec
 		execMethod := deleter.MethodByName("Exec")
 		if !execMethod.IsValid() {
-			return fmt.Errorf("Exec method not found on deleter for entity: %s", entityName)
+			return fmt.Errorf("exec method not found on deleter for entity: %s", entityName)
 		}
 
 		ctxValue := reflect.ValueOf(context.Background())
