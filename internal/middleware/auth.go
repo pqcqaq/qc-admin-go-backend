@@ -20,14 +20,41 @@ const (
 // JWTAuthMiddleware JWT认证中间件
 func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
+		record, exists := c.Get(string(ApiAuthRecord))
+
+		if !exists || record == nil {
+			ThrowError(c, ForbiddenError("未找到API认证权限", nil))
+			c.Abort()
+			return
+		}
+
+		apiAuthRecord := record.(*APIAuthRecord)
+
+		if apiAuthRecord == nil {
+			ThrowError(c, ForbiddenError("未找到API认证权限", nil))
+			c.Abort()
+			return
+		}
+
+		// 若设置了public，则若提供了Authorization就检查，否则不检查
+
 		// 获取Authorization头
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
+
+			// 没提供令牌，但是公开，直接放行
+			if apiAuthRecord.IsPublic {
+				c.Next()
+				return
+			}
+
 			ThrowError(c, UnauthorizedError("未提供认证令牌", nil))
 			c.Abort()
 			return
 		}
 
+		// 下面是检查逻辑，在提供了令牌或者为非public时必须检查
 		// 检查Bearer前缀
 		if !strings.HasPrefix(authHeader, "Bearer ") {
 			ThrowError(c, UnauthorizedError("认证令牌格式错误", nil))
@@ -54,22 +81,6 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		// 将用户ID存储到上下文中
 		c.Set("user_id", claims.UserID)
 		c.Set("jwt_claims", claims)
-
-		record, exists := c.Get(string(ApiAuthRecord))
-
-		if !exists || record == nil {
-			ThrowError(c, ForbiddenError("未找到API认证权限", nil))
-			c.Abort()
-			return
-		}
-
-		apiAuthRecord := record.(*APIAuthRecord)
-
-		if apiAuthRecord == nil {
-			ThrowError(c, ForbiddenError("未找到API认证权限", nil))
-			c.Abort()
-			return
-		}
 
 		if apiAuthRecord.IsPublic {
 			// 公开API，直接放行
