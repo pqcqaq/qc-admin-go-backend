@@ -7,7 +7,6 @@ import (
 
 	"go-backend/database/ent"
 	"go-backend/database/ent/permission"
-	"go-backend/database/ent/role"
 	entRole "go-backend/database/ent/role"
 	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/user"
@@ -408,7 +407,7 @@ func GetRoleUsersWithPagination(ctx context.Context, roleID uint64, req *models.
 	if len(userIDs) == 0 {
 		// 如果没有用户，直接返回空结果
 		return &models.RoleUsersResponse{
-			Users: []*models.UserResponse{},
+			Users: []*models.UserFromRoleResponse{},
 			Pagination: models.Pagination{
 				Page:       req.Page,
 				PageSize:   req.PageSize,
@@ -452,7 +451,7 @@ func GetRoleUsersWithPagination(ctx context.Context, roleID uint64, req *models.
 	}
 
 	// 转换为响应格式
-	userResponses := make([]*models.UserResponse, len(users))
+	userResponses := make([]*models.UserFromRoleResponse, len(users))
 	for i, u := range users {
 		var age *int
 		if u.Age != 0 { // age为0表示未设置
@@ -469,7 +468,26 @@ func GetRoleUsersWithPagination(ctx context.Context, roleID uint64, req *models.
 			}
 		}
 
-		userResponses[i] = &models.UserResponse{
+		var roleList []models.RoleResponse = make([]models.RoleResponse, 0)
+
+		foundRoles, err := GetUserRoles(ctx, u.ID)
+		if err != nil {
+			return nil, fmt.Errorf("cannot found user-roles")
+		}
+
+		for _, oneRole := range foundRoles {
+			if oneRole.ID != roleID {
+				roleList = append(roleList, models.RoleResponse{
+					ID:          utils.Uint64ToString(oneRole.ID),
+					Name:        oneRole.Name,
+					Description: oneRole.Description,
+					CreateTime:  utils.FormatDateTime(oneRole.CreateTime),
+					UpdateTime:  utils.FormatDateTime(oneRole.UpdateTime),
+				})
+			}
+		}
+
+		userResponses[i] = &models.UserFromRoleResponse{
 			ID:         utils.Uint64ToString(u.ID),
 			Name:       u.Name,
 			Age:        age,
@@ -478,6 +496,7 @@ func GetRoleUsersWithPagination(ctx context.Context, roleID uint64, req *models.
 			CreateTime: utils.FormatDateTime(u.CreateTime),
 			UpdateTime: utils.FormatDateTime(u.UpdateTime),
 			Roles:      roles,
+			OtherRoles: roleList,
 		}
 	}
 
@@ -612,7 +631,7 @@ func collectRolePermissions(ctx context.Context, roleID uint64, visited map[uint
 
 	// 获取当前角色继承的角色
 	inheritedRoles, err := database.Client.Role.Query().
-		Where(role.HasInheritedByWith(role.ID(roleID))).
+		Where(entRole.HasInheritedByWith(entRole.ID(roleID))).
 		All(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get inherited roles for role %d: %w", roleID, err)
@@ -702,7 +721,7 @@ func HasAnyPermissionsOptimized(ctx context.Context, userID uint64, permissions 
 func getAllUserRoleIDs(ctx context.Context, userID uint64) ([]uint64, error) {
 	// 获取用户的直接角色
 	directRoles, err := database.Client.Role.Query().
-		Where(role.HasUserRolesWith(func(s *sql.Selector) {
+		Where(entRole.HasUserRolesWith(func(s *sql.Selector) {
 			s.Where(sql.EQ("user_id", userID)).Where(sql.IsNull("delete_time"))
 		})).All(ctx)
 	if err != nil {
@@ -739,7 +758,7 @@ func collectInheritedRoleIDs(ctx context.Context, roleID uint64, visited map[uin
 
 	// 获取继承的角色
 	inheritedRoles, err := database.Client.Role.Query().
-		Where(role.HasInheritedByWith(role.ID(roleID))).
+		Where(entRole.HasInheritedByWith(entRole.ID(roleID))).
 		All(ctx)
 	if err != nil {
 		return err

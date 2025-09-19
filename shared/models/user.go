@@ -32,6 +32,19 @@ type UserResponse struct {
 	Roles      []string `json:"roles,omitempty"`      // 角色列表
 }
 
+type UserFromRoleResponse struct {
+	ID         string         `json:"id"`
+	Name       string         `json:"name"`
+	Age        *int           `json:"age,omitempty"`
+	Sex        string         `json:"sex,omitempty"`
+	Status     string         `json:"status,omitempty"`     // 用户状态
+	CreateTime string         `json:"createTime,omitempty"` // 创建时间
+	UpdateTime string         `json:"updateTime,omitempty"` // 更新时间
+	Avatar     string         `json:"avatar,omitempty"`     // 头像
+	Roles      []string       `json:"roles,omitempty"`      // 角色列表
+	OtherRoles []RoleResponse `json:"otherRoles,omitempty"` // 角色列表
+}
+
 // GetUsersRequest 获取用户列表请求结构
 type GetUsersRequest struct {
 	PaginationRequest

@@ -195,8 +195,8 @@ type GetRoleUsersRequest struct {
 
 // RoleUsersResponse 角色用户响应结构
 type RoleUsersResponse struct {
-	Users      []*UserResponse `json:"users"`
-	Pagination Pagination      `json:"pagination"`
+	Users      []*UserFromRoleResponse `json:"users"`
+	Pagination Pagination              `json:"pagination"`
 }
 
 // RoleUserResponse 角色用户响应结构
