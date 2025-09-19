@@ -114,3 +114,16 @@ sms:
      template_code: "YourTemplateCode" # 短信模板代码
      region_id: "cn-hangzhou" # 阿里云区域ID
      endpoint: "dysmsapi.aliyuncs.com" # 阿里云短信API端点
+
+
+# OpenAI配置
+openai:
+  enable: false                                    # 是否启用OpenAI功能
+  api_key: "sk-your-api-key-here"                # OpenAI API密钥 (必填)
+  base_url: "https://api.openai-hk.com/v1"          # API基础URL
+  model: "gpt-4o"                         # 默认模型
+  max_tokens: 1500                               # 最大token数
+  temperature: 0.7                               # 温度参数 (0.0-2.0)
+  timeout: 30                                    # 请求超时时间(秒)
+  proxy: "http://localhost:7890/"                                      # 代理地址 (可选)
+  org_id: ""                                     # 组织ID (可选)

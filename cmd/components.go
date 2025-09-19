@@ -12,6 +12,7 @@ import (
 	"go-backend/pkg/email"
 	"go-backend/pkg/jwt"
 	"go-backend/pkg/logging"
+	"go-backend/pkg/openai"
 	"go-backend/pkg/s3"
 	"go-backend/pkg/sms"
 	"sync"
@@ -142,11 +143,31 @@ func initializeComponents(config *configs.AppConfig) (*InitResults, error) {
 		logging.Info("Gin engine created and configured successfully")
 	}()
 
+	// openaiClient
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		openai.SetLogger(logging.WithName("OpenAiClient"))
+		err := openai.InitializeClient(&config.OpenAI)
+		if err != nil {
+			mu.Lock()
+			results.errors["openai"] = err
+			mu.Unlock()
+			logging.Warn("Failed to initialize OpenAI client: %v", err)
+		} else {
+			logging.Info("OpenAI client initialized successfully")
+		}
+	}()
+
 	wg.Wait()
 
-	// 检查关键组件的初始化错误
-	if results.errors["jwt"] != nil {
-		return nil, fmt.Errorf("JWT服务初始化失败: %w", results.errors["jwt"])
+	var importantCmps []string = append(make([]string, 0), "s3", "email", "sms", "jwt", "openai")
+
+	// // 检查关键组件的初始化错误
+	for _, cmp := range importantCmps {
+		if results.errors[cmp] != nil {
+			return nil, fmt.Errorf(cmp+"服务初始化失败: %w", results.errors[cmp])
+		}
 	}
 
 	return results, nil

@@ -21,6 +21,7 @@ type AppConfig struct {
 	Email    EmailConfig    `mapstructure:"email"`
 	SMS      SMSConfig      `mapstructure:"sms"`
 	JWT      JWTConfig      `mapstructure:"jwt"`
+	OpenAI   OpenAIConfig   `mapstructure:"openai"`
 }
 
 var config *AppConfig
@@ -87,6 +88,9 @@ func setDefaults() {
 
 	// JWT默认配置
 	setJWTConfigDefaults()
+
+	// OpenAI默认配置
+	setOpenAIConfigDefaults()
 }
 
 // ResolveConfigPath 解析配置文件路径，支持相对路径和绝对路径
