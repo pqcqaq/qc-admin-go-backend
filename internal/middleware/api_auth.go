@@ -25,9 +25,9 @@ func APIAuthMiddleware(engine *gin.Engine) gin.HandlerFunc {
 		// 首先查找匹配的路由模式
 		routePattern := findMatchingRoutePattern(engine, method, requestPath)
 		if routePattern == "" {
-			// 路由不存在，设置空记录让请求继续（将返回404）
-			c.Set(string(ApiAuthRecord), (*APIAuthRecord)(nil))
-			c.Next()
+			// 路由不存在，直接返回404
+			ThrowError(c, NotFoundError("请求的API路由不存在", nil))
+			c.Abort()
 			return
 		}
 

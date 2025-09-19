@@ -54,5 +54,6 @@ func (r *Router) SetupRoutes(config *configs.AppConfig, engine *gin.Engine) {
 		r.setupRBACRoutes(api)
 		r.setupLoginRecordRoutes(api)
 		r.setupAPIAuthRoutes(api)
+		r.setupLoggingRoutes(api)
 	}
 }

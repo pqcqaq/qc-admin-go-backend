@@ -6,6 +6,7 @@ import (
 
 	"go-backend/internal/funcs"
 	"go-backend/pkg/jwt"
+	"go-backend/pkg/logging"
 
 	"github.com/gin-gonic/gin"
 )
@@ -57,6 +58,14 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		// 下面是检查逻辑，在提供了令牌或者为非public时必须检查
 		// 检查Bearer前缀
 		if !strings.HasPrefix(authHeader, "Bearer ") {
+
+			// 令牌格式错误
+			if apiAuthRecord.IsPublic {
+				logging.Warn("JWTAuthMiddleware: Authorization header format invalid but API is public, allowing request")
+				c.Next()
+				return
+			}
+
 			ThrowError(c, UnauthorizedError("认证令牌格式错误", nil))
 			c.Abort()
 			return
@@ -65,6 +74,14 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		// 提取token
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		if tokenString == "" {
+
+			// 令牌格式错误
+			if apiAuthRecord.IsPublic {
+				logging.Warn("JWTAuthMiddleware: Authorization token empty but API is public, allowing request")
+				c.Next()
+				return
+			}
+
 			ThrowError(c, UnauthorizedError("认证令牌为空", nil))
 			c.Abort()
 			return
@@ -73,6 +90,14 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		// 验证token
 		claims, err := jwt.ValidateToken(tokenString)
 		if err != nil {
+
+			// 令牌格式错误
+			if apiAuthRecord.IsPublic {
+				logging.Warn("JWTAuthMiddleware: token invalid but API is public, allowing request")
+				c.Next()
+				return
+			}
+
 			ThrowError(c, UnauthorizedError("认证令牌无效", err.Error()))
 			c.Abort()
 			return
