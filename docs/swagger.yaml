@@ -13,9 +13,9 @@ definitions:
   models.AssignUserRoleRequest:
     properties:
       roleId:
-        type: integer
+        type: string
       userId:
-        type: integer
+        type: string
     required:
     - roleId
     - userId
@@ -58,6 +58,26 @@ definitions:
       url:
         type: string
     type: object
+  models.BatchAssignUsersToRoleRequest:
+    properties:
+      userIds:
+        description: 用户ID列表
+        items:
+          type: string
+        type: array
+    required:
+    - userIds
+    type: object
+  models.BatchRemoveUsersFromRoleRequest:
+    properties:
+      userIds:
+        description: 用户ID列表
+        items:
+          type: string
+        type: array
+    required:
+    - userIds
+    type: object
   models.ConfirmUploadRequest:
     properties:
       actualSize:
@@ -68,6 +88,42 @@ definitions:
         type: string
     required:
     - uploadSessionId
+    type: object
+  models.CreateAPIAuthRequest:
+    properties:
+      description:
+        description: API描述
+        type: string
+      isActive:
+        description: 是否启用
+        type: boolean
+      isPublic:
+        description: 是否为公开API
+        type: boolean
+      metadata:
+        additionalProperties: true
+        description: 额外的元数据信息
+        type: object
+      method:
+        description: HTTP方法
+        type: string
+      name:
+        description: API名称
+        type: string
+      path:
+        description: API路径
+        type: string
+      permissions:
+        description: 关联的权限ID列表
+        items:
+          $ref: '#/definitions/models.PermissionsList'
+        type: array
+    required:
+    - isActive
+    - isPublic
+    - method
+    - name
+    - path
     type: object
   models.CreateAttachmentRequest:
     properties:
@@ -107,6 +163,61 @@ definitions:
     - filename
     - path
     - size
+    type: object
+  models.CreateChildRoleRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  models.CreateLoggingRequest:
+    properties:
+      code:
+        minimum: 1
+        type: integer
+      data:
+        additionalProperties: true
+        type: object
+      ip:
+        maxLength: 45
+        type: string
+      level:
+        enum:
+        - debug
+        - info
+        - error
+        - warn
+        - fatal
+        type: string
+      message:
+        maxLength: 500
+        type: string
+      method:
+        maxLength: 127
+        type: string
+      path:
+        maxLength: 255
+        type: string
+      query:
+        maxLength: 1000
+        type: string
+      stack:
+        maxLength: 8192
+        type: string
+      type:
+        enum:
+        - Error
+        - Panic
+        - manul
+        type: string
+      userAgent:
+        maxLength: 512
+        type: string
+    required:
+    - message
     type: object
   models.CreatePermissionRequest:
     properties:
@@ -175,6 +286,9 @@ definitions:
         type: string
       path:
         type: string
+      permissionId:
+        description: 关联的权限ID
+        type: string
       redirect:
         type: string
       type:
@@ -194,17 +308,17 @@ definitions:
       createTime:
         description: 创建时间
         type: string
-      email:
-        type: string
       name:
         type: string
-      phone:
+      sex:
+        type: string
+      status:
+        description: 用户状态
         type: string
       updateTime:
         description: 更新时间
         type: string
     required:
-    - email
     - name
     type: object
   models.HealthResponse:
@@ -217,6 +331,75 @@ definitions:
         type: string
       status:
         type: string
+    type: object
+  models.LoginRecordResponse:
+    properties:
+      credentialType:
+        type: string
+      deviceInfo:
+        type: string
+      duration:
+        description: 会话持续时间(秒)
+        type: integer
+      failureReason:
+        type: string
+      id:
+        type: integer
+      identifier:
+        type: string
+      ipAddress:
+        type: string
+      location:
+        type: string
+      loginTime:
+        type: string
+      logoutTime:
+        type: string
+      metadata:
+        additionalProperties: true
+        type: object
+      sessionId:
+        type: string
+      status:
+        type: string
+      userAgent:
+        type: string
+      userId:
+        type: integer
+    type: object
+  models.LoginRequest:
+    properties:
+      credentialType:
+        description: 认证类型
+        enum:
+        - password
+        - email
+        - phone
+        - oauth
+        - totp
+        type: string
+      identifier:
+        description: 标识符
+        type: string
+      secret:
+        description: 密码（密码登录时必需）
+        type: string
+      verifyCode:
+        description: 验证码（非密码登录时必需）
+        type: string
+    required:
+    - credentialType
+    - identifier
+    type: object
+  models.LoginResponse:
+    properties:
+      message:
+        type: string
+      token:
+        description: JWT token (如果有的话)
+        type: string
+      user:
+        $ref: '#/definitions/models.UserInfo'
     type: object
   models.PermissionResponse:
     properties:
@@ -235,6 +418,25 @@ definitions:
         - $ref: '#/definitions/models.ScopeResponse'
         description: 所属权限域
       updateTime:
+        type: string
+    type: object
+  models.PermissionWithSource:
+    properties:
+      permission:
+        $ref: '#/definitions/models.PermissionResponse'
+      source:
+        description: '来源类型: "直接分配" | "角色继承"'
+        type: string
+      sourceRole:
+        allOf:
+        - $ref: '#/definitions/models.RoleResponse'
+        description: 来源角色
+    type: object
+  models.PermissionsList:
+    properties:
+      action:
+        type: string
+      id:
         type: string
     type: object
   models.PrepareUploadRequest:
@@ -258,6 +460,97 @@ definitions:
     - contentType
     - filename
     - size
+    type: object
+  models.RegisterRequest:
+    properties:
+      credentialType:
+        description: 认证类型
+        enum:
+        - password
+        - email
+        - phone
+        - oauth
+        - totp
+        type: string
+      identifier:
+        description: 标识符
+        type: string
+      secret:
+        description: 密码
+        type: string
+      username:
+        description: 用户名
+        type: string
+      verifyCode:
+        description: 验证码（非密码注册时必需）
+        type: string
+    required:
+    - credentialType
+    - identifier
+    - username
+    type: object
+  models.RegisterResponse:
+    properties:
+      message:
+        type: string
+      token:
+        description: JWT token (如果有的话)
+        type: string
+      user:
+        $ref: '#/definitions/models.UserInfo'
+    type: object
+  models.ResetPasswordRequest:
+    properties:
+      credentialType:
+        description: 认证类型
+        enum:
+        - password
+        - email
+        - phone
+        - oauth
+        - totp
+        type: string
+      identifier:
+        description: 标识符
+        type: string
+      newPassword:
+        description: 新密码
+        type: string
+      oldPassword:
+        description: 原密码（密码重置时必需）
+        type: string
+      verifyCode:
+        description: 验证码（非密码重置时必需）
+        type: string
+    required:
+    - credentialType
+    - identifier
+    - newPassword
+    type: object
+  models.ResetPasswordResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  models.RoleDetailedPermissionsResponse:
+    properties:
+      allPermissions:
+        description: 所有权限
+        items:
+          $ref: '#/definitions/models.PermissionResponse'
+        type: array
+      directPermissions:
+        description: 直接分配的权限
+        items:
+          $ref: '#/definitions/models.PermissionWithSource'
+        type: array
+      inheritedPermissions:
+        description: 继承的权限
+        items:
+          $ref: '#/definitions/models.PermissionWithSource'
+        type: array
+      role:
+        $ref: '#/definitions/models.RoleResponse'
     type: object
   models.RoleResponse:
     properties:
@@ -283,6 +576,50 @@ definitions:
         description: 角色拥有的权限
         items:
           $ref: '#/definitions/models.PermissionResponse'
+        type: array
+      updateTime:
+        type: string
+    type: object
+  models.RoleTreeResponse:
+    properties:
+      children:
+        description: 子角色
+        items:
+          $ref: '#/definitions/models.RoleTreeResponse'
+        type: array
+      createTime:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      inheritsFrom:
+        description: 继承的父角色
+        items:
+          $ref: '#/definitions/models.RoleResponse'
+        type: array
+      name:
+        type: string
+      updateTime:
+        type: string
+      userCount:
+        description: 拥有该角色的用户数量
+        type: integer
+    type: object
+  models.RoleUserResponse:
+    properties:
+      createTime:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      nickname:
+        type: string
+      otherRoles:
+        description: 除当前角色外的其他角色
+        items:
+          $ref: '#/definitions/models.RoleResponse'
         type: array
       updateTime:
         type: string
@@ -322,17 +659,77 @@ definitions:
         type: string
       path:
         type: string
-      permissions:
+      permission:
+        allOf:
+        - $ref: '#/definitions/models.PermissionResponse'
         description: 关联的权限
-        items:
-          $ref: '#/definitions/models.PermissionResponse'
-        type: array
       redirect:
         type: string
       type:
         type: string
       updateTime:
         type: string
+    type: object
+  models.SendVerifyCodeRequest:
+    properties:
+      identifier:
+        description: 标识符
+        type: string
+      purpose:
+        description: 用途
+        type: string
+      senderType:
+        description: 发送方式
+        enum:
+        - email
+        - phone
+        - sms
+        type: string
+    required:
+    - identifier
+    - purpose
+    - senderType
+    type: object
+  models.SendVerifyCodeResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  models.UpdateAPIAuthRequest:
+    properties:
+      description:
+        description: API描述
+        type: string
+      isActive:
+        description: 是否启用
+        type: boolean
+      isPublic:
+        description: 是否为公开API
+        type: boolean
+      metadata:
+        additionalProperties: true
+        description: 额外的元数据信息
+        type: object
+      method:
+        description: HTTP方法
+        type: string
+      name:
+        description: API名称
+        type: string
+      path:
+        description: API路径
+        type: string
+      permissions:
+        description: 关联的权限ID列表
+        items:
+          $ref: '#/definitions/models.PermissionsList'
+        type: array
+    required:
+    - isActive
+    - isPublic
+    - method
+    - name
+    - path
     type: object
   models.UpdateAttachmentRequest:
     properties:
@@ -365,6 +762,52 @@ definitions:
         type: string
       url:
         type: string
+    type: object
+  models.UpdateLoggingRequest:
+    properties:
+      code:
+        minimum: 1
+        type: integer
+      data:
+        additionalProperties: true
+        type: object
+      ip:
+        maxLength: 45
+        type: string
+      level:
+        enum:
+        - debug
+        - info
+        - error
+        - warn
+        - fatal
+        type: string
+      message:
+        maxLength: 500
+        type: string
+      method:
+        maxLength: 127
+        type: string
+      path:
+        maxLength: 255
+        type: string
+      query:
+        maxLength: 1000
+        type: string
+      stack:
+        maxLength: 8192
+        type: string
+      type:
+        enum:
+        - Error
+        - Panic
+        - manul
+        type: string
+      userAgent:
+        maxLength: 512
+        type: string
+    required:
+    - message
     type: object
   models.UpdatePermissionRequest:
     properties:
@@ -428,6 +871,9 @@ definitions:
         type: string
       path:
         type: string
+      permissionId:
+        description: 关联的权限ID
+        type: string
       redirect:
         type: string
       type:
@@ -437,30 +883,121 @@ definitions:
     properties:
       age:
         type: integer
-      email:
+      avatarId:
+        description: 头像ID
         type: string
       name:
         type: string
-      phone:
+      sex:
+        type: string
+      status:
+        description: 用户状态
+        type: string
+    type: object
+  models.UserInfo:
+    properties:
+      age:
+        description: 年龄
+        type: integer
+      avatar:
+        description: 头像
+        type: string
+      createTime:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      permissions:
+        description: 用户权限（通过角色继承）
+        items:
+          $ref: '#/definitions/models.PermissionResponse'
+        type: array
+      roles:
+        description: 用户角色
+        items:
+          $ref: '#/definitions/models.RoleResponse'
+        type: array
+      sex:
+        description: 性别
+        type: string
+      status:
+        type: string
+      updateTime:
         type: string
     type: object
   models.UserResponse:
     properties:
       age:
         type: integer
+      avatar:
+        description: 头像
+        type: string
       createTime:
         description: 创建时间
-        type: string
-      email:
         type: string
       id:
         type: string
       name:
         type: string
-      phone:
+      roles:
+        description: 角色列表
+        items:
+          type: string
+        type: array
+      sex:
+        type: string
+      status:
+        description: 用户状态
         type: string
       updateTime:
         description: 更新时间
+        type: string
+    type: object
+  models.UserRoleResponse:
+    properties:
+      createTime:
+        type: string
+      id:
+        type: string
+      role:
+        $ref: '#/definitions/models.RoleResponse'
+      roleId:
+        type: string
+      updateTime:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserResponse'
+      userId:
+        type: string
+    type: object
+  models.VerifyCodeRequest:
+    properties:
+      code:
+        description: 验证码
+        type: string
+      identifier:
+        description: 标识符
+        type: string
+      purpose:
+        description: 用途
+        type: string
+      senderType:
+        description: 发送方式
+        enum:
+        - email
+        - phone
+        - sms
+        type: string
+    required:
+    - code
+    - identifier
+    - purpose
+    - senderType
+    type: object
+  models.VerifyCodeResponse:
+    properties:
+      message:
         type: string
     type: object
 externalDocs:
@@ -480,6 +1017,507 @@ info:
   title: Go Backend API
   version: "1.0"
 paths:
+  /admin/login-records:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统登录记录列表（管理员权限）
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        name: limit
+        type: integer
+      - description: 用户ID
+        in: query
+        name: user_id
+        type: string
+      - description: 登录状态
+        enum:
+        - success
+        - failed
+        - locked
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                properties:
+                  records:
+                    items:
+                      $ref: '#/definitions/models.LoginRecordResponse'
+                    type: array
+                  total:
+                    type: integer
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 获取登录记录列表
+      tags:
+      - admin
+  /apiauth:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统中所有API认证记录的列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  type: object
+                type: array
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取所有API认证记录
+      tags:
+      - apiauth
+    post:
+      consumes:
+      - application/json
+      description: 创建新的API认证记录
+      parameters:
+      - description: API认证记录信息
+        in: body
+        name: apiauth
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateAPIAuthRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 创建API认证记录
+      tags:
+      - apiauth
+  /apiauth/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除API认证记录
+      parameters:
+      - description: API认证记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 删除API认证记录
+      tags:
+      - apiauth
+    get:
+      consumes:
+      - application/json
+      description: 根据API认证记录ID获取API认证记录详细信息
+      parameters:
+      - description: API认证记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 根据ID获取API认证记录
+      tags:
+      - apiauth
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新API认证记录信息
+      parameters:
+      - description: API认证记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: API认证记录信息
+        in: body
+        name: apiauth
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateAPIAuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 更新API认证记录
+      tags:
+      - apiauth
+  /apiauth/export:
+    get:
+      consumes:
+      - application/json
+      description: 将API认证记录导出为Excel文件
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10000
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: desc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: create_time
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      - description: 按名称模糊搜索
+        in: query
+        name: name
+        type: string
+      - description: 按HTTP方法过滤
+        in: query
+        name: method
+        type: string
+      - description: 按路径模糊搜索
+        in: query
+        name: path
+        type: string
+      - description: 按是否公开过滤
+        in: query
+        name: isPublic
+        type: boolean
+      - description: 按是否启用过滤
+        in: query
+        name: isActive
+        type: boolean
+      - description: 开始时间
+        in: query
+        name: beginTime
+        type: string
+      - description: 结束时间
+        in: query
+        name: endTime
+        type: string
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel文件
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 导出API认证记录为Excel
+      tags:
+      - apiauth
+  /apiauth/page:
+    get:
+      consumes:
+      - application/json
+      description: 根据分页参数获取API认证记录列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: desc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: create_time
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      - description: 按名称模糊搜索
+        in: query
+        name: name
+        type: string
+      - description: 按HTTP方法过滤
+        in: query
+        name: method
+        type: string
+      - description: 按路径模糊搜索
+        in: query
+        name: path
+        type: string
+      - description: 按是否公开过滤
+        in: query
+        name: isPublic
+        type: boolean
+      - description: 按是否启用过滤
+        in: query
+        name: isActive
+        type: boolean
+      - description: 开始时间
+        in: query
+        name: beginTime
+        type: string
+      - description: 结束时间
+        in: query
+        name: endTime
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  type: object
+                type: array
+              pagination:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 分页获取API认证记录列表
+      tags:
+      - apiauth
   /attachments:
     get:
       consumes:
@@ -944,6 +1982,488 @@ paths:
       summary: 准备文件上传
       tags:
       - attachments
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登录认证
+      parameters:
+      - description: 登录请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 用户登录
+      tags:
+      - auth
+  /auth/login-records:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前登录用户的登录记录
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                properties:
+                  records:
+                    items:
+                      $ref: '#/definitions/models.LoginRecordResponse'
+                    type: array
+                  total:
+                    type: integer
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 获取当前用户的登录记录
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: 用户登出，更新登录记录
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                properties:
+                  message:
+                    type: string
+                type: object
+              success:
+                type: boolean
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 用户登出
+      tags:
+      - auth
+  /auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: 刷新JWT Token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                properties:
+                  message:
+                    type: string
+                  token:
+                    type: string
+                type: object
+              success:
+                type: boolean
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 刷新Token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: 用户注册
+      parameters:
+      - description: 注册请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 用户注册
+      tags:
+      - auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: 重置用户密码
+      parameters:
+      - description: 重置密码请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResetPasswordResponse'
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 重置密码
+      tags:
+      - auth
+  /auth/send-verify-code:
+    post:
+      consumes:
+      - application/json
+      description: 发送验证码到指定标识符
+      parameters:
+      - description: 发送验证码请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SendVerifyCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SendVerifyCodeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 发送验证码
+      tags:
+      - auth
+  /auth/user-info:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前登录用户的详细信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.UserInfo'
+              success:
+                type: boolean
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 获取当前用户信息
+      tags:
+      - auth
+  /auth/user-menu-tree:
+    get:
+      consumes:
+      - application/json
+      description: 根据当前用户的角色和权限，返回该用户可访问的菜单树形结构
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  type: object
+                type: array
+              success:
+                type: boolean
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 获取当前用户的菜单树
+      tags:
+      - auth
+  /auth/verify-code:
+    post:
+      consumes:
+      - application/json
+      description: 验证验证码是否正确（仅用于测试）
+      parameters:
+      - description: 验证验证码请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.VerifyCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.VerifyCodeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 验证验证码
+      tags:
+      - auth
   /demo/error:
     get:
       consumes:
@@ -1011,6 +2531,455 @@ paths:
       summary: 健康检查
       tags:
       - health
+  /loggings:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统中所有日志记录的列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  type: object
+                type: array
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取所有日志记录
+      tags:
+      - loggings
+    post:
+      consumes:
+      - application/json
+      description: 创建新的日志记录
+      parameters:
+      - description: 日志记录信息
+        in: body
+        name: logging
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateLoggingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 创建日志记录
+      tags:
+      - loggings
+  /loggings/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除日志记录
+      parameters:
+      - description: 日志记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 删除日志记录
+      tags:
+      - loggings
+    get:
+      consumes:
+      - application/json
+      description: 根据日志记录ID获取日志记录详细信息
+      parameters:
+      - description: 日志记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 根据ID获取日志记录
+      tags:
+      - loggings
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新日志记录信息
+      parameters:
+      - description: 日志记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 日志记录信息
+        in: body
+        name: logging
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateLoggingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 更新日志记录
+      tags:
+      - loggings
+  /loggings/export:
+    get:
+      consumes:
+      - application/json
+      description: 将日志记录导出为Excel文件
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10000
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: desc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: create_time
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      - description: 日志级别
+        enum:
+        - debug
+        - info
+        - error
+        - warn
+        - fatal
+        in: query
+        name: level
+        type: string
+      - description: 日志类型
+        enum:
+        - Error
+        - Panic
+        - manul
+        in: query
+        name: type
+        type: string
+      - description: 消息内容
+        in: query
+        name: message
+        type: string
+      - description: HTTP方法
+        in: query
+        name: method
+        type: string
+      - description: 请求路径
+        in: query
+        name: path
+        type: string
+      - description: IP地址
+        in: query
+        name: ip
+        type: string
+      - description: 状态码
+        in: query
+        name: code
+        type: integer
+      - description: 开始时间
+        in: query
+        name: beginTime
+        type: string
+      - description: 结束时间
+        in: query
+        name: endTime
+        type: string
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel文件
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 导出日志记录为Excel
+      tags:
+      - loggings
+  /loggings/page:
+    get:
+      consumes:
+      - application/json
+      description: 根据分页参数获取日志记录列表，支持多种过滤条件
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: desc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: create_time
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      - description: 日志级别
+        enum:
+        - debug
+        - info
+        - error
+        - warn
+        - fatal
+        in: query
+        name: level
+        type: string
+      - description: 日志类型
+        enum:
+        - Error
+        - Panic
+        - manul
+        in: query
+        name: type
+        type: string
+      - description: 消息内容
+        in: query
+        name: message
+        type: string
+      - description: HTTP方法
+        in: query
+        name: method
+        type: string
+      - description: 请求路径
+        in: query
+        name: path
+        type: string
+      - description: IP地址
+        in: query
+        name: ip
+        type: string
+      - description: 状态码
+        in: query
+        name: code
+        type: integer
+      - description: 开始时间
+        in: query
+        name: beginTime
+        type: string
+      - description: 结束时间
+        in: query
+        name: endTime
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  type: object
+                type: array
+              pagination:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 分页获取日志记录列表
+      tags:
+      - loggings
   /rbac/permissions:
     get:
       consumes:
@@ -1592,6 +3561,121 @@ paths:
       summary: 更新角色
       tags:
       - rbac-roles
+  /rbac/roles/{id}/parents/{parentId}:
+    delete:
+      consumes:
+      - application/json
+      description: 解除指定角色对某个父角色的继承关系
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 父角色ID
+        in: path
+        name: parentId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 解除父角色依赖
+      tags:
+      - rbac-roles
+    post:
+      consumes:
+      - application/json
+      description: 为指定角色添加父角色继承关系
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 父角色ID
+        in: path
+        name: parentId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 添加父角色依赖
+      tags:
+      - rbac-roles
   /rbac/roles/{id}/permissions:
     post:
       consumes:
@@ -1700,6 +3784,292 @@ paths:
       summary: 撤销角色权限
       tags:
       - rbac-roles
+  /rbac/roles/{id}/permissions/assignable:
+    get:
+      consumes:
+      - application/json
+      description: 获取角色可以分配的权限（排除已有的直接权限和继承权限）
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  $ref: '#/definitions/models.PermissionResponse'
+                type: array
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取可分配的权限
+      tags:
+      - rbac-roles
+  /rbac/roles/{id}/permissions/detailed:
+    get:
+      consumes:
+      - application/json
+      description: 获取角色的详细权限信息，区分直接分配和继承的权限
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.RoleDetailedPermissionsResponse'
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取角色详细权限信息
+      tags:
+      - rbac-roles
+  /rbac/roles/{id}/users/batch:
+    delete:
+      consumes:
+      - application/json
+      description: 批量从指定角色移除用户
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 用户ID列表
+        in: body
+        name: users
+        required: true
+        schema:
+          $ref: '#/definitions/models.BatchRemoveUsersFromRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 批量从角色移除用户
+      tags:
+      - rbac-roles
+    post:
+      consumes:
+      - application/json
+      description: 批量将用户分配到指定角色
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 用户ID列表
+        in: body
+        name: users
+        required: true
+        schema:
+          $ref: '#/definitions/models.BatchAssignUsersToRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 批量分配用户到角色
+      tags:
+      - rbac-roles
+  /rbac/roles/{parentId}/children:
+    post:
+      consumes:
+      - application/json
+      description: 在指定父角色下创建子角色，自动建立继承关系
+      parameters:
+      - description: 父角色ID
+        in: path
+        name: parentId
+        required: true
+        type: integer
+      - description: 子角色信息
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateChildRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/models.RoleResponse'
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 创建子角色
+      tags:
+      - rbac-roles
   /rbac/roles/all:
     get:
       consumes:
@@ -1731,6 +4101,37 @@ paths:
                 type: boolean
             type: object
       summary: 获取所有角色
+      tags:
+      - rbac-roles
+  /rbac/roles/tree:
+    get:
+      consumes:
+      - application/json
+      description: 获取角色的层级树形结构，包含用户统计信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  $ref: '#/definitions/models.RoleTreeResponse'
+                type: array
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取角色树形结构
       tags:
       - rbac-roles
   /rbac/scopes:
@@ -2069,6 +4470,132 @@ paths:
       summary: 获取权限域树形结构
       tags:
       - rbac-scopes
+  /rbac/user-roles:
+    get:
+      consumes:
+      - application/json
+      description: 根据分页参数获取用户角色关联列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: desc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: create_time
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      - description: 按用户ID搜索
+        in: query
+        name: userId
+        type: string
+      - description: 按角色ID搜索
+        in: query
+        name: roleId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  $ref: '#/definitions/models.UserRoleResponse'
+                type: array
+              pagination:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 分页获取用户角色关联列表
+      tags:
+      - rbac-user-roles
+    post:
+      consumes:
+      - application/json
+      description: 为指定用户分配角色
+      parameters:
+      - description: 用户角色分配信息
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/models.AssignUserRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                type: object
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 为用户分配角色
+      tags:
+      - rbac-user-roles
   /rbac/user-roles/{userID}/permissions:
     get:
       consumes:
@@ -2292,29 +4819,44 @@ paths:
       summary: 撤销用户角色
       tags:
       - rbac-user-roles
-  /rbac/user-roles/assign:
-    post:
+  /rbac/user-roles/roles/{id}/users:
+    get:
       consumes:
       - application/json
-      description: 为指定用户分配角色
+      description: 获取拥有指定角色的用户列表，支持分页和搜索
       parameters:
-      - description: 用户角色分配信息
-        in: body
-        name: role
+      - description: 角色ID
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/models.AssignUserRoleRequest'
+        type: integer
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 搜索关键字
+        in: query
+        name: keyword
+        type: string
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
             properties:
               data:
+                items:
+                  $ref: '#/definitions/models.RoleUserResponse'
+                type: array
+              pagination:
                 type: object
-              message:
-                type: string
               success:
                 type: boolean
             type: object
@@ -2345,9 +4887,9 @@ paths:
               success:
                 type: boolean
             type: object
-      summary: 为用户分配角色
+      summary: 获取拥有指定角色的用户
       tags:
-      - rbac-user-roles
+      - rbac-roles
   /rbac/user-roles/roles/{roleID}/users:
     get:
       consumes:
@@ -2948,6 +5490,64 @@ paths:
                 type: boolean
             type: object
       summary: 更新用户
+      tags:
+      - users
+  /users/{id}/avatar/{attachment_id}:
+    put:
+      consumes:
+      - application/json
+      description: 设置用户头像
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 附件ID
+        in: path
+        name: attachment_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 设置用户头像
       tags:
       - users
   /users/page:
