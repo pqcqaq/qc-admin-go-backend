@@ -675,7 +675,7 @@ func HasAnyPermissions(ctx context.Context, userID uint64, permissions []string)
 // HasAnyPermissionsOptimized 更高效的版本：直接通过数据库查询检查权限
 func HasAnyPermissionsOptimized(ctx context.Context, userID uint64, permissions []string) (bool, error) {
 	if len(permissions) == 0 {
-		return false, nil
+		return true, nil
 	}
 
 	// 检查用户是否存在
