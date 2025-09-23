@@ -13,6 +13,7 @@ import (
 
 	"go-backend/database/ent/apiauth"
 	"go-backend/database/ent/attachment"
+	"go-backend/database/ent/clientdevice"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/loginrecord"
@@ -42,6 +43,8 @@ type Client struct {
 	APIAuth *APIAuthClient
 	// Attachment is the client for interacting with the Attachment builders.
 	Attachment *AttachmentClient
+	// ClientDevice is the client for interacting with the ClientDevice builders.
+	ClientDevice *ClientDeviceClient
 	// Credential is the client for interacting with the Credential builders.
 	Credential *CredentialClient
 	// Logging is the client for interacting with the Logging builders.
@@ -77,6 +80,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.APIAuth = NewAPIAuthClient(c.config)
 	c.Attachment = NewAttachmentClient(c.config)
+	c.ClientDevice = NewClientDeviceClient(c.config)
 	c.Credential = NewCredentialClient(c.config)
 	c.Logging = NewLoggingClient(c.config)
 	c.LoginRecord = NewLoginRecordClient(c.config)
@@ -182,6 +186,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:         cfg,
 		APIAuth:        NewAPIAuthClient(cfg),
 		Attachment:     NewAttachmentClient(cfg),
+		ClientDevice:   NewClientDeviceClient(cfg),
 		Credential:     NewCredentialClient(cfg),
 		Logging:        NewLoggingClient(cfg),
 		LoginRecord:    NewLoginRecordClient(cfg),
@@ -214,6 +219,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:         cfg,
 		APIAuth:        NewAPIAuthClient(cfg),
 		Attachment:     NewAttachmentClient(cfg),
+		ClientDevice:   NewClientDeviceClient(cfg),
 		Credential:     NewCredentialClient(cfg),
 		Logging:        NewLoggingClient(cfg),
 		LoginRecord:    NewLoginRecordClient(cfg),
@@ -254,8 +260,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.APIAuth, c.Attachment, c.Credential, c.Logging, c.LoginRecord, c.Permission,
-		c.Role, c.RolePermission, c.Scan, c.Scope, c.User, c.UserRole, c.VerifyCode,
+		c.APIAuth, c.Attachment, c.ClientDevice, c.Credential, c.Logging, c.LoginRecord,
+		c.Permission, c.Role, c.RolePermission, c.Scan, c.Scope, c.User, c.UserRole,
+		c.VerifyCode,
 	} {
 		n.Use(hooks...)
 	}
@@ -265,8 +272,9 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.APIAuth, c.Attachment, c.Credential, c.Logging, c.LoginRecord, c.Permission,
-		c.Role, c.RolePermission, c.Scan, c.Scope, c.User, c.UserRole, c.VerifyCode,
+		c.APIAuth, c.Attachment, c.ClientDevice, c.Credential, c.Logging, c.LoginRecord,
+		c.Permission, c.Role, c.RolePermission, c.Scan, c.Scope, c.User, c.UserRole,
+		c.VerifyCode,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -279,6 +287,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.APIAuth.mutate(ctx, m)
 	case *AttachmentMutation:
 		return c.Attachment.mutate(ctx, m)
+	case *ClientDeviceMutation:
+		return c.ClientDevice.mutate(ctx, m)
 	case *CredentialMutation:
 		return c.Credential.mutate(ctx, m)
 	case *LoggingMutation:
@@ -589,6 +599,157 @@ func (c *AttachmentClient) mutate(ctx context.Context, m *AttachmentMutation) (V
 		return (&AttachmentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Attachment mutation op: %q", m.Op())
+	}
+}
+
+// ClientDeviceClient is a client for the ClientDevice schema.
+type ClientDeviceClient struct {
+	config
+}
+
+// NewClientDeviceClient returns a client for the ClientDevice from the given config.
+func NewClientDeviceClient(c config) *ClientDeviceClient {
+	return &ClientDeviceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `clientdevice.Hooks(f(g(h())))`.
+func (c *ClientDeviceClient) Use(hooks ...Hook) {
+	c.hooks.ClientDevice = append(c.hooks.ClientDevice, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `clientdevice.Intercept(f(g(h())))`.
+func (c *ClientDeviceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ClientDevice = append(c.inters.ClientDevice, interceptors...)
+}
+
+// Create returns a builder for creating a ClientDevice entity.
+func (c *ClientDeviceClient) Create() *ClientDeviceCreate {
+	mutation := newClientDeviceMutation(c.config, OpCreate)
+	return &ClientDeviceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ClientDevice entities.
+func (c *ClientDeviceClient) CreateBulk(builders ...*ClientDeviceCreate) *ClientDeviceCreateBulk {
+	return &ClientDeviceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ClientDeviceClient) MapCreateBulk(slice any, setFunc func(*ClientDeviceCreate, int)) *ClientDeviceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ClientDeviceCreateBulk{err: fmt.Errorf("calling to ClientDeviceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ClientDeviceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ClientDeviceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ClientDevice.
+func (c *ClientDeviceClient) Update() *ClientDeviceUpdate {
+	mutation := newClientDeviceMutation(c.config, OpUpdate)
+	return &ClientDeviceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ClientDeviceClient) UpdateOne(_m *ClientDevice) *ClientDeviceUpdateOne {
+	mutation := newClientDeviceMutation(c.config, OpUpdateOne, withClientDevice(_m))
+	return &ClientDeviceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ClientDeviceClient) UpdateOneID(id uint64) *ClientDeviceUpdateOne {
+	mutation := newClientDeviceMutation(c.config, OpUpdateOne, withClientDeviceID(id))
+	return &ClientDeviceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ClientDevice.
+func (c *ClientDeviceClient) Delete() *ClientDeviceDelete {
+	mutation := newClientDeviceMutation(c.config, OpDelete)
+	return &ClientDeviceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ClientDeviceClient) DeleteOne(_m *ClientDevice) *ClientDeviceDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ClientDeviceClient) DeleteOneID(id uint64) *ClientDeviceDeleteOne {
+	builder := c.Delete().Where(clientdevice.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ClientDeviceDeleteOne{builder}
+}
+
+// Query returns a query builder for ClientDevice.
+func (c *ClientDeviceClient) Query() *ClientDeviceQuery {
+	return &ClientDeviceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeClientDevice},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ClientDevice entity by its id.
+func (c *ClientDeviceClient) Get(ctx context.Context, id uint64) (*ClientDevice, error) {
+	return c.Query().Where(clientdevice.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ClientDeviceClient) GetX(ctx context.Context, id uint64) *ClientDevice {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryRoles queries the roles edge of a ClientDevice.
+func (c *ClientDeviceClient) QueryRoles(_m *ClientDevice) *RoleQuery {
+	query := (&RoleClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(clientdevice.Table, clientdevice.FieldID, id),
+			sqlgraph.To(role.Table, role.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, clientdevice.RolesTable, clientdevice.RolesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ClientDeviceClient) Hooks() []Hook {
+	hooks := c.hooks.ClientDevice
+	return append(hooks[:len(hooks):len(hooks)], clientdevice.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *ClientDeviceClient) Interceptors() []Interceptor {
+	inters := c.inters.ClientDevice
+	return append(inters[:len(inters):len(inters)], clientdevice.Interceptors[:]...)
+}
+
+func (c *ClientDeviceClient) mutate(ctx context.Context, m *ClientDeviceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ClientDeviceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ClientDeviceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ClientDeviceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ClientDeviceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ClientDevice mutation op: %q", m.Op())
 	}
 }
 
@@ -2415,12 +2576,12 @@ func (c *VerifyCodeClient) mutate(ctx context.Context, m *VerifyCodeMutation) (V
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		APIAuth, Attachment, Credential, Logging, LoginRecord, Permission, Role,
-		RolePermission, Scan, Scope, User, UserRole, VerifyCode []ent.Hook
+		APIAuth, Attachment, ClientDevice, Credential, Logging, LoginRecord, Permission,
+		Role, RolePermission, Scan, Scope, User, UserRole, VerifyCode []ent.Hook
 	}
 	inters struct {
-		APIAuth, Attachment, Credential, Logging, LoginRecord, Permission, Role,
-		RolePermission, Scan, Scope, User, UserRole, VerifyCode []ent.Interceptor
+		APIAuth, Attachment, ClientDevice, Credential, Logging, LoginRecord, Permission,
+		Role, RolePermission, Scan, Scope, User, UserRole, VerifyCode []ent.Interceptor
 	}
 )
 

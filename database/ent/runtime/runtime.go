@@ -5,6 +5,7 @@ package runtime
 import (
 	"go-backend/database/ent/apiauth"
 	"go-backend/database/ent/attachment"
+	"go-backend/database/ent/clientdevice"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/loginrecord"
@@ -136,6 +137,109 @@ func init() {
 	attachmentDescTag3 := attachmentFields[13].Descriptor()
 	// attachment.Tag3Validator is a validator for the "tag3" field. It is called by the builders before save.
 	attachment.Tag3Validator = attachmentDescTag3.Validators[0].(func(string) error)
+	clientdeviceMixin := schema.ClientDevice{}.Mixin()
+	clientdeviceMixinHooks0 := clientdeviceMixin[0].Hooks()
+	clientdeviceMixinHooks1 := clientdeviceMixin[1].Hooks()
+	clientdevice.Hooks[0] = clientdeviceMixinHooks0[0]
+	clientdevice.Hooks[1] = clientdeviceMixinHooks0[1]
+	clientdevice.Hooks[2] = clientdeviceMixinHooks1[0]
+	clientdeviceMixinInters1 := clientdeviceMixin[1].Interceptors()
+	clientdevice.Interceptors[0] = clientdeviceMixinInters1[0]
+	clientdeviceMixinFields0 := clientdeviceMixin[0].Fields()
+	_ = clientdeviceMixinFields0
+	clientdeviceFields := schema.ClientDevice{}.Fields()
+	_ = clientdeviceFields
+	// clientdeviceDescCreateTime is the schema descriptor for create_time field.
+	clientdeviceDescCreateTime := clientdeviceMixinFields0[1].Descriptor()
+	// clientdevice.DefaultCreateTime holds the default value on creation for the create_time field.
+	clientdevice.DefaultCreateTime = clientdeviceDescCreateTime.Default.(func() time.Time)
+	// clientdeviceDescUpdateTime is the schema descriptor for update_time field.
+	clientdeviceDescUpdateTime := clientdeviceMixinFields0[3].Descriptor()
+	// clientdevice.DefaultUpdateTime holds the default value on creation for the update_time field.
+	clientdevice.DefaultUpdateTime = clientdeviceDescUpdateTime.Default.(func() time.Time)
+	// clientdevice.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	clientdevice.UpdateDefaultUpdateTime = clientdeviceDescUpdateTime.UpdateDefault.(func() time.Time)
+	// clientdeviceDescName is the schema descriptor for name field.
+	clientdeviceDescName := clientdeviceFields[0].Descriptor()
+	// clientdevice.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	clientdevice.NameValidator = func() func(string) error {
+		validators := clientdeviceDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// clientdeviceDescCode is the schema descriptor for code field.
+	clientdeviceDescCode := clientdeviceFields[1].Descriptor()
+	// clientdevice.CodeValidator is a validator for the "code" field. It is called by the builders before save.
+	clientdevice.CodeValidator = func() func(string) error {
+		validators := clientdeviceDescCode.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+			validators[2].(func(string) error),
+		}
+		return func(code string) error {
+			for _, fn := range fns {
+				if err := fn(code); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// clientdeviceDescEnabled is the schema descriptor for enabled field.
+	clientdeviceDescEnabled := clientdeviceFields[2].Descriptor()
+	// clientdevice.DefaultEnabled holds the default value on creation for the enabled field.
+	clientdevice.DefaultEnabled = clientdeviceDescEnabled.Default.(bool)
+	// clientdeviceDescAccessTokenExpiry is the schema descriptor for access_token_expiry field.
+	clientdeviceDescAccessTokenExpiry := clientdeviceFields[3].Descriptor()
+	// clientdevice.AccessTokenExpiryValidator is a validator for the "access_token_expiry" field. It is called by the builders before save.
+	clientdevice.AccessTokenExpiryValidator = func() func(uint64) error {
+		validators := clientdeviceDescAccessTokenExpiry.Validators
+		fns := [...]func(uint64) error{
+			validators[0].(func(uint64) error),
+			validators[1].(func(uint64) error),
+		}
+		return func(access_token_expiry uint64) error {
+			for _, fn := range fns {
+				if err := fn(access_token_expiry); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// clientdeviceDescRefreshTokenExpiry is the schema descriptor for refresh_token_expiry field.
+	clientdeviceDescRefreshTokenExpiry := clientdeviceFields[4].Descriptor()
+	// clientdevice.RefreshTokenExpiryValidator is a validator for the "refresh_token_expiry" field. It is called by the builders before save.
+	clientdevice.RefreshTokenExpiryValidator = func() func(uint64) error {
+		validators := clientdeviceDescRefreshTokenExpiry.Validators
+		fns := [...]func(uint64) error{
+			validators[0].(func(uint64) error),
+			validators[1].(func(uint64) error),
+		}
+		return func(refresh_token_expiry uint64) error {
+			for _, fn := range fns {
+				if err := fn(refresh_token_expiry); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// clientdeviceDescAnonymous is the schema descriptor for anonymous field.
+	clientdeviceDescAnonymous := clientdeviceFields[5].Descriptor()
+	// clientdevice.DefaultAnonymous holds the default value on creation for the anonymous field.
+	clientdevice.DefaultAnonymous = clientdeviceDescAnonymous.Default.(bool)
 	credentialMixin := schema.Credential{}.Mixin()
 	credentialMixinHooks0 := credentialMixin[0].Hooks()
 	credentialMixinHooks1 := credentialMixin[1].Hooks()

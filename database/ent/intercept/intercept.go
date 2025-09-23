@@ -9,6 +9,7 @@ import (
 	"go-backend/database/ent"
 	"go-backend/database/ent/apiauth"
 	"go-backend/database/ent/attachment"
+	"go-backend/database/ent/clientdevice"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/loginrecord"
@@ -133,6 +134,33 @@ func (f TraverseAttachment) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AttachmentQuery", q)
+}
+
+// The ClientDeviceFunc type is an adapter to allow the use of ordinary function as a Querier.
+type ClientDeviceFunc func(context.Context, *ent.ClientDeviceQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f ClientDeviceFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.ClientDeviceQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ClientDeviceQuery", q)
+}
+
+// The TraverseClientDevice type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseClientDevice func(context.Context, *ent.ClientDeviceQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseClientDevice) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseClientDevice) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ClientDeviceQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.ClientDeviceQuery", q)
 }
 
 // The CredentialFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -439,6 +467,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.APIAuthQuery, predicate.APIAuth, apiauth.OrderOption]{typ: ent.TypeAPIAuth, tq: q}, nil
 	case *ent.AttachmentQuery:
 		return &query[*ent.AttachmentQuery, predicate.Attachment, attachment.OrderOption]{typ: ent.TypeAttachment, tq: q}, nil
+	case *ent.ClientDeviceQuery:
+		return &query[*ent.ClientDeviceQuery, predicate.ClientDevice, clientdevice.OrderOption]{typ: ent.TypeClientDevice, tq: q}, nil
 	case *ent.CredentialQuery:
 		return &query[*ent.CredentialQuery, predicate.Credential, credential.OrderOption]{typ: ent.TypeCredential, tq: q}, nil
 	case *ent.LoggingQuery:

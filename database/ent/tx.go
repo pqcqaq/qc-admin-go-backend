@@ -18,6 +18,8 @@ type Tx struct {
 	APIAuth *APIAuthClient
 	// Attachment is the client for interacting with the Attachment builders.
 	Attachment *AttachmentClient
+	// ClientDevice is the client for interacting with the ClientDevice builders.
+	ClientDevice *ClientDeviceClient
 	// Credential is the client for interacting with the Credential builders.
 	Credential *CredentialClient
 	// Logging is the client for interacting with the Logging builders.
@@ -173,6 +175,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.APIAuth = NewAPIAuthClient(tx.config)
 	tx.Attachment = NewAttachmentClient(tx.config)
+	tx.ClientDevice = NewClientDeviceClient(tx.config)
 	tx.Credential = NewCredentialClient(tx.config)
 	tx.Logging = NewLoggingClient(tx.config)
 	tx.LoginRecord = NewLoginRecordClient(tx.config)

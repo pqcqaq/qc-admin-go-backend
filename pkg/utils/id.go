@@ -13,3 +13,11 @@ func StringToUint64(idStr string) uint64 {
 	}
 	return id
 }
+
+func StringToUint64Slice(iList []string) []uint64 {
+	result := make([]uint64, len(iList))
+	for i, idStr := range iList {
+		result[i] = StringToUint64(idStr)
+	}
+	return result
+}

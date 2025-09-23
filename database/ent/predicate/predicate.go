@@ -12,6 +12,9 @@ type APIAuth func(*sql.Selector)
 // Attachment is the predicate function for attachment builders.
 type Attachment func(*sql.Selector)
 
+// ClientDevice is the predicate function for clientdevice builders.
+type ClientDevice func(*sql.Selector)
+
 // Credential is the predicate function for credential builders.
 type Credential func(*sql.Selector)
 

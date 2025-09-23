@@ -166,6 +166,45 @@ var (
 			},
 		},
 	}
+	// SysClientsColumns holds the columns for the "sys_clients" table.
+	SysClientsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "name", Type: field.TypeString, Size: 100},
+		{Name: "code", Type: field.TypeString, Size: 64},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "access_token_expiry", Type: field.TypeUint64},
+		{Name: "refresh_token_expiry", Type: field.TypeUint64},
+		{Name: "anonymous", Type: field.TypeBool, Default: true},
+	}
+	// SysClientsTable holds the schema information for the "sys_clients" table.
+	SysClientsTable = &schema.Table{
+		Name:       "sys_clients",
+		Columns:    SysClientsColumns,
+		PrimaryKey: []*schema.Column{SysClientsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "clientdevice_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysClientsColumns[5]},
+			},
+			{
+				Name:    "clientdevice_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysClientsColumns[6]},
+			},
+			{
+				Name:    "clientdevice_code_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysClientsColumns[8], SysClientsColumns[5]},
+			},
+		},
+	}
 	// SysCredentialsColumns holds the columns for the "sys_credentials" table.
 	SysCredentialsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -393,12 +432,21 @@ var (
 		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "client_device_roles", Type: field.TypeUint64, Nullable: true},
 	}
 	// SysRolesTable holds the schema information for the "sys_roles" table.
 	SysRolesTable = &schema.Table{
 		Name:       "sys_roles",
 		Columns:    SysRolesColumns,
 		PrimaryKey: []*schema.Column{SysRolesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_roles_sys_clients_roles",
+				Columns:    []*schema.Column{SysRolesColumns[9]},
+				RefColumns: []*schema.Column{SysClientsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "role_delete_time",
@@ -786,6 +834,7 @@ var (
 	Tables = []*schema.Table{
 		SysAPIAuthTable,
 		SysAttachmentsTable,
+		SysClientsTable,
 		SysCredentialsTable,
 		LoggingsTable,
 		SysLoginRecordsTable,
@@ -809,6 +858,9 @@ func init() {
 	SysAttachmentsTable.Annotation = &entsql.Annotation{
 		Table: "sys_attachments",
 	}
+	SysClientsTable.Annotation = &entsql.Annotation{
+		Table: "sys_clients",
+	}
 	SysCredentialsTable.ForeignKeys[0].RefTable = SysUsersTable
 	SysCredentialsTable.Annotation = &entsql.Annotation{
 		Table: "sys_credentials",
@@ -820,6 +872,7 @@ func init() {
 	SysPermissionsTable.Annotation = &entsql.Annotation{
 		Table: "sys_permissions",
 	}
+	SysRolesTable.ForeignKeys[0].RefTable = SysClientsTable
 	SysRolesTable.Annotation = &entsql.Annotation{
 		Table: "sys_roles",
 	}

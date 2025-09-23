@@ -30,6 +30,7 @@ type RoleQuery struct {
 	withRolePermissions      *RolePermissionQuery
 	withInheritedBy          *RoleQuery
 	withInheritsFrom         *RoleQuery
+	withFKs                  bool
 	modifiers                []func(*sql.Selector)
 	withNamedUserRoles       map[string]*UserRoleQuery
 	withNamedRolePermissions map[string]*RolePermissionQuery
@@ -482,6 +483,7 @@ func (_q *RoleQuery) prepareQuery(ctx context.Context) error {
 func (_q *RoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Role, error) {
 	var (
 		nodes       = []*Role{}
+		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
 			_q.withUserRoles != nil,
@@ -490,6 +492,9 @@ func (_q *RoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Role, e
 			_q.withInheritsFrom != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, role.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Role).scanValues(nil, columns)
 	}

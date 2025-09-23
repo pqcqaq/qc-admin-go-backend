@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"go-backend/database/ent/apiauth"
 	"go-backend/database/ent/attachment"
+	"go-backend/database/ent/clientdevice"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/loginrecord"
@@ -38,6 +39,7 @@ const (
 	// Node types.
 	TypeAPIAuth        = "APIAuth"
 	TypeAttachment     = "Attachment"
+	TypeClientDevice   = "ClientDevice"
 	TypeCredential     = "Credential"
 	TypeLogging        = "Logging"
 	TypeLoginRecord    = "LoginRecord"
@@ -3052,6 +3054,1275 @@ func (m *AttachmentMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *AttachmentMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Attachment edge %s", name)
+}
+
+// ClientDeviceMutation represents an operation that mutates the ClientDevice nodes in the graph.
+type ClientDeviceMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *uint64
+	create_time             *time.Time
+	create_by               *uint64
+	addcreate_by            *int64
+	update_time             *time.Time
+	update_by               *uint64
+	addupdate_by            *int64
+	delete_time             *time.Time
+	delete_by               *uint64
+	adddelete_by            *int64
+	name                    *string
+	code                    *string
+	enabled                 *bool
+	access_token_expiry     *uint64
+	addaccess_token_expiry  *int64
+	refresh_token_expiry    *uint64
+	addrefresh_token_expiry *int64
+	anonymous               *bool
+	clearedFields           map[string]struct{}
+	roles                   map[uint64]struct{}
+	removedroles            map[uint64]struct{}
+	clearedroles            bool
+	done                    bool
+	oldValue                func(context.Context) (*ClientDevice, error)
+	predicates              []predicate.ClientDevice
+}
+
+var _ ent.Mutation = (*ClientDeviceMutation)(nil)
+
+// clientdeviceOption allows management of the mutation configuration using functional options.
+type clientdeviceOption func(*ClientDeviceMutation)
+
+// newClientDeviceMutation creates new mutation for the ClientDevice entity.
+func newClientDeviceMutation(c config, op Op, opts ...clientdeviceOption) *ClientDeviceMutation {
+	m := &ClientDeviceMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeClientDevice,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withClientDeviceID sets the ID field of the mutation.
+func withClientDeviceID(id uint64) clientdeviceOption {
+	return func(m *ClientDeviceMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ClientDevice
+		)
+		m.oldValue = func(ctx context.Context) (*ClientDevice, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ClientDevice.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withClientDevice sets the old ClientDevice of the mutation.
+func withClientDevice(node *ClientDevice) clientdeviceOption {
+	return func(m *ClientDeviceMutation) {
+		m.oldValue = func(context.Context) (*ClientDevice, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ClientDeviceMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ClientDeviceMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ClientDevice entities.
+func (m *ClientDeviceMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ClientDeviceMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ClientDeviceMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ClientDevice.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *ClientDeviceMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *ClientDeviceMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *ClientDeviceMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *ClientDeviceMutation) SetCreateBy(u uint64) {
+	m.create_by = &u
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *ClientDeviceMutation) CreateBy() (r uint64, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldCreateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds u to the "create_by" field.
+func (m *ClientDeviceMutation) AddCreateBy(u int64) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += u
+	} else {
+		m.addcreate_by = &u
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *ClientDeviceMutation) AddedCreateBy() (r int64, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *ClientDeviceMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[clientdevice.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *ClientDeviceMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[clientdevice.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *ClientDeviceMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, clientdevice.FieldCreateBy)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *ClientDeviceMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *ClientDeviceMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *ClientDeviceMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (m *ClientDeviceMutation) SetUpdateBy(u uint64) {
+	m.update_by = &u
+	m.addupdate_by = nil
+}
+
+// UpdateBy returns the value of the "update_by" field in the mutation.
+func (m *ClientDeviceMutation) UpdateBy() (r uint64, exists bool) {
+	v := m.update_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateBy returns the old "update_by" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldUpdateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateBy: %w", err)
+	}
+	return oldValue.UpdateBy, nil
+}
+
+// AddUpdateBy adds u to the "update_by" field.
+func (m *ClientDeviceMutation) AddUpdateBy(u int64) {
+	if m.addupdate_by != nil {
+		*m.addupdate_by += u
+	} else {
+		m.addupdate_by = &u
+	}
+}
+
+// AddedUpdateBy returns the value that was added to the "update_by" field in this mutation.
+func (m *ClientDeviceMutation) AddedUpdateBy() (r int64, exists bool) {
+	v := m.addupdate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (m *ClientDeviceMutation) ClearUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	m.clearedFields[clientdevice.FieldUpdateBy] = struct{}{}
+}
+
+// UpdateByCleared returns if the "update_by" field was cleared in this mutation.
+func (m *ClientDeviceMutation) UpdateByCleared() bool {
+	_, ok := m.clearedFields[clientdevice.FieldUpdateBy]
+	return ok
+}
+
+// ResetUpdateBy resets all changes to the "update_by" field.
+func (m *ClientDeviceMutation) ResetUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	delete(m.clearedFields, clientdevice.FieldUpdateBy)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *ClientDeviceMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *ClientDeviceMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *ClientDeviceMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[clientdevice.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *ClientDeviceMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[clientdevice.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *ClientDeviceMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, clientdevice.FieldDeleteTime)
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (m *ClientDeviceMutation) SetDeleteBy(u uint64) {
+	m.delete_by = &u
+	m.adddelete_by = nil
+}
+
+// DeleteBy returns the value of the "delete_by" field in the mutation.
+func (m *ClientDeviceMutation) DeleteBy() (r uint64, exists bool) {
+	v := m.delete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteBy returns the old "delete_by" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldDeleteBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteBy: %w", err)
+	}
+	return oldValue.DeleteBy, nil
+}
+
+// AddDeleteBy adds u to the "delete_by" field.
+func (m *ClientDeviceMutation) AddDeleteBy(u int64) {
+	if m.adddelete_by != nil {
+		*m.adddelete_by += u
+	} else {
+		m.adddelete_by = &u
+	}
+}
+
+// AddedDeleteBy returns the value that was added to the "delete_by" field in this mutation.
+func (m *ClientDeviceMutation) AddedDeleteBy() (r int64, exists bool) {
+	v := m.adddelete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (m *ClientDeviceMutation) ClearDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	m.clearedFields[clientdevice.FieldDeleteBy] = struct{}{}
+}
+
+// DeleteByCleared returns if the "delete_by" field was cleared in this mutation.
+func (m *ClientDeviceMutation) DeleteByCleared() bool {
+	_, ok := m.clearedFields[clientdevice.FieldDeleteBy]
+	return ok
+}
+
+// ResetDeleteBy resets all changes to the "delete_by" field.
+func (m *ClientDeviceMutation) ResetDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	delete(m.clearedFields, clientdevice.FieldDeleteBy)
+}
+
+// SetName sets the "name" field.
+func (m *ClientDeviceMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *ClientDeviceMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *ClientDeviceMutation) ResetName() {
+	m.name = nil
+}
+
+// SetCode sets the "code" field.
+func (m *ClientDeviceMutation) SetCode(s string) {
+	m.code = &s
+}
+
+// Code returns the value of the "code" field in the mutation.
+func (m *ClientDeviceMutation) Code() (r string, exists bool) {
+	v := m.code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCode returns the old "code" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldCode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCode: %w", err)
+	}
+	return oldValue.Code, nil
+}
+
+// ResetCode resets all changes to the "code" field.
+func (m *ClientDeviceMutation) ResetCode() {
+	m.code = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *ClientDeviceMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *ClientDeviceMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *ClientDeviceMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetAccessTokenExpiry sets the "access_token_expiry" field.
+func (m *ClientDeviceMutation) SetAccessTokenExpiry(u uint64) {
+	m.access_token_expiry = &u
+	m.addaccess_token_expiry = nil
+}
+
+// AccessTokenExpiry returns the value of the "access_token_expiry" field in the mutation.
+func (m *ClientDeviceMutation) AccessTokenExpiry() (r uint64, exists bool) {
+	v := m.access_token_expiry
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccessTokenExpiry returns the old "access_token_expiry" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldAccessTokenExpiry(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccessTokenExpiry is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccessTokenExpiry requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccessTokenExpiry: %w", err)
+	}
+	return oldValue.AccessTokenExpiry, nil
+}
+
+// AddAccessTokenExpiry adds u to the "access_token_expiry" field.
+func (m *ClientDeviceMutation) AddAccessTokenExpiry(u int64) {
+	if m.addaccess_token_expiry != nil {
+		*m.addaccess_token_expiry += u
+	} else {
+		m.addaccess_token_expiry = &u
+	}
+}
+
+// AddedAccessTokenExpiry returns the value that was added to the "access_token_expiry" field in this mutation.
+func (m *ClientDeviceMutation) AddedAccessTokenExpiry() (r int64, exists bool) {
+	v := m.addaccess_token_expiry
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAccessTokenExpiry resets all changes to the "access_token_expiry" field.
+func (m *ClientDeviceMutation) ResetAccessTokenExpiry() {
+	m.access_token_expiry = nil
+	m.addaccess_token_expiry = nil
+}
+
+// SetRefreshTokenExpiry sets the "refresh_token_expiry" field.
+func (m *ClientDeviceMutation) SetRefreshTokenExpiry(u uint64) {
+	m.refresh_token_expiry = &u
+	m.addrefresh_token_expiry = nil
+}
+
+// RefreshTokenExpiry returns the value of the "refresh_token_expiry" field in the mutation.
+func (m *ClientDeviceMutation) RefreshTokenExpiry() (r uint64, exists bool) {
+	v := m.refresh_token_expiry
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRefreshTokenExpiry returns the old "refresh_token_expiry" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldRefreshTokenExpiry(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRefreshTokenExpiry is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRefreshTokenExpiry requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRefreshTokenExpiry: %w", err)
+	}
+	return oldValue.RefreshTokenExpiry, nil
+}
+
+// AddRefreshTokenExpiry adds u to the "refresh_token_expiry" field.
+func (m *ClientDeviceMutation) AddRefreshTokenExpiry(u int64) {
+	if m.addrefresh_token_expiry != nil {
+		*m.addrefresh_token_expiry += u
+	} else {
+		m.addrefresh_token_expiry = &u
+	}
+}
+
+// AddedRefreshTokenExpiry returns the value that was added to the "refresh_token_expiry" field in this mutation.
+func (m *ClientDeviceMutation) AddedRefreshTokenExpiry() (r int64, exists bool) {
+	v := m.addrefresh_token_expiry
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRefreshTokenExpiry resets all changes to the "refresh_token_expiry" field.
+func (m *ClientDeviceMutation) ResetRefreshTokenExpiry() {
+	m.refresh_token_expiry = nil
+	m.addrefresh_token_expiry = nil
+}
+
+// SetAnonymous sets the "anonymous" field.
+func (m *ClientDeviceMutation) SetAnonymous(b bool) {
+	m.anonymous = &b
+}
+
+// Anonymous returns the value of the "anonymous" field in the mutation.
+func (m *ClientDeviceMutation) Anonymous() (r bool, exists bool) {
+	v := m.anonymous
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAnonymous returns the old "anonymous" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldAnonymous(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAnonymous is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAnonymous requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAnonymous: %w", err)
+	}
+	return oldValue.Anonymous, nil
+}
+
+// ResetAnonymous resets all changes to the "anonymous" field.
+func (m *ClientDeviceMutation) ResetAnonymous() {
+	m.anonymous = nil
+}
+
+// AddRoleIDs adds the "roles" edge to the Role entity by ids.
+func (m *ClientDeviceMutation) AddRoleIDs(ids ...uint64) {
+	if m.roles == nil {
+		m.roles = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.roles[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRoles clears the "roles" edge to the Role entity.
+func (m *ClientDeviceMutation) ClearRoles() {
+	m.clearedroles = true
+}
+
+// RolesCleared reports if the "roles" edge to the Role entity was cleared.
+func (m *ClientDeviceMutation) RolesCleared() bool {
+	return m.clearedroles
+}
+
+// RemoveRoleIDs removes the "roles" edge to the Role entity by IDs.
+func (m *ClientDeviceMutation) RemoveRoleIDs(ids ...uint64) {
+	if m.removedroles == nil {
+		m.removedroles = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.roles, ids[i])
+		m.removedroles[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRoles returns the removed IDs of the "roles" edge to the Role entity.
+func (m *ClientDeviceMutation) RemovedRolesIDs() (ids []uint64) {
+	for id := range m.removedroles {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RolesIDs returns the "roles" edge IDs in the mutation.
+func (m *ClientDeviceMutation) RolesIDs() (ids []uint64) {
+	for id := range m.roles {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRoles resets all changes to the "roles" edge.
+func (m *ClientDeviceMutation) ResetRoles() {
+	m.roles = nil
+	m.clearedroles = false
+	m.removedroles = nil
+}
+
+// Where appends a list predicates to the ClientDeviceMutation builder.
+func (m *ClientDeviceMutation) Where(ps ...predicate.ClientDevice) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ClientDeviceMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ClientDeviceMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ClientDevice, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ClientDeviceMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ClientDeviceMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ClientDevice).
+func (m *ClientDeviceMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ClientDeviceMutation) Fields() []string {
+	fields := make([]string, 0, 12)
+	if m.create_time != nil {
+		fields = append(fields, clientdevice.FieldCreateTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, clientdevice.FieldCreateBy)
+	}
+	if m.update_time != nil {
+		fields = append(fields, clientdevice.FieldUpdateTime)
+	}
+	if m.update_by != nil {
+		fields = append(fields, clientdevice.FieldUpdateBy)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, clientdevice.FieldDeleteTime)
+	}
+	if m.delete_by != nil {
+		fields = append(fields, clientdevice.FieldDeleteBy)
+	}
+	if m.name != nil {
+		fields = append(fields, clientdevice.FieldName)
+	}
+	if m.code != nil {
+		fields = append(fields, clientdevice.FieldCode)
+	}
+	if m.enabled != nil {
+		fields = append(fields, clientdevice.FieldEnabled)
+	}
+	if m.access_token_expiry != nil {
+		fields = append(fields, clientdevice.FieldAccessTokenExpiry)
+	}
+	if m.refresh_token_expiry != nil {
+		fields = append(fields, clientdevice.FieldRefreshTokenExpiry)
+	}
+	if m.anonymous != nil {
+		fields = append(fields, clientdevice.FieldAnonymous)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ClientDeviceMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case clientdevice.FieldCreateTime:
+		return m.CreateTime()
+	case clientdevice.FieldCreateBy:
+		return m.CreateBy()
+	case clientdevice.FieldUpdateTime:
+		return m.UpdateTime()
+	case clientdevice.FieldUpdateBy:
+		return m.UpdateBy()
+	case clientdevice.FieldDeleteTime:
+		return m.DeleteTime()
+	case clientdevice.FieldDeleteBy:
+		return m.DeleteBy()
+	case clientdevice.FieldName:
+		return m.Name()
+	case clientdevice.FieldCode:
+		return m.Code()
+	case clientdevice.FieldEnabled:
+		return m.Enabled()
+	case clientdevice.FieldAccessTokenExpiry:
+		return m.AccessTokenExpiry()
+	case clientdevice.FieldRefreshTokenExpiry:
+		return m.RefreshTokenExpiry()
+	case clientdevice.FieldAnonymous:
+		return m.Anonymous()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ClientDeviceMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case clientdevice.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case clientdevice.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case clientdevice.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case clientdevice.FieldUpdateBy:
+		return m.OldUpdateBy(ctx)
+	case clientdevice.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case clientdevice.FieldDeleteBy:
+		return m.OldDeleteBy(ctx)
+	case clientdevice.FieldName:
+		return m.OldName(ctx)
+	case clientdevice.FieldCode:
+		return m.OldCode(ctx)
+	case clientdevice.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case clientdevice.FieldAccessTokenExpiry:
+		return m.OldAccessTokenExpiry(ctx)
+	case clientdevice.FieldRefreshTokenExpiry:
+		return m.OldRefreshTokenExpiry(ctx)
+	case clientdevice.FieldAnonymous:
+		return m.OldAnonymous(ctx)
+	}
+	return nil, fmt.Errorf("unknown ClientDevice field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ClientDeviceMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case clientdevice.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case clientdevice.FieldCreateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case clientdevice.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case clientdevice.FieldUpdateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateBy(v)
+		return nil
+	case clientdevice.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case clientdevice.FieldDeleteBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteBy(v)
+		return nil
+	case clientdevice.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case clientdevice.FieldCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCode(v)
+		return nil
+	case clientdevice.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case clientdevice.FieldAccessTokenExpiry:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccessTokenExpiry(v)
+		return nil
+	case clientdevice.FieldRefreshTokenExpiry:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRefreshTokenExpiry(v)
+		return nil
+	case clientdevice.FieldAnonymous:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAnonymous(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ClientDevice field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ClientDeviceMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, clientdevice.FieldCreateBy)
+	}
+	if m.addupdate_by != nil {
+		fields = append(fields, clientdevice.FieldUpdateBy)
+	}
+	if m.adddelete_by != nil {
+		fields = append(fields, clientdevice.FieldDeleteBy)
+	}
+	if m.addaccess_token_expiry != nil {
+		fields = append(fields, clientdevice.FieldAccessTokenExpiry)
+	}
+	if m.addrefresh_token_expiry != nil {
+		fields = append(fields, clientdevice.FieldRefreshTokenExpiry)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ClientDeviceMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case clientdevice.FieldCreateBy:
+		return m.AddedCreateBy()
+	case clientdevice.FieldUpdateBy:
+		return m.AddedUpdateBy()
+	case clientdevice.FieldDeleteBy:
+		return m.AddedDeleteBy()
+	case clientdevice.FieldAccessTokenExpiry:
+		return m.AddedAccessTokenExpiry()
+	case clientdevice.FieldRefreshTokenExpiry:
+		return m.AddedRefreshTokenExpiry()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ClientDeviceMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case clientdevice.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case clientdevice.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdateBy(v)
+		return nil
+	case clientdevice.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeleteBy(v)
+		return nil
+	case clientdevice.FieldAccessTokenExpiry:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAccessTokenExpiry(v)
+		return nil
+	case clientdevice.FieldRefreshTokenExpiry:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRefreshTokenExpiry(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ClientDevice numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ClientDeviceMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(clientdevice.FieldCreateBy) {
+		fields = append(fields, clientdevice.FieldCreateBy)
+	}
+	if m.FieldCleared(clientdevice.FieldUpdateBy) {
+		fields = append(fields, clientdevice.FieldUpdateBy)
+	}
+	if m.FieldCleared(clientdevice.FieldDeleteTime) {
+		fields = append(fields, clientdevice.FieldDeleteTime)
+	}
+	if m.FieldCleared(clientdevice.FieldDeleteBy) {
+		fields = append(fields, clientdevice.FieldDeleteBy)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ClientDeviceMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ClientDeviceMutation) ClearField(name string) error {
+	switch name {
+	case clientdevice.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case clientdevice.FieldUpdateBy:
+		m.ClearUpdateBy()
+		return nil
+	case clientdevice.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case clientdevice.FieldDeleteBy:
+		m.ClearDeleteBy()
+		return nil
+	}
+	return fmt.Errorf("unknown ClientDevice nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ClientDeviceMutation) ResetField(name string) error {
+	switch name {
+	case clientdevice.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case clientdevice.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case clientdevice.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case clientdevice.FieldUpdateBy:
+		m.ResetUpdateBy()
+		return nil
+	case clientdevice.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case clientdevice.FieldDeleteBy:
+		m.ResetDeleteBy()
+		return nil
+	case clientdevice.FieldName:
+		m.ResetName()
+		return nil
+	case clientdevice.FieldCode:
+		m.ResetCode()
+		return nil
+	case clientdevice.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case clientdevice.FieldAccessTokenExpiry:
+		m.ResetAccessTokenExpiry()
+		return nil
+	case clientdevice.FieldRefreshTokenExpiry:
+		m.ResetRefreshTokenExpiry()
+		return nil
+	case clientdevice.FieldAnonymous:
+		m.ResetAnonymous()
+		return nil
+	}
+	return fmt.Errorf("unknown ClientDevice field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ClientDeviceMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.roles != nil {
+		edges = append(edges, clientdevice.EdgeRoles)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ClientDeviceMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case clientdevice.EdgeRoles:
+		ids := make([]ent.Value, 0, len(m.roles))
+		for id := range m.roles {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ClientDeviceMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedroles != nil {
+		edges = append(edges, clientdevice.EdgeRoles)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ClientDeviceMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case clientdevice.EdgeRoles:
+		ids := make([]ent.Value, 0, len(m.removedroles))
+		for id := range m.removedroles {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ClientDeviceMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedroles {
+		edges = append(edges, clientdevice.EdgeRoles)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ClientDeviceMutation) EdgeCleared(name string) bool {
+	switch name {
+	case clientdevice.EdgeRoles:
+		return m.clearedroles
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ClientDeviceMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ClientDevice unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ClientDeviceMutation) ResetEdge(name string) error {
+	switch name {
+	case clientdevice.EdgeRoles:
+		m.ResetRoles()
+		return nil
+	}
+	return fmt.Errorf("unknown ClientDevice edge %s", name)
 }
 
 // CredentialMutation represents an operation that mutates the Credential nodes in the graph.
