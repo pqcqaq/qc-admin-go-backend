@@ -196,12 +196,16 @@ func init() {
 			return nil
 		}
 	}()
+	// clientdeviceDescDescription is the schema descriptor for description field.
+	clientdeviceDescDescription := clientdeviceFields[2].Descriptor()
+	// clientdevice.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	clientdevice.DescriptionValidator = clientdeviceDescDescription.Validators[0].(func(string) error)
 	// clientdeviceDescEnabled is the schema descriptor for enabled field.
-	clientdeviceDescEnabled := clientdeviceFields[2].Descriptor()
+	clientdeviceDescEnabled := clientdeviceFields[3].Descriptor()
 	// clientdevice.DefaultEnabled holds the default value on creation for the enabled field.
 	clientdevice.DefaultEnabled = clientdeviceDescEnabled.Default.(bool)
 	// clientdeviceDescAccessTokenExpiry is the schema descriptor for access_token_expiry field.
-	clientdeviceDescAccessTokenExpiry := clientdeviceFields[3].Descriptor()
+	clientdeviceDescAccessTokenExpiry := clientdeviceFields[4].Descriptor()
 	// clientdevice.AccessTokenExpiryValidator is a validator for the "access_token_expiry" field. It is called by the builders before save.
 	clientdevice.AccessTokenExpiryValidator = func() func(uint64) error {
 		validators := clientdeviceDescAccessTokenExpiry.Validators
@@ -219,7 +223,7 @@ func init() {
 		}
 	}()
 	// clientdeviceDescRefreshTokenExpiry is the schema descriptor for refresh_token_expiry field.
-	clientdeviceDescRefreshTokenExpiry := clientdeviceFields[4].Descriptor()
+	clientdeviceDescRefreshTokenExpiry := clientdeviceFields[5].Descriptor()
 	// clientdevice.RefreshTokenExpiryValidator is a validator for the "refresh_token_expiry" field. It is called by the builders before save.
 	clientdevice.RefreshTokenExpiryValidator = func() func(uint64) error {
 		validators := clientdeviceDescRefreshTokenExpiry.Validators
@@ -237,7 +241,7 @@ func init() {
 		}
 	}()
 	// clientdeviceDescAnonymous is the schema descriptor for anonymous field.
-	clientdeviceDescAnonymous := clientdeviceFields[5].Descriptor()
+	clientdeviceDescAnonymous := clientdeviceFields[6].Descriptor()
 	// clientdevice.DefaultAnonymous holds the default value on creation for the anonymous field.
 	clientdevice.DefaultAnonymous = clientdeviceDescAnonymous.Default.(bool)
 	credentialMixin := schema.Credential{}.Mixin()

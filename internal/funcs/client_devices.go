@@ -38,6 +38,7 @@ func GetAllClientDevices(ctx context.Context) ([]*models.ClientDeviceResponse, e
 			UpdateTime:         utils.FormatDateTime(record.UpdateTime),
 			Name:               record.Name,
 			Code:               record.Code,
+			Description:        record.Description,
 			Enabled:            record.Enabled,
 			AccessTokenExpiry:  record.AccessTokenExpiry,
 			RefreshTokenExpiry: record.RefreshTokenExpiry,
@@ -60,8 +61,7 @@ func GetAllClientDevices(ctx context.Context) ([]*models.ClientDeviceResponse, e
 	return devices, nil
 }
 
-// GetClientDeviceById 根据ID获取客户端设备
-func GetClientDeviceById(ctx context.Context, id uint64) (*models.ClientDeviceResponse, error) {
+func GetClientDeviceByIdInner(ctx context.Context, id uint64) (*ent.ClientDevice, error) {
 	device, err := database.Client.ClientDevice.Query().
 		Where(clientdevice.ID(id)).
 		WithRoles().
@@ -72,6 +72,16 @@ func GetClientDeviceById(ctx context.Context, id uint64) (*models.ClientDeviceRe
 		}
 		return nil, err
 	}
+	return device, nil
+}
+
+// GetClientDeviceById 根据ID获取客户端设备
+func GetClientDeviceById(ctx context.Context, id uint64) (*models.ClientDeviceResponse, error) {
+	device, err := GetClientDeviceByIdInner(ctx, id)
+
+	if err != nil {
+		return nil, err
+	}
 
 	deviceResponse := &models.ClientDeviceResponse{
 		ID:                 utils.Uint64ToString(device.ID),
@@ -79,6 +89,7 @@ func GetClientDeviceById(ctx context.Context, id uint64) (*models.ClientDeviceRe
 		UpdateTime:         utils.FormatDateTime(device.UpdateTime),
 		Name:               device.Name,
 		Code:               device.Code,
+		Description:        device.Description,
 		Enabled:            device.Enabled,
 		AccessTokenExpiry:  device.AccessTokenExpiry,
 		RefreshTokenExpiry: device.RefreshTokenExpiry,
@@ -100,7 +111,7 @@ func GetClientDeviceById(ctx context.Context, id uint64) (*models.ClientDeviceRe
 }
 
 // GetClientDeviceByCode 根据code获取客户端设备
-func GetClientDeviceByCode(ctx context.Context, code string) (*models.ClientDeviceByCodeResponse, error) {
+func GetClientDeviceByCodeInner(ctx context.Context, code string) (*ent.ClientDevice, error) {
 	device, err := database.Client.ClientDevice.Query().
 		Where(clientdevice.Code(code)).
 		WithRoles().
@@ -109,6 +120,17 @@ func GetClientDeviceByCode(ctx context.Context, code string) (*models.ClientDevi
 		if ent.IsNotFound(err) {
 			return nil, fmt.Errorf("client device with code %s not found", code)
 		}
+		return nil, err
+	}
+
+	return device, nil
+}
+
+// GetClientDeviceByCode 根据code获取客户端设备
+func GetClientDeviceByCode(ctx context.Context, code string) (*models.ClientDeviceByCodeResponse, error) {
+	device, err := GetClientDeviceByCodeInner(ctx, code)
+
+	if err != nil {
 		return nil, err
 	}
 
@@ -183,11 +205,17 @@ func CreateClientDevice(ctx context.Context, req *models.CreateClientDeviceReque
 		anonymous = *req.Anonymous
 	}
 
+	desc := ""
+	if utils.IsNotEmpty(req.Description) {
+		desc = req.Description
+	}
+
 	// 创建客户端设备
 	builder := tx.ClientDevice.Create().
 		SetName(req.Name).
 		SetCode(code).
 		SetEnabled(enabled).
+		SetDescription(desc).
 		SetAccessTokenExpiry(req.AccessTokenExpiry).
 		SetRefreshTokenExpiry(req.RefreshTokenExpiry).
 		SetAnonymous(anonymous)
@@ -234,12 +262,38 @@ func UpdateClientDevice(ctx context.Context, id uint64, req *models.UpdateClient
 	}
 
 	// 更新设备基本信息
-	builder := tx.ClientDevice.UpdateOneID(id).
-		SetName(req.Name).
-		SetEnabled(*req.Enabled).
-		SetAccessTokenExpiry(req.AccessTokenExpiry).
-		SetRefreshTokenExpiry(req.RefreshTokenExpiry).
-		SetAnonymous(*req.Anonymous)
+	// 更新设备基本信息
+	builder := tx.ClientDevice.UpdateOneID(id)
+
+	// 只有非空字符串才设置 Name
+	if req.Name != "" {
+		builder = builder.SetName(req.Name)
+	}
+
+	// 只有非 nil 指针才设置 Enabled
+	if req.Enabled != nil {
+		builder = builder.SetEnabled(*req.Enabled)
+	}
+
+	// 只有非空字符串才设置 Description
+	if req.Description != "" {
+		builder = builder.SetDescription(req.Description)
+	}
+
+	// 只有非零值才设置 AccessTokenExpiry
+	if req.AccessTokenExpiry != nil {
+		builder = builder.SetAccessTokenExpiry(*req.AccessTokenExpiry)
+	}
+
+	// 只有非零值才设置 RefreshTokenExpiry
+	if req.RefreshTokenExpiry != nil {
+		builder = builder.SetRefreshTokenExpiry(*req.RefreshTokenExpiry)
+	}
+
+	// 只有非 nil 指针才设置 Anonymous
+	if req.Anonymous != nil {
+		builder = builder.SetAnonymous(*req.Anonymous)
+	}
 
 	oldRoles, err := tx.ClientDevice.Query().Where(clientdevice.IDEQ(id)).QueryRoles().All(ctx)
 	if err != nil {
@@ -380,6 +434,7 @@ func GetClientDevicesWithPagination(ctx context.Context, req *models.PageClientD
 			Name:               device.Name,
 			Code:               device.Code,
 			Enabled:            device.Enabled,
+			Description:        device.Description,
 			AccessTokenExpiry:  device.AccessTokenExpiry,
 			RefreshTokenExpiry: device.RefreshTokenExpiry,
 			Anonymous:          device.Anonymous,

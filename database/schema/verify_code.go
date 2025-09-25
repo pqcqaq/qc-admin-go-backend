@@ -55,6 +55,10 @@ func (VerifyCode) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			Comment("发送时间"),
+		field.Uint64("client_id").
+			Optional().
+			Nillable().
+			Comment("请求设备ID"),
 	}
 }
 

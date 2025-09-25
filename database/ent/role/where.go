@@ -607,6 +607,29 @@ func HasInheritsFromWith(preds ...predicate.Role) predicate.Role {
 	})
 }
 
+// HasClientDevice applies the HasEdge predicate on the "client_device" edge.
+func HasClientDevice() predicate.Role {
+	return predicate.Role(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ClientDeviceTable, ClientDevicePrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasClientDeviceWith applies the HasEdge predicate on the "client_device" edge with a given conditions (other predicates).
+func HasClientDeviceWith(preds ...predicate.ClientDevice) predicate.Role {
+	return predicate.Role(func(s *sql.Selector) {
+		step := newClientDeviceStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Role) predicate.Role {
 	return predicate.Role(sql.AndPredicates(predicates...))

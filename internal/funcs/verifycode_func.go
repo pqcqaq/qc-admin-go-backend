@@ -12,7 +12,7 @@ import (
 )
 
 // SendVerificationCode 发送验证码通用接口
-func SendVerificationCode(ctx context.Context, senderType, purpose, identifier string) error {
+func SendVerificationCode(ctx context.Context, senderType, purpose, identifier, deviceCode string) error {
 	// 检查30秒内是否已发送过验证码
 	thirtySecondsAgo := time.Now().Add(-30 * time.Second)
 	exists, err := database.Client.VerifyCode.Query().
@@ -46,12 +46,19 @@ func SendVerificationCode(ctx context.Context, senderType, purpose, identifier s
 	now := time.Now()
 	expiresAt := now.Add(15 * time.Minute) // 15分钟过期
 
+	client, err := GetClientDeviceByCodeInner(ctx, deviceCode)
+
+	if err != nil {
+		return fmt.Errorf("创建验证码记录失败: %w", err)
+	}
+
 	verifyCodeRecord, err := database.Client.VerifyCode.Create().
 		SetCode(code).
 		SetIdentifier(identifier).
 		SetSenderType(verifycode.SenderType(senderType)).
 		SetSendFor(purpose).
 		SetExpiresAt(expiresAt).
+		SetClientID(client.ID).
 		SetSendSuccess(false).
 		Save(ctx)
 

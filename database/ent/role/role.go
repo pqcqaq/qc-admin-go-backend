@@ -39,6 +39,8 @@ const (
 	EdgeInheritedBy = "inherited_by"
 	// EdgeInheritsFrom holds the string denoting the inherits_from edge name in mutations.
 	EdgeInheritsFrom = "inherits_from"
+	// EdgeClientDevice holds the string denoting the client_device edge name in mutations.
+	EdgeClientDevice = "client_device"
 	// Table holds the table name of the role in the database.
 	Table = "sys_roles"
 	// UserRolesTable is the table that holds the user_roles relation/edge.
@@ -59,6 +61,11 @@ const (
 	InheritedByTable = "role_inherits_from"
 	// InheritsFromTable is the table that holds the inherits_from relation/edge. The primary key declared below.
 	InheritsFromTable = "role_inherits_from"
+	// ClientDeviceTable is the table that holds the client_device relation/edge. The primary key declared below.
+	ClientDeviceTable = "client_device_roles"
+	// ClientDeviceInverseTable is the table name for the ClientDevice entity.
+	// It exists in this package in order to avoid circular dependency with the "clientdevice" package.
+	ClientDeviceInverseTable = "sys_clients"
 )
 
 // Columns holds all SQL columns for role fields.
@@ -74,12 +81,6 @@ var Columns = []string{
 	FieldDescription,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "sys_roles"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"client_device_roles",
-}
-
 var (
 	// InheritedByPrimaryKey and InheritedByColumn2 are the table columns denoting the
 	// primary key for the inherited_by relation (M2M).
@@ -87,17 +88,15 @@ var (
 	// InheritsFromPrimaryKey and InheritsFromColumn2 are the table columns denoting the
 	// primary key for the inherits_from relation (M2M).
 	InheritsFromPrimaryKey = []string{"role_id", "inherited_by_id"}
+	// ClientDevicePrimaryKey and ClientDeviceColumn2 are the table columns denoting the
+	// primary key for the client_device relation (M2M).
+	ClientDevicePrimaryKey = []string{"client_device_id", "role_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -225,6 +224,20 @@ func ByInheritsFrom(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newInheritsFromStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByClientDeviceCount orders the results by client_device count.
+func ByClientDeviceCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newClientDeviceStep(), opts...)
+	}
+}
+
+// ByClientDevice orders the results by client_device terms.
+func ByClientDevice(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newClientDeviceStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newUserRolesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -251,5 +264,12 @@ func newInheritsFromStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(Table, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, InheritsFromTable, InheritsFromPrimaryKey...),
+	)
+}
+func newClientDeviceStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ClientDeviceInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, ClientDeviceTable, ClientDevicePrimaryKey...),
 	)
 }

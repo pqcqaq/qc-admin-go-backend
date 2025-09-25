@@ -117,6 +117,20 @@ func (_c *ClientDeviceCreate) SetCode(v string) *ClientDeviceCreate {
 	return _c
 }
 
+// SetDescription sets the "description" field.
+func (_c *ClientDeviceCreate) SetDescription(v string) *ClientDeviceCreate {
+	_c.mutation.SetDescription(v)
+	return _c
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (_c *ClientDeviceCreate) SetNillableDescription(v *string) *ClientDeviceCreate {
+	if v != nil {
+		_c.SetDescription(*v)
+	}
+	return _c
+}
+
 // SetEnabled sets the "enabled" field.
 func (_c *ClientDeviceCreate) SetEnabled(v bool) *ClientDeviceCreate {
 	_c.mutation.SetEnabled(v)
@@ -264,6 +278,11 @@ func (_c *ClientDeviceCreate) check() error {
 			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "ClientDevice.code": %w`, err)}
 		}
 	}
+	if v, ok := _c.mutation.Description(); ok {
+		if err := clientdevice.DescriptionValidator(v); err != nil {
+			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "ClientDevice.description": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Enabled(); !ok {
 		return &ValidationError{Name: "enabled", err: errors.New(`ent: missing required field "ClientDevice.enabled"`)}
 	}
@@ -350,6 +369,10 @@ func (_c *ClientDeviceCreate) createSpec() (*ClientDevice, *sqlgraph.CreateSpec)
 		_spec.SetField(clientdevice.FieldCode, field.TypeString, value)
 		_node.Code = value
 	}
+	if value, ok := _c.mutation.Description(); ok {
+		_spec.SetField(clientdevice.FieldDescription, field.TypeString, value)
+		_node.Description = value
+	}
 	if value, ok := _c.mutation.Enabled(); ok {
 		_spec.SetField(clientdevice.FieldEnabled, field.TypeBool, value)
 		_node.Enabled = value
@@ -368,10 +391,10 @@ func (_c *ClientDeviceCreate) createSpec() (*ClientDevice, *sqlgraph.CreateSpec)
 	}
 	if nodes := _c.mutation.RolesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   clientdevice.RolesTable,
-			Columns: []string{clientdevice.RolesColumn},
+			Columns: clientdevice.RolesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeUint64),

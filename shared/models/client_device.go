@@ -14,6 +14,7 @@ type ClientDeviceResponse struct {
 	UpdateTime         string     `json:"updateTime"`
 	Name               string     `json:"name"`
 	Code               string     `json:"code"`
+	Description        string     `json:"description"`
 	Enabled            bool       `json:"enabled"`
 	AccessTokenExpiry  uint64     `json:"accessTokenExpiry"`
 	RefreshTokenExpiry uint64     `json:"refreshTokenExpiry"`
@@ -23,8 +24,9 @@ type ClientDeviceResponse struct {
 
 // CreateClientDeviceRequest 创建客户端设备请求
 type CreateClientDeviceRequest struct {
-	Name               string   `json:"name" binding:"required"`               // 设备名称
-	Enabled            *bool    `json:"enabled"`                               // 是否启用，可选，默认true
+	Name               string   `json:"name" binding:"required"` // 设备名称
+	Enabled            *bool    `json:"enabled"`
+	Description        string   `json:"description"`                           // 是否启用，可选，默认true
 	AccessTokenExpiry  uint64   `json:"accessTokenExpiry" binding:"required"`  // accessToken超时时间(ms)
 	RefreshTokenExpiry uint64   `json:"refreshTokenExpiry" binding:"required"` // refreshToken超时时间(ms)
 	Anonymous          *bool    `json:"anonymous"`                             // 允许所有角色登录，可选，默认true
@@ -33,10 +35,11 @@ type CreateClientDeviceRequest struct {
 
 // UpdateClientDeviceRequest 更新客户端设备请求
 type UpdateClientDeviceRequest struct {
-	Name               string   `json:"name" binding:"required"`               // 设备名称
-	Enabled            *bool    `json:"enabled" binding:"required"`            // 是否启用
-	AccessTokenExpiry  uint64   `json:"accessTokenExpiry" binding:"required"`  // accessToken超时时间(ms)
-	RefreshTokenExpiry uint64   `json:"refreshTokenExpiry" binding:"required"` // refreshToken超时时间(ms)
+	Name               string   `json:"name" binding:"required"` // 设备名称
+	Enabled            *bool    `json:"enabled" binding:"required"`
+	Description        string   `json:"description"`                           // 是否启用
+	AccessTokenExpiry  *uint64  `json:"accessTokenExpiry" binding:"required"`  // accessToken超时时间(ms)
+	RefreshTokenExpiry *uint64  `json:"refreshTokenExpiry" binding:"required"` // refreshToken超时时间(ms)
 	Anonymous          *bool    `json:"anonymous" binding:"required"`          // 允许所有角色登录
 	RoleIds            []string `json:"roleIds,omitempty"`                     // 关联的角色ID列表
 }
@@ -76,6 +79,7 @@ type ClientDeviceByCodeResponse struct {
 	ID                 string     `json:"id"`
 	Name               string     `json:"name"`
 	Code               string     `json:"code"`
+	Description        string     `json:"description"`
 	Enabled            bool       `json:"enabled"`
 	AccessTokenExpiry  uint64     `json:"accessTokenExpiry"`
 	RefreshTokenExpiry uint64     `json:"refreshTokenExpiry"`

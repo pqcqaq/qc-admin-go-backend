@@ -50,6 +50,8 @@ const (
 	FieldDuration = "duration"
 	// FieldMetadata holds the string denoting the metadata field in the database.
 	FieldMetadata = "metadata"
+	// FieldClientID holds the string denoting the client_id field in the database.
+	FieldClientID = "client_id"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the loginrecord in the database.
@@ -83,6 +85,7 @@ var Columns = []string{
 	FieldLogoutTime,
 	FieldDuration,
 	FieldMetadata,
+	FieldClientID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -260,6 +263,11 @@ func ByLogoutTime(opts ...sql.OrderTermOption) OrderOption {
 // ByDuration orders the results by the duration field.
 func ByDuration(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDuration, opts...).ToFunc()
+}
+
+// ByClientID orders the results by the client_id field.
+func ByClientID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldClientID, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

@@ -34,6 +34,8 @@ type ClientDevice struct {
 	Name string `json:"name,omitempty"`
 	// 设备标识字符串(生成)
 	Code string `json:"code,omitempty"`
+	// 备注
+	Description string `json:"description,omitempty"`
 	// 是否启用
 	Enabled bool `json:"enabled,omitempty"`
 	// accessToken超时时间(ms)
@@ -76,7 +78,7 @@ func (*ClientDevice) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case clientdevice.FieldID, clientdevice.FieldCreateBy, clientdevice.FieldUpdateBy, clientdevice.FieldDeleteBy, clientdevice.FieldAccessTokenExpiry, clientdevice.FieldRefreshTokenExpiry:
 			values[i] = new(sql.NullInt64)
-		case clientdevice.FieldName, clientdevice.FieldCode:
+		case clientdevice.FieldName, clientdevice.FieldCode, clientdevice.FieldDescription:
 			values[i] = new(sql.NullString)
 		case clientdevice.FieldCreateTime, clientdevice.FieldUpdateTime, clientdevice.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
@@ -148,6 +150,12 @@ func (_m *ClientDevice) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field code", values[i])
 			} else if value.Valid {
 				_m.Code = value.String
+			}
+		case clientdevice.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				_m.Description = value.String
 			}
 		case clientdevice.FieldEnabled:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -237,6 +245,9 @@ func (_m *ClientDevice) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("code=")
 	builder.WriteString(_m.Code)
+	builder.WriteString(", ")
+	builder.WriteString("description=")
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("enabled=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Enabled))

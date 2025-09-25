@@ -119,6 +119,11 @@ func SendAt(v time.Time) predicate.VerifyCode {
 	return predicate.VerifyCode(sql.FieldEQ(FieldSendAt, v))
 }
 
+// ClientID applies equality check predicate on the "client_id" field. It's identical to ClientIDEQ.
+func ClientID(v uint64) predicate.VerifyCode {
+	return predicate.VerifyCode(sql.FieldEQ(FieldClientID, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.VerifyCode {
 	return predicate.VerifyCode(sql.FieldEQ(FieldCreateTime, v))
@@ -762,6 +767,56 @@ func SendAtIsNil() predicate.VerifyCode {
 // SendAtNotNil applies the NotNil predicate on the "send_at" field.
 func SendAtNotNil() predicate.VerifyCode {
 	return predicate.VerifyCode(sql.FieldNotNull(FieldSendAt))
+}
+
+// ClientIDEQ applies the EQ predicate on the "client_id" field.
+func ClientIDEQ(v uint64) predicate.VerifyCode {
+	return predicate.VerifyCode(sql.FieldEQ(FieldClientID, v))
+}
+
+// ClientIDNEQ applies the NEQ predicate on the "client_id" field.
+func ClientIDNEQ(v uint64) predicate.VerifyCode {
+	return predicate.VerifyCode(sql.FieldNEQ(FieldClientID, v))
+}
+
+// ClientIDIn applies the In predicate on the "client_id" field.
+func ClientIDIn(vs ...uint64) predicate.VerifyCode {
+	return predicate.VerifyCode(sql.FieldIn(FieldClientID, vs...))
+}
+
+// ClientIDNotIn applies the NotIn predicate on the "client_id" field.
+func ClientIDNotIn(vs ...uint64) predicate.VerifyCode {
+	return predicate.VerifyCode(sql.FieldNotIn(FieldClientID, vs...))
+}
+
+// ClientIDGT applies the GT predicate on the "client_id" field.
+func ClientIDGT(v uint64) predicate.VerifyCode {
+	return predicate.VerifyCode(sql.FieldGT(FieldClientID, v))
+}
+
+// ClientIDGTE applies the GTE predicate on the "client_id" field.
+func ClientIDGTE(v uint64) predicate.VerifyCode {
+	return predicate.VerifyCode(sql.FieldGTE(FieldClientID, v))
+}
+
+// ClientIDLT applies the LT predicate on the "client_id" field.
+func ClientIDLT(v uint64) predicate.VerifyCode {
+	return predicate.VerifyCode(sql.FieldLT(FieldClientID, v))
+}
+
+// ClientIDLTE applies the LTE predicate on the "client_id" field.
+func ClientIDLTE(v uint64) predicate.VerifyCode {
+	return predicate.VerifyCode(sql.FieldLTE(FieldClientID, v))
+}
+
+// ClientIDIsNil applies the IsNil predicate on the "client_id" field.
+func ClientIDIsNil() predicate.VerifyCode {
+	return predicate.VerifyCode(sql.FieldIsNull(FieldClientID))
+}
+
+// ClientIDNotNil applies the NotNil predicate on the "client_id" field.
+func ClientIDNotNil() predicate.VerifyCode {
+	return predicate.VerifyCode(sql.FieldNotNull(FieldClientID))
 }
 
 // And groups predicates with the AND operator between them.

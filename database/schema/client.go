@@ -39,6 +39,10 @@ func (ClientDevice) Fields() []ent.Field {
 			MinLen(64).
 			MaxLen(64).
 			Comment("设备标识字符串(生成)"),
+		field.String("description").
+			Optional().
+			MaxLen(255).
+			Comment("备注"),
 		field.Bool("enabled").
 			Default(true).
 			Comment("是否启用"),

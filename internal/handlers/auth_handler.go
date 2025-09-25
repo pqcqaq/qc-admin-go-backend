@@ -1,10 +1,9 @@
 package handlers
 
 import (
-
+	"fmt"
 	"go-backend/internal/funcs"
 	"go-backend/internal/middleware"
-	"go-backend/pkg/jwt"
 	"go-backend/pkg/logging"
 	"go-backend/shared/models"
 
@@ -38,7 +37,7 @@ func (h *AuthHandler) SendVerifyCode(c *gin.Context) {
 		return
 	}
 
-	err := funcs.SendVerificationCode(middleware.GetRequestContext(c), req.SenderType, req.Purpose, req.Identifier)
+	err := funcs.SendVerificationCode(middleware.GetRequestContext(c), req.SenderType, req.Purpose, req.Identifier, req.ClientCode)
 	if err != nil {
 		middleware.ThrowError(c, middleware.BusinessError("发送验证码失败", err.Error()))
 		return
@@ -113,14 +112,29 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := funcs.UserLoginWithContext(middleware.GetRequestContext(c), c, req.CredentialType, req.Identifier, req.Secret, req.VerifyCode)
+	user, err := funcs.UserLoginWithContext(
+		middleware.GetRequestContext(c),
+		c,
+		req.CredentialType,
+		req.Identifier,
+		req.Secret,
+		req.VerifyCode,
+		req.ClientCode,
+	)
 	if err != nil {
 		middleware.ThrowError(c, middleware.UnauthorizedError("登录失败", err.Error()))
 		return
 	}
 
+	clientIdAny, ex := c.Get("client_device_id")
+	if !ex {
+		middleware.ThrowError(c, middleware.InternalServerError("找不到终端", fmt.Errorf("cannot find client_device_id in gin context")))
+	}
+
+	var clientId uint64 = clientIdAny.(uint64)
+
 	// 构建用户信息和Token
-	userInfo, token, err := funcs.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, true)
+	userInfo, token, err := funcs.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, &clientId)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("构建用户信息失败", err.Error()))
 		return
@@ -130,7 +144,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		"success": true,
 		"data": models.LoginResponse{
 			User:    *userInfo,
-			Token:   token,
+			Token:   *token,
 			Message: "登录成功",
 		},
 	})
@@ -165,7 +179,8 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	user, err := funcs.UserRegister(middleware.GetRequestContext(c), req.CredentialType, req.Identifier, req.Secret, req.VerifyCode, req.Username)
+	ctx := middleware.GetRequestContext(c)
+	user, err := funcs.UserRegister(ctx, req.CredentialType, req.Identifier, req.Secret, req.VerifyCode, req.Username)
 	if err != nil {
 		if err.Error() == "用户已存在" {
 			middleware.ThrowError(c, middleware.UserExistsError(err.Error()))
@@ -175,8 +190,14 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
+	cd, err := funcs.GetClientDeviceByCodeInner(ctx, req.ClientCode)
+
+	if err != nil {
+		middleware.ThrowError(c, middleware.InternalServerError("查找设备类型失败", err.Error()))
+	}
+
 	// 构建用户信息，注册时可选择是否生成Token
-	userInfo, token, err := funcs.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, true)
+	userInfo, token, err := funcs.BuildUserInfoWithToken(ctx, user, &cd.ID)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("构建用户信息失败", err.Error()))
 		return
@@ -186,7 +207,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		"success": true,
 		"data": models.RegisterResponse{
 			User:    *userInfo,
-			Token:   token,
+			Token:   *token,
 			Message: "注册成功",
 		},
 	})
@@ -248,23 +269,25 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Security     BearerAuth
+// @Param        request body RefreshTokenRequest true "刷新Token请求"
 // @Success      200 {object} object{success=bool,data=object{token=string,message=string}}
+// @Failure      400 {object} object{success=bool,message=string}
 // @Failure      401 {object} object{success=bool,message=string}
 // @Failure      500 {object} object{success=bool,message=string}
 // @Router       /auth/refresh-token [post]
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
-	// 从中间件获取当前token
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" || len(authHeader) < 7 {
-		middleware.ThrowError(c, middleware.UnauthorizedError("无效的认证头", ""))
+	var req models.RefreshTokenRequest
+
+	// 绑定并验证请求体
+	if err := c.ShouldBindJSON(&req); err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("请求参数错误", err.Error()))
 		return
 	}
 
-	currentToken := authHeader[7:] // 去掉"Bearer "
+	ctx := middleware.GetRequestContext(c)
 
-	// 刷新token
-	newToken, err := jwt.RefreshToken(currentToken)
+	newTokenInfo, err := funcs.RefreshToken(ctx, req.RefreshToken)
+
 	if err != nil {
 		middleware.ThrowError(c, middleware.UnauthorizedError("Token刷新失败", err.Error()))
 		return
@@ -273,7 +296,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"success": true,
 		"data": gin.H{
-			"token":   newToken,
+			"token":   newTokenInfo,
 			"message": "Token刷新成功",
 		},
 	})
@@ -306,7 +329,7 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	}
 
 	// 构建完整的用户信息（包含角色和权限，但不包含新token）
-	userInfo, _, err := funcs.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, false)
+	userInfo, _, err := funcs.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, nil)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("构建用户信息失败", err.Error()))
 		return

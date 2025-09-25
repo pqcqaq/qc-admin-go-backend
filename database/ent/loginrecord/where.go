@@ -125,6 +125,11 @@ func Duration(v int) predicate.LoginRecord {
 	return predicate.LoginRecord(sql.FieldEQ(FieldDuration, v))
 }
 
+// ClientID applies equality check predicate on the "client_id" field. It's identical to ClientIDEQ.
+func ClientID(v uint64) predicate.LoginRecord {
+	return predicate.LoginRecord(sql.FieldEQ(FieldClientID, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.LoginRecord {
 	return predicate.LoginRecord(sql.FieldEQ(FieldCreateTime, v))
@@ -978,6 +983,56 @@ func MetadataIsNil() predicate.LoginRecord {
 // MetadataNotNil applies the NotNil predicate on the "metadata" field.
 func MetadataNotNil() predicate.LoginRecord {
 	return predicate.LoginRecord(sql.FieldNotNull(FieldMetadata))
+}
+
+// ClientIDEQ applies the EQ predicate on the "client_id" field.
+func ClientIDEQ(v uint64) predicate.LoginRecord {
+	return predicate.LoginRecord(sql.FieldEQ(FieldClientID, v))
+}
+
+// ClientIDNEQ applies the NEQ predicate on the "client_id" field.
+func ClientIDNEQ(v uint64) predicate.LoginRecord {
+	return predicate.LoginRecord(sql.FieldNEQ(FieldClientID, v))
+}
+
+// ClientIDIn applies the In predicate on the "client_id" field.
+func ClientIDIn(vs ...uint64) predicate.LoginRecord {
+	return predicate.LoginRecord(sql.FieldIn(FieldClientID, vs...))
+}
+
+// ClientIDNotIn applies the NotIn predicate on the "client_id" field.
+func ClientIDNotIn(vs ...uint64) predicate.LoginRecord {
+	return predicate.LoginRecord(sql.FieldNotIn(FieldClientID, vs...))
+}
+
+// ClientIDGT applies the GT predicate on the "client_id" field.
+func ClientIDGT(v uint64) predicate.LoginRecord {
+	return predicate.LoginRecord(sql.FieldGT(FieldClientID, v))
+}
+
+// ClientIDGTE applies the GTE predicate on the "client_id" field.
+func ClientIDGTE(v uint64) predicate.LoginRecord {
+	return predicate.LoginRecord(sql.FieldGTE(FieldClientID, v))
+}
+
+// ClientIDLT applies the LT predicate on the "client_id" field.
+func ClientIDLT(v uint64) predicate.LoginRecord {
+	return predicate.LoginRecord(sql.FieldLT(FieldClientID, v))
+}
+
+// ClientIDLTE applies the LTE predicate on the "client_id" field.
+func ClientIDLTE(v uint64) predicate.LoginRecord {
+	return predicate.LoginRecord(sql.FieldLTE(FieldClientID, v))
+}
+
+// ClientIDIsNil applies the IsNil predicate on the "client_id" field.
+func ClientIDIsNil() predicate.LoginRecord {
+	return predicate.LoginRecord(sql.FieldIsNull(FieldClientID))
+}
+
+// ClientIDNotNil applies the NotNil predicate on the "client_id" field.
+func ClientIDNotNil() predicate.LoginRecord {
+	return predicate.LoginRecord(sql.FieldNotNull(FieldClientID))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

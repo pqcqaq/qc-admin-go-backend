@@ -3,6 +3,7 @@ package jwt
 import (
 	"errors"
 	"sync"
+	"time"
 
 	"go-backend/pkg/configs"
 )
@@ -22,7 +23,7 @@ var (
 func InitializeService(config *configs.JWTConfig) error {
 	var err error
 	once.Do(func() {
-		service = NewJWTService(config.SecretKey, config.Issuer, config.Expiry)
+		service = NewJWTService(config.SecretKey, config.Issuer)
 	})
 	return err
 }
@@ -34,12 +35,20 @@ func GetService() *JWTService {
 	return service
 }
 
-// GenerateToken 生成Token (全局函数)
-func GenerateToken(userID uint64) (string, error) {
+// GenerateAccessToken 生成Token (全局函数)
+func GenerateAccessToken(userID, clientId uint64, expiry time.Duration) (string, error) {
 	if service == nil {
 		return "", ErrServiceNotInitialized
 	}
-	return service.GenerateToken(userID)
+	return service.GenerateToken(userID, clientId, expiry, false)
+}
+
+// GenerateRefreshToken 生成Token (全局函数)
+func GenerateRefreshToken(userID, clientId uint64, expiry time.Duration) (string, error) {
+	if service == nil {
+		return "", ErrServiceNotInitialized
+	}
+	return service.GenerateToken(userID, clientId, expiry, true)
 }
 
 // ValidateToken 验证Token (全局函数)
@@ -51,9 +60,9 @@ func ValidateToken(tokenString string) (*Claims, error) {
 }
 
 // RefreshToken 刷新Token (全局函数)
-func RefreshToken(tokenString string) (string, error) {
+func RefreshToken(tokenString string, clientId uint64, expiry time.Duration) (string, error) {
 	if service == nil {
 		return "", ErrServiceNotInitialized
 	}
-	return service.RefreshToken(tokenString)
+	return service.RefreshToken(tokenString, clientId, expiry)
 }

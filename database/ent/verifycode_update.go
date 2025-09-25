@@ -259,6 +259,33 @@ func (_u *VerifyCodeUpdate) ClearSendAt() *VerifyCodeUpdate {
 	return _u
 }
 
+// SetClientID sets the "client_id" field.
+func (_u *VerifyCodeUpdate) SetClientID(v uint64) *VerifyCodeUpdate {
+	_u.mutation.ResetClientID()
+	_u.mutation.SetClientID(v)
+	return _u
+}
+
+// SetNillableClientID sets the "client_id" field if the given value is not nil.
+func (_u *VerifyCodeUpdate) SetNillableClientID(v *uint64) *VerifyCodeUpdate {
+	if v != nil {
+		_u.SetClientID(*v)
+	}
+	return _u
+}
+
+// AddClientID adds value to the "client_id" field.
+func (_u *VerifyCodeUpdate) AddClientID(v int64) *VerifyCodeUpdate {
+	_u.mutation.AddClientID(v)
+	return _u
+}
+
+// ClearClientID clears the value of the "client_id" field.
+func (_u *VerifyCodeUpdate) ClearClientID() *VerifyCodeUpdate {
+	_u.mutation.ClearClientID()
+	return _u
+}
+
 // Mutation returns the VerifyCodeMutation object of the builder.
 func (_u *VerifyCodeUpdate) Mutation() *VerifyCodeMutation {
 	return _u.mutation
@@ -408,6 +435,15 @@ func (_u *VerifyCodeUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if _u.mutation.SendAtCleared() {
 		_spec.ClearField(verifycode.FieldSendAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ClientID(); ok {
+		_spec.SetField(verifycode.FieldClientID, field.TypeUint64, value)
+	}
+	if value, ok := _u.mutation.AddedClientID(); ok {
+		_spec.AddField(verifycode.FieldClientID, field.TypeUint64, value)
+	}
+	if _u.mutation.ClientIDCleared() {
+		_spec.ClearField(verifycode.FieldClientID, field.TypeUint64)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -660,6 +696,33 @@ func (_u *VerifyCodeUpdateOne) ClearSendAt() *VerifyCodeUpdateOne {
 	return _u
 }
 
+// SetClientID sets the "client_id" field.
+func (_u *VerifyCodeUpdateOne) SetClientID(v uint64) *VerifyCodeUpdateOne {
+	_u.mutation.ResetClientID()
+	_u.mutation.SetClientID(v)
+	return _u
+}
+
+// SetNillableClientID sets the "client_id" field if the given value is not nil.
+func (_u *VerifyCodeUpdateOne) SetNillableClientID(v *uint64) *VerifyCodeUpdateOne {
+	if v != nil {
+		_u.SetClientID(*v)
+	}
+	return _u
+}
+
+// AddClientID adds value to the "client_id" field.
+func (_u *VerifyCodeUpdateOne) AddClientID(v int64) *VerifyCodeUpdateOne {
+	_u.mutation.AddClientID(v)
+	return _u
+}
+
+// ClearClientID clears the value of the "client_id" field.
+func (_u *VerifyCodeUpdateOne) ClearClientID() *VerifyCodeUpdateOne {
+	_u.mutation.ClearClientID()
+	return _u
+}
+
 // Mutation returns the VerifyCodeMutation object of the builder.
 func (_u *VerifyCodeUpdateOne) Mutation() *VerifyCodeMutation {
 	return _u.mutation
@@ -839,6 +902,15 @@ func (_u *VerifyCodeUpdateOne) sqlSave(ctx context.Context) (_node *VerifyCode, 
 	}
 	if _u.mutation.SendAtCleared() {
 		_spec.ClearField(verifycode.FieldSendAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ClientID(); ok {
+		_spec.SetField(verifycode.FieldClientID, field.TypeUint64, value)
+	}
+	if value, ok := _u.mutation.AddedClientID(); ok {
+		_spec.AddField(verifycode.FieldClientID, field.TypeUint64, value)
+	}
+	if _u.mutation.ClientIDCleared() {
+		_spec.ClearField(verifycode.FieldClientID, field.TypeUint64)
 	}
 	_node = &VerifyCode{config: _u.config}
 	_spec.Assign = _node.assignValues

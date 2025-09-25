@@ -271,12 +271,12 @@ func (h *ClientDeviceHandler) UpdateClientDevice(c *gin.Context) {
 		return
 	}
 
-	if req.AccessTokenExpiry < 1000 {
+	if req.AccessTokenExpiry != nil && *req.AccessTokenExpiry < 1000 {
 		middleware.ThrowError(c, middleware.BadRequestError("AccessToken超时时间不能小于1000毫秒", nil))
 		return
 	}
 
-	if req.RefreshTokenExpiry < 1000 {
+	if req.RefreshTokenExpiry != nil && *req.RefreshTokenExpiry < 1000 {
 		middleware.ThrowError(c, middleware.BadRequestError("RefreshToken超时时间不能小于1000毫秒", nil))
 		return
 	}

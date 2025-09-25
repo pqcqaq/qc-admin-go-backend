@@ -177,6 +177,7 @@ var (
 		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
 		{Name: "name", Type: field.TypeString, Size: 100},
 		{Name: "code", Type: field.TypeString, Size: 64},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 255},
 		{Name: "enabled", Type: field.TypeBool, Default: true},
 		{Name: "access_token_expiry", Type: field.TypeUint64},
 		{Name: "refresh_token_expiry", Type: field.TypeUint64},
@@ -337,6 +338,7 @@ var (
 		{Name: "logout_time", Type: field.TypeTime, Nullable: true},
 		{Name: "duration", Type: field.TypeInt, Nullable: true},
 		{Name: "metadata", Type: field.TypeJSON, Nullable: true},
+		{Name: "client_id", Type: field.TypeUint64, Nullable: true},
 		{Name: "user_id", Type: field.TypeUint64},
 	}
 	// SysLoginRecordsTable holds the schema information for the "sys_login_records" table.
@@ -347,7 +349,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "sys_login_records_sys_users_login_records",
-				Columns:    []*schema.Column{SysLoginRecordsColumns[17]},
+				Columns:    []*schema.Column{SysLoginRecordsColumns[18]},
 				RefColumns: []*schema.Column{SysUsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -356,7 +358,7 @@ var (
 			{
 				Name:    "loginrecord_user_id_create_time",
 				Unique:  false,
-				Columns: []*schema.Column{SysLoginRecordsColumns[17], SysLoginRecordsColumns[1]},
+				Columns: []*schema.Column{SysLoginRecordsColumns[18], SysLoginRecordsColumns[1]},
 			},
 			{
 				Name:    "loginrecord_status_create_time",
@@ -432,21 +434,12 @@ var (
 		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "client_device_roles", Type: field.TypeUint64, Nullable: true},
 	}
 	// SysRolesTable holds the schema information for the "sys_roles" table.
 	SysRolesTable = &schema.Table{
 		Name:       "sys_roles",
 		Columns:    SysRolesColumns,
 		PrimaryKey: []*schema.Column{SysRolesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "sys_roles_sys_clients_roles",
-				Columns:    []*schema.Column{SysRolesColumns[9]},
-				RefColumns: []*schema.Column{SysClientsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "role_delete_time",
@@ -756,6 +749,7 @@ var (
 		{Name: "used_at", Type: field.TypeTime, Nullable: true},
 		{Name: "send_success", Type: field.TypeBool, Default: false},
 		{Name: "send_at", Type: field.TypeTime, Nullable: true},
+		{Name: "client_id", Type: field.TypeUint64, Nullable: true},
 	}
 	// SysVerifyCodesTable holds the schema information for the "sys_verify_codes" table.
 	SysVerifyCodesTable = &schema.Table{
@@ -805,6 +799,31 @@ var (
 			},
 		},
 	}
+	// ClientDeviceRolesColumns holds the columns for the "client_device_roles" table.
+	ClientDeviceRolesColumns = []*schema.Column{
+		{Name: "client_device_id", Type: field.TypeUint64},
+		{Name: "role_id", Type: field.TypeUint64},
+	}
+	// ClientDeviceRolesTable holds the schema information for the "client_device_roles" table.
+	ClientDeviceRolesTable = &schema.Table{
+		Name:       "client_device_roles",
+		Columns:    ClientDeviceRolesColumns,
+		PrimaryKey: []*schema.Column{ClientDeviceRolesColumns[0], ClientDeviceRolesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "client_device_roles_client_device_id",
+				Columns:    []*schema.Column{ClientDeviceRolesColumns[0]},
+				RefColumns: []*schema.Column{SysClientsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "client_device_roles_role_id",
+				Columns:    []*schema.Column{ClientDeviceRolesColumns[1]},
+				RefColumns: []*schema.Column{SysRolesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// RoleInheritsFromColumns holds the columns for the "role_inherits_from" table.
 	RoleInheritsFromColumns = []*schema.Column{
 		{Name: "role_id", Type: field.TypeUint64},
@@ -847,6 +866,7 @@ var (
 		SysUserRoleTable,
 		SysVerifyCodesTable,
 		APIAuthPermissionsTable,
+		ClientDeviceRolesTable,
 		RoleInheritsFromTable,
 	}
 )
@@ -872,7 +892,6 @@ func init() {
 	SysPermissionsTable.Annotation = &entsql.Annotation{
 		Table: "sys_permissions",
 	}
-	SysRolesTable.ForeignKeys[0].RefTable = SysClientsTable
 	SysRolesTable.Annotation = &entsql.Annotation{
 		Table: "sys_roles",
 	}
@@ -901,6 +920,8 @@ func init() {
 	}
 	APIAuthPermissionsTable.ForeignKeys[0].RefTable = SysAPIAuthTable
 	APIAuthPermissionsTable.ForeignKeys[1].RefTable = SysPermissionsTable
+	ClientDeviceRolesTable.ForeignKeys[0].RefTable = SysClientsTable
+	ClientDeviceRolesTable.ForeignKeys[1].RefTable = SysRolesTable
 	RoleInheritsFromTable.ForeignKeys[0].RefTable = SysRolesTable
 	RoleInheritsFromTable.ForeignKeys[1].RefTable = SysRolesTable
 }

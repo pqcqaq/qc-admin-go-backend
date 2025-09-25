@@ -176,6 +176,20 @@ func (_c *VerifyCodeCreate) SetNillableSendAt(v *time.Time) *VerifyCodeCreate {
 	return _c
 }
 
+// SetClientID sets the "client_id" field.
+func (_c *VerifyCodeCreate) SetClientID(v uint64) *VerifyCodeCreate {
+	_c.mutation.SetClientID(v)
+	return _c
+}
+
+// SetNillableClientID sets the "client_id" field if the given value is not nil.
+func (_c *VerifyCodeCreate) SetNillableClientID(v *uint64) *VerifyCodeCreate {
+	if v != nil {
+		_c.SetClientID(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *VerifyCodeCreate) SetID(v uint64) *VerifyCodeCreate {
 	_c.mutation.SetID(v)
@@ -373,6 +387,10 @@ func (_c *VerifyCodeCreate) createSpec() (*VerifyCode, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.SendAt(); ok {
 		_spec.SetField(verifycode.FieldSendAt, field.TypeTime, value)
 		_node.SendAt = &value
+	}
+	if value, ok := _c.mutation.ClientID(); ok {
+		_spec.SetField(verifycode.FieldClientID, field.TypeUint64, value)
+		_node.ClientID = &value
 	}
 	return _node, _spec
 }

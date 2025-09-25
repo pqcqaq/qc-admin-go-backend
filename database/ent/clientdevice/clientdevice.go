@@ -31,6 +31,8 @@ const (
 	FieldName = "name"
 	// FieldCode holds the string denoting the code field in the database.
 	FieldCode = "code"
+	// FieldDescription holds the string denoting the description field in the database.
+	FieldDescription = "description"
 	// FieldEnabled holds the string denoting the enabled field in the database.
 	FieldEnabled = "enabled"
 	// FieldAccessTokenExpiry holds the string denoting the access_token_expiry field in the database.
@@ -43,13 +45,11 @@ const (
 	EdgeRoles = "roles"
 	// Table holds the table name of the clientdevice in the database.
 	Table = "sys_clients"
-	// RolesTable is the table that holds the roles relation/edge.
-	RolesTable = "sys_roles"
+	// RolesTable is the table that holds the roles relation/edge. The primary key declared below.
+	RolesTable = "client_device_roles"
 	// RolesInverseTable is the table name for the Role entity.
 	// It exists in this package in order to avoid circular dependency with the "role" package.
 	RolesInverseTable = "sys_roles"
-	// RolesColumn is the table column denoting the roles relation/edge.
-	RolesColumn = "client_device_roles"
 )
 
 // Columns holds all SQL columns for clientdevice fields.
@@ -63,11 +63,18 @@ var Columns = []string{
 	FieldDeleteBy,
 	FieldName,
 	FieldCode,
+	FieldDescription,
 	FieldEnabled,
 	FieldAccessTokenExpiry,
 	FieldRefreshTokenExpiry,
 	FieldAnonymous,
 }
+
+var (
+	// RolesPrimaryKey and RolesColumn2 are the table columns denoting the
+	// primary key for the roles relation (M2M).
+	RolesPrimaryKey = []string{"client_device_id", "role_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -97,6 +104,8 @@ var (
 	NameValidator func(string) error
 	// CodeValidator is a validator for the "code" field. It is called by the builders before save.
 	CodeValidator func(string) error
+	// DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	DescriptionValidator func(string) error
 	// DefaultEnabled holds the default value on creation for the "enabled" field.
 	DefaultEnabled bool
 	// AccessTokenExpiryValidator is a validator for the "access_token_expiry" field. It is called by the builders before save.
@@ -155,6 +164,11 @@ func ByCode(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCode, opts...).ToFunc()
 }
 
+// ByDescription orders the results by the description field.
+func ByDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
 // ByEnabled orders the results by the enabled field.
 func ByEnabled(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEnabled, opts...).ToFunc()
@@ -192,6 +206,6 @@ func newRolesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RolesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, RolesTable, RolesColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, RolesTable, RolesPrimaryKey...),
 	)
 }

@@ -36,9 +36,8 @@ type Role struct {
 	Description string `json:"description,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoleQuery when eager-loading is set.
-	Edges               RoleEdges `json:"edges"`
-	client_device_roles *uint64
-	selectValues        sql.SelectValues
+	Edges        RoleEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // RoleEdges holds the relations/edges for other nodes in the graph.
@@ -51,13 +50,16 @@ type RoleEdges struct {
 	InheritedBy []*Role `json:"inherited_by,omitempty"`
 	// InheritsFrom holds the value of the inherits_from edge.
 	InheritsFrom []*Role `json:"inherits_from,omitempty"`
+	// ClientDevice holds the value of the client_device edge.
+	ClientDevice []*ClientDevice `json:"client_device,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes          [4]bool
+	loadedTypes          [5]bool
 	namedUserRoles       map[string][]*UserRole
 	namedRolePermissions map[string][]*RolePermission
 	namedInheritedBy     map[string][]*Role
 	namedInheritsFrom    map[string][]*Role
+	namedClientDevice    map[string][]*ClientDevice
 }
 
 // UserRolesOrErr returns the UserRoles value or an error if the edge
@@ -96,6 +98,15 @@ func (e RoleEdges) InheritsFromOrErr() ([]*Role, error) {
 	return nil, &NotLoadedError{edge: "inherits_from"}
 }
 
+// ClientDeviceOrErr returns the ClientDevice value or an error if the edge
+// was not loaded in eager-loading.
+func (e RoleEdges) ClientDeviceOrErr() ([]*ClientDevice, error) {
+	if e.loadedTypes[4] {
+		return e.ClientDevice, nil
+	}
+	return nil, &NotLoadedError{edge: "client_device"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Role) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -107,8 +118,6 @@ func (*Role) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case role.FieldCreateTime, role.FieldUpdateTime, role.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
-		case role.ForeignKeys[0]: // client_device_roles
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -178,13 +187,6 @@ func (_m *Role) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Description = value.String
 			}
-		case role.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field client_device_roles", values[i])
-			} else if value.Valid {
-				_m.client_device_roles = new(uint64)
-				*_m.client_device_roles = uint64(value.Int64)
-			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -216,6 +218,11 @@ func (_m *Role) QueryInheritedBy() *RoleQuery {
 // QueryInheritsFrom queries the "inherits_from" edge of the Role entity.
 func (_m *Role) QueryInheritsFrom() *RoleQuery {
 	return NewRoleClient(_m.config).QueryInheritsFrom(_m)
+}
+
+// QueryClientDevice queries the "client_device" edge of the Role entity.
+func (_m *Role) QueryClientDevice() *ClientDeviceQuery {
+	return NewRoleClient(_m.config).QueryClientDevice(_m)
 }
 
 // Update returns a builder for updating this Role.
@@ -361,6 +368,30 @@ func (_m *Role) appendNamedInheritsFrom(name string, edges ...*Role) {
 		_m.Edges.namedInheritsFrom[name] = []*Role{}
 	} else {
 		_m.Edges.namedInheritsFrom[name] = append(_m.Edges.namedInheritsFrom[name], edges...)
+	}
+}
+
+// NamedClientDevice returns the ClientDevice named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *Role) NamedClientDevice(name string) ([]*ClientDevice, error) {
+	if _m.Edges.namedClientDevice == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedClientDevice[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *Role) appendNamedClientDevice(name string, edges ...*ClientDevice) {
+	if _m.Edges.namedClientDevice == nil {
+		_m.Edges.namedClientDevice = make(map[string][]*ClientDevice)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedClientDevice[name] = []*ClientDevice{}
+	} else {
+		_m.Edges.namedClientDevice[name] = append(_m.Edges.namedClientDevice[name], edges...)
 	}
 }
 

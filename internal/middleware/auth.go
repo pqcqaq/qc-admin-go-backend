@@ -105,6 +105,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 
 		// 将用户ID存储到上下文中
 		c.Set("user_id", claims.UserID)
+		c.Set("client_device_id", claims.ClientDeviceId)
 		c.Set("jwt_claims", claims)
 
 		if apiAuthRecord.IsPublic {
@@ -135,6 +136,16 @@ func GetCurrentUserID(c *gin.Context) (uint64, bool) {
 	if userID, exists := c.Get("user_id"); exists {
 		if uid, ok := userID.(uint64); ok {
 			return uid, true
+		}
+	}
+	return 0, false
+}
+
+// GetCurrentClientID 从上下文中获取当前用户终端ID
+func GetCurrentClientID(c *gin.Context) (uint64, bool) {
+	if clientID, exists := c.Get("client_device_id"); exists {
+		if id, ok := clientID.(uint64); ok {
+			return id, true
 		}
 	}
 	return 0, false

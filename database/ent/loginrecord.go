@@ -54,6 +54,8 @@ type LoginRecord struct {
 	Duration int `json:"duration,omitempty"`
 	// 额外元数据
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	// 请求设备ID
+	ClientID *uint64 `json:"client_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LoginRecordQuery when eager-loading is set.
 	Edges        LoginRecordEdges `json:"edges"`
@@ -87,7 +89,7 @@ func (*LoginRecord) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case loginrecord.FieldMetadata:
 			values[i] = new([]byte)
-		case loginrecord.FieldID, loginrecord.FieldCreateBy, loginrecord.FieldUpdateBy, loginrecord.FieldUserID, loginrecord.FieldDuration:
+		case loginrecord.FieldID, loginrecord.FieldCreateBy, loginrecord.FieldUpdateBy, loginrecord.FieldUserID, loginrecord.FieldDuration, loginrecord.FieldClientID:
 			values[i] = new(sql.NullInt64)
 		case loginrecord.FieldIdentifier, loginrecord.FieldCredentialType, loginrecord.FieldIPAddress, loginrecord.FieldUserAgent, loginrecord.FieldDeviceInfo, loginrecord.FieldLocation, loginrecord.FieldStatus, loginrecord.FieldFailureReason, loginrecord.FieldSessionID:
 			values[i] = new(sql.NullString)
@@ -219,6 +221,13 @@ func (_m *LoginRecord) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field metadata: %w", err)
 				}
 			}
+		case loginrecord.FieldClientID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field client_id", values[i])
+			} else if value.Valid {
+				_m.ClientID = new(uint64)
+				*_m.ClientID = uint64(value.Int64)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -312,6 +321,11 @@ func (_m *LoginRecord) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("metadata=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Metadata))
+	builder.WriteString(", ")
+	if v := _m.ClientID; v != nil {
+		builder.WriteString("client_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

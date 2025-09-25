@@ -164,6 +164,26 @@ func (_u *ClientDeviceUpdate) SetNillableCode(v *string) *ClientDeviceUpdate {
 	return _u
 }
 
+// SetDescription sets the "description" field.
+func (_u *ClientDeviceUpdate) SetDescription(v string) *ClientDeviceUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (_u *ClientDeviceUpdate) SetNillableDescription(v *string) *ClientDeviceUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
+	}
+	return _u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (_u *ClientDeviceUpdate) ClearDescription() *ClientDeviceUpdate {
+	_u.mutation.ClearDescription()
+	return _u
+}
+
 // SetEnabled sets the "enabled" field.
 func (_u *ClientDeviceUpdate) SetEnabled(v bool) *ClientDeviceUpdate {
 	_u.mutation.SetEnabled(v)
@@ -329,6 +349,11 @@ func (_u *ClientDeviceUpdate) check() error {
 			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "ClientDevice.code": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Description(); ok {
+		if err := clientdevice.DescriptionValidator(v); err != nil {
+			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "ClientDevice.description": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.AccessTokenExpiry(); ok {
 		if err := clientdevice.AccessTokenExpiryValidator(v); err != nil {
 			return &ValidationError{Name: "access_token_expiry", err: fmt.Errorf(`ent: validator failed for field "ClientDevice.access_token_expiry": %w`, err)}
@@ -396,6 +421,12 @@ func (_u *ClientDeviceUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if value, ok := _u.mutation.Code(); ok {
 		_spec.SetField(clientdevice.FieldCode, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.Description(); ok {
+		_spec.SetField(clientdevice.FieldDescription, field.TypeString, value)
+	}
+	if _u.mutation.DescriptionCleared() {
+		_spec.ClearField(clientdevice.FieldDescription, field.TypeString)
+	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(clientdevice.FieldEnabled, field.TypeBool, value)
 	}
@@ -416,10 +447,10 @@ func (_u *ClientDeviceUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if _u.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   clientdevice.RolesTable,
-			Columns: []string{clientdevice.RolesColumn},
+			Columns: clientdevice.RolesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeUint64),
@@ -429,10 +460,10 @@ func (_u *ClientDeviceUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if nodes := _u.mutation.RemovedRolesIDs(); len(nodes) > 0 && !_u.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   clientdevice.RolesTable,
-			Columns: []string{clientdevice.RolesColumn},
+			Columns: clientdevice.RolesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeUint64),
@@ -445,10 +476,10 @@ func (_u *ClientDeviceUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if nodes := _u.mutation.RolesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   clientdevice.RolesTable,
-			Columns: []string{clientdevice.RolesColumn},
+			Columns: clientdevice.RolesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeUint64),
@@ -611,6 +642,26 @@ func (_u *ClientDeviceUpdateOne) SetNillableCode(v *string) *ClientDeviceUpdateO
 	if v != nil {
 		_u.SetCode(*v)
 	}
+	return _u
+}
+
+// SetDescription sets the "description" field.
+func (_u *ClientDeviceUpdateOne) SetDescription(v string) *ClientDeviceUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (_u *ClientDeviceUpdateOne) SetNillableDescription(v *string) *ClientDeviceUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
+	}
+	return _u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (_u *ClientDeviceUpdateOne) ClearDescription() *ClientDeviceUpdateOne {
+	_u.mutation.ClearDescription()
 	return _u
 }
 
@@ -792,6 +843,11 @@ func (_u *ClientDeviceUpdateOne) check() error {
 			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "ClientDevice.code": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Description(); ok {
+		if err := clientdevice.DescriptionValidator(v); err != nil {
+			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "ClientDevice.description": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.AccessTokenExpiry(); ok {
 		if err := clientdevice.AccessTokenExpiryValidator(v); err != nil {
 			return &ValidationError{Name: "access_token_expiry", err: fmt.Errorf(`ent: validator failed for field "ClientDevice.access_token_expiry": %w`, err)}
@@ -876,6 +932,12 @@ func (_u *ClientDeviceUpdateOne) sqlSave(ctx context.Context) (_node *ClientDevi
 	if value, ok := _u.mutation.Code(); ok {
 		_spec.SetField(clientdevice.FieldCode, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.Description(); ok {
+		_spec.SetField(clientdevice.FieldDescription, field.TypeString, value)
+	}
+	if _u.mutation.DescriptionCleared() {
+		_spec.ClearField(clientdevice.FieldDescription, field.TypeString)
+	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(clientdevice.FieldEnabled, field.TypeBool, value)
 	}
@@ -896,10 +958,10 @@ func (_u *ClientDeviceUpdateOne) sqlSave(ctx context.Context) (_node *ClientDevi
 	}
 	if _u.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   clientdevice.RolesTable,
-			Columns: []string{clientdevice.RolesColumn},
+			Columns: clientdevice.RolesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeUint64),
@@ -909,10 +971,10 @@ func (_u *ClientDeviceUpdateOne) sqlSave(ctx context.Context) (_node *ClientDevi
 	}
 	if nodes := _u.mutation.RemovedRolesIDs(); len(nodes) > 0 && !_u.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   clientdevice.RolesTable,
-			Columns: []string{clientdevice.RolesColumn},
+			Columns: clientdevice.RolesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeUint64),
@@ -925,10 +987,10 @@ func (_u *ClientDeviceUpdateOne) sqlSave(ctx context.Context) (_node *ClientDevi
 	}
 	if nodes := _u.mutation.RolesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   clientdevice.RolesTable,
-			Columns: []string{clientdevice.RolesColumn},
+			Columns: clientdevice.RolesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeUint64),

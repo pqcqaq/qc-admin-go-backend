@@ -43,6 +43,8 @@ const (
 	FieldSendSuccess = "send_success"
 	// FieldSendAt holds the string denoting the send_at field in the database.
 	FieldSendAt = "send_at"
+	// FieldClientID holds the string denoting the client_id field in the database.
+	FieldClientID = "client_id"
 	// Table holds the table name of the verifycode in the database.
 	Table = "sys_verify_codes"
 )
@@ -64,6 +66,7 @@ var Columns = []string{
 	FieldUsedAt,
 	FieldSendSuccess,
 	FieldSendAt,
+	FieldClientID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -200,4 +203,9 @@ func BySendSuccess(opts ...sql.OrderTermOption) OrderOption {
 // BySendAt orders the results by the send_at field.
 func BySendAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSendAt, opts...).ToFunc()
+}
+
+// ByClientID orders the results by the client_id field.
+func ByClientID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldClientID, opts...).ToFunc()
 }

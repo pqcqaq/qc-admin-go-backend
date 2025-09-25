@@ -35,6 +35,7 @@ type LoginRecordParams struct {
 	FailureReason  string
 	SessionID      string
 	Metadata       map[string]interface{}
+	ClientId       uint64
 }
 
 // CreateLoginRecord 创建登录记录
@@ -55,7 +56,8 @@ func CreateLoginRecord(ctx context.Context, params LoginRecordParams) (*ent.Logi
 		SetIdentifier(params.Identifier).
 		SetCredentialType(loginrecord.CredentialType(params.CredentialType)).
 		SetIPAddress(params.IPAddress).
-		SetStatus(loginrecord.Status(params.Status))
+		SetStatus(loginrecord.Status(params.Status)).
+		SetClientID(params.ClientId)
 
 	// 设置可选字段
 	if params.UserAgent != "" {
@@ -126,7 +128,7 @@ func UpdateLoginRecordLogout(ctx context.Context, sessionID string) error {
 }
 
 // CreateLoginRecordFromGinContext 从Gin上下文创建登录记录
-func CreateLoginRecordFromGinContext(ctx context.Context, c *gin.Context, userID uint64, identifier, credentialType, status, failureReason, sessionID string) (*ent.LoginRecord, error) {
+func CreateLoginRecordFromGinContext(ctx context.Context, c *gin.Context, userID uint64, identifier, credentialType, status, failureReason, sessionID string, clientId uint64) (*ent.LoginRecord, error) {
 	params := LoginRecordParams{
 		UserID:         userID,
 		Identifier:     identifier,
@@ -142,6 +144,7 @@ func CreateLoginRecordFromGinContext(ctx context.Context, c *gin.Context, userID
 			"content_type": c.GetHeader("Content-Type"),
 			"request_time": time.Now().Unix(),
 		},
+		ClientId: clientId,
 	}
 
 	return CreateLoginRecord(ctx, params)

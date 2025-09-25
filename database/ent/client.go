@@ -718,7 +718,7 @@ func (c *ClientDeviceClient) QueryRoles(_m *ClientDevice) *RoleQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(clientdevice.Table, clientdevice.FieldID, id),
 			sqlgraph.To(role.Table, role.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, clientdevice.RolesTable, clientdevice.RolesColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, clientdevice.RolesTable, clientdevice.RolesPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1537,6 +1537,22 @@ func (c *RoleClient) QueryInheritsFrom(_m *Role) *RoleQuery {
 			sqlgraph.From(role.Table, role.FieldID, id),
 			sqlgraph.To(role.Table, role.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, role.InheritsFromTable, role.InheritsFromPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryClientDevice queries the client_device edge of a Role.
+func (c *RoleClient) QueryClientDevice(_m *Role) *ClientDeviceQuery {
+	query := (&ClientDeviceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(role.Table, role.FieldID, id),
+			sqlgraph.To(clientdevice.Table, clientdevice.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, role.ClientDeviceTable, role.ClientDevicePrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

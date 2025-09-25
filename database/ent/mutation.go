@@ -3073,6 +3073,7 @@ type ClientDeviceMutation struct {
 	adddelete_by            *int64
 	name                    *string
 	code                    *string
+	description             *string
 	enabled                 *bool
 	access_token_expiry     *uint64
 	addaccess_token_expiry  *int64
@@ -3595,6 +3596,55 @@ func (m *ClientDeviceMutation) ResetCode() {
 	m.code = nil
 }
 
+// SetDescription sets the "description" field.
+func (m *ClientDeviceMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *ClientDeviceMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the ClientDevice entity.
+// If the ClientDevice object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClientDeviceMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *ClientDeviceMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[clientdevice.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *ClientDeviceMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[clientdevice.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *ClientDeviceMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, clientdevice.FieldDescription)
+}
+
 // SetEnabled sets the "enabled" field.
 func (m *ClientDeviceMutation) SetEnabled(b bool) {
 	m.enabled = &b
@@ -3867,7 +3917,7 @@ func (m *ClientDeviceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ClientDeviceMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.create_time != nil {
 		fields = append(fields, clientdevice.FieldCreateTime)
 	}
@@ -3891,6 +3941,9 @@ func (m *ClientDeviceMutation) Fields() []string {
 	}
 	if m.code != nil {
 		fields = append(fields, clientdevice.FieldCode)
+	}
+	if m.description != nil {
+		fields = append(fields, clientdevice.FieldDescription)
 	}
 	if m.enabled != nil {
 		fields = append(fields, clientdevice.FieldEnabled)
@@ -3928,6 +3981,8 @@ func (m *ClientDeviceMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case clientdevice.FieldCode:
 		return m.Code()
+	case clientdevice.FieldDescription:
+		return m.Description()
 	case clientdevice.FieldEnabled:
 		return m.Enabled()
 	case clientdevice.FieldAccessTokenExpiry:
@@ -3961,6 +4016,8 @@ func (m *ClientDeviceMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldName(ctx)
 	case clientdevice.FieldCode:
 		return m.OldCode(ctx)
+	case clientdevice.FieldDescription:
+		return m.OldDescription(ctx)
 	case clientdevice.FieldEnabled:
 		return m.OldEnabled(ctx)
 	case clientdevice.FieldAccessTokenExpiry:
@@ -4033,6 +4090,13 @@ func (m *ClientDeviceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCode(v)
+		return nil
+	case clientdevice.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
 		return nil
 	case clientdevice.FieldEnabled:
 		v, ok := value.(bool)
@@ -4167,6 +4231,9 @@ func (m *ClientDeviceMutation) ClearedFields() []string {
 	if m.FieldCleared(clientdevice.FieldDeleteBy) {
 		fields = append(fields, clientdevice.FieldDeleteBy)
 	}
+	if m.FieldCleared(clientdevice.FieldDescription) {
+		fields = append(fields, clientdevice.FieldDescription)
+	}
 	return fields
 }
 
@@ -4192,6 +4259,9 @@ func (m *ClientDeviceMutation) ClearField(name string) error {
 		return nil
 	case clientdevice.FieldDeleteBy:
 		m.ClearDeleteBy()
+		return nil
+	case clientdevice.FieldDescription:
+		m.ClearDescription()
 		return nil
 	}
 	return fmt.Errorf("unknown ClientDevice nullable field %s", name)
@@ -4224,6 +4294,9 @@ func (m *ClientDeviceMutation) ResetField(name string) error {
 		return nil
 	case clientdevice.FieldCode:
 		m.ResetCode()
+		return nil
+	case clientdevice.FieldDescription:
+		m.ResetDescription()
 		return nil
 	case clientdevice.FieldEnabled:
 		m.ResetEnabled()
@@ -7643,6 +7716,8 @@ type LoginRecordMutation struct {
 	duration        *int
 	addduration     *int
 	metadata        *map[string]interface{}
+	client_id       *uint64
+	addclient_id    *int64
 	clearedFields   map[string]struct{}
 	user            *uint64
 	cleareduser     bool
@@ -8560,6 +8635,76 @@ func (m *LoginRecordMutation) ResetMetadata() {
 	delete(m.clearedFields, loginrecord.FieldMetadata)
 }
 
+// SetClientID sets the "client_id" field.
+func (m *LoginRecordMutation) SetClientID(u uint64) {
+	m.client_id = &u
+	m.addclient_id = nil
+}
+
+// ClientID returns the value of the "client_id" field in the mutation.
+func (m *LoginRecordMutation) ClientID() (r uint64, exists bool) {
+	v := m.client_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClientID returns the old "client_id" field's value of the LoginRecord entity.
+// If the LoginRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LoginRecordMutation) OldClientID(ctx context.Context) (v *uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClientID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClientID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClientID: %w", err)
+	}
+	return oldValue.ClientID, nil
+}
+
+// AddClientID adds u to the "client_id" field.
+func (m *LoginRecordMutation) AddClientID(u int64) {
+	if m.addclient_id != nil {
+		*m.addclient_id += u
+	} else {
+		m.addclient_id = &u
+	}
+}
+
+// AddedClientID returns the value that was added to the "client_id" field in this mutation.
+func (m *LoginRecordMutation) AddedClientID() (r int64, exists bool) {
+	v := m.addclient_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearClientID clears the value of the "client_id" field.
+func (m *LoginRecordMutation) ClearClientID() {
+	m.client_id = nil
+	m.addclient_id = nil
+	m.clearedFields[loginrecord.FieldClientID] = struct{}{}
+}
+
+// ClientIDCleared returns if the "client_id" field was cleared in this mutation.
+func (m *LoginRecordMutation) ClientIDCleared() bool {
+	_, ok := m.clearedFields[loginrecord.FieldClientID]
+	return ok
+}
+
+// ResetClientID resets all changes to the "client_id" field.
+func (m *LoginRecordMutation) ResetClientID() {
+	m.client_id = nil
+	m.addclient_id = nil
+	delete(m.clearedFields, loginrecord.FieldClientID)
+}
+
 // ClearUser clears the "user" edge to the User entity.
 func (m *LoginRecordMutation) ClearUser() {
 	m.cleareduser = true
@@ -8621,7 +8766,7 @@ func (m *LoginRecordMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LoginRecordMutation) Fields() []string {
-	fields := make([]string, 0, 17)
+	fields := make([]string, 0, 18)
 	if m.create_time != nil {
 		fields = append(fields, loginrecord.FieldCreateTime)
 	}
@@ -8673,6 +8818,9 @@ func (m *LoginRecordMutation) Fields() []string {
 	if m.metadata != nil {
 		fields = append(fields, loginrecord.FieldMetadata)
 	}
+	if m.client_id != nil {
+		fields = append(fields, loginrecord.FieldClientID)
+	}
 	return fields
 }
 
@@ -8715,6 +8863,8 @@ func (m *LoginRecordMutation) Field(name string) (ent.Value, bool) {
 		return m.Duration()
 	case loginrecord.FieldMetadata:
 		return m.Metadata()
+	case loginrecord.FieldClientID:
+		return m.ClientID()
 	}
 	return nil, false
 }
@@ -8758,6 +8908,8 @@ func (m *LoginRecordMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldDuration(ctx)
 	case loginrecord.FieldMetadata:
 		return m.OldMetadata(ctx)
+	case loginrecord.FieldClientID:
+		return m.OldClientID(ctx)
 	}
 	return nil, fmt.Errorf("unknown LoginRecord field %s", name)
 }
@@ -8886,6 +9038,13 @@ func (m *LoginRecordMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMetadata(v)
 		return nil
+	case loginrecord.FieldClientID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClientID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown LoginRecord field %s", name)
 }
@@ -8903,6 +9062,9 @@ func (m *LoginRecordMutation) AddedFields() []string {
 	if m.addduration != nil {
 		fields = append(fields, loginrecord.FieldDuration)
 	}
+	if m.addclient_id != nil {
+		fields = append(fields, loginrecord.FieldClientID)
+	}
 	return fields
 }
 
@@ -8917,6 +9079,8 @@ func (m *LoginRecordMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedUpdateBy()
 	case loginrecord.FieldDuration:
 		return m.AddedDuration()
+	case loginrecord.FieldClientID:
+		return m.AddedClientID()
 	}
 	return nil, false
 }
@@ -8946,6 +9110,13 @@ func (m *LoginRecordMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddDuration(v)
+		return nil
+	case loginrecord.FieldClientID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddClientID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown LoginRecord numeric field %s", name)
@@ -8984,6 +9155,9 @@ func (m *LoginRecordMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(loginrecord.FieldMetadata) {
 		fields = append(fields, loginrecord.FieldMetadata)
+	}
+	if m.FieldCleared(loginrecord.FieldClientID) {
+		fields = append(fields, loginrecord.FieldClientID)
 	}
 	return fields
 }
@@ -9028,6 +9202,9 @@ func (m *LoginRecordMutation) ClearField(name string) error {
 		return nil
 	case loginrecord.FieldMetadata:
 		m.ClearMetadata()
+		return nil
+	case loginrecord.FieldClientID:
+		m.ClearClientID()
 		return nil
 	}
 	return fmt.Errorf("unknown LoginRecord nullable field %s", name)
@@ -9087,6 +9264,9 @@ func (m *LoginRecordMutation) ResetField(name string) error {
 		return nil
 	case loginrecord.FieldMetadata:
 		m.ResetMetadata()
+		return nil
+	case loginrecord.FieldClientID:
+		m.ResetClientID()
 		return nil
 	}
 	return fmt.Errorf("unknown LoginRecord field %s", name)
@@ -10398,6 +10578,9 @@ type RoleMutation struct {
 	inherits_from           map[uint64]struct{}
 	removedinherits_from    map[uint64]struct{}
 	clearedinherits_from    bool
+	client_device           map[uint64]struct{}
+	removedclient_device    map[uint64]struct{}
+	clearedclient_device    bool
 	done                    bool
 	oldValue                func(context.Context) (*Role, error)
 	predicates              []predicate.Role
@@ -11139,6 +11322,60 @@ func (m *RoleMutation) ResetInheritsFrom() {
 	m.removedinherits_from = nil
 }
 
+// AddClientDeviceIDs adds the "client_device" edge to the ClientDevice entity by ids.
+func (m *RoleMutation) AddClientDeviceIDs(ids ...uint64) {
+	if m.client_device == nil {
+		m.client_device = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.client_device[ids[i]] = struct{}{}
+	}
+}
+
+// ClearClientDevice clears the "client_device" edge to the ClientDevice entity.
+func (m *RoleMutation) ClearClientDevice() {
+	m.clearedclient_device = true
+}
+
+// ClientDeviceCleared reports if the "client_device" edge to the ClientDevice entity was cleared.
+func (m *RoleMutation) ClientDeviceCleared() bool {
+	return m.clearedclient_device
+}
+
+// RemoveClientDeviceIDs removes the "client_device" edge to the ClientDevice entity by IDs.
+func (m *RoleMutation) RemoveClientDeviceIDs(ids ...uint64) {
+	if m.removedclient_device == nil {
+		m.removedclient_device = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.client_device, ids[i])
+		m.removedclient_device[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedClientDevice returns the removed IDs of the "client_device" edge to the ClientDevice entity.
+func (m *RoleMutation) RemovedClientDeviceIDs() (ids []uint64) {
+	for id := range m.removedclient_device {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ClientDeviceIDs returns the "client_device" edge IDs in the mutation.
+func (m *RoleMutation) ClientDeviceIDs() (ids []uint64) {
+	for id := range m.client_device {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetClientDevice resets all changes to the "client_device" edge.
+func (m *RoleMutation) ResetClientDevice() {
+	m.client_device = nil
+	m.clearedclient_device = false
+	m.removedclient_device = nil
+}
+
 // Where appends a list predicates to the RoleMutation builder.
 func (m *RoleMutation) Where(ps ...predicate.Role) {
 	m.predicates = append(m.predicates, ps...)
@@ -11463,7 +11700,7 @@ func (m *RoleMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RoleMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.user_roles != nil {
 		edges = append(edges, role.EdgeUserRoles)
 	}
@@ -11475,6 +11712,9 @@ func (m *RoleMutation) AddedEdges() []string {
 	}
 	if m.inherits_from != nil {
 		edges = append(edges, role.EdgeInheritsFrom)
+	}
+	if m.client_device != nil {
+		edges = append(edges, role.EdgeClientDevice)
 	}
 	return edges
 }
@@ -11507,13 +11747,19 @@ func (m *RoleMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case role.EdgeClientDevice:
+		ids := make([]ent.Value, 0, len(m.client_device))
+		for id := range m.client_device {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RoleMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removeduser_roles != nil {
 		edges = append(edges, role.EdgeUserRoles)
 	}
@@ -11525,6 +11771,9 @@ func (m *RoleMutation) RemovedEdges() []string {
 	}
 	if m.removedinherits_from != nil {
 		edges = append(edges, role.EdgeInheritsFrom)
+	}
+	if m.removedclient_device != nil {
+		edges = append(edges, role.EdgeClientDevice)
 	}
 	return edges
 }
@@ -11557,13 +11806,19 @@ func (m *RoleMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case role.EdgeClientDevice:
+		ids := make([]ent.Value, 0, len(m.removedclient_device))
+		for id := range m.removedclient_device {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RoleMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.cleareduser_roles {
 		edges = append(edges, role.EdgeUserRoles)
 	}
@@ -11575,6 +11830,9 @@ func (m *RoleMutation) ClearedEdges() []string {
 	}
 	if m.clearedinherits_from {
 		edges = append(edges, role.EdgeInheritsFrom)
+	}
+	if m.clearedclient_device {
+		edges = append(edges, role.EdgeClientDevice)
 	}
 	return edges
 }
@@ -11591,6 +11849,8 @@ func (m *RoleMutation) EdgeCleared(name string) bool {
 		return m.clearedinherited_by
 	case role.EdgeInheritsFrom:
 		return m.clearedinherits_from
+	case role.EdgeClientDevice:
+		return m.clearedclient_device
 	}
 	return false
 }
@@ -11618,6 +11878,9 @@ func (m *RoleMutation) ResetEdge(name string) error {
 		return nil
 	case role.EdgeInheritsFrom:
 		m.ResetInheritsFrom()
+		return nil
+	case role.EdgeClientDevice:
+		m.ResetClientDevice()
 		return nil
 	}
 	return fmt.Errorf("unknown Role edge %s", name)
@@ -17913,6 +18176,8 @@ type VerifyCodeMutation struct {
 	used_at       *time.Time
 	send_success  *bool
 	send_at       *time.Time
+	client_id     *uint64
+	addclient_id  *int64
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*VerifyCode, error)
@@ -18668,6 +18933,76 @@ func (m *VerifyCodeMutation) ResetSendAt() {
 	delete(m.clearedFields, verifycode.FieldSendAt)
 }
 
+// SetClientID sets the "client_id" field.
+func (m *VerifyCodeMutation) SetClientID(u uint64) {
+	m.client_id = &u
+	m.addclient_id = nil
+}
+
+// ClientID returns the value of the "client_id" field in the mutation.
+func (m *VerifyCodeMutation) ClientID() (r uint64, exists bool) {
+	v := m.client_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClientID returns the old "client_id" field's value of the VerifyCode entity.
+// If the VerifyCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VerifyCodeMutation) OldClientID(ctx context.Context) (v *uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClientID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClientID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClientID: %w", err)
+	}
+	return oldValue.ClientID, nil
+}
+
+// AddClientID adds u to the "client_id" field.
+func (m *VerifyCodeMutation) AddClientID(u int64) {
+	if m.addclient_id != nil {
+		*m.addclient_id += u
+	} else {
+		m.addclient_id = &u
+	}
+}
+
+// AddedClientID returns the value that was added to the "client_id" field in this mutation.
+func (m *VerifyCodeMutation) AddedClientID() (r int64, exists bool) {
+	v := m.addclient_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearClientID clears the value of the "client_id" field.
+func (m *VerifyCodeMutation) ClearClientID() {
+	m.client_id = nil
+	m.addclient_id = nil
+	m.clearedFields[verifycode.FieldClientID] = struct{}{}
+}
+
+// ClientIDCleared returns if the "client_id" field was cleared in this mutation.
+func (m *VerifyCodeMutation) ClientIDCleared() bool {
+	_, ok := m.clearedFields[verifycode.FieldClientID]
+	return ok
+}
+
+// ResetClientID resets all changes to the "client_id" field.
+func (m *VerifyCodeMutation) ResetClientID() {
+	m.client_id = nil
+	m.addclient_id = nil
+	delete(m.clearedFields, verifycode.FieldClientID)
+}
+
 // Where appends a list predicates to the VerifyCodeMutation builder.
 func (m *VerifyCodeMutation) Where(ps ...predicate.VerifyCode) {
 	m.predicates = append(m.predicates, ps...)
@@ -18702,7 +19037,7 @@ func (m *VerifyCodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *VerifyCodeMutation) Fields() []string {
-	fields := make([]string, 0, 14)
+	fields := make([]string, 0, 15)
 	if m.create_time != nil {
 		fields = append(fields, verifycode.FieldCreateTime)
 	}
@@ -18745,6 +19080,9 @@ func (m *VerifyCodeMutation) Fields() []string {
 	if m.send_at != nil {
 		fields = append(fields, verifycode.FieldSendAt)
 	}
+	if m.client_id != nil {
+		fields = append(fields, verifycode.FieldClientID)
+	}
 	return fields
 }
 
@@ -18781,6 +19119,8 @@ func (m *VerifyCodeMutation) Field(name string) (ent.Value, bool) {
 		return m.SendSuccess()
 	case verifycode.FieldSendAt:
 		return m.SendAt()
+	case verifycode.FieldClientID:
+		return m.ClientID()
 	}
 	return nil, false
 }
@@ -18818,6 +19158,8 @@ func (m *VerifyCodeMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldSendSuccess(ctx)
 	case verifycode.FieldSendAt:
 		return m.OldSendAt(ctx)
+	case verifycode.FieldClientID:
+		return m.OldClientID(ctx)
 	}
 	return nil, fmt.Errorf("unknown VerifyCode field %s", name)
 }
@@ -18925,6 +19267,13 @@ func (m *VerifyCodeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetSendAt(v)
 		return nil
+	case verifycode.FieldClientID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClientID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown VerifyCode field %s", name)
 }
@@ -18942,6 +19291,9 @@ func (m *VerifyCodeMutation) AddedFields() []string {
 	if m.adddelete_by != nil {
 		fields = append(fields, verifycode.FieldDeleteBy)
 	}
+	if m.addclient_id != nil {
+		fields = append(fields, verifycode.FieldClientID)
+	}
 	return fields
 }
 
@@ -18956,6 +19308,8 @@ func (m *VerifyCodeMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedUpdateBy()
 	case verifycode.FieldDeleteBy:
 		return m.AddedDeleteBy()
+	case verifycode.FieldClientID:
+		return m.AddedClientID()
 	}
 	return nil, false
 }
@@ -18986,6 +19340,13 @@ func (m *VerifyCodeMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddDeleteBy(v)
 		return nil
+	case verifycode.FieldClientID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddClientID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown VerifyCode numeric field %s", name)
 }
@@ -19011,6 +19372,9 @@ func (m *VerifyCodeMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(verifycode.FieldSendAt) {
 		fields = append(fields, verifycode.FieldSendAt)
+	}
+	if m.FieldCleared(verifycode.FieldClientID) {
+		fields = append(fields, verifycode.FieldClientID)
 	}
 	return fields
 }
@@ -19043,6 +19407,9 @@ func (m *VerifyCodeMutation) ClearField(name string) error {
 		return nil
 	case verifycode.FieldSendAt:
 		m.ClearSendAt()
+		return nil
+	case verifycode.FieldClientID:
+		m.ClearClientID()
 		return nil
 	}
 	return fmt.Errorf("unknown VerifyCode nullable field %s", name)
@@ -19093,6 +19460,9 @@ func (m *VerifyCodeMutation) ResetField(name string) error {
 		return nil
 	case verifycode.FieldSendAt:
 		m.ResetSendAt()
+		return nil
+	case verifycode.FieldClientID:
+		m.ResetClientID()
 		return nil
 	}
 	return fmt.Errorf("unknown VerifyCode field %s", name)

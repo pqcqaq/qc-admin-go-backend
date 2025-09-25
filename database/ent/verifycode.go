@@ -45,7 +45,9 @@ type VerifyCode struct {
 	// 发送是否成功
 	SendSuccess bool `json:"send_success,omitempty"`
 	// 发送时间
-	SendAt       *time.Time `json:"send_at,omitempty"`
+	SendAt *time.Time `json:"send_at,omitempty"`
+	// 请求设备ID
+	ClientID     *uint64 `json:"client_id,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -56,7 +58,7 @@ func (*VerifyCode) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case verifycode.FieldSendSuccess:
 			values[i] = new(sql.NullBool)
-		case verifycode.FieldID, verifycode.FieldCreateBy, verifycode.FieldUpdateBy, verifycode.FieldDeleteBy:
+		case verifycode.FieldID, verifycode.FieldCreateBy, verifycode.FieldUpdateBy, verifycode.FieldDeleteBy, verifycode.FieldClientID:
 			values[i] = new(sql.NullInt64)
 		case verifycode.FieldCode, verifycode.FieldIdentifier, verifycode.FieldSenderType, verifycode.FieldSendFor:
 			values[i] = new(sql.NullString)
@@ -169,6 +171,13 @@ func (_m *VerifyCode) assignValues(columns []string, values []any) error {
 				_m.SendAt = new(time.Time)
 				*_m.SendAt = value.Time
 			}
+		case verifycode.FieldClientID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field client_id", values[i])
+			} else if value.Valid {
+				_m.ClientID = new(uint64)
+				*_m.ClientID = uint64(value.Int64)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -249,6 +258,11 @@ func (_m *VerifyCode) String() string {
 	if v := _m.SendAt; v != nil {
 		builder.WriteString("send_at=")
 		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.ClientID; v != nil {
+		builder.WriteString("client_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteByte(')')
 	return builder.String()

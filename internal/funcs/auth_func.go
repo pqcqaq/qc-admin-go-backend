@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"go-backend/database/ent"
+	"go-backend/database/ent/clientdevice"
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/user"
 	"go-backend/pkg/database"
@@ -105,12 +106,12 @@ func verifyPasswordLegacy(password, hashedPassword string) (bool, error) {
 }
 
 // UserLogin 用户登录
-func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCodeStr string) (*ent.User, error) {
-	return UserLoginWithContext(ctx, nil, credentialType, identifier, secret, verifyCodeStr)
+func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCodeStr, deviceCode string) (*ent.User, error) {
+	return UserLoginWithContext(ctx, nil, credentialType, identifier, secret, verifyCodeStr, deviceCode)
 }
 
 // UserLoginWithContext 用户登录（带上下文记录）
-func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialType, identifier, secret, verifyCodeStr string) (*ent.User, error) {
+func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialType, identifier, secret, verifyCodeStr, deviceCode string) (*ent.User, error) {
 	var userRecord *ent.User
 	var sessionID string
 	var loginStatus = LoginStatusFailed
@@ -121,13 +122,25 @@ func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialTy
 		sessionID = generateSessionID()
 	}
 
+	// 找设备信息
+	clientDevice, err := GetClientDeviceByCodeInner(ctx, deviceCode)
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			failureReason = "终端信息无效"
+			return nil, fmt.Errorf(failureReason)
+		}
+		failureReason = "查询终端类型失败"
+		return nil, fmt.Errorf("%s: %w", failureReason, err)
+	}
+
 	// 函数结束时记录登录日志
 	defer func() {
 		if ginCtx != nil && userRecord != nil {
 			// 只在有用户记录时记录日志
 			_, logErr := CreateLoginRecordFromGinContext(
 				ctx, ginCtx, userRecord.ID, identifier, credentialType,
-				loginStatus, failureReason, sessionID,
+				loginStatus, failureReason, sessionID, clientDevice.ID,
 			)
 			if logErr != nil {
 				logging.Warn("记录登录日志失败: %v", logErr)
@@ -136,7 +149,7 @@ func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialTy
 			// 即使没有用户记录也要记录失败尝试（使用0作为用户ID）
 			_, logErr := CreateLoginRecordFromGinContext(
 				ctx, ginCtx, 0, identifier, credentialType,
-				loginStatus, failureReason, "",
+				loginStatus, failureReason, "", clientDevice.ID,
 			)
 			if logErr != nil {
 				logging.Warn("记录登录失败日志失败: %v", logErr)
@@ -144,7 +157,7 @@ func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialTy
 		}
 	}()
 
-	// 首先查找用户认证信息
+	// 查找用户认证信息
 	credentialRecord, err := database.Client.Credential.Query().
 		Where(
 			credential.CredentialTypeEQ(credential.CredentialType(credentialType)),
@@ -172,6 +185,23 @@ func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialTy
 	if userRecord.Status == user.StatusInactive {
 		failureReason = "用户账号已禁用"
 		return nil, fmt.Errorf(failureReason)
+	}
+
+	var needRoleIds []uint64
+	roles := clientDevice.Edges.Roles
+	for _, role := range roles {
+		needRoleIds = append(needRoleIds, role.ID)
+	}
+
+	// 如果用户角色中不存在，则不允许登录
+	has, err := HasAnyRoleId(ctx, userRecord.ID, needRoleIds)
+
+	if err != nil {
+		return nil, fmt.Errorf("判断用户权限失败")
+	}
+
+	if !has {
+		return nil, fmt.Errorf("用户没有权限使用这个终端进行登录")
 	}
 
 	// 检查认证是否锁定
@@ -297,6 +327,7 @@ func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialTy
 	// 如果有gin上下文，将sessionID存储到上下文中，后续可以用于退出登录时更新记录
 	if ginCtx != nil && sessionID != "" {
 		ginCtx.Set("session_id", sessionID)
+		ginCtx.Set("client_device_id", clientDevice.ID)
 	}
 
 	return userRecord, nil
@@ -526,7 +557,7 @@ func ResetPassword(ctx context.Context, credentialType, identifier, newPassword,
 }
 
 // BuildUserInfoWithToken 构建包含Token和角色权限的用户信息
-func BuildUserInfoWithToken(ctx context.Context, user *ent.User, includeToken bool) (*models.UserInfo, string, error) {
+func BuildUserInfoWithToken(ctx context.Context, user *ent.User, clientId *uint64) (*models.UserInfo, *models.TokenInfo, error) {
 	userInfo := &models.UserInfo{
 		ID:         utils.ToString(user.ID),
 		Name:       user.Name,
@@ -541,7 +572,7 @@ func BuildUserInfoWithToken(ctx context.Context, user *ent.User, includeToken bo
 	avatar, err := database.Client.User.QueryAvatar(user).Only(ctx)
 	if err != nil {
 		if !ent.IsNotFound(err) {
-			return nil, "", fmt.Errorf("查询头像信息失败: %w", err)
+			return nil, nil, fmt.Errorf("查询头像信息失败: %w", err)
 		}
 	} else if avatar != nil {
 		userInfo.Avatar = avatar.URL
@@ -550,7 +581,7 @@ func BuildUserInfoWithToken(ctx context.Context, user *ent.User, includeToken bo
 	// 获取用户角色
 	roles, err := GetUserRoles(ctx, user.ID)
 	if err != nil {
-		return nil, "", fmt.Errorf("获取用户角色失败: %w", err)
+		return nil, nil, fmt.Errorf("获取用户角色失败: %w", err)
 	}
 
 	// 转换角色信息
@@ -562,7 +593,7 @@ func BuildUserInfoWithToken(ctx context.Context, user *ent.User, includeToken bo
 	// 获取用户权限（通过角色继承）
 	permissions, err := GetUserPermissions(ctx, user.ID)
 	if err != nil {
-		return nil, "", fmt.Errorf("获取用户权限失败: %w", err)
+		return nil, nil, fmt.Errorf("获取用户权限失败: %w", err)
 	}
 
 	// 转换权限信息
@@ -571,16 +602,67 @@ func BuildUserInfoWithToken(ctx context.Context, user *ent.User, includeToken bo
 		userInfo.Permissions[i] = ConvertPermissionToResponse(permission)
 	}
 
-	// 查找头像
+	tokenInfo := models.TokenInfo{}
 
 	// 生成JWT Token
-	var token string
-	if includeToken {
-		token, err = jwt.GenerateToken(user.ID)
+	if clientId != nil {
+
+		client, err := database.Client.ClientDevice.Query().Where(clientdevice.IDEQ(*clientId)).Only(ctx)
+
 		if err != nil {
-			return nil, "", fmt.Errorf("生成JWT Token失败: %w", err)
+			if ent.IsNotFound(err) {
+				return nil, nil, fmt.Errorf("找不到对应id的client")
+			}
+			return nil, nil, fmt.Errorf("查找终端类型失败")
+		}
+
+		tokenInfo.RefreshExpiredIn = uint64(time.Now().Add(time.Duration(client.RefreshTokenExpiry) * time.Millisecond).UnixMilli())
+		tokenInfo.AccessExpiredIn = uint64(time.Now().Add(time.Duration(client.AccessTokenExpiry) * time.Millisecond).UnixMilli())
+		timeoutAccess := time.Duration(client.AccessTokenExpiry) * time.Millisecond
+		timeoutRefresh := time.Duration(client.RefreshTokenExpiry) * time.Millisecond
+
+		tokenInfo.AccessToken, err = jwt.GenerateAccessToken(user.ID, client.ID, timeoutAccess)
+		if err != nil {
+			return nil, nil, fmt.Errorf("生成JWT Token失败: %w", err)
+		}
+
+		tokenInfo.RefreshToken, err = jwt.GenerateRefreshToken(user.ID, client.ID, timeoutRefresh)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("生成JWT Token失败: %w", err)
 		}
 	}
 
-	return userInfo, token, nil
+	return userInfo, &tokenInfo, nil
+}
+
+func RefreshToken(ctx context.Context, refreshToken string) (*models.TokenInfo, error) {
+	// 从JWT token中解析并获取clientId (假设JWT中包含clientId信息)
+	// 这里需要先解析token获取clientId，具体实现取决于您的JWT结构
+	claims, err := jwt.ValidateToken(refreshToken)
+	if err != nil {
+		return nil, fmt.Errorf("验证Token失败")
+	}
+
+	client, err := GetClientDeviceByIdInner(ctx, claims.ClientDeviceId)
+
+	if err != nil {
+		return nil, fmt.Errorf("获取设备类型失败")
+	}
+
+	// 刷新token
+	timeoutAccess := time.Duration(client.AccessTokenExpiry) * time.Millisecond
+	newToken, err := jwt.RefreshToken(refreshToken, client.ID, timeoutAccess)
+	if err != nil {
+		return nil, fmt.Errorf("Token刷新失败: %w", err)
+	}
+
+	// TODO: 如果选了记住我，则可以同时把RefreshToken更新了，否则只需要更新AccessToken即可
+	tokenInfo := models.TokenInfo{}
+	tokenInfo.RefreshExpiredIn = claims.Expiry
+	tokenInfo.RefreshToken = refreshToken
+	tokenInfo.AccessToken = newToken
+	tokenInfo.AccessExpiredIn = uint64(time.Now().Add(time.Duration(client.AccessTokenExpiry) * time.Millisecond).UnixMilli())
+
+	return &tokenInfo, nil
 }

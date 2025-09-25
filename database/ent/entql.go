@@ -106,6 +106,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			clientdevice.FieldDeleteBy:           {Type: field.TypeUint64, Column: clientdevice.FieldDeleteBy},
 			clientdevice.FieldName:               {Type: field.TypeString, Column: clientdevice.FieldName},
 			clientdevice.FieldCode:               {Type: field.TypeString, Column: clientdevice.FieldCode},
+			clientdevice.FieldDescription:        {Type: field.TypeString, Column: clientdevice.FieldDescription},
 			clientdevice.FieldEnabled:            {Type: field.TypeBool, Column: clientdevice.FieldEnabled},
 			clientdevice.FieldAccessTokenExpiry:  {Type: field.TypeUint64, Column: clientdevice.FieldAccessTokenExpiry},
 			clientdevice.FieldRefreshTokenExpiry: {Type: field.TypeUint64, Column: clientdevice.FieldRefreshTokenExpiry},
@@ -202,6 +203,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			loginrecord.FieldLogoutTime:     {Type: field.TypeTime, Column: loginrecord.FieldLogoutTime},
 			loginrecord.FieldDuration:       {Type: field.TypeInt, Column: loginrecord.FieldDuration},
 			loginrecord.FieldMetadata:       {Type: field.TypeJSON, Column: loginrecord.FieldMetadata},
+			loginrecord.FieldClientID:       {Type: field.TypeUint64, Column: loginrecord.FieldClientID},
 		},
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
@@ -391,6 +393,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			verifycode.FieldUsedAt:      {Type: field.TypeTime, Column: verifycode.FieldUsedAt},
 			verifycode.FieldSendSuccess: {Type: field.TypeBool, Column: verifycode.FieldSendSuccess},
 			verifycode.FieldSendAt:      {Type: field.TypeTime, Column: verifycode.FieldSendAt},
+			verifycode.FieldClientID:    {Type: field.TypeUint64, Column: verifycode.FieldClientID},
 		},
 	}
 	graph.MustAddE(
@@ -408,10 +411,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"roles",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   clientdevice.RolesTable,
-			Columns: []string{clientdevice.RolesColumn},
+			Columns: clientdevice.RolesPrimaryKey,
 			Bidi:    false,
 		},
 		"ClientDevice",
@@ -524,6 +527,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Role",
 		"Role",
+	)
+	graph.MustAddE(
+		"client_device",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   role.ClientDeviceTable,
+			Columns: role.ClientDevicePrimaryKey,
+			Bidi:    false,
+		},
+		"Role",
+		"ClientDevice",
 	)
 	graph.MustAddE(
 		"role",
@@ -1017,6 +1032,11 @@ func (f *ClientDeviceFilter) WhereCode(p entql.StringP) {
 	f.Where(p.Field(clientdevice.FieldCode))
 }
 
+// WhereDescription applies the entql string predicate on the description field.
+func (f *ClientDeviceFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(clientdevice.FieldDescription))
+}
+
 // WhereEnabled applies the entql bool predicate on the enabled field.
 func (f *ClientDeviceFilter) WhereEnabled(p entql.BoolP) {
 	f.Where(p.Field(clientdevice.FieldEnabled))
@@ -1450,6 +1470,11 @@ func (f *LoginRecordFilter) WhereMetadata(p entql.BytesP) {
 	f.Where(p.Field(loginrecord.FieldMetadata))
 }
 
+// WhereClientID applies the entql uint64 predicate on the client_id field.
+func (f *LoginRecordFilter) WhereClientID(p entql.Uint64P) {
+	f.Where(p.Field(loginrecord.FieldClientID))
+}
+
 // WhereHasUser applies a predicate to check if query has an edge user.
 func (f *LoginRecordFilter) WhereHasUser() {
 	f.Where(entql.HasEdge("user"))
@@ -1721,6 +1746,20 @@ func (f *RoleFilter) WhereHasInheritsFrom() {
 // WhereHasInheritsFromWith applies a predicate to check if query has an edge inherits_from with a given conditions (other predicates).
 func (f *RoleFilter) WhereHasInheritsFromWith(preds ...predicate.Role) {
 	f.Where(entql.HasEdgeWith("inherits_from", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasClientDevice applies a predicate to check if query has an edge client_device.
+func (f *RoleFilter) WhereHasClientDevice() {
+	f.Where(entql.HasEdge("client_device"))
+}
+
+// WhereHasClientDeviceWith applies a predicate to check if query has an edge client_device with a given conditions (other predicates).
+func (f *RoleFilter) WhereHasClientDeviceWith(preds ...predicate.ClientDevice) {
+	f.Where(entql.HasEdgeWith("client_device", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -2473,4 +2512,9 @@ func (f *VerifyCodeFilter) WhereSendSuccess(p entql.BoolP) {
 // WhereSendAt applies the entql time.Time predicate on the send_at field.
 func (f *VerifyCodeFilter) WhereSendAt(p entql.TimeP) {
 	f.Where(p.Field(verifycode.FieldSendAt))
+}
+
+// WhereClientID applies the entql uint64 predicate on the client_id field.
+func (f *VerifyCodeFilter) WhereClientID(p entql.Uint64P) {
+	f.Where(p.Field(verifycode.FieldClientID))
 }

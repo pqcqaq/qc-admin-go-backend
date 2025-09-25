@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-backend/database/ent/clientdevice"
 	"go-backend/database/ent/predicate"
 	"go-backend/database/ent/role"
 	"go-backend/database/ent/rolepermission"
@@ -231,6 +232,21 @@ func (_u *RoleUpdate) AddInheritsFrom(v ...*Role) *RoleUpdate {
 	return _u.AddInheritsFromIDs(ids...)
 }
 
+// AddClientDeviceIDs adds the "client_device" edge to the ClientDevice entity by IDs.
+func (_u *RoleUpdate) AddClientDeviceIDs(ids ...uint64) *RoleUpdate {
+	_u.mutation.AddClientDeviceIDs(ids...)
+	return _u
+}
+
+// AddClientDevice adds the "client_device" edges to the ClientDevice entity.
+func (_u *RoleUpdate) AddClientDevice(v ...*ClientDevice) *RoleUpdate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddClientDeviceIDs(ids...)
+}
+
 // Mutation returns the RoleMutation object of the builder.
 func (_u *RoleUpdate) Mutation() *RoleMutation {
 	return _u.mutation
@@ -318,6 +334,27 @@ func (_u *RoleUpdate) RemoveInheritsFrom(v ...*Role) *RoleUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveInheritsFromIDs(ids...)
+}
+
+// ClearClientDevice clears all "client_device" edges to the ClientDevice entity.
+func (_u *RoleUpdate) ClearClientDevice() *RoleUpdate {
+	_u.mutation.ClearClientDevice()
+	return _u
+}
+
+// RemoveClientDeviceIDs removes the "client_device" edge to ClientDevice entities by IDs.
+func (_u *RoleUpdate) RemoveClientDeviceIDs(ids ...uint64) *RoleUpdate {
+	_u.mutation.RemoveClientDeviceIDs(ids...)
+	return _u
+}
+
+// RemoveClientDevice removes "client_device" edges to ClientDevice entities.
+func (_u *RoleUpdate) RemoveClientDevice(v ...*ClientDevice) *RoleUpdate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveClientDeviceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -609,6 +646,51 @@ func (_u *RoleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ClientDeviceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   role.ClientDeviceTable,
+			Columns: role.ClientDevicePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clientdevice.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedClientDeviceIDs(); len(nodes) > 0 && !_u.mutation.ClientDeviceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   role.ClientDeviceTable,
+			Columns: role.ClientDevicePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clientdevice.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ClientDeviceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   role.ClientDeviceTable,
+			Columns: role.ClientDevicePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clientdevice.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{role.Label}
@@ -830,6 +912,21 @@ func (_u *RoleUpdateOne) AddInheritsFrom(v ...*Role) *RoleUpdateOne {
 	return _u.AddInheritsFromIDs(ids...)
 }
 
+// AddClientDeviceIDs adds the "client_device" edge to the ClientDevice entity by IDs.
+func (_u *RoleUpdateOne) AddClientDeviceIDs(ids ...uint64) *RoleUpdateOne {
+	_u.mutation.AddClientDeviceIDs(ids...)
+	return _u
+}
+
+// AddClientDevice adds the "client_device" edges to the ClientDevice entity.
+func (_u *RoleUpdateOne) AddClientDevice(v ...*ClientDevice) *RoleUpdateOne {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddClientDeviceIDs(ids...)
+}
+
 // Mutation returns the RoleMutation object of the builder.
 func (_u *RoleUpdateOne) Mutation() *RoleMutation {
 	return _u.mutation
@@ -917,6 +1014,27 @@ func (_u *RoleUpdateOne) RemoveInheritsFrom(v ...*Role) *RoleUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveInheritsFromIDs(ids...)
+}
+
+// ClearClientDevice clears all "client_device" edges to the ClientDevice entity.
+func (_u *RoleUpdateOne) ClearClientDevice() *RoleUpdateOne {
+	_u.mutation.ClearClientDevice()
+	return _u
+}
+
+// RemoveClientDeviceIDs removes the "client_device" edge to ClientDevice entities by IDs.
+func (_u *RoleUpdateOne) RemoveClientDeviceIDs(ids ...uint64) *RoleUpdateOne {
+	_u.mutation.RemoveClientDeviceIDs(ids...)
+	return _u
+}
+
+// RemoveClientDevice removes "client_device" edges to ClientDevice entities.
+func (_u *RoleUpdateOne) RemoveClientDevice(v ...*ClientDevice) *RoleUpdateOne {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveClientDeviceIDs(ids...)
 }
 
 // Where appends a list predicates to the RoleUpdate builder.
@@ -1231,6 +1349,51 @@ func (_u *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ClientDeviceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   role.ClientDeviceTable,
+			Columns: role.ClientDevicePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clientdevice.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedClientDeviceIDs(); len(nodes) > 0 && !_u.mutation.ClientDeviceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   role.ClientDeviceTable,
+			Columns: role.ClientDevicePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clientdevice.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ClientDeviceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   role.ClientDeviceTable,
+			Columns: role.ClientDevicePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clientdevice.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

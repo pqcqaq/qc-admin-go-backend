@@ -76,6 +76,10 @@ func (LoginRecord) Fields() []ent.Field {
 		field.JSON("metadata", map[string]interface{}{}).
 			Optional().
 			Comment("额外元数据"),
+		field.Uint64("client_id").
+			Optional().
+			Nillable().
+			Comment("请求设备ID"),
 	}
 }
 

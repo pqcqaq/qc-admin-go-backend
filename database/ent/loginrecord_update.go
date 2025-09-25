@@ -318,6 +318,33 @@ func (_u *LoginRecordUpdate) ClearMetadata() *LoginRecordUpdate {
 	return _u
 }
 
+// SetClientID sets the "client_id" field.
+func (_u *LoginRecordUpdate) SetClientID(v uint64) *LoginRecordUpdate {
+	_u.mutation.ResetClientID()
+	_u.mutation.SetClientID(v)
+	return _u
+}
+
+// SetNillableClientID sets the "client_id" field if the given value is not nil.
+func (_u *LoginRecordUpdate) SetNillableClientID(v *uint64) *LoginRecordUpdate {
+	if v != nil {
+		_u.SetClientID(*v)
+	}
+	return _u
+}
+
+// AddClientID adds value to the "client_id" field.
+func (_u *LoginRecordUpdate) AddClientID(v int64) *LoginRecordUpdate {
+	_u.mutation.AddClientID(v)
+	return _u
+}
+
+// ClearClientID clears the value of the "client_id" field.
+func (_u *LoginRecordUpdate) ClearClientID() *LoginRecordUpdate {
+	_u.mutation.ClearClientID()
+	return _u
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (_u *LoginRecordUpdate) SetUser(v *User) *LoginRecordUpdate {
 	return _u.SetUserID(v.ID)
@@ -524,6 +551,15 @@ func (_u *LoginRecordUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if _u.mutation.MetadataCleared() {
 		_spec.ClearField(loginrecord.FieldMetadata, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.ClientID(); ok {
+		_spec.SetField(loginrecord.FieldClientID, field.TypeUint64, value)
+	}
+	if value, ok := _u.mutation.AddedClientID(); ok {
+		_spec.AddField(loginrecord.FieldClientID, field.TypeUint64, value)
+	}
+	if _u.mutation.ClientIDCleared() {
+		_spec.ClearField(loginrecord.FieldClientID, field.TypeUint64)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -863,6 +899,33 @@ func (_u *LoginRecordUpdateOne) ClearMetadata() *LoginRecordUpdateOne {
 	return _u
 }
 
+// SetClientID sets the "client_id" field.
+func (_u *LoginRecordUpdateOne) SetClientID(v uint64) *LoginRecordUpdateOne {
+	_u.mutation.ResetClientID()
+	_u.mutation.SetClientID(v)
+	return _u
+}
+
+// SetNillableClientID sets the "client_id" field if the given value is not nil.
+func (_u *LoginRecordUpdateOne) SetNillableClientID(v *uint64) *LoginRecordUpdateOne {
+	if v != nil {
+		_u.SetClientID(*v)
+	}
+	return _u
+}
+
+// AddClientID adds value to the "client_id" field.
+func (_u *LoginRecordUpdateOne) AddClientID(v int64) *LoginRecordUpdateOne {
+	_u.mutation.AddClientID(v)
+	return _u
+}
+
+// ClearClientID clears the value of the "client_id" field.
+func (_u *LoginRecordUpdateOne) ClearClientID() *LoginRecordUpdateOne {
+	_u.mutation.ClearClientID()
+	return _u
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (_u *LoginRecordUpdateOne) SetUser(v *User) *LoginRecordUpdateOne {
 	return _u.SetUserID(v.ID)
@@ -1099,6 +1162,15 @@ func (_u *LoginRecordUpdateOne) sqlSave(ctx context.Context) (_node *LoginRecord
 	}
 	if _u.mutation.MetadataCleared() {
 		_spec.ClearField(loginrecord.FieldMetadata, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.ClientID(); ok {
+		_spec.SetField(loginrecord.FieldClientID, field.TypeUint64, value)
+	}
+	if value, ok := _u.mutation.AddedClientID(); ok {
+		_spec.AddField(loginrecord.FieldClientID, field.TypeUint64, value)
+	}
+	if _u.mutation.ClientIDCleared() {
+		_spec.ClearField(loginrecord.FieldClientID, field.TypeUint64)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -49,6 +49,9 @@ func (Role) Edges() []ent.Edge {
 		// 角色继承 (多继承) self-referencing
 		edge.To("inherits_from", Role.Type).
 			From("inherited_by"),
+
+		// 可以被多个client_devices引用
+		edge.From("client_device", ClientDevice.Type).Ref("roles"),
 	}
 }
 

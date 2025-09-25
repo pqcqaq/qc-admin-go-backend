@@ -672,6 +672,36 @@ func HasAnyPermissions(ctx context.Context, userID uint64, permissions []string)
 	return false, nil
 }
 
+func HasAnyRoleId(ctx context.Context, userId uint64, roleIds []uint64) (bool, error) {
+	// 如果没有指定角色ID，返回true
+	if len(roleIds) == 0 {
+		return true, nil
+	}
+
+	// 检查用户是否存在
+	exists, err := database.Client.User.Query().Where(user.ID(userId)).Exist(ctx)
+	if err != nil {
+		return false, err
+	}
+	if !exists {
+		return false, fmt.Errorf("user not found")
+	}
+
+	// 直接通过数据库查询检查用户是否拥有任何指定的角色
+	count, err := database.Client.UserRole.Query().
+		Where(
+			userrole.UserID(userId),
+			userrole.RoleIDIn(roleIds...),
+		).
+		Count(ctx)
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
 // HasAnyPermissionsOptimized 更高效的版本：直接通过数据库查询检查权限
 func HasAnyPermissionsOptimized(ctx context.Context, userID uint64, permissions []string) (bool, error) {
 	if len(permissions) == 0 {

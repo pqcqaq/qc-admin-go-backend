@@ -211,6 +211,20 @@ func (_c *LoginRecordCreate) SetMetadata(v map[string]interface{}) *LoginRecordC
 	return _c
 }
 
+// SetClientID sets the "client_id" field.
+func (_c *LoginRecordCreate) SetClientID(v uint64) *LoginRecordCreate {
+	_c.mutation.SetClientID(v)
+	return _c
+}
+
+// SetNillableClientID sets the "client_id" field if the given value is not nil.
+func (_c *LoginRecordCreate) SetNillableClientID(v *uint64) *LoginRecordCreate {
+	if v != nil {
+		_c.SetClientID(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *LoginRecordCreate) SetID(v uint64) *LoginRecordCreate {
 	_c.mutation.SetID(v)
@@ -442,6 +456,10 @@ func (_c *LoginRecordCreate) createSpec() (*LoginRecord, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Metadata(); ok {
 		_spec.SetField(loginrecord.FieldMetadata, field.TypeJSON, value)
 		_node.Metadata = value
+	}
+	if value, ok := _c.mutation.ClientID(); ok {
+		_spec.SetField(loginrecord.FieldClientID, field.TypeUint64, value)
+		_node.ClientID = &value
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

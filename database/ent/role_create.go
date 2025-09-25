@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-backend/database/ent/clientdevice"
 	"go-backend/database/ent/role"
 	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/userrole"
@@ -190,6 +191,21 @@ func (_c *RoleCreate) AddInheritsFrom(v ...*Role) *RoleCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddInheritsFromIDs(ids...)
+}
+
+// AddClientDeviceIDs adds the "client_device" edge to the ClientDevice entity by IDs.
+func (_c *RoleCreate) AddClientDeviceIDs(ids ...uint64) *RoleCreate {
+	_c.mutation.AddClientDeviceIDs(ids...)
+	return _c
+}
+
+// AddClientDevice adds the "client_device" edges to the ClientDevice entity.
+func (_c *RoleCreate) AddClientDevice(v ...*ClientDevice) *RoleCreate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddClientDeviceIDs(ids...)
 }
 
 // Mutation returns the RoleMutation object of the builder.
@@ -383,6 +399,22 @@ func (_c *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ClientDeviceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   role.ClientDeviceTable,
+			Columns: role.ClientDevicePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(clientdevice.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

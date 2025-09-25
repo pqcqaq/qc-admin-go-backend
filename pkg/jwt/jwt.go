@@ -10,38 +10,42 @@ import (
 
 // Claims JWT Claims
 type Claims struct {
-	UserID uint64 `json:"user_id"`
 	jwt.RegisteredClaims
+	UserID         uint64 `json:"user_id"`
+	ClientDeviceId uint64 `json:"clientDeviceId"`
+	IsRefresh      bool   `json:"isRefresh"`
+	Expiry         uint64 `json:"expity"`
 }
 
 // JWTService JWT服务
 type JWTService struct {
 	secretKey []byte
 	issuer    string
-	expiry    time.Duration
 }
 
 // NewJWTService 创建JWT服务
-func NewJWTService(secretKey, issuer string, expiry time.Duration) *JWTService {
+func NewJWTService(secretKey, issuer string) *JWTService {
 	return &JWTService{
 		secretKey: []byte(secretKey),
 		issuer:    issuer,
-		expiry:    expiry,
 	}
 }
 
 // GenerateToken 生成JWT Token
-func (j *JWTService) GenerateToken(userID uint64) (string, error) {
+func (j *JWTService) GenerateToken(userID uint64, clientId uint64, expiry time.Duration, isRefresh bool) (string, error) {
 	now := time.Now()
 	claims := Claims{
-		UserID: userID,
+		UserID:         userID,
+		ClientDeviceId: clientId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    j.issuer,
-			Subject:   fmt.Sprintf("%d", userID),
+			Subject:   fmt.Sprintf("%d@%d", userID, clientId),
 			IssuedAt:  jwt.NewNumericDate(now),
-			ExpiresAt: jwt.NewNumericDate(now.Add(j.expiry)),
+			ExpiresAt: jwt.NewNumericDate(now.Add(expiry)),
 			NotBefore: jwt.NewNumericDate(now),
 		},
+		IsRefresh: isRefresh,
+		Expiry:    uint64(time.Now().Add(time.Duration(expiry)).UnixMilli()),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -69,17 +73,16 @@ func (j *JWTService) ValidateToken(tokenString string) (*Claims, error) {
 }
 
 // RefreshToken 刷新Token
-func (j *JWTService) RefreshToken(tokenString string) (string, error) {
+func (j *JWTService) RefreshToken(tokenString string, clientId uint64, expiry time.Duration) (string, error) {
 	claims, err := j.ValidateToken(tokenString)
 	if err != nil {
 		return "", err
 	}
 
-	// 检查是否在刷新期内（比如过期前1小时内可以刷新）
-	refreshWindow := time.Hour
-	if time.Until(claims.ExpiresAt.Time) > refreshWindow {
-		return "", errors.New("token is not eligible for refresh yet")
+	// 如果id不同则不能刷新
+	if claims.ClientDeviceId != clientId {
+		return "", fmt.Errorf("不允许在不同终端刷新同一token")
 	}
 
-	return j.GenerateToken(claims.UserID)
+	return j.GenerateToken(claims.UserID, clientId, expiry, false)
 }
