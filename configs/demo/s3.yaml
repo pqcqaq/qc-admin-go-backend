@@ -1,0 +1,12 @@
+s3:
+  endpoint: "http://localhost:9300"                  # S3端点URL (例如: https://s3.amazonaws.com)
+  region: "us-east-1"          # AWS区域
+  access_key_id: "minioadmin"            # AWS访问密钥ID
+  secret_access_key: "minioadmin123"        # AWS访问密钥
+  session_token: ""            # AWS会话令牌（可选）
+  bucket: "default-bucket"     # 默认存储桶
+  use_ssl: false               # 是否使用HTTPS
+  force_path_style: true     # 是否强制使用路径样式URL
+  disable_ssl: false          # 是否禁用SSL
+  timeout: 30                 # 超时时间（秒）
+  max_retries: 3              # 最大重试次数

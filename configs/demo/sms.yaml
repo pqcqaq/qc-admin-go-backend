@@ -1,0 +1,9 @@
+sms:
+  provider: mock
+  aliyun: 
+     access_key_id: "123123"         # 阿里云访问密钥ID
+     access_key_secret: "123123"     # 阿里云访问密钥
+     sign_name: "YourSignName" # 短信签名
+     template_code: "YourTemplateCode" # 短信模板代码
+     region_id: "cn-hangzhou" # 阿里云区域ID
+     endpoint: "dysmsapi.aliyuncs.com" # 阿里云短信API端点

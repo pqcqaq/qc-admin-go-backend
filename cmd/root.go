@@ -23,10 +23,12 @@ var (
 
 // rootCmd 代表没有调用子命令时的基础命令
 var rootCmd = &cobra.Command{
-	Use:   "go-backend",
-	Short: "Go Backend API服务器",
-	Long:  `go-backend是一个基于Go语言的后端API服务器`,
-	RunE:  runServer,
+	Use:           "go-backend",
+	Short:         "Go Backend API服务器",
+	Long:          `go-backend是一个基于Go语言的后端API服务器`,
+	RunE:          runServer,
+	SilenceUsage:  true, // 运行失败时不显示usage信息
+	SilenceErrors: true, // 不自动打印错误信息
 }
 
 // Execute 添加所有子命令到root命令并设置flags

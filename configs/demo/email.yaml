@@ -1,0 +1,5 @@
+email:
+  host: "smtp.example.com"  # SMTP服务器地址
+  port: 587                 # SMTP服务器端口
+  username: "123"              # SMTP用户名
+  password: "123"              # SMTP密码

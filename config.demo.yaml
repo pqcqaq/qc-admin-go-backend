@@ -1,5 +1,16 @@
 # 数据库配置示例文件
 # 这个文件展示了如何配置不同类型的数据库
+env:
+  name: demo
+
+config:
+  import:
+    - file:configs/${env.name}/db.yaml
+    - file:configs/${env.name}/email.yaml
+    - file:configs/${env.name}/openai.yaml
+    - file:configs/${env.name}/redis.yaml
+    - file:configs/${env.name}/s3.yaml
+    - file:configs/${env.name}/sms.yaml
 
 # =======================
 # SQLite 配置
@@ -18,9 +29,10 @@
 # =======================
 # PostgreSQL 配置
 # =======================
-database:
-  driver: "postgres"
-  dsn: "host=localhost user=qc_admin password=qc_admin123 dbname=qc_admin port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+
+# database:
+#   driver: "postgres"
+#   dsn: "host=localhost user=qc_admin password=qc_admin123 dbname=qc_admin port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 
 # =======================
 # ClickHouse 配置
@@ -76,54 +88,3 @@ logging:
   level: "debug"   # 开发环境使用debug级别
   prefix: "DEV"    # 开发环境前缀
 
-redis:
-  addr: "localhost:6379"        # Redis服务器地址
-  password: ""                  # Redis密码（如果有的话）
-  db: 0                        # Redis数据库索引
-  pool_size: 10                # 连接池大小
-  min_idle_conns: 5            # 最小空闲连接数
-  read_timeout: 3              # 读超时（秒）
-  write_timeout: 3             # 写超时（秒）
-  idle_timeout: 300            # 空闲超时（秒）
-
-s3:
-  endpoint: "http://localhost:9300"                  # S3端点URL (例如: https://s3.amazonaws.com)
-  region: "us-east-1"          # AWS区域
-  access_key_id: "minioadmin"            # AWS访问密钥ID
-  secret_access_key: "minioadmin123"        # AWS访问密钥
-  session_token: ""            # AWS会话令牌（可选）
-  bucket: "default-bucket"     # 默认存储桶
-  use_ssl: false               # 是否使用HTTPS
-  force_path_style: true     # 是否强制使用路径样式URL
-  disable_ssl: false          # 是否禁用SSL
-  timeout: 30                 # 超时时间（秒）
-  max_retries: 3              # 最大重试次数
-
-email:
-  host: "smtp.example.com"  # SMTP服务器地址
-  port: 587                 # SMTP服务器端口
-  username: "123"              # SMTP用户名
-  password: "123"              # SMTP密码
-
-sms:
-  provider: mock
-  aliyun: 
-     access_key_id: "123123"         # 阿里云访问密钥ID
-     access_key_secret: "123123"     # 阿里云访问密钥
-     sign_name: "YourSignName" # 短信签名
-     template_code: "YourTemplateCode" # 短信模板代码
-     region_id: "cn-hangzhou" # 阿里云区域ID
-     endpoint: "dysmsapi.aliyuncs.com" # 阿里云短信API端点
-
-
-# OpenAI配置
-openai:
-  enable: false                                    # 是否启用OpenAI功能
-  api_key: "sk-your-api-key-here"                # OpenAI API密钥 (必填)
-  base_url: "https://api.openai-hk.com/v1"          # API基础URL
-  model: "gpt-4o"                         # 默认模型
-  max_tokens: 1500                               # 最大token数
-  temperature: 0.7                               # 温度参数 (0.0-2.0)
-  timeout: 30                                    # 请求超时时间(秒)
-  proxy: "http://localhost:7890/"                                      # 代理地址 (可选)
-  org_id: ""                                     # 组织ID (可选)

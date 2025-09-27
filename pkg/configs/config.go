@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"go-backend/pkg/logging"
 
@@ -43,6 +44,11 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 		logging.Warn("Warning: Config file not found, using defaults: %v", err)
 	}
 
+	// 处理配置导入
+	if err := processConfigImports(filepath.Dir(configPath)); err != nil {
+		return nil, fmt.Errorf("处理配置导入失败: %w", err)
+	}
+
 	// 环境变量支持
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("APP")
@@ -53,6 +59,95 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 	}
 
 	return config, nil
+}
+
+// processConfigImports 处理配置文件导入
+func processConfigImports(baseDir string) error {
+	imports := viper.GetStringSlice("config.import")
+	if len(imports) == 0 {
+		return nil
+	}
+
+	logger := logging.WithName("Config Resolver")
+	for _, importPath := range imports {
+
+		logger.Info("Importing config for: %s", importPath)
+
+		// 解析配置变量引用
+		resolvedPath := resolveConfigVariables(importPath)
+
+		// 去除file:前缀
+		resolvedPath = strings.TrimPrefix(resolvedPath, "file:")
+
+		// 处理相对路径
+		if !filepath.IsAbs(resolvedPath) {
+			resolvedPath = filepath.Join(baseDir, resolvedPath)
+		}
+
+		if err := mergeConfigFile(resolvedPath); err != nil {
+			logger.Error("导入配置文件失败 %s", resolvedPath)
+			return fmt.Errorf("导入配置文件失败 %s: %w", resolvedPath, err)
+		}
+		logger.Info("Successfully import config from: %s", resolvedPath)
+	}
+
+	return nil
+}
+
+// mergeConfigFile 合并配置文件
+func mergeConfigFile(configPath string) error {
+	// 检查文件是否存在
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		return fmt.Errorf("配置文件不存在: %s", configPath)
+	}
+
+	// 创建临时viper实例
+	tempViper := viper.New()
+	tempViper.SetConfigFile(configPath)
+
+	if err := tempViper.ReadInConfig(); err != nil {
+		return fmt.Errorf("读取配置文件失败: %w", err)
+	}
+
+	// 合并到主viper实例
+	return viper.MergeConfigMap(tempViper.AllSettings())
+}
+
+// resolveConfigVariables 解析配置变量引用
+func resolveConfigVariables(path string) string {
+	resolved := path
+
+	// 处理 ${config.key} 格式
+	for strings.Contains(resolved, "${") {
+		start := strings.Index(resolved, "${")
+		if start == -1 {
+			break
+		}
+		end := strings.Index(resolved[start:], "}")
+		if end == -1 {
+			break
+		}
+		end += start
+
+		configKey := resolved[start+2 : end]
+
+		// 先尝试从当前配置中获取值
+		configValue := viper.GetString(configKey)
+
+		// 如果配置中没有，再尝试环境变量
+		if configValue == "" {
+			configValue = os.Getenv(configKey)
+		}
+
+		// 如果还是没有，设置默认值
+		if configValue == "" {
+			logging.Error("Cannot find Config Key: %s", configKey)
+		}
+
+		resolved = resolved[:start] + configValue + resolved[end+1:]
+	}
+
+	return resolved
 }
 
 // GetConfig 获取当前配置
