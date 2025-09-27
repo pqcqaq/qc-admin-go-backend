@@ -37,7 +37,7 @@ func (h *AuthHandler) SendVerifyCode(c *gin.Context) {
 		return
 	}
 
-	err := funcs.SendVerificationCode(middleware.GetRequestContext(c), req.SenderType, req.Purpose, req.Identifier, req.ClientCode)
+	err := funcs.VerifyCodeFuncs{}.SendVerificationCode(middleware.GetRequestContext(c), req.SenderType, req.Purpose, req.Identifier, req.ClientCode)
 	if err != nil {
 		middleware.ThrowError(c, middleware.BusinessError("发送验证码失败", err.Error()))
 		return
@@ -69,7 +69,7 @@ func (h *AuthHandler) VerifyCode(c *gin.Context) {
 		return
 	}
 
-	err := funcs.VerifyCode(middleware.GetRequestContext(c), req.SenderType, req.Purpose, req.Identifier, req.Code)
+	err := funcs.VerifyCodeFuncs{}.VerifyCode(middleware.GetRequestContext(c), req.SenderType, req.Purpose, req.Identifier, req.Code)
 	if err != nil {
 		middleware.ThrowError(c, middleware.BusinessError("验证码验证失败", err.Error()))
 		return
@@ -112,7 +112,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := funcs.UserLoginWithContext(
+	user, err := funcs.AuthFuncs{}.UserLoginWithContext(
 		middleware.GetRequestContext(c),
 		c,
 		req.CredentialType,
@@ -134,7 +134,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	var clientId uint64 = clientIdAny.(uint64)
 
 	// 构建用户信息和Token
-	userInfo, token, err := funcs.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, &clientId)
+	userInfo, token, err := funcs.AuthFuncs{}.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, &clientId)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("构建用户信息失败", err.Error()))
 		return
@@ -180,7 +180,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	user, err := funcs.UserRegister(ctx, req.CredentialType, req.Identifier, req.Secret, req.VerifyCode, req.Username)
+	user, err := funcs.AuthFuncs{}.UserRegister(ctx, req.CredentialType, req.Identifier, req.Secret, req.VerifyCode, req.Username)
 	if err != nil {
 		if err.Error() == "用户已存在" {
 			middleware.ThrowError(c, middleware.UserExistsError(err.Error()))
@@ -190,14 +190,14 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	cd, err := funcs.GetClientDeviceByCodeInner(ctx, req.ClientCode)
+	cd, err := funcs.ClientDeviceFuncs{}.GetClientDeviceByCodeInner(ctx, req.ClientCode)
 
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("查找设备类型失败", err.Error()))
 	}
 
 	// 构建用户信息，注册时可选择是否生成Token
-	userInfo, token, err := funcs.BuildUserInfoWithToken(ctx, user, &cd.ID)
+	userInfo, token, err := funcs.AuthFuncs{}.BuildUserInfoWithToken(ctx, user, &cd.ID)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("构建用户信息失败", err.Error()))
 		return
@@ -243,7 +243,7 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	err := funcs.ResetPassword(middleware.GetRequestContext(c), req.CredentialType, req.Identifier, req.NewPassword, req.VerifyCode, req.OldPassword)
+	err := funcs.AuthFuncs{}.ResetPassword(middleware.GetRequestContext(c), req.CredentialType, req.Identifier, req.NewPassword, req.VerifyCode, req.OldPassword)
 	if err != nil {
 		if err.Error() == "用户不存在" {
 			middleware.ThrowError(c, middleware.UserNotFoundError(err.Error()))
@@ -286,7 +286,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 
 	ctx := middleware.GetRequestContext(c)
 
-	newTokenInfo, err := funcs.RefreshToken(ctx, req.RefreshToken)
+	newTokenInfo, err := funcs.AuthFuncs{}.RefreshToken(ctx, req.RefreshToken)
 
 	if err != nil {
 		middleware.ThrowError(c, middleware.UnauthorizedError("Token刷新失败", err.Error()))
@@ -322,14 +322,14 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	}
 
 	// 获取用户信息
-	user, err := funcs.GetUserByID(middleware.GetRequestContext(c), userID)
+	user, err := funcs.UserFuncs{}.GetUserByID(middleware.GetRequestContext(c), userID)
 	if err != nil {
 		middleware.ThrowError(c, middleware.NotFoundError("用户不存在", err.Error()))
 		return
 	}
 
 	// 构建完整的用户信息（包含角色和权限，但不包含新token）
-	userInfo, _, err := funcs.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, nil)
+	userInfo, _, err := funcs.AuthFuncs{}.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, nil)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("构建用户信息失败", err.Error()))
 		return
@@ -356,7 +356,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	sessionID, exists := c.Get("session_id")
 	if exists && sessionID != "" {
 		// 更新登录记录的退出时间
-		err := funcs.UpdateLoginRecordLogout(middleware.GetRequestContext(c), sessionID.(string))
+		err := funcs.LoginRecordFuncs{}.UpdateLoginRecordLogout(middleware.GetRequestContext(c), sessionID.(string))
 		if err != nil {
 			// 记录错误但不影响登出响应
 			logging.Warn("更新登录记录退出信息失败: %v", err)
@@ -391,7 +391,7 @@ func (h *AuthHandler) GetUserMenuTree(c *gin.Context) {
 	}
 
 	// 获取用户的菜单树
-	menuTree, err := funcs.GetUserMenuTree(middleware.GetRequestContext(c), userID)
+	menuTree, err := funcs.UserFuncs{}.GetUserMenuTree(middleware.GetRequestContext(c), userID)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("获取用户菜单树失败", err.Error()))
 		return

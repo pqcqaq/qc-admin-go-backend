@@ -9,7 +9,7 @@ import (
 )
 
 // CreateAsyncLoggingFunc 异步创建日志记录
-func CreateAsyncLoggingFunc(level string, logType string, message string, method, path, ip, query string, code models.ErrorCode, user_agent string, data map[string]any, stack string) {
+func (LoggingFunc) CreateAsyncLoggingFunc(level string, logType string, message string, method, path, ip, query string, code models.ErrorCode, user_agent string, data map[string]any, stack string) {
 
 	ctx := context.Background()
 	if database.Client == nil {

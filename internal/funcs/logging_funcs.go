@@ -10,8 +10,10 @@ import (
 	"go-backend/shared/models"
 )
 
+type LoggingFunc struct{}
+
 // GetAllLoggings 获取所有日志记录
-func GetAllLoggings(ctx context.Context) ([]*models.LoggingResponse, error) {
+func (LoggingFunc) GetAllLoggings(ctx context.Context) ([]*models.LoggingResponse, error) {
 	records, err := database.Client.Logging.Query().
 		All(ctx)
 	if err != nil {
@@ -41,7 +43,7 @@ func GetAllLoggings(ctx context.Context) ([]*models.LoggingResponse, error) {
 }
 
 // GetLoggingById 根据ID获取日志记录
-func GetLoggingById(ctx context.Context, id uint64) (*models.LoggingResponse, error) {
+func (LoggingFunc) GetLoggingById(ctx context.Context, id uint64) (*models.LoggingResponse, error) {
 	log, err := database.Client.Logging.Query().
 		Where(logging.ID(id)).
 		Only(ctx)
@@ -71,7 +73,7 @@ func GetLoggingById(ctx context.Context, id uint64) (*models.LoggingResponse, er
 }
 
 // CreateLogging 创建日志记录
-func CreateLogging(ctx context.Context, req *models.CreateLoggingRequest) (*ent.Logging, error) {
+func (LoggingFunc) CreateLogging(ctx context.Context, req *models.CreateLoggingRequest) (*ent.Logging, error) {
 	builder := database.Client.Logging.Create().
 		SetMessage(req.Message)
 
@@ -118,7 +120,7 @@ func CreateLogging(ctx context.Context, req *models.CreateLoggingRequest) (*ent.
 }
 
 // UpdateLogging 更新日志记录
-func UpdateLogging(ctx context.Context, id uint64, req *models.UpdateLoggingRequest) (*ent.Logging, error) {
+func (LoggingFunc) UpdateLogging(ctx context.Context, id uint64, req *models.UpdateLoggingRequest) (*ent.Logging, error) {
 	// ent 的事务开启方法
 	tx, err := database.Client.Tx(ctx)
 	if err != nil {
@@ -203,7 +205,7 @@ func UpdateLogging(ctx context.Context, id uint64, req *models.UpdateLoggingRequ
 }
 
 // DeleteLogging 删除日志记录
-func DeleteLogging(ctx context.Context, id uint64) error {
+func (LoggingFunc) DeleteLogging(ctx context.Context, id uint64) error {
 	// 首先检查日志记录是否存在
 	exists, err := database.Client.Logging.Query().Where(logging.ID(id)).Exist(ctx)
 	if err != nil {
@@ -217,7 +219,7 @@ func DeleteLogging(ctx context.Context, id uint64) error {
 }
 
 // GetLoggingWithPagination 分页获取日志记录
-func GetLoggingWithPagination(ctx context.Context, req *models.PageLoggingRequest) (*models.PageLoggingResponse, error) {
+func (LoggingFunc) GetLoggingWithPagination(ctx context.Context, req *models.PageLoggingRequest) (*models.PageLoggingResponse, error) {
 	// 构建查询
 	query := database.Client.Logging.Query()
 

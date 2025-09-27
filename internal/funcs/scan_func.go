@@ -10,8 +10,10 @@ import (
 	"go-backend/shared/models"
 )
 
+type ScanFuncs struct{}
+
 // GetAllScans 获取所有扫描记录
-func GetAllScans(ctx context.Context) ([]*models.ScanResponse, error) {
+func (ScanFuncs) GetAllScans(ctx context.Context) ([]*models.ScanResponse, error) {
 	records, err := database.Client.Scan.Query().
 		WithAttachment().
 		All(ctx)
@@ -39,7 +41,7 @@ func GetAllScans(ctx context.Context) ([]*models.ScanResponse, error) {
 }
 
 // GetScanById 根据ID获取扫描记录
-func GetScanById(ctx context.Context, id uint64) (*models.ScanResponse, error) {
+func (ScanFuncs) GetScanById(ctx context.Context, id uint64) (*models.ScanResponse, error) {
 	scan, err := database.Client.Scan.Query().
 		Where(scan.ID(id)).
 		WithAttachment().
@@ -64,7 +66,7 @@ func GetScanById(ctx context.Context, id uint64) (*models.ScanResponse, error) {
 }
 
 // CreateScan 创建扫描记录
-func CreateScan(ctx context.Context, req *models.CreateScanRequest) (*ent.Scan, error) {
+func (ScanFuncs) CreateScan(ctx context.Context, req *models.CreateScanRequest) (*ent.Scan, error) {
 	builder := database.Client.Scan.Create().
 		SetContent(req.Content).
 		SetLength(len(req.Content)).
@@ -78,7 +80,7 @@ func CreateScan(ctx context.Context, req *models.CreateScanRequest) (*ent.Scan, 
 }
 
 // UpdateScan 更新扫描记录
-func UpdateScan(ctx context.Context, id uint64, req *models.UpdateScanRequest) (*ent.Scan, error) {
+func (ScanFuncs) UpdateScan(ctx context.Context, id uint64, req *models.UpdateScanRequest) (*ent.Scan, error) {
 	// ent 的事务开启方法
 	tx, err := database.Client.Tx(ctx)
 	if err != nil {
@@ -118,7 +120,7 @@ func UpdateScan(ctx context.Context, id uint64, req *models.UpdateScanRequest) (
 }
 
 // DeleteScan 删除扫描记录
-func DeleteScan(ctx context.Context, id uint64) error {
+func (ScanFuncs) DeleteScan(ctx context.Context, id uint64) error {
 	// 首先检查扫描记录是否存在
 	exists, err := database.Client.Scan.Query().Where(scan.ID(id)).Exist(ctx)
 	if err != nil {
@@ -131,7 +133,7 @@ func DeleteScan(ctx context.Context, id uint64) error {
 	return database.Client.Scan.DeleteOneID(id).Exec(ctx)
 }
 
-func GetScanWithPagination(ctx context.Context, req *models.PageScansRequest) (*models.PageScansResponse, error) {
+func (ScanFuncs) GetScanWithPagination(ctx context.Context, req *models.PageScansRequest) (*models.PageScansResponse, error) {
 	// 构建查询
 	query := database.Client.Scan.Query().
 		WithAttachment()

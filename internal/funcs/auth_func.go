@@ -47,8 +47,10 @@ const (
 	CredentialTypeTotp     = "totp"
 )
 
+type AuthFuncs struct{}
+
 // hashPassword 哈希密码
-func hashPassword(password string) (string, string, error) {
+func (AuthFuncs) hashPassword(password string) (string, string, error) {
 	salt := make([]byte, argonSaltLen)
 	if _, err := rand.Read(salt); err != nil {
 		return "", "", fmt.Errorf("生成盐值失败: %w", err)
@@ -63,10 +65,10 @@ func hashPassword(password string) (string, string, error) {
 }
 
 // verifyPassword 验证密码
-func verifyPassword(password, hashedPassword, saltStr string) (bool, error) {
+func (AuthFuncs) verifyPassword(password, hashedPassword, saltStr string) (bool, error) {
 	// 如果没有盐值，尝试使用旧格式（向后兼容）
 	if saltStr == "" {
-		return verifyPasswordLegacy(password, hashedPassword)
+		return AuthFuncs{}.verifyPasswordLegacy(password, hashedPassword)
 	}
 
 	// 解码盐值和哈希值
@@ -87,7 +89,7 @@ func verifyPassword(password, hashedPassword, saltStr string) (bool, error) {
 }
 
 // verifyPasswordLegacy 验证旧格式的密码（向后兼容）
-func verifyPasswordLegacy(password, hashedPassword string) (bool, error) {
+func (AuthFuncs) verifyPasswordLegacy(password, hashedPassword string) (bool, error) {
 	decoded, err := base64.StdEncoding.DecodeString(hashedPassword)
 	if err != nil {
 		return false, fmt.Errorf("解码哈希密码失败: %w", err)
@@ -106,12 +108,12 @@ func verifyPasswordLegacy(password, hashedPassword string) (bool, error) {
 }
 
 // UserLogin 用户登录
-func UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCodeStr, deviceCode string) (*ent.User, error) {
-	return UserLoginWithContext(ctx, nil, credentialType, identifier, secret, verifyCodeStr, deviceCode)
+func (AuthFuncs) UserLogin(ctx context.Context, credentialType, identifier, secret, verifyCodeStr, deviceCode string) (*ent.User, error) {
+	return AuthFuncs{}.UserLoginWithContext(ctx, nil, credentialType, identifier, secret, verifyCodeStr, deviceCode)
 }
 
 // UserLoginWithContext 用户登录（带上下文记录）
-func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialType, identifier, secret, verifyCodeStr, deviceCode string) (*ent.User, error) {
+func (AuthFuncs) UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialType, identifier, secret, verifyCodeStr, deviceCode string) (*ent.User, error) {
 	var userRecord *ent.User
 	var sessionID string
 	var loginStatus = LoginStatusFailed
@@ -119,11 +121,11 @@ func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialTy
 
 	// 生成会话ID
 	if ginCtx != nil {
-		sessionID = generateSessionID()
+		sessionID = AuthFuncs{}.generateSessionID()
 	}
 
 	// 找设备信息
-	clientDevice, err := GetClientDeviceByCodeInner(ctx, deviceCode)
+	clientDevice, err := ClientDeviceFuncs{}.GetClientDeviceByCodeInner(ctx, deviceCode)
 
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -138,7 +140,7 @@ func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialTy
 	defer func() {
 		if ginCtx != nil && userRecord != nil {
 			// 只在有用户记录时记录日志
-			_, logErr := CreateLoginRecordFromGinContext(
+			_, logErr := LoginRecordFuncs{}.CreateLoginRecordFromGinContext(
 				ctx, ginCtx, userRecord.ID, identifier, credentialType,
 				loginStatus, failureReason, sessionID, clientDevice.ID,
 			)
@@ -147,7 +149,7 @@ func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialTy
 			}
 		} else if ginCtx != nil {
 			// 即使没有用户记录也要记录失败尝试（使用0作为用户ID）
-			_, logErr := CreateLoginRecordFromGinContext(
+			_, logErr := LoginRecordFuncs{}.CreateLoginRecordFromGinContext(
 				ctx, ginCtx, 0, identifier, credentialType,
 				loginStatus, failureReason, "", clientDevice.ID,
 			)
@@ -257,7 +259,7 @@ func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialTy
 			return nil, fmt.Errorf(failureReason)
 		}
 
-		match, err := verifyPassword(secret, credentialRecord.Secret, credentialRecord.Salt)
+		match, err := AuthFuncs{}.verifyPassword(secret, credentialRecord.Secret, credentialRecord.Salt)
 		if err != nil {
 			failureReason = "密码验证失败"
 			return nil, fmt.Errorf("%s: %w", failureReason, err)
@@ -273,7 +275,7 @@ func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialTy
 			return nil, fmt.Errorf(failureReason)
 		}
 
-		err = VerifyCode(ctx, credentialType, PurposeLogin, identifier, verifyCodeStr)
+		err = VerifyCodeFuncs{}.VerifyCode(ctx, credentialType, PurposeLogin, identifier, verifyCodeStr)
 		if err != nil {
 			authSuccess = false
 			failureReason = "验证码错误或已过期"
@@ -334,7 +336,7 @@ func UserLoginWithContext(ctx context.Context, ginCtx *gin.Context, credentialTy
 }
 
 // generateSessionID 生成会话ID
-func generateSessionID() string {
+func (AuthFuncs) generateSessionID() string {
 	randomStr, err := utils.GenerateRandomString(16)
 	if err != nil {
 		// 如果生成随机字符串失败，使用时间戳作为替代
@@ -344,7 +346,7 @@ func generateSessionID() string {
 }
 
 // UserRegister 用户注册
-func UserRegister(ctx context.Context, credentialType, identifier, secret, verifyCodeStr, username string) (*ent.User, error) {
+func (AuthFuncs) UserRegister(ctx context.Context, credentialType, identifier, secret, verifyCodeStr, username string) (*ent.User, error) {
 	// 检查用户是否已存在
 	exists, err := database.Client.Credential.Query().
 		Where(
@@ -367,7 +369,7 @@ func UserRegister(ctx context.Context, credentialType, identifier, secret, verif
 			return nil, fmt.Errorf("请提供验证码")
 		}
 
-		err = VerifyCode(ctx, credentialType, PurposeRegister, identifier, verifyCodeStr)
+		err = VerifyCodeFuncs{}.VerifyCode(ctx, credentialType, PurposeRegister, identifier, verifyCodeStr)
 		if err != nil {
 			return nil, fmt.Errorf("验证码验证失败: %w", err)
 		}
@@ -393,7 +395,7 @@ func UserRegister(ctx context.Context, credentialType, identifier, secret, verif
 	// 处理密码哈希
 	var hashedSecret, saltStr string
 	if secret != "" {
-		hash, salt, err := hashPassword(secret)
+		hash, salt, err := AuthFuncs{}.hashPassword(secret)
 		if err != nil {
 			return nil, fmt.Errorf("密码哈希失败: %w", err)
 		}
@@ -445,7 +447,7 @@ func UserRegister(ctx context.Context, credentialType, identifier, secret, verif
 }
 
 // ResetPassword 重置密码
-func ResetPassword(ctx context.Context, credentialType, identifier, newPassword, verifyCodeStr, oldPassword string) error {
+func (AuthFuncs) ResetPassword(ctx context.Context, credentialType, identifier, newPassword, verifyCodeStr, oldPassword string) error {
 	tx, err := database.Client.Tx(ctx)
 	if err != nil {
 		return fmt.Errorf("开始事务失败: %w", err)
@@ -477,7 +479,7 @@ func ResetPassword(ctx context.Context, credentialType, identifier, newPassword,
 			return fmt.Errorf("未设置密码")
 		}
 
-		match, err := verifyPassword(oldPassword, credentialRecord.Secret, credentialRecord.Salt)
+		match, err := AuthFuncs{}.verifyPassword(oldPassword, credentialRecord.Secret, credentialRecord.Salt)
 		if err != nil {
 			return fmt.Errorf("原密码验证失败: %w", err)
 		}
@@ -491,14 +493,14 @@ func ResetPassword(ctx context.Context, credentialType, identifier, newPassword,
 			return fmt.Errorf("请提供验证码")
 		}
 
-		err = VerifyCode(ctx, credentialType, PurposeResetPassword, identifier, verifyCodeStr)
+		err = VerifyCodeFuncs{}.VerifyCode(ctx, credentialType, PurposeResetPassword, identifier, verifyCodeStr)
 		if err != nil {
 			return fmt.Errorf("验证码验证失败: %w", err)
 		}
 	}
 
 	// 哈希新密码
-	hashedPassword, saltStr, err := hashPassword(newPassword)
+	hashedPassword, saltStr, err := AuthFuncs{}.hashPassword(newPassword)
 	if err != nil {
 		return fmt.Errorf("新密码哈希失败: %w", err)
 	}
@@ -557,7 +559,7 @@ func ResetPassword(ctx context.Context, credentialType, identifier, newPassword,
 }
 
 // BuildUserInfoWithToken 构建包含Token和角色权限的用户信息
-func BuildUserInfoWithToken(ctx context.Context, user *ent.User, clientId *uint64) (*models.UserInfo, *models.TokenInfo, error) {
+func (AuthFuncs) BuildUserInfoWithToken(ctx context.Context, user *ent.User, clientId *uint64) (*models.UserInfo, *models.TokenInfo, error) {
 	userInfo := &models.UserInfo{
 		ID:         utils.ToString(user.ID),
 		Name:       user.Name,
@@ -579,7 +581,7 @@ func BuildUserInfoWithToken(ctx context.Context, user *ent.User, clientId *uint6
 	}
 
 	// 获取用户角色
-	roles, err := GetUserRoles(ctx, user.ID)
+	roles, err := UserFuncs{}.GetUserRoles(ctx, user.ID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("获取用户角色失败: %w", err)
 	}
@@ -587,11 +589,11 @@ func BuildUserInfoWithToken(ctx context.Context, user *ent.User, clientId *uint6
 	// 转换角色信息
 	userInfo.Roles = make([]*models.RoleResponse, len(roles))
 	for i, role := range roles {
-		userInfo.Roles[i] = ConvertRoleToResponse(role)
+		userInfo.Roles[i] = RoleFuncs{}.ConvertRoleToResponse(role)
 	}
 
 	// 获取用户权限（通过角色继承）
-	permissions, err := GetUserPermissions(ctx, user.ID)
+	permissions, err := UserFuncs{}.GetUserPermissions(ctx, user.ID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("获取用户权限失败: %w", err)
 	}
@@ -599,7 +601,7 @@ func BuildUserInfoWithToken(ctx context.Context, user *ent.User, clientId *uint6
 	// 转换权限信息
 	userInfo.Permissions = make([]*models.PermissionResponse, len(permissions))
 	for i, permission := range permissions {
-		userInfo.Permissions[i] = ConvertPermissionToResponse(permission)
+		userInfo.Permissions[i] = PermissionFuncs{}.ConvertPermissionToResponse(permission)
 	}
 
 	tokenInfo := models.TokenInfo{}
@@ -636,7 +638,7 @@ func BuildUserInfoWithToken(ctx context.Context, user *ent.User, clientId *uint6
 	return userInfo, &tokenInfo, nil
 }
 
-func RefreshToken(ctx context.Context, refreshToken string) (*models.TokenInfo, error) {
+func (AuthFuncs) RefreshToken(ctx context.Context, refreshToken string) (*models.TokenInfo, error) {
 	// 从JWT token中解析并获取clientId (假设JWT中包含clientId信息)
 	// 这里需要先解析token获取clientId，具体实现取决于您的JWT结构
 	claims, err := jwt.ValidateToken(refreshToken)
@@ -644,7 +646,7 @@ func RefreshToken(ctx context.Context, refreshToken string) (*models.TokenInfo, 
 		return nil, fmt.Errorf("验证Token失败")
 	}
 
-	client, err := GetClientDeviceByIdInner(ctx, claims.ClientDeviceId)
+	client, err := ClientDeviceFuncs{}.GetClientDeviceByIdInner(ctx, claims.ClientDeviceId)
 
 	if err != nil {
 		return nil, fmt.Errorf("获取设备类型失败")

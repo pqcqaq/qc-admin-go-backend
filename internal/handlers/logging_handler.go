@@ -32,7 +32,7 @@ func NewLoggingHandler() *LoggingHandler {
 // @Router       /loggings [get]
 func (h *LoggingHandler) GetLoggings(c *gin.Context) {
 	ctx := middleware.GetRequestContext(c)
-	loggings, err := funcs.GetAllLoggings(ctx)
+	loggings, err := funcs.LoggingFunc{}.GetAllLoggings(ctx)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取日志记录列表失败", err.Error()))
 		return
@@ -85,7 +85,7 @@ func (h *LoggingHandler) GetLoggingsWithPagination(c *gin.Context) {
 
 	// 调用服务层方法
 	ctx := middleware.GetRequestContext(c)
-	result, err := funcs.GetLoggingWithPagination(ctx, &req)
+	result, err := funcs.LoggingFunc{}.GetLoggingWithPagination(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取日志记录列表失败", err.Error()))
 		return
@@ -128,7 +128,7 @@ func (h *LoggingHandler) GetLogging(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	logging, err := funcs.GetLoggingById(ctx, id)
+	logging, err := funcs.LoggingFunc{}.GetLoggingById(ctx, id)
 	if err != nil {
 		// 根据错误类型抛出不同的自定义错误
 		if err.Error() == "logging not found" ||
@@ -175,7 +175,7 @@ func (h *LoggingHandler) CreateLogging(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	logging, err := funcs.CreateLogging(ctx, &req)
+	logging, err := funcs.LoggingFunc{}.CreateLogging(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("创建日志记录失败", err.Error()))
 		return
@@ -225,7 +225,7 @@ func (h *LoggingHandler) UpdateLogging(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	logging, err := funcs.UpdateLogging(ctx, id, &req)
+	logging, err := funcs.LoggingFunc{}.UpdateLogging(ctx, id, &req)
 	if err != nil {
 		if err.Error() == "logging not found" ||
 			err.Error() == "logging with id "+strconv.FormatUint(id, 10)+" not found" {
@@ -269,7 +269,7 @@ func (h *LoggingHandler) DeleteLogging(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	err = funcs.DeleteLogging(ctx, id)
+	err = funcs.LoggingFunc{}.DeleteLogging(ctx, id)
 	if err != nil {
 		if err.Error() == "logging not found" ||
 			err.Error() == "logging with id "+strconv.FormatUint(id, 10)+" not found" {
@@ -328,7 +328,7 @@ func (h *LoggingHandler) ExportLoggingsToExcel(c *gin.Context) {
 
 	// 获取数据
 	ctx := middleware.GetRequestContext(c)
-	result, err := funcs.GetLoggingWithPagination(ctx, &req)
+	result, err := funcs.LoggingFunc{}.GetLoggingWithPagination(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取日志记录失败", err.Error()))
 		return

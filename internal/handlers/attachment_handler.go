@@ -34,7 +34,7 @@ func NewAttachmentHandler() *AttachmentHandler {
 // @Failure      500  {object}  object{success=bool,message=string}
 // @Router       /attachments [get]
 func (h *AttachmentHandler) GetAttachments(c *gin.Context) {
-	attachments, err := funcs.GetAllAttachments(middleware.GetRequestContext(c))
+	attachments, err := funcs.AttachmentFuncs{}.GetAllAttachments(middleware.GetRequestContext(c))
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取附件列表失败", err.Error()))
 		return
@@ -77,7 +77,7 @@ func (h *AttachmentHandler) GetAttachmentsWithPagination(c *gin.Context) {
 	}
 
 	// 调用服务层方法
-	result, err := funcs.GetAttachmentsWithPagination(middleware.GetRequestContext(c), &req)
+	result, err := funcs.AttachmentFuncs{}.GetAttachmentsWithPagination(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取附件列表失败", err.Error()))
 		return
@@ -119,7 +119,7 @@ func (h *AttachmentHandler) GetAttachment(c *gin.Context) {
 		return
 	}
 
-	attachment, err := funcs.GetAttachmentByID(middleware.GetRequestContext(c), id)
+	attachment, err := funcs.AttachmentFuncs{}.GetAttachmentByID(middleware.GetRequestContext(c), id)
 	if err != nil {
 		// 根据错误类型抛出不同的自定义错误
 		if err.Error() == "attachment not found" {
@@ -184,7 +184,7 @@ func (h *AttachmentHandler) CreateAttachment(c *gin.Context) {
 		return
 	}
 
-	attachment, err := funcs.CreateAttachment(middleware.GetRequestContext(c), &req)
+	attachment, err := funcs.AttachmentFuncs{}.CreateAttachment(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		// 根据错误内容判断错误类型
 		if err.Error() == "attachment already exists" {
@@ -234,7 +234,7 @@ func (h *AttachmentHandler) UpdateAttachment(c *gin.Context) {
 		return
 	}
 
-	attachment, err := funcs.UpdateAttachment(middleware.GetRequestContext(c), id, &req)
+	attachment, err := funcs.AttachmentFuncs{}.UpdateAttachment(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		if err.Error() == "attachment not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]any{
@@ -265,7 +265,7 @@ func (h *AttachmentHandler) DeleteAttachment(c *gin.Context) {
 		return
 	}
 
-	err = funcs.DeleteAttachment(middleware.GetRequestContext(c), id)
+	err = funcs.AttachmentFuncs{}.DeleteAttachment(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "attachment not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]any{
@@ -307,7 +307,7 @@ func (h *AttachmentHandler) GetAttachmentURL(c *gin.Context) {
 	}
 
 	// 获取附件信息
-	attachment, err := funcs.GetAttachmentByID(middleware.GetRequestContext(c), id)
+	attachment, err := funcs.AttachmentFuncs{}.GetAttachmentByID(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "attachment not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("附件不存在", map[string]any{
@@ -381,7 +381,7 @@ func (h *AttachmentHandler) PrepareUpload(c *gin.Context) {
 	}
 
 	// 调用业务逻辑
-	result, err := funcs.PrepareUpload(middleware.GetRequestContext(c), &req)
+	result, err := funcs.AttachmentFuncs{}.PrepareUpload(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("准备上传失败", err.Error()))
 		return
@@ -421,7 +421,7 @@ func (h *AttachmentHandler) ConfirmUpload(c *gin.Context) {
 	}
 
 	// 调用业务逻辑
-	attachment, err := funcs.ConfirmUpload(middleware.GetRequestContext(c), &req)
+	attachment, err := funcs.AttachmentFuncs{}.ConfirmUpload(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		if err.Error() == "upload session not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("上传会话不存在", map[string]any{
@@ -557,7 +557,7 @@ func (h *AttachmentHandler) DirectUpload(c *gin.Context) {
 	}
 
 	// 保存到数据库
-	attachment, err := funcs.CreateAttachment(middleware.GetRequestContext(c), createReq)
+	attachment, err := funcs.AttachmentFuncs{}.CreateAttachment(middleware.GetRequestContext(c), createReq)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("保存附件信息失败", err.Error()))
 		return

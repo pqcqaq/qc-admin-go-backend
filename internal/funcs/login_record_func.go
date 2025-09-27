@@ -15,6 +15,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type LoginRecordFuncs struct{}
+
 // LoginRecordStatus 登录记录状态常量
 const (
 	LoginStatusSuccess = "success"
@@ -39,15 +41,15 @@ type LoginRecordParams struct {
 }
 
 // CreateLoginRecord 创建登录记录
-func CreateLoginRecord(ctx context.Context, params LoginRecordParams) (*ent.LoginRecord, error) {
+func (LoginRecordFuncs) CreateLoginRecord(ctx context.Context, params LoginRecordParams) (*ent.LoginRecord, error) {
 	// 解析设备信息
 	if params.DeviceInfo == "" {
-		params.DeviceInfo = parseDeviceInfo(params.UserAgent)
+		params.DeviceInfo = LoginRecordFuncs{}.parseDeviceInfo(params.UserAgent)
 	}
 
 	// 获取地理位置信息（如果未提供）
 	if params.Location == "" {
-		params.Location = getLocationFromIP(params.IPAddress)
+		params.Location = LoginRecordFuncs{}.getLocationFromIP(params.IPAddress)
 	}
 
 	// 创建登录记录
@@ -89,7 +91,7 @@ func CreateLoginRecord(ctx context.Context, params LoginRecordParams) (*ent.Logi
 }
 
 // UpdateLoginRecordLogout 更新登录记录的退出信息
-func UpdateLoginRecordLogout(ctx context.Context, sessionID string) error {
+func (LoginRecordFuncs) UpdateLoginRecordLogout(ctx context.Context, sessionID string) error {
 	if sessionID == "" {
 		return fmt.Errorf("会话ID不能为空")
 	}
@@ -128,12 +130,12 @@ func UpdateLoginRecordLogout(ctx context.Context, sessionID string) error {
 }
 
 // CreateLoginRecordFromGinContext 从Gin上下文创建登录记录
-func CreateLoginRecordFromGinContext(ctx context.Context, c *gin.Context, userID uint64, identifier, credentialType, status, failureReason, sessionID string, clientId uint64) (*ent.LoginRecord, error) {
+func (LoginRecordFuncs) CreateLoginRecordFromGinContext(ctx context.Context, c *gin.Context, userID uint64, identifier, credentialType, status, failureReason, sessionID string, clientId uint64) (*ent.LoginRecord, error) {
 	params := LoginRecordParams{
 		UserID:         userID,
 		Identifier:     identifier,
 		CredentialType: credentialType,
-		IPAddress:      getClientIP(c),
+		IPAddress:      LoginRecordFuncs{}.getClientIP(c),
 		UserAgent:      c.GetHeader("User-Agent"),
 		Status:         status,
 		FailureReason:  failureReason,
@@ -147,11 +149,11 @@ func CreateLoginRecordFromGinContext(ctx context.Context, c *gin.Context, userID
 		ClientId: clientId,
 	}
 
-	return CreateLoginRecord(ctx, params)
+	return LoginRecordFuncs{}.CreateLoginRecord(ctx, params)
 }
 
 // GetUserLoginRecords 获取用户的登录记录
-func GetUserLoginRecords(ctx context.Context, userID uint64, limit, offset int) ([]*ent.LoginRecord, error) {
+func (LoginRecordFuncs) GetUserLoginRecords(ctx context.Context, userID uint64, limit, offset int) ([]*ent.LoginRecord, error) {
 	query := database.Client.LoginRecord.Query().
 		Where(loginrecord.UserIDEQ(userID)).
 		Order(ent.Desc(loginrecord.FieldCreateTime))
@@ -172,7 +174,7 @@ func GetUserLoginRecords(ctx context.Context, userID uint64, limit, offset int) 
 }
 
 // GetLoginRecordsByStatus 根据状态获取登录记录
-func GetLoginRecordsByStatus(ctx context.Context, status string, limit, offset int) ([]*ent.LoginRecord, error) {
+func (LoginRecordFuncs) GetLoginRecordsByStatus(ctx context.Context, status string, limit, offset int) ([]*ent.LoginRecord, error) {
 	query := database.Client.LoginRecord.Query().
 		Where(loginrecord.StatusEQ(loginrecord.Status(status))).
 		Order(ent.Desc(loginrecord.FieldCreateTime))
@@ -193,7 +195,7 @@ func GetLoginRecordsByStatus(ctx context.Context, status string, limit, offset i
 }
 
 // GetRecentFailedLoginAttempts 获取最近的失败登录尝试
-func GetRecentFailedLoginAttempts(ctx context.Context, identifier string, minutes int) (int, error) {
+func (LoginRecordFuncs) GetRecentFailedLoginAttempts(ctx context.Context, identifier string, minutes int) (int, error) {
 	since := time.Now().Add(-time.Duration(minutes) * time.Minute)
 
 	count, err := database.Client.LoginRecord.Query().
@@ -212,7 +214,7 @@ func GetRecentFailedLoginAttempts(ctx context.Context, identifier string, minute
 }
 
 // parseDeviceInfo 解析设备信息
-func parseDeviceInfo(userAgent string) string {
+func (LoginRecordFuncs) parseDeviceInfo(userAgent string) string {
 	if userAgent == "" {
 		return "Unknown"
 	}
@@ -257,7 +259,7 @@ func parseDeviceInfo(userAgent string) string {
 }
 
 // getClientIP 获取客户端真实IP
-func getClientIP(c *gin.Context) string {
+func (LoginRecordFuncs) getClientIP(c *gin.Context) string {
 	// 尝试从各种头部获取真实IP
 	headers := []string{"X-Forwarded-For", "X-Real-IP", "X-Client-IP"}
 
@@ -287,7 +289,7 @@ func getClientIP(c *gin.Context) string {
 }
 
 // getLocationFromIP 从IP获取地理位置（简化版本）
-func getLocationFromIP(ip string) string {
+func (LoginRecordFuncs) getLocationFromIP(ip string) string {
 	// 这里可以集成第三方IP地理位置服务
 	// 目前返回简化信息
 	if ip == "" || ip == "unknown" {
@@ -295,7 +297,8 @@ func getLocationFromIP(ip string) string {
 	}
 
 	// 检查是否为本地IP
-	if isLocalIP(ip) {
+	local := LoginRecordFuncs{}.isLocalIP(ip)
+	if local {
 		return "Local"
 	}
 
@@ -305,7 +308,7 @@ func getLocationFromIP(ip string) string {
 }
 
 // isLocalIP 检查是否为本地IP
-func isLocalIP(ip string) bool {
+func (LoginRecordFuncs) isLocalIP(ip string) bool {
 	if ip == "127.0.0.1" || ip == "::1" || ip == "localhost" {
 		return true
 	}
@@ -333,7 +336,7 @@ func isLocalIP(ip string) bool {
 }
 
 // CleanupOldLoginRecords 清理旧的登录记录
-func CleanupOldLoginRecords(ctx context.Context, days int) error {
+func (LoginRecordFuncs) CleanupOldLoginRecords(ctx context.Context, days int) error {
 	cutoff := time.Now().AddDate(0, 0, -days)
 
 	count, err := database.Client.LoginRecord.Delete().

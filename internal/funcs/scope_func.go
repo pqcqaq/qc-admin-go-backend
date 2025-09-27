@@ -13,9 +13,10 @@ import (
 )
 
 // ScopeService 权限域服务
+type ScopeFuncs struct{}
 
 // GetAllScopes 获取所有权限域
-func GetAllScopes(ctx context.Context) ([]*ent.Scope, error) {
+func (ScopeFuncs) GetAllScopes(ctx context.Context) ([]*ent.Scope, error) {
 	return database.Client.Scope.Query().
 		WithParent().
 		WithChildren().
@@ -24,7 +25,7 @@ func GetAllScopes(ctx context.Context) ([]*ent.Scope, error) {
 }
 
 // GetScopeByID 根据ID获取权限域
-func GetScopeByID(ctx context.Context, id uint64) (*ent.Scope, error) {
+func (ScopeFuncs) GetScopeByID(ctx context.Context, id uint64) (*ent.Scope, error) {
 	scope, err := database.Client.Scope.Query().
 		Where(scope.ID(id)).
 		WithParent().
@@ -41,7 +42,7 @@ func GetScopeByID(ctx context.Context, id uint64) (*ent.Scope, error) {
 }
 
 // CreateScope 创建权限域
-func CreateScope(ctx context.Context, req *models.CreateScopeRequest) (*ent.Scope, error) {
+func (ScopeFuncs) CreateScope(ctx context.Context, req *models.CreateScopeRequest) (*ent.Scope, error) {
 	builder := database.Client.Scope.Create().
 		SetName(req.Name).
 		SetType(scope.Type(req.Type)).
@@ -88,11 +89,11 @@ func CreateScope(ctx context.Context, req *models.CreateScopeRequest) (*ent.Scop
 		return nil, err
 	}
 
-	return GetScopeByID(ctx, scope.ID)
+	return ScopeFuncs{}.GetScopeByID(ctx, scope.ID)
 }
 
 // UpdateScope 更新权限域
-func UpdateScope(ctx context.Context, id uint64, req *models.UpdateScopeRequest) (*ent.Scope, error) {
+func (ScopeFuncs) UpdateScope(ctx context.Context, id uint64, req *models.UpdateScopeRequest) (*ent.Scope, error) {
 	builder := database.Client.Scope.UpdateOneID(id)
 
 	if req.Name != "" {
@@ -157,11 +158,11 @@ func UpdateScope(ctx context.Context, id uint64, req *models.UpdateScopeRequest)
 		return nil, err
 	}
 
-	return GetScopeByID(ctx, id)
+	return ScopeFuncs{}.GetScopeByID(ctx, id)
 }
 
 // DeleteScope 删除权限域
-func DeleteScope(ctx context.Context, id uint64) error {
+func (ScopeFuncs) DeleteScope(ctx context.Context, id uint64) error {
 	tx, err := database.Client.Tx(ctx)
 	if err != nil {
 		return err
@@ -185,7 +186,7 @@ func DeleteScope(ctx context.Context, id uint64) error {
 }
 
 // GetScopesWithPagination 分页获取权限域列表
-func GetScopesWithPagination(ctx context.Context, req *models.GetScopesRequest) (*models.ScopesListResponse, error) {
+func (ScopeFuncs) GetScopesWithPagination(ctx context.Context, req *models.GetScopesRequest) (*models.ScopesListResponse, error) {
 	query := database.Client.Scope.Query().
 		WithParent().
 		WithChildren().
@@ -269,7 +270,7 @@ func GetScopesWithPagination(ctx context.Context, req *models.GetScopesRequest) 
 	// 转换为响应格式
 	scopeResponses := make([]*models.ScopeResponse, 0, len(scopes))
 	for _, s := range scopes {
-		scopeResponses = append(scopeResponses, ConvertScopeToResponse(s))
+		scopeResponses = append(scopeResponses, ScopeFuncs{}.ConvertScopeToResponse(s))
 	}
 
 	return &models.ScopesListResponse{
@@ -286,7 +287,7 @@ func GetScopesWithPagination(ctx context.Context, req *models.GetScopesRequest) 
 }
 
 // GetScopeTree 获取权限域树形结构
-func GetScopeTree(ctx context.Context) (*models.ScopeTreeResponse, error) {
+func (ScopeFuncs) GetScopeTree(ctx context.Context) (*models.ScopeTreeResponse, error) {
 	// 获取所有权限域
 	allScopes, err := database.Client.Scope.Query().
 		WithParent().
@@ -303,7 +304,7 @@ func GetScopeTree(ctx context.Context) (*models.ScopeTreeResponse, error) {
 
 	// 先创建所有节点（不包含Children，避免重复）
 	for _, s := range allScopes {
-		scopeResp := ConvertScopeToResponseForTree(s)
+		scopeResp := ScopeFuncs{}.ConvertScopeToResponseForTree(s)
 		scopeMap[s.ID] = scopeResp
 
 		// 如果没有父节点，则为根节点
@@ -338,7 +339,7 @@ func GetScopeTree(ctx context.Context) (*models.ScopeTreeResponse, error) {
 }
 
 // ConvertScopeToResponse 将权限域实体转换为响应格式
-func ConvertScopeToResponse(s *ent.Scope) *models.ScopeResponse {
+func (ScopeFuncs) ConvertScopeToResponse(s *ent.Scope) *models.ScopeResponse {
 	resp := &models.ScopeResponse{
 		ID:          utils.Uint64ToString(s.ID),
 		Name:        s.Name,
@@ -408,7 +409,7 @@ func ConvertScopeToResponse(s *ent.Scope) *models.ScopeResponse {
 }
 
 // ConvertScopeToResponseForTree 将权限域实体转换为响应格式（专用于树形结构，不包含Children避免重复）
-func ConvertScopeToResponseForTree(s *ent.Scope) *models.ScopeResponse {
+func (ScopeFuncs) ConvertScopeToResponseForTree(s *ent.Scope) *models.ScopeResponse {
 	resp := &models.ScopeResponse{
 		ID:          utils.Uint64ToString(s.ID),
 		Name:        s.Name,

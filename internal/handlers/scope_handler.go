@@ -29,7 +29,7 @@ func NewScopeHandler() *ScopeHandler {
 // @Failure      500  {object}  object{success=bool,message=string}
 // @Router       /rbac/scopes/all [get]
 func (h *ScopeHandler) GetScopes(c *gin.Context) {
-	scopes, err := funcs.GetAllScopes(middleware.GetRequestContext(c))
+	scopes, err := funcs.ScopeFuncs{}.GetAllScopes(middleware.GetRequestContext(c))
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取权限域列表失败", err.Error()))
 		return
@@ -38,7 +38,7 @@ func (h *ScopeHandler) GetScopes(c *gin.Context) {
 	// 转换为响应格式
 	scopeResponses := make([]*models.ScopeResponse, 0, len(scopes))
 	for _, scope := range scopes {
-		scopeResponses = append(scopeResponses, funcs.ConvertScopeToResponse(scope))
+		scopeResponses = append(scopeResponses, funcs.ScopeFuncs{}.ConvertScopeToResponse(scope))
 	}
 
 	c.JSON(200, gin.H{
@@ -77,7 +77,7 @@ func (h *ScopeHandler) GetScopesWithPagination(c *gin.Context) {
 		return
 	}
 
-	result, err := funcs.GetScopesWithPagination(middleware.GetRequestContext(c), &req)
+	result, err := funcs.ScopeFuncs{}.GetScopesWithPagination(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取权限域列表失败", err.Error()))
 		return
@@ -118,7 +118,7 @@ func (h *ScopeHandler) GetScope(c *gin.Context) {
 		return
 	}
 
-	scope, err := funcs.GetScopeByID(middleware.GetRequestContext(c), id)
+	scope, err := funcs.ScopeFuncs{}.GetScopeByID(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "scope not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("权限域不存在", map[string]any{
@@ -132,7 +132,7 @@ func (h *ScopeHandler) GetScope(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"success": true,
-		"data":    funcs.ConvertScopeToResponse(scope),
+		"data":    funcs.ScopeFuncs{}.ConvertScopeToResponse(scope),
 	})
 }
 
@@ -165,7 +165,7 @@ func (h *ScopeHandler) CreateScope(c *gin.Context) {
 		return
 	}
 
-	scope, err := funcs.CreateScope(middleware.GetRequestContext(c), &req)
+	scope, err := funcs.ScopeFuncs{}.CreateScope(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		if err.Error() == "scope already exists" {
 			middleware.ThrowError(c, middleware.BadRequestError("权限域已存在", map[string]any{
@@ -179,7 +179,7 @@ func (h *ScopeHandler) CreateScope(c *gin.Context) {
 
 	c.JSON(201, gin.H{
 		"success": true,
-		"data":    funcs.ConvertScopeToResponse(scope),
+		"data":    funcs.ScopeFuncs{}.ConvertScopeToResponse(scope),
 		"message": "权限域创建成功",
 	})
 }
@@ -214,7 +214,7 @@ func (h *ScopeHandler) UpdateScope(c *gin.Context) {
 		return
 	}
 
-	scope, err := funcs.UpdateScope(middleware.GetRequestContext(c), id, &req)
+	scope, err := funcs.ScopeFuncs{}.UpdateScope(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		if err.Error() == "scope not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("权限域不存在", map[string]any{
@@ -228,7 +228,7 @@ func (h *ScopeHandler) UpdateScope(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"success": true,
-		"data":    funcs.ConvertScopeToResponse(scope),
+		"data":    funcs.ScopeFuncs{}.ConvertScopeToResponse(scope),
 		"message": "权限域更新成功",
 	})
 }
@@ -256,7 +256,7 @@ func (h *ScopeHandler) DeleteScope(c *gin.Context) {
 		return
 	}
 
-	err = funcs.DeleteScope(middleware.GetRequestContext(c), id)
+	err = funcs.ScopeFuncs{}.DeleteScope(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "scope not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("权限域不存在", map[string]any{
@@ -284,7 +284,7 @@ func (h *ScopeHandler) DeleteScope(c *gin.Context) {
 // @Failure      500  {object}  object{success=bool,message=string}
 // @Router       /rbac/scopes/tree [get]
 func (h *ScopeHandler) GetScopeTree(c *gin.Context) {
-	result, err := funcs.GetScopeTree(middleware.GetRequestContext(c))
+	result, err := funcs.ScopeFuncs{}.GetScopeTree(middleware.GetRequestContext(c))
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取权限域树失败", err.Error()))
 		return

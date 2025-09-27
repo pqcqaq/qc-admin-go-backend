@@ -11,8 +11,10 @@ import (
 	"go-backend/shared/models"
 )
 
+type ApiAuthFuncs struct{}
+
 // GetAllAPIAuths 获取所有API认证记录
-func GetAllAPIAuths(ctx context.Context) ([]*models.APIAuthResponse, error) {
+func (ApiAuthFuncs) GetAllAPIAuths(ctx context.Context) ([]*models.APIAuthResponse, error) {
 	records, err := database.Client.APIAuth.Query().
 		WithPermissions().
 		All(ctx)
@@ -40,7 +42,7 @@ func GetAllAPIAuths(ctx context.Context) ([]*models.APIAuthResponse, error) {
 }
 
 // GetAPIAuthById 根据ID获取API认证记录
-func GetAPIAuthById(ctx context.Context, id uint64) (*models.APIAuthResponse, error) {
+func (ApiAuthFuncs) GetAPIAuthById(ctx context.Context, id uint64) (*models.APIAuthResponse, error) {
 	apiAuth, err := database.Client.APIAuth.Query().
 		Where(apiauth.ID(id)).
 		WithPermissions().
@@ -67,8 +69,8 @@ func GetAPIAuthById(ctx context.Context, id uint64) (*models.APIAuthResponse, er
 }
 
 // CreateAPIAuth 创建API认证记录
-func CreateAPIAuth(ctx context.Context, req *models.CreateAPIAuthRequest) (*ent.APIAuth, error) {
-	pIdsList := permissionsListToIDs(req.Permissions)
+func (ApiAuthFuncs) CreateAPIAuth(ctx context.Context, req *models.CreateAPIAuthRequest) (*ent.APIAuth, error) {
+	pIdsList := ApiAuthFuncs{}.permissionsListToIDs(req.Permissions)
 
 	builder := database.Client.APIAuth.Create().
 		SetName(req.Name).
@@ -90,7 +92,7 @@ func CreateAPIAuth(ctx context.Context, req *models.CreateAPIAuthRequest) (*ent.
 }
 
 // UpdateAPIAuth 更新API认证记录
-func UpdateAPIAuth(ctx context.Context, id uint64, req *models.UpdateAPIAuthRequest) (*ent.APIAuth, error) {
+func (ApiAuthFuncs) UpdateAPIAuth(ctx context.Context, id uint64, req *models.UpdateAPIAuthRequest) (*ent.APIAuth, error) {
 	// ent 的事务开启方法
 	tx, err := database.Client.Tx(ctx)
 	if err != nil {
@@ -122,7 +124,7 @@ func UpdateAPIAuth(ctx context.Context, id uint64, req *models.UpdateAPIAuthRequ
 	if err != nil {
 		return nil, err
 	}
-	newIdsList := permissionsListToIDs(req.Permissions)
+	newIdsList := ApiAuthFuncs{}.permissionsListToIDs(req.Permissions)
 
 	toRemove, toAdd := utils.DiffUint64Slices(oldIdList, newIdsList)
 
@@ -150,7 +152,7 @@ func UpdateAPIAuth(ctx context.Context, id uint64, req *models.UpdateAPIAuthRequ
 	return builder.Save(ctx)
 }
 
-func permissionsListToIDs(permissionsList []*models.PermissionsList) []uint64 {
+func (ApiAuthFuncs) permissionsListToIDs(permissionsList []*models.PermissionsList) []uint64 {
 	var ids []uint64 = make([]uint64, 0)
 	for _, perm := range permissionsList {
 		id := utils.StringToUint64(perm.ID)
@@ -160,7 +162,7 @@ func permissionsListToIDs(permissionsList []*models.PermissionsList) []uint64 {
 }
 
 // DeleteAPIAuth 删除API认证记录
-func DeleteAPIAuth(ctx context.Context, id uint64) error {
+func (ApiAuthFuncs) DeleteAPIAuth(ctx context.Context, id uint64) error {
 	// 首先检查API认证记录是否存在
 	exists, err := database.Client.APIAuth.Query().Where(apiauth.ID(id)).Exist(ctx)
 	if err != nil {
@@ -173,7 +175,7 @@ func DeleteAPIAuth(ctx context.Context, id uint64) error {
 	return database.Client.APIAuth.DeleteOneID(id).Exec(ctx)
 }
 
-func GetAPIAuthWithPagination(ctx context.Context, req *models.PageAPIAuthRequest) (*models.PageAPIAuthResponse, error) {
+func (ApiAuthFuncs) GetAPIAuthWithPagination(ctx context.Context, req *models.PageAPIAuthRequest) (*models.PageAPIAuthResponse, error) {
 	// 构建查询
 	query := database.Client.APIAuth.Query().
 		WithPermissions()

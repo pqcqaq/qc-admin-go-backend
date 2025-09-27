@@ -15,9 +15,10 @@ import (
 )
 
 // RoleService 角色服务
+type RoleFuncs struct{}
 
 // GetAllRoles 获取所有角色
-func GetAllRoles(ctx context.Context) ([]*ent.Role, error) {
+func (RoleFuncs) GetAllRoles(ctx context.Context) ([]*ent.Role, error) {
 	return database.Client.Role.Query().
 		WithInheritsFrom().
 		WithInheritedBy().
@@ -28,7 +29,7 @@ func GetAllRoles(ctx context.Context) ([]*ent.Role, error) {
 }
 
 // GetRoleByID 根据ID获取角色
-func GetRoleByID(ctx context.Context, id uint64) (*ent.Role, error) {
+func (RoleFuncs) GetRoleByID(ctx context.Context, id uint64) (*ent.Role, error) {
 	role, err := database.Client.Role.Query().
 		Where(role.ID(id)).
 		WithInheritsFrom().
@@ -47,7 +48,7 @@ func GetRoleByID(ctx context.Context, id uint64) (*ent.Role, error) {
 }
 
 // CreateRole 创建角色
-func CreateRole(ctx context.Context, req *models.CreateRoleRequest) (*ent.Role, error) {
+func (RoleFuncs) CreateRole(ctx context.Context, req *models.CreateRoleRequest) (*ent.Role, error) {
 	builder := database.Client.Role.Create().
 		SetName(req.Name)
 
@@ -78,11 +79,11 @@ func CreateRole(ctx context.Context, req *models.CreateRoleRequest) (*ent.Role, 
 	}
 
 	// 重新查询角色以获取完整信息
-	return GetRoleByID(ctx, role.ID)
+	return RoleFuncs{}.GetRoleByID(ctx, role.ID)
 }
 
 // UpdateRole 更新角色
-func UpdateRole(ctx context.Context, id uint64, req *models.UpdateRoleRequest) (*ent.Role, error) {
+func (RoleFuncs) UpdateRole(ctx context.Context, id uint64, req *models.UpdateRoleRequest) (*ent.Role, error) {
 	builder := database.Client.Role.UpdateOneID(id)
 
 	if req.Name != "" {
@@ -113,11 +114,11 @@ func UpdateRole(ctx context.Context, id uint64, req *models.UpdateRoleRequest) (
 		return nil, err
 	}
 
-	return GetRoleByID(ctx, id)
+	return RoleFuncs{}.GetRoleByID(ctx, id)
 }
 
 // DeleteRole 删除角色
-func DeleteRole(ctx context.Context, id uint64) error {
+func (RoleFuncs) DeleteRole(ctx context.Context, id uint64) error {
 	// 删除的时候先删除管理的sys_role_permission和sys_user_role关联
 	tx, err := database.Client.Tx(ctx)
 	if err != nil {
@@ -157,7 +158,7 @@ func DeleteRole(ctx context.Context, id uint64) error {
 }
 
 // GetRolesWithPagination 分页获取角色列表
-func GetRolesWithPagination(ctx context.Context, req *models.GetRolesRequest) (*models.RolesListResponse, error) {
+func (RoleFuncs) GetRolesWithPagination(ctx context.Context, req *models.GetRolesRequest) (*models.RolesListResponse, error) {
 	query := database.Client.Role.Query().
 		WithInheritsFrom().
 		WithInheritedBy().
@@ -220,7 +221,7 @@ func GetRolesWithPagination(ctx context.Context, req *models.GetRolesRequest) (*
 	// 转换为响应格式
 	roleResponses := make([]*models.RoleResponse, 0, len(roles))
 	for _, r := range roles {
-		roleResponses = append(roleResponses, ConvertRoleToResponse(r))
+		roleResponses = append(roleResponses, RoleFuncs{}.ConvertRoleToResponse(r))
 	}
 
 	return &models.RolesListResponse{
@@ -237,7 +238,7 @@ func GetRolesWithPagination(ctx context.Context, req *models.GetRolesRequest) (*
 }
 
 // AssignRolePermissions 分配角色权限（添加新权限，不移除现有权限）
-func AssignRolePermissions(ctx context.Context, roleID uint64, req *models.AssignRolePermissionsRequest) error {
+func (RoleFuncs) AssignRolePermissions(ctx context.Context, roleID uint64, req *models.AssignRolePermissionsRequest) error {
 	if len(req.PermissionIds) == 0 {
 		return nil
 	}
@@ -287,7 +288,7 @@ func AssignRolePermissions(ctx context.Context, roleID uint64, req *models.Assig
 }
 
 // GetRolePermissions 获取角色的权限列表
-func GetRolePermissions(ctx context.Context, roleId uint64) ([]*ent.Permission, error) {
+func (RoleFuncs) GetRolePermissions(ctx context.Context, roleId uint64) ([]*ent.Permission, error) {
 	role, err := database.Client.Role.Query().
 		Where(role.ID(roleId)).
 		WithRolePermissions(func(rp *ent.RolePermissionQuery) {
@@ -312,7 +313,7 @@ func GetRolePermissions(ctx context.Context, roleId uint64) ([]*ent.Permission, 
 }
 
 // ConvertRoleToResponse 将角色实体转换为响应格式
-func ConvertRoleToResponse(r *ent.Role) *models.RoleResponse {
+func (RoleFuncs) ConvertRoleToResponse(r *ent.Role) *models.RoleResponse {
 	resp := &models.RoleResponse{
 		ID:          utils.Uint64ToString(r.ID),
 		Name:        r.Name,
@@ -354,7 +355,7 @@ func ConvertRoleToResponse(r *ent.Role) *models.RoleResponse {
 		resp.Permissions = make([]*models.PermissionResponse, 0, len(r.Edges.RolePermissions))
 		for _, rp := range r.Edges.RolePermissions {
 			if rp.Edges.Permission != nil {
-				resp.Permissions = append(resp.Permissions, ConvertPermissionToResponse(rp.Edges.Permission))
+				resp.Permissions = append(resp.Permissions, PermissionFuncs{}.ConvertPermissionToResponse(rp.Edges.Permission))
 			}
 		}
 	}
@@ -363,7 +364,7 @@ func ConvertRoleToResponse(r *ent.Role) *models.RoleResponse {
 }
 
 // GetRoleInheritedPermissions 获取角色及其继承链的所有权限
-func GetRoleInheritedPermissions(ctx context.Context, roleID uint64) ([]*ent.Permission, error) {
+func (RoleFuncs) GetRoleInheritedPermissions(ctx context.Context, roleID uint64) ([]*ent.Permission, error) {
 	// 获取角色的所有继承链
 	visited := make(map[uint64]bool)
 	var getAllRolePermissions func(uint64) ([]*ent.Permission, error)
@@ -433,7 +434,7 @@ func GetRoleInheritedPermissions(ctx context.Context, roleID uint64) ([]*ent.Per
 }
 
 // RevokeRolePermission 撤销角色权限
-func RevokeRolePermission(ctx context.Context, roleID, permissionID uint64) error {
+func (RoleFuncs) RevokeRolePermission(ctx context.Context, roleID, permissionID uint64) error {
 	// 查找角色权限关联
 	rolePermission, err := database.Client.RolePermission.Query().
 		Where(

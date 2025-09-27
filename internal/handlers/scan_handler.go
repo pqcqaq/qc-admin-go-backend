@@ -32,7 +32,7 @@ func NewScanHandler() *ScanHandler {
 // @Router       /scans [get]
 func (h *ScanHandler) GetScans(c *gin.Context) {
 	ctx := middleware.GetRequestContext(c)
-	scans, err := funcs.GetAllScans(ctx)
+	scans, err := funcs.ScanFuncs{}.GetAllScans(ctx)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取扫描记录列表失败", err.Error()))
 		return
@@ -76,7 +76,7 @@ func (h *ScanHandler) GetScansWithPagination(c *gin.Context) {
 
 	// 调用服务层方法
 	ctx := middleware.GetRequestContext(c)
-	result, err := funcs.GetScanWithPagination(ctx, &req)
+	result, err := funcs.ScanFuncs{}.GetScanWithPagination(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取扫描记录列表失败", err.Error()))
 		return
@@ -119,7 +119,7 @@ func (h *ScanHandler) GetScan(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	scan, err := funcs.GetScanById(ctx, id)
+	scan, err := funcs.ScanFuncs{}.GetScanById(ctx, id)
 	if err != nil {
 		// 根据错误类型抛出不同的自定义错误
 		if err.Error() == "scan not found" ||
@@ -166,7 +166,7 @@ func (h *ScanHandler) CreateScan(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	scan, err := funcs.CreateScan(ctx, &req)
+	scan, err := funcs.ScanFuncs{}.CreateScan(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("创建扫描记录失败", err.Error()))
 		return
@@ -216,7 +216,7 @@ func (h *ScanHandler) UpdateScan(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	scan, err := funcs.UpdateScan(ctx, id, &req)
+	scan, err := funcs.ScanFuncs{}.UpdateScan(ctx, id, &req)
 	if err != nil {
 		if err.Error() == "scan not found" ||
 			err.Error() == "scan with id "+strconv.FormatUint(id, 10)+" not found" {
@@ -249,7 +249,7 @@ func (h *ScanHandler) DeleteScan(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	err = funcs.DeleteScan(ctx, id)
+	err = funcs.ScanFuncs{}.DeleteScan(ctx, id)
 	if err != nil {
 		if err.Error() == "scan not found" ||
 			err.Error() == "scan with id "+strconv.FormatUint(id, 10)+" not found" {
@@ -299,7 +299,7 @@ func (h *ScanHandler) ExportScansToExcel(c *gin.Context) {
 
 	// 获取数据
 	ctx := middleware.GetRequestContext(c)
-	result, err := funcs.GetScanWithPagination(ctx, &req)
+	result, err := funcs.ScanFuncs{}.GetScanWithPagination(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取扫描记录失败", err.Error()))
 		return

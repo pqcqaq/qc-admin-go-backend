@@ -15,15 +15,16 @@ import (
 )
 
 // PermissionService 权限服务
+type PermissionFuncs struct{}
 
 // GetAllPermissions 获取所有权限
-func GetAllPermissions(ctx context.Context) ([]*ent.Permission, error) {
+func (PermissionFuncs) GetAllPermissions(ctx context.Context) ([]*ent.Permission, error) {
 	return database.Client.Permission.Query().
 		All(ctx)
 }
 
 // GetPermissionByID 根据ID获取权限
-func GetPermissionByID(ctx context.Context, id uint64) (*ent.Permission, error) {
+func (PermissionFuncs) GetPermissionByID(ctx context.Context, id uint64) (*ent.Permission, error) {
 	permission, err := database.Client.Permission.Query().
 		Where(permission.ID(id)).
 		WithScope().
@@ -41,7 +42,7 @@ func GetPermissionByID(ctx context.Context, id uint64) (*ent.Permission, error) 
 }
 
 // CreatePermission 创建权限
-func CreatePermission(ctx context.Context, req *models.CreatePermissionRequest) (*ent.Permission, error) {
+func (PermissionFuncs) CreatePermission(ctx context.Context, req *models.CreatePermissionRequest) (*ent.Permission, error) {
 	builder := database.Client.Permission.Create().
 		SetName(req.Name).
 		SetAction(req.Action)
@@ -60,11 +61,11 @@ func CreatePermission(ctx context.Context, req *models.CreatePermissionRequest) 
 		return nil, err
 	}
 
-	return GetPermissionByID(ctx, permission.ID)
+	return PermissionFuncs{}.GetPermissionByID(ctx, permission.ID)
 }
 
 // UpdatePermission 更新权限
-func UpdatePermission(ctx context.Context, id uint64, req *models.UpdatePermissionRequest) (*ent.Permission, error) {
+func (PermissionFuncs) UpdatePermission(ctx context.Context, id uint64, req *models.UpdatePermissionRequest) (*ent.Permission, error) {
 	builder := database.Client.Permission.UpdateOneID(id)
 
 	if req.Name != "" {
@@ -92,11 +93,11 @@ func UpdatePermission(ctx context.Context, id uint64, req *models.UpdatePermissi
 		return nil, err
 	}
 
-	return GetPermissionByID(ctx, id)
+	return PermissionFuncs{}.GetPermissionByID(ctx, id)
 }
 
 // DeletePermission 删除权限
-func DeletePermission(ctx context.Context, id uint64) error {
+func (PermissionFuncs) DeletePermission(ctx context.Context, id uint64) error {
 	err := database.Client.Permission.DeleteOneID(id).Exec(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -108,7 +109,7 @@ func DeletePermission(ctx context.Context, id uint64) error {
 }
 
 // GetPermissionsWithPagination 分页获取权限列表
-func GetPermissionsWithPagination(ctx context.Context, req *models.GetPermissionsRequest) (*models.PermissionsListResponse, error) {
+func (PermissionFuncs) GetPermissionsWithPagination(ctx context.Context, req *models.GetPermissionsRequest) (*models.PermissionsListResponse, error) {
 	query := database.Client.Permission.Query().
 		WithScope().
 		WithRolePermissions(func(rp *ent.RolePermissionQuery) {
@@ -185,7 +186,7 @@ func GetPermissionsWithPagination(ctx context.Context, req *models.GetPermission
 	// 转换为响应格式
 	permissionResponses := make([]*models.PermissionResponse, 0, len(permissions))
 	for _, p := range permissions {
-		permissionResponses = append(permissionResponses, ConvertPermissionToResponse(p))
+		permissionResponses = append(permissionResponses, PermissionFuncs{}.ConvertPermissionToResponse(p))
 	}
 
 	return &models.PermissionsListResponse{
@@ -202,7 +203,7 @@ func GetPermissionsWithPagination(ctx context.Context, req *models.GetPermission
 }
 
 // ConvertPermissionToResponse 将权限实体转换为响应格式
-func ConvertPermissionToResponse(p *ent.Permission) *models.PermissionResponse {
+func (PermissionFuncs) ConvertPermissionToResponse(p *ent.Permission) *models.PermissionResponse {
 	resp := &models.PermissionResponse{
 		ID:          utils.Uint64ToString(p.ID),
 		Name:        p.Name,
@@ -214,14 +215,14 @@ func ConvertPermissionToResponse(p *ent.Permission) *models.PermissionResponse {
 
 	// 转换权限域
 	if p.Edges.Scope != nil {
-		resp.Scope = ConvertScopeToResponse(p.Edges.Scope)
+		resp.Scope = ScopeFuncs{}.ConvertScopeToResponse(p.Edges.Scope)
 	}
 
 	return resp
 }
 
 // GetRolePermissionsWithPagination 分页获取角色权限关联列表
-func GetRolePermissionsWithPagination(ctx context.Context, req *models.GetRolePermissionsRequest) (*models.RolePermissionsListResponse, error) {
+func (PermissionFuncs) GetRolePermissionsWithPagination(ctx context.Context, req *models.GetRolePermissionsRequest) (*models.RolePermissionsListResponse, error) {
 	query := database.Client.RolePermission.Query().
 		WithRole().
 		WithPermission()
@@ -286,11 +287,11 @@ func GetRolePermissionsWithPagination(ctx context.Context, req *models.GetRolePe
 		}
 
 		if rp.Edges.Role != nil {
-			resp.Role = ConvertRoleToResponse(rp.Edges.Role)
+			resp.Role = RoleFuncs{}.ConvertRoleToResponse(rp.Edges.Role)
 		}
 
 		if rp.Edges.Permission != nil {
-			resp.Permission = ConvertPermissionToResponse(rp.Edges.Permission)
+			resp.Permission = PermissionFuncs{}.ConvertPermissionToResponse(rp.Edges.Permission)
 		}
 
 		rolePermissionResponses = append(rolePermissionResponses, resp)

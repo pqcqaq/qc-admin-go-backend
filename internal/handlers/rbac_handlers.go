@@ -40,7 +40,7 @@ func NewPermissionHandler() *PermissionHandler {
 // @Failure      500  {object}  object{success=bool,message=string}
 // @Router       /rbac/roles/all [get]
 func (h *RoleHandler) GetAllRoles(c *gin.Context) {
-	roles, err := funcs.GetAllRoles(middleware.GetRequestContext(c))
+	roles, err := funcs.RoleFuncs{}.GetAllRoles(middleware.GetRequestContext(c))
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取角色列表失败", err.Error()))
 		return
@@ -49,7 +49,7 @@ func (h *RoleHandler) GetAllRoles(c *gin.Context) {
 	// 转换为响应格式
 	roleResponses := make([]*models.RoleResponse, 0, len(roles))
 	for _, role := range roles {
-		roleResponses = append(roleResponses, funcs.ConvertRoleToResponse(role))
+		roleResponses = append(roleResponses, funcs.RoleFuncs{}.ConvertRoleToResponse(role))
 	}
 
 	c.JSON(200, gin.H{
@@ -88,7 +88,7 @@ func (h *RoleHandler) GetRoles(c *gin.Context) {
 		return
 	}
 
-	result, err := funcs.GetRolesWithPagination(middleware.GetRequestContext(c), &req)
+	result, err := funcs.RoleFuncs{}.GetRolesWithPagination(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取角色列表失败", err.Error()))
 		return
@@ -129,7 +129,7 @@ func (h *RoleHandler) GetRole(c *gin.Context) {
 		return
 	}
 
-	role, err := funcs.GetRoleByID(middleware.GetRequestContext(c), id)
+	role, err := funcs.RoleFuncs{}.GetRoleByID(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -143,7 +143,7 @@ func (h *RoleHandler) GetRole(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"success": true,
-		"data":    funcs.ConvertRoleToResponse(role),
+		"data":    funcs.RoleFuncs{}.ConvertRoleToResponse(role),
 	})
 }
 
@@ -171,7 +171,7 @@ func (h *RoleHandler) CreateRole(c *gin.Context) {
 		return
 	}
 
-	role, err := funcs.CreateRole(middleware.GetRequestContext(c), &req)
+	role, err := funcs.RoleFuncs{}.CreateRole(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		if err.Error() == "role already exists" {
 			middleware.ThrowError(c, middleware.BadRequestError("角色已存在", map[string]any{
@@ -185,7 +185,7 @@ func (h *RoleHandler) CreateRole(c *gin.Context) {
 
 	c.JSON(201, gin.H{
 		"success": true,
-		"data":    funcs.ConvertRoleToResponse(role),
+		"data":    funcs.RoleFuncs{}.ConvertRoleToResponse(role),
 		"message": "角色创建成功",
 	})
 }
@@ -220,7 +220,7 @@ func (h *RoleHandler) UpdateRole(c *gin.Context) {
 		return
 	}
 
-	role, err := funcs.UpdateRole(middleware.GetRequestContext(c), id, &req)
+	role, err := funcs.RoleFuncs{}.UpdateRole(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -234,7 +234,7 @@ func (h *RoleHandler) UpdateRole(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"success": true,
-		"data":    funcs.ConvertRoleToResponse(role),
+		"data":    funcs.RoleFuncs{}.ConvertRoleToResponse(role),
 		"message": "角色更新成功",
 	})
 }
@@ -262,7 +262,7 @@ func (h *RoleHandler) DeleteRole(c *gin.Context) {
 		return
 	}
 
-	err = funcs.DeleteRole(middleware.GetRequestContext(c), id)
+	err = funcs.RoleFuncs{}.DeleteRole(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -309,7 +309,7 @@ func (h *RoleHandler) AssignRolePermissions(c *gin.Context) {
 		return
 	}
 
-	err = funcs.AssignRolePermissions(middleware.GetRequestContext(c), id, &req)
+	err = funcs.RoleFuncs{}.AssignRolePermissions(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("分配角色权限失败", err.Error()))
 		return
@@ -354,7 +354,7 @@ func (h *RoleHandler) RevokeRolePermission(c *gin.Context) {
 		return
 	}
 
-	err = funcs.RevokeRolePermission(middleware.GetRequestContext(c), roleID, permissionID)
+	err = funcs.RoleFuncs{}.RevokeRolePermission(middleware.GetRequestContext(c), roleID, permissionID)
 	if err != nil {
 		if err.Error() == "role permission not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色权限关联不存在", map[string]any{
@@ -385,7 +385,7 @@ func (h *RoleHandler) RevokeRolePermission(c *gin.Context) {
 // @Failure      500  {object}  object{success=bool,message=string}
 // @Router       /rbac/permissions/all [get]
 func (h *PermissionHandler) GetAllPermissions(c *gin.Context) {
-	permissions, err := funcs.GetAllPermissions(middleware.GetRequestContext(c))
+	permissions, err := funcs.PermissionFuncs{}.GetAllPermissions(middleware.GetRequestContext(c))
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取权限列表失败", err.Error()))
 		return
@@ -394,7 +394,7 @@ func (h *PermissionHandler) GetAllPermissions(c *gin.Context) {
 	// 转换为响应格式
 	permissionResponses := make([]*models.PermissionResponse, 0, len(permissions))
 	for _, permission := range permissions {
-		permissionResponses = append(permissionResponses, funcs.ConvertPermissionToResponse(permission))
+		permissionResponses = append(permissionResponses, funcs.PermissionFuncs{}.ConvertPermissionToResponse(permission))
 	}
 
 	c.JSON(200, gin.H{
@@ -433,7 +433,7 @@ func (h *PermissionHandler) GetPermissions(c *gin.Context) {
 		return
 	}
 
-	result, err := funcs.GetPermissionsWithPagination(middleware.GetRequestContext(c), &req)
+	result, err := funcs.PermissionFuncs{}.GetPermissionsWithPagination(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取权限列表失败", err.Error()))
 		return
@@ -474,7 +474,7 @@ func (h *PermissionHandler) GetPermission(c *gin.Context) {
 		return
 	}
 
-	permission, err := funcs.GetPermissionByID(middleware.GetRequestContext(c), id)
+	permission, err := funcs.PermissionFuncs{}.GetPermissionByID(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "permission not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("权限不存在", map[string]any{
@@ -488,7 +488,7 @@ func (h *PermissionHandler) GetPermission(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"success": true,
-		"data":    funcs.ConvertPermissionToResponse(permission),
+		"data":    funcs.PermissionFuncs{}.ConvertPermissionToResponse(permission),
 	})
 }
 
@@ -521,7 +521,7 @@ func (h *PermissionHandler) CreatePermission(c *gin.Context) {
 		return
 	}
 
-	permission, err := funcs.CreatePermission(middleware.GetRequestContext(c), &req)
+	permission, err := funcs.PermissionFuncs{}.CreatePermission(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		if err.Error() == "permission already exists" {
 			middleware.ThrowError(c, middleware.BadRequestError("权限已存在", map[string]any{
@@ -536,7 +536,7 @@ func (h *PermissionHandler) CreatePermission(c *gin.Context) {
 
 	c.JSON(201, gin.H{
 		"success": true,
-		"data":    funcs.ConvertPermissionToResponse(permission),
+		"data":    funcs.PermissionFuncs{}.ConvertPermissionToResponse(permission),
 		"message": "权限创建成功",
 	})
 }
@@ -571,7 +571,7 @@ func (h *PermissionHandler) UpdatePermission(c *gin.Context) {
 		return
 	}
 
-	permission, err := funcs.UpdatePermission(middleware.GetRequestContext(c), id, &req)
+	permission, err := funcs.PermissionFuncs{}.UpdatePermission(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		if err.Error() == "permission not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("权限不存在", map[string]any{
@@ -585,7 +585,7 @@ func (h *PermissionHandler) UpdatePermission(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"success": true,
-		"data":    funcs.ConvertPermissionToResponse(permission),
+		"data":    funcs.PermissionFuncs{}.ConvertPermissionToResponse(permission),
 		"message": "权限更新成功",
 	})
 }
@@ -613,7 +613,7 @@ func (h *PermissionHandler) DeletePermission(c *gin.Context) {
 		return
 	}
 
-	err = funcs.DeletePermission(middleware.GetRequestContext(c), id)
+	err = funcs.PermissionFuncs{}.DeletePermission(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "permission not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("权限不存在", map[string]any{
@@ -749,7 +749,7 @@ func (h *RoleHandler) CreateChildRole(c *gin.Context) {
 
 	c.JSON(201, gin.H{
 		"success": true,
-		"data":    funcs.ConvertRoleToResponse(role),
+		"data":    funcs.RoleFuncs{}.ConvertRoleToResponse(role),
 		"message": "子角色创建成功",
 	})
 }

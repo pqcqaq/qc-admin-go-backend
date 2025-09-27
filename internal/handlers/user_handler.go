@@ -29,7 +29,7 @@ func NewUserHandler() *UserHandler {
 // @Failure      500  {object}  object{success=bool,message=string}
 // @Router       /users [get]
 func (h *UserHandler) GetUsers(c *gin.Context) {
-	users, err := funcs.GetAllUsers(middleware.GetRequestContext(c))
+	users, err := funcs.UserFuncs{}.GetAllUsers(middleware.GetRequestContext(c))
 	if err != nil {
 		// 使用自定义错误处理
 		middleware.ThrowError(c, middleware.DatabaseError("获取用户列表失败", err.Error()))
@@ -73,7 +73,7 @@ func (h *UserHandler) GetUsersWithPagination(c *gin.Context) {
 	}
 
 	// 调用服务层方法
-	result, err := funcs.GetUsersWithPagination(middleware.GetRequestContext(c), &req)
+	result, err := funcs.UserFuncs{}.GetUsersWithPagination(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取用户列表失败", err.Error()))
 		return
@@ -115,7 +115,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 		return
 	}
 
-	user, err := funcs.GetUserByID(middleware.GetRequestContext(c), id)
+	user, err := funcs.UserFuncs{}.GetUserByID(middleware.GetRequestContext(c), id)
 	if err != nil {
 		// 根据错误类型抛出不同的自定义错误
 		if err.Error() == "user not found" {
@@ -160,7 +160,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	user, err := funcs.CreateUser(middleware.GetRequestContext(c), &req)
+	user, err := funcs.UserFuncs{}.CreateUser(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		// 根据错误内容判断错误类型
 		if err.Error() == "user already exists" {
@@ -210,7 +210,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	user, err := funcs.UpdateUser(middleware.GetRequestContext(c), id, &req)
+	user, err := funcs.UserFuncs{}.UpdateUser(middleware.GetRequestContext(c), id, &req)
 	if err != nil {
 		if err.Error() == "user not found" {
 			middleware.ThrowError(c, middleware.UserNotFoundError(map[string]any{
@@ -252,7 +252,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	err = funcs.DeleteUser(middleware.GetRequestContext(c), id)
+	err = funcs.UserFuncs{}.DeleteUser(middleware.GetRequestContext(c), id)
 	if err != nil {
 		if err.Error() == "user not found" {
 			middleware.ThrowError(c, middleware.UserNotFoundError(map[string]any{
@@ -300,7 +300,7 @@ func (h *UserHandler) SetUserAvatar(c *gin.Context) {
 		}))
 		return
 	}
-	_, err = funcs.UpdateUserAvatar(middleware.GetRequestContext(c), userID, attachmentID)
+	_, err = funcs.UserFuncs{}.UpdateUserAvatar(middleware.GetRequestContext(c), userID, attachmentID)
 	if err != nil {
 		if err.Error() == "user not found" {
 			middleware.ThrowError(c, middleware.UserNotFoundError(map[string]any{

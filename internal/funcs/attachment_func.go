@@ -18,13 +18,15 @@ import (
 	"go-backend/shared/models"
 )
 
+type AttachmentFuncs struct{}
+
 // GetAllAttachments 获取所有附件
-func GetAllAttachments(ctx context.Context) ([]*ent.Attachment, error) {
+func (AttachmentFuncs) GetAllAttachments(ctx context.Context) ([]*ent.Attachment, error) {
 	return database.Client.Attachment.Query().All(ctx)
 }
 
 // GetAttachmentByID 根据ID获取附件
-func GetAttachmentByID(ctx context.Context, id uint64) (*ent.Attachment, error) {
+func (AttachmentFuncs) GetAttachmentByID(ctx context.Context, id uint64) (*ent.Attachment, error) {
 	attachment, err := database.Client.Attachment.Query().Where(attachment.ID(id)).Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -36,7 +38,7 @@ func GetAttachmentByID(ctx context.Context, id uint64) (*ent.Attachment, error) 
 }
 
 // CreateAttachment 创建附件
-func CreateAttachment(ctx context.Context, req *models.CreateAttachmentRequest) (*ent.Attachment, error) {
+func (AttachmentFuncs) CreateAttachment(ctx context.Context, req *models.CreateAttachmentRequest) (*ent.Attachment, error) {
 	builder := database.Client.Attachment.Create().
 		SetFilename(req.Filename).
 		SetPath(req.Path).
@@ -77,7 +79,7 @@ func CreateAttachment(ctx context.Context, req *models.CreateAttachmentRequest) 
 }
 
 // UpdateAttachment 更新附件
-func UpdateAttachment(ctx context.Context, id uint64, req *models.UpdateAttachmentRequest) (*ent.Attachment, error) {
+func (AttachmentFuncs) UpdateAttachment(ctx context.Context, id uint64, req *models.UpdateAttachmentRequest) (*ent.Attachment, error) {
 	// 首先检查附件是否存在
 	exists, err := database.Client.Attachment.Query().Where(attachment.ID(id)).Exist(ctx)
 	if err != nil {
@@ -137,7 +139,7 @@ func UpdateAttachment(ctx context.Context, id uint64, req *models.UpdateAttachme
 }
 
 // DeleteAttachment 删除附件
-func DeleteAttachment(ctx context.Context, id uint64) error {
+func (AttachmentFuncs) DeleteAttachment(ctx context.Context, id uint64) error {
 	// 首先检查附件是否存在
 	exists, err := database.Client.Attachment.Query().Where(attachment.ID(id)).Exist(ctx)
 	if err != nil {
@@ -151,7 +153,7 @@ func DeleteAttachment(ctx context.Context, id uint64) error {
 }
 
 // GetAttachmentsWithPagination 分页获取附件列表
-func GetAttachmentsWithPagination(ctx context.Context, req *models.GetAttachmentsRequest) (*models.AttachmentsListResponse, error) {
+func (AttachmentFuncs) GetAttachmentsWithPagination(ctx context.Context, req *models.GetAttachmentsRequest) (*models.AttachmentsListResponse, error) {
 	// 设置默认值
 	if req.Page < 1 {
 		req.Page = 1
@@ -307,16 +309,16 @@ func GetAttachmentsWithPagination(ctx context.Context, req *models.GetAttachment
 }
 
 // generateUploadSessionID 生成上传会话ID
-func generateUploadSessionID() string {
+func (AttachmentFuncs) generateUploadSessionID() string {
 	bytes := make([]byte, 16)
 	rand.Read(bytes)
 	return hex.EncodeToString(bytes)
 }
 
 // PrepareUpload 准备文件上传
-func PrepareUpload(ctx context.Context, req *models.PrepareUploadRequest) (*models.PrepareUploadResponse, error) {
+func (AttachmentFuncs) PrepareUpload(ctx context.Context, req *models.PrepareUploadRequest) (*models.PrepareUploadResponse, error) {
 	// 生成上传会话ID
-	uploadSessionID := generateUploadSessionID()
+	uploadSessionID := AttachmentFuncs{}.generateUploadSessionID()
 
 	// 生成文件路径
 	timestamp := time.Now().Format("2006/01/02")
@@ -362,7 +364,7 @@ func PrepareUpload(ctx context.Context, req *models.PrepareUploadRequest) (*mode
 }
 
 // ConfirmUpload 确认文件上传完成
-func ConfirmUpload(ctx context.Context, req *models.ConfirmUploadRequest) (*ent.Attachment, error) {
+func (AttachmentFuncs) ConfirmUpload(ctx context.Context, req *models.ConfirmUploadRequest) (*ent.Attachment, error) {
 	// 根据上传会话ID查找附件
 	attachmentRecord, err := database.Client.Attachment.Query().
 		Where(attachment.UploadSessionIDEQ(req.UploadSessionID)).
@@ -454,7 +456,7 @@ func ConfirmUpload(ctx context.Context, req *models.ConfirmUploadRequest) (*ent.
 }
 
 // GetAttachmentByUploadSessionID 根据上传会话ID获取附件
-func GetAttachmentByUploadSessionID(ctx context.Context, uploadSessionID string) (*ent.Attachment, error) {
+func (AttachmentFuncs) GetAttachmentByUploadSessionID(ctx context.Context, uploadSessionID string) (*ent.Attachment, error) {
 	attachment, err := database.Client.Attachment.Query().
 		Where(attachment.UploadSessionIDEQ(uploadSessionID)).
 		Only(ctx)

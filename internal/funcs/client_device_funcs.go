@@ -12,8 +12,10 @@ import (
 	"go-backend/shared/models"
 )
 
+type ClientDeviceFuncs struct{}
+
 // generateClientCode 生成客户端设备code
-func generateClientCode() (string, error) {
+func (ClientDeviceFuncs) generateClientCode() (string, error) {
 	bytes := make([]byte, 32) // 32字节 = 64字符的十六进制
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
@@ -22,7 +24,7 @@ func generateClientCode() (string, error) {
 }
 
 // GetAllClientDevices 获取所有客户端设备
-func GetAllClientDevices(ctx context.Context) ([]*models.ClientDeviceResponse, error) {
+func (ClientDeviceFuncs) GetAllClientDevices(ctx context.Context) ([]*models.ClientDeviceResponse, error) {
 	records, err := database.Client.ClientDevice.Query().
 		WithRoles().
 		All(ctx)
@@ -61,7 +63,7 @@ func GetAllClientDevices(ctx context.Context) ([]*models.ClientDeviceResponse, e
 	return devices, nil
 }
 
-func GetClientDeviceByIdInner(ctx context.Context, id uint64) (*ent.ClientDevice, error) {
+func (ClientDeviceFuncs) GetClientDeviceByIdInner(ctx context.Context, id uint64) (*ent.ClientDevice, error) {
 	device, err := database.Client.ClientDevice.Query().
 		Where(clientdevice.ID(id)).
 		WithRoles().
@@ -76,8 +78,8 @@ func GetClientDeviceByIdInner(ctx context.Context, id uint64) (*ent.ClientDevice
 }
 
 // GetClientDeviceById 根据ID获取客户端设备
-func GetClientDeviceById(ctx context.Context, id uint64) (*models.ClientDeviceResponse, error) {
-	device, err := GetClientDeviceByIdInner(ctx, id)
+func (ClientDeviceFuncs) GetClientDeviceById(ctx context.Context, id uint64) (*models.ClientDeviceResponse, error) {
+	device, err := ClientDeviceFuncs{}.GetClientDeviceByIdInner(ctx, id)
 
 	if err != nil {
 		return nil, err
@@ -111,7 +113,7 @@ func GetClientDeviceById(ctx context.Context, id uint64) (*models.ClientDeviceRe
 }
 
 // GetClientDeviceByCode 根据code获取客户端设备
-func GetClientDeviceByCodeInner(ctx context.Context, code string) (*ent.ClientDevice, error) {
+func (ClientDeviceFuncs) GetClientDeviceByCodeInner(ctx context.Context, code string) (*ent.ClientDevice, error) {
 	device, err := database.Client.ClientDevice.Query().
 		Where(clientdevice.Code(code)).
 		WithRoles().
@@ -127,8 +129,8 @@ func GetClientDeviceByCodeInner(ctx context.Context, code string) (*ent.ClientDe
 }
 
 // GetClientDeviceByCode 根据code获取客户端设备
-func GetClientDeviceByCode(ctx context.Context, code string) (*models.ClientDeviceByCodeResponse, error) {
-	device, err := GetClientDeviceByCodeInner(ctx, code)
+func (ClientDeviceFuncs) GetClientDeviceByCode(ctx context.Context, code string) (*models.ClientDeviceByCodeResponse, error) {
+	device, err := ClientDeviceFuncs{}.GetClientDeviceByCodeInner(ctx, code)
 
 	if err != nil {
 		return nil, err
@@ -159,9 +161,9 @@ func GetClientDeviceByCode(ctx context.Context, code string) (*models.ClientDevi
 }
 
 // CreateClientDevice 创建客户端设备
-func CreateClientDevice(ctx context.Context, req *models.CreateClientDeviceRequest) (*ent.ClientDevice, error) {
+func (ClientDeviceFuncs) CreateClientDevice(ctx context.Context, req *models.CreateClientDeviceRequest) (*ent.ClientDevice, error) {
 	// 生成唯一的code
-	code, err := generateClientCode()
+	code, err := ClientDeviceFuncs{}.generateClientCode()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate client code: %w", err)
 	}
@@ -175,7 +177,7 @@ func CreateClientDevice(ctx context.Context, req *models.CreateClientDeviceReque
 	}
 	if exists {
 		// 如果存在，重新生成
-		return CreateClientDevice(ctx, req)
+		return ClientDeviceFuncs{}.CreateClientDevice(ctx, req)
 	}
 
 	// 开始事务
@@ -234,7 +236,7 @@ func CreateClientDevice(ctx context.Context, req *models.CreateClientDeviceReque
 }
 
 // UpdateClientDevice 更新客户端设备
-func UpdateClientDevice(ctx context.Context, id uint64, req *models.UpdateClientDeviceRequest) (*ent.ClientDevice, error) {
+func (ClientDeviceFuncs) UpdateClientDevice(ctx context.Context, id uint64, req *models.UpdateClientDeviceRequest) (*ent.ClientDevice, error) {
 	// 开始事务
 	tx, err := database.Client.Tx(ctx)
 	if err != nil {
@@ -319,7 +321,7 @@ func UpdateClientDevice(ctx context.Context, id uint64, req *models.UpdateClient
 }
 
 // DeleteClientDevice 删除客户端设备
-func DeleteClientDevice(ctx context.Context, id uint64) error {
+func (ClientDeviceFuncs) DeleteClientDevice(ctx context.Context, id uint64) error {
 	// 检查设备是否存在
 	exists, err := database.Client.ClientDevice.Query().Where(clientdevice.ID(id)).Exist(ctx)
 	if err != nil {
@@ -333,7 +335,7 @@ func DeleteClientDevice(ctx context.Context, id uint64) error {
 }
 
 // GetClientDevicesWithPagination 分页获取客户端设备
-func GetClientDevicesWithPagination(ctx context.Context, req *models.PageClientDevicesRequest) (*models.PageClientDevicesResponse, error) {
+func (ClientDeviceFuncs) GetClientDevicesWithPagination(ctx context.Context, req *models.PageClientDevicesRequest) (*models.PageClientDevicesResponse, error) {
 	// 构建查询
 	query := database.Client.ClientDevice.Query().
 		WithRoles()
@@ -472,7 +474,7 @@ func GetClientDevicesWithPagination(ctx context.Context, req *models.PageClientD
 }
 
 // CheckClientAccess 检查用户是否能使用指定客户端登录
-func CheckClientAccess(ctx context.Context, req *models.CheckClientAccessRequest) (*models.CheckClientAccessResponse, error) {
+func (ClientDeviceFuncs) CheckClientAccess(ctx context.Context, req *models.CheckClientAccessRequest) (*models.CheckClientAccessResponse, error) {
 	// 根据code获取客户端设备
 	device, err := database.Client.ClientDevice.Query().
 		Where(clientdevice.Code(req.Code)).

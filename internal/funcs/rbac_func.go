@@ -190,7 +190,7 @@ func GetRoleWithPermissions(ctx context.Context, roleID uint64) (*models.RoleDet
 		for _, rp := range role.Edges.RolePermissions {
 			if rp.Edges.Permission != nil {
 				directPermissions = append(directPermissions, &models.PermissionWithSource{
-					Permission: ConvertPermissionToResponse(rp.Edges.Permission),
+					Permission: PermissionFuncs{}.ConvertPermissionToResponse(rp.Edges.Permission),
 					Source:     "direct",
 					SourceRole: &models.RoleResponse{
 						ID:          utils.Uint64ToString(role.ID),
@@ -220,7 +220,7 @@ func GetRoleWithPermissions(ctx context.Context, roleID uint64) (*models.RoleDet
 				for _, rp := range parentRoleWithPerms.Edges.RolePermissions {
 					if rp.Edges.Permission != nil {
 						inheritedPermissions = append(inheritedPermissions, &models.PermissionWithSource{
-							Permission: ConvertPermissionToResponse(rp.Edges.Permission),
+							Permission: PermissionFuncs{}.ConvertPermissionToResponse(rp.Edges.Permission),
 							Source:     "inherit",
 							SourceRole: &models.RoleResponse{
 								ID:          utils.Uint64ToString(parentRole.ID),
@@ -235,7 +235,7 @@ func GetRoleWithPermissions(ctx context.Context, roleID uint64) (*models.RoleDet
 	}
 
 	return &models.RoleDetailedPermissionsResponse{
-		Role:                 ConvertRoleToResponse(role),
+		Role:                 RoleFuncs{}.ConvertRoleToResponse(role),
 		DirectPermissions:    directPermissions,
 		InheritedPermissions: inheritedPermissions,
 	}, nil
@@ -265,7 +265,7 @@ func CreateChildRole(ctx context.Context, parentID uint64, req *models.CreateChi
 	}
 
 	// 返回完整的角色信息
-	return GetRoleByID(ctx, childRole.ID)
+	return RoleFuncs{}.GetRoleByID(ctx, childRole.ID)
 }
 
 // RemoveParentRole 移除父角色继承关系
@@ -352,7 +352,7 @@ func GetAssignablePermissions(ctx context.Context, roleID uint64) ([]*models.Per
 	}
 
 	// 获取角色已有的权限
-	rolePermissions, err := GetRolePermissions(ctx, roleID)
+	rolePermissions, err := RoleFuncs{}.GetRolePermissions(ctx, roleID)
 	if err != nil {
 		return nil, err
 	}
@@ -367,7 +367,7 @@ func GetAssignablePermissions(ctx context.Context, roleID uint64) ([]*models.Per
 	var assignablePermissions []*models.PermissionResponse
 	for _, perm := range allPermissions {
 		if !assignedPermissions[perm.ID] {
-			assignablePermissions = append(assignablePermissions, ConvertPermissionToResponse(perm))
+			assignablePermissions = append(assignablePermissions, PermissionFuncs{}.ConvertPermissionToResponse(perm))
 		}
 	}
 
@@ -470,7 +470,7 @@ func GetRoleUsersWithPagination(ctx context.Context, roleID uint64, req *models.
 
 		var roleList []models.RoleResponse = make([]models.RoleResponse, 0)
 
-		foundRoles, err := GetUserRoles(ctx, u.ID)
+		foundRoles, err := UserFuncs{}.GetUserRoles(ctx, u.ID)
 		if err != nil {
 			return nil, fmt.Errorf("cannot found user-roles")
 		}
@@ -655,7 +655,7 @@ func HasAnyPermissions(ctx context.Context, userID uint64, permissions []string)
 	}
 
 	// 获取用户所有权限
-	userPermissions, err := GetUserPermissions(ctx, userID)
+	userPermissions, err := UserFuncs{}.GetUserPermissions(ctx, userID)
 	if err != nil {
 		return false, err
 	}

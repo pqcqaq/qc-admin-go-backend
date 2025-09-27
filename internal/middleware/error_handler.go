@@ -135,7 +135,7 @@ func logError(c *gin.Context, customErr *CustomError, isPanic bool) {
 	if errorType == "Panic" {
 		level = "fatal"
 	}
-	funcs.CreateAsyncLoggingFunc(
+	funcs.LoggingFunc{}.CreateAsyncLoggingFunc(
 		level,
 		errorType,
 		customErr.Message,

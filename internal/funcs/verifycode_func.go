@@ -11,8 +11,10 @@ import (
 	"go-backend/pkg/database"
 )
 
+type VerifyCodeFuncs struct{}
+
 // SendVerificationCode 发送验证码通用接口
-func SendVerificationCode(ctx context.Context, senderType, purpose, identifier, deviceCode string) error {
+func (VerifyCodeFuncs) SendVerificationCode(ctx context.Context, senderType, purpose, identifier, deviceCode string) error {
 	// 检查30秒内是否已发送过验证码
 	thirtySecondsAgo := time.Now().Add(-30 * time.Second)
 	exists, err := database.Client.VerifyCode.Query().
@@ -46,7 +48,7 @@ func SendVerificationCode(ctx context.Context, senderType, purpose, identifier, 
 	now := time.Now()
 	expiresAt := now.Add(15 * time.Minute) // 15分钟过期
 
-	client, err := GetClientDeviceByCodeInner(ctx, deviceCode)
+	client, err := ClientDeviceFuncs{}.GetClientDeviceByCodeInner(ctx, deviceCode)
 
 	if err != nil {
 		return fmt.Errorf("创建验证码记录失败: %w", err)
@@ -87,7 +89,7 @@ func SendVerificationCode(ctx context.Context, senderType, purpose, identifier, 
 }
 
 // VerifyCode 验证验证码通用接口
-func VerifyCode(ctx context.Context, senderType, purpose, identifier, code string) error {
+func (VerifyCodeFuncs) VerifyCode(ctx context.Context, senderType, purpose, identifier, code string) error {
 	// 查询15分钟内有效的验证码
 	fifteenMinutesAgo := time.Now().Add(-15 * time.Minute)
 	now := time.Now()

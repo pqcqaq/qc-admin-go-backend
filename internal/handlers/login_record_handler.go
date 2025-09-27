@@ -69,7 +69,7 @@ func (h *LoginRecordHandler) GetLoginRecords(c *gin.Context) {
 			return
 		}
 
-		records, err = funcs.GetUserLoginRecords(middleware.GetRequestContext(c), userID, limit, offset)
+		records, err = funcs.LoginRecordFuncs{}.GetUserLoginRecords(middleware.GetRequestContext(c), userID, limit, offset)
 		if err != nil {
 			middleware.ThrowError(c, middleware.InternalServerError("查询用户登录记录失败", err.Error()))
 			return
@@ -87,7 +87,7 @@ func (h *LoginRecordHandler) GetLoginRecords(c *gin.Context) {
 
 	} else if status != "" {
 		// 根据状态查询登录记录
-		records, err = funcs.GetLoginRecordsByStatus(middleware.GetRequestContext(c), status, limit, offset)
+		records, err = funcs.LoginRecordFuncs{}.GetLoginRecordsByStatus(middleware.GetRequestContext(c), status, limit, offset)
 		if err != nil {
 			middleware.ThrowError(c, middleware.InternalServerError("查询登录记录失败", err.Error()))
 			return
@@ -180,7 +180,7 @@ func (h *LoginRecordHandler) GetUserLoginRecords(c *gin.Context) {
 	offset := (page - 1) * limit
 
 	// 查询用户的登录记录
-	records, err := funcs.GetUserLoginRecords(middleware.GetRequestContext(c), userID, limit, offset)
+	records, err := funcs.LoginRecordFuncs{}.GetUserLoginRecords(middleware.GetRequestContext(c), userID, limit, offset)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("查询登录记录失败", err.Error()))
 		return

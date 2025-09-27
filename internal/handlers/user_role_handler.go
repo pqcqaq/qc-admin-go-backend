@@ -50,7 +50,7 @@ func (h *UserRoleHandler) GetUserRolesWithPagination(c *gin.Context) {
 		return
 	}
 
-	result, err := funcs.GetUserRolesWithPagination(middleware.GetRequestContext(c), &req)
+	result, err := funcs.UserFuncs{}.GetUserRolesWithPagination(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取用户角色列表失败", err.Error()))
 		return
@@ -93,7 +93,7 @@ func (h *UserRoleHandler) AssignRole(c *gin.Context) {
 		return
 	}
 
-	userRole, err := funcs.AssignUserRole(middleware.GetRequestContext(c), &req)
+	userRole, err := funcs.UserFuncs{}.AssignUserRole(middleware.GetRequestContext(c), &req)
 	if err != nil {
 		if err.Error() == "user role already exists" {
 			middleware.ThrowError(c, middleware.BadRequestError("用户已拥有此角色", map[string]any{
@@ -116,7 +116,7 @@ func (h *UserRoleHandler) AssignRole(c *gin.Context) {
 
 	c.JSON(201, gin.H{
 		"success": true,
-		"data":    funcs.ConvertUserRoleToResponse(userRole),
+		"data":    funcs.UserFuncs{}.ConvertUserRoleToResponse(userRole),
 		"message": "角色分配成功",
 	})
 }
@@ -154,7 +154,7 @@ func (h *UserRoleHandler) RevokeRole(c *gin.Context) {
 		return
 	}
 
-	err = funcs.RevokeUserRole(middleware.GetRequestContext(c), userID, roleID)
+	err = funcs.UserFuncs{}.RevokeUserRole(middleware.GetRequestContext(c), userID, roleID)
 	if err != nil {
 		if err.Error() == "user role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("用户角色关联不存在", map[string]any{
@@ -196,7 +196,7 @@ func (h *UserRoleHandler) GetUserRoles(c *gin.Context) {
 		return
 	}
 
-	roles, err := funcs.GetUserRoles(middleware.GetRequestContext(c), userID)
+	roles, err := funcs.UserFuncs{}.GetUserRoles(middleware.GetRequestContext(c), userID)
 	if err != nil {
 		if err.Error() == "user not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("用户不存在", map[string]any{
@@ -211,7 +211,7 @@ func (h *UserRoleHandler) GetUserRoles(c *gin.Context) {
 	// 转换为响应格式
 	roleResponses := make([]*models.RoleResponse, 0, len(roles))
 	for _, role := range roles {
-		roleResponses = append(roleResponses, funcs.ConvertRoleToResponse(role))
+		roleResponses = append(roleResponses, funcs.RoleFuncs{}.ConvertRoleToResponse(role))
 	}
 
 	c.JSON(200, gin.H{
@@ -244,7 +244,7 @@ func (h *UserRoleHandler) GetRoleUsers(c *gin.Context) {
 		return
 	}
 
-	users, err := funcs.GetRoleUsers(middleware.GetRequestContext(c), roleID)
+	users, err := funcs.UserFuncs{}.GetRoleUsers(middleware.GetRequestContext(c), roleID)
 	if err != nil {
 		if err.Error() == "role not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("角色不存在", map[string]any{
@@ -259,7 +259,7 @@ func (h *UserRoleHandler) GetRoleUsers(c *gin.Context) {
 	// 转换为响应格式
 	userResponses := make([]*models.UserResponse, 0, len(users))
 	for _, user := range users {
-		userResponses = append(userResponses, funcs.ConvertUserToResponse(user))
+		userResponses = append(userResponses, funcs.UserFuncs{}.ConvertUserToResponse(user))
 	}
 
 	c.JSON(200, gin.H{
@@ -292,7 +292,7 @@ func (h *UserRoleHandler) GetUserPermissions(c *gin.Context) {
 		return
 	}
 
-	permissions, err := funcs.GetUserPermissions(middleware.GetRequestContext(c), userID)
+	permissions, err := funcs.UserFuncs{}.GetUserPermissions(middleware.GetRequestContext(c), userID)
 	if err != nil {
 		if err.Error() == "user not found" {
 			middleware.ThrowError(c, middleware.NotFoundError("用户不存在", map[string]any{
@@ -307,7 +307,7 @@ func (h *UserRoleHandler) GetUserPermissions(c *gin.Context) {
 	// 转换为响应格式
 	permissionResponses := make([]*models.PermissionResponse, 0, len(permissions))
 	for _, permission := range permissions {
-		permissionResponses = append(permissionResponses, funcs.ConvertPermissionToResponse(permission))
+		permissionResponses = append(permissionResponses, funcs.PermissionFuncs{}.ConvertPermissionToResponse(permission))
 	}
 
 	c.JSON(200, gin.H{
@@ -349,7 +349,7 @@ func (h *UserRoleHandler) CheckUserPermission(c *gin.Context) {
 		return
 	}
 
-	hasPermission, err := funcs.CheckUserPermission(middleware.GetRequestContext(c), userID, permissionID)
+	hasPermission, err := funcs.UserFuncs{}.CheckUserPermission(middleware.GetRequestContext(c), userID, permissionID)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("检查用户权限失败", err.Error()))
 		return

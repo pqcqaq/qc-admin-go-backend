@@ -32,7 +32,7 @@ func NewClientDeviceHandler() *ClientDeviceHandler {
 // @Router       /client-devices [get]
 func (h *ClientDeviceHandler) GetClientDevices(c *gin.Context) {
 	ctx := middleware.GetRequestContext(c)
-	devices, err := funcs.GetAllClientDevices(ctx)
+	devices, err := funcs.ClientDeviceFuncs{}.GetAllClientDevices(ctx)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取客户端设备列表失败", err.Error()))
 		return
@@ -80,7 +80,7 @@ func (h *ClientDeviceHandler) GetClientDevicesWithPagination(c *gin.Context) {
 
 	// 调用服务层方法
 	ctx := middleware.GetRequestContext(c)
-	result, err := funcs.GetClientDevicesWithPagination(ctx, &req)
+	result, err := funcs.ClientDeviceFuncs{}.GetClientDevicesWithPagination(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取客户端设备列表失败", err.Error()))
 		return
@@ -123,7 +123,7 @@ func (h *ClientDeviceHandler) GetClientDevice(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	device, err := funcs.GetClientDeviceById(ctx, id)
+	device, err := funcs.ClientDeviceFuncs{}.GetClientDeviceById(ctx, id)
 	if err != nil {
 		// 根据错误类型抛出不同的自定义错误
 		if err.Error() == "client device not found" ||
@@ -165,7 +165,7 @@ func (h *ClientDeviceHandler) GetClientDeviceByCode(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	device, err := funcs.GetClientDeviceByCode(ctx, code)
+	device, err := funcs.ClientDeviceFuncs{}.GetClientDeviceByCode(ctx, code)
 	if err != nil {
 		// 根据错误类型抛出不同的自定义错误
 		if err.Error() == "client device not found" ||
@@ -222,7 +222,7 @@ func (h *ClientDeviceHandler) CreateClientDevice(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	device, err := funcs.CreateClientDevice(ctx, &req)
+	device, err := funcs.ClientDeviceFuncs{}.CreateClientDevice(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("创建客户端设备失败", err.Error()))
 		return
@@ -282,7 +282,7 @@ func (h *ClientDeviceHandler) UpdateClientDevice(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	device, err := funcs.UpdateClientDevice(ctx, id, &req)
+	device, err := funcs.ClientDeviceFuncs{}.UpdateClientDevice(ctx, id, &req)
 	if err != nil {
 		if err.Error() == "client device not found" ||
 			err.Error() == "client device with id "+strconv.FormatUint(id, 10)+" not found" {
@@ -326,7 +326,7 @@ func (h *ClientDeviceHandler) DeleteClientDevice(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	err = funcs.DeleteClientDevice(ctx, id)
+	err = funcs.ClientDeviceFuncs{}.DeleteClientDevice(ctx, id)
 	if err != nil {
 		if err.Error() == "client device not found" ||
 			err.Error() == "client device with id "+strconv.FormatUint(id, 10)+" not found" {
@@ -377,7 +377,7 @@ func (h *ClientDeviceHandler) CheckClientAccess(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	result, err := funcs.CheckClientAccess(ctx, &req)
+	result, err := funcs.ClientDeviceFuncs{}.CheckClientAccess(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("检查客户端访问权限失败", err.Error()))
 		return
@@ -424,7 +424,7 @@ func (h *ClientDeviceHandler) ExportClientDevicesToExcel(c *gin.Context) {
 
 	// 获取数据
 	ctx := middleware.GetRequestContext(c)
-	result, err := funcs.GetClientDevicesWithPagination(ctx, &req)
+	result, err := funcs.ClientDeviceFuncs{}.GetClientDevicesWithPagination(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取客户端设备失败", err.Error()))
 		return

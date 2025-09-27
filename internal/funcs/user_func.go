@@ -22,9 +22,10 @@ import (
 )
 
 // UserService 用户服务
+type UserFuncs struct{}
 
 // GetAllUsers 获取所有用户
-func GetAllUsers(ctx context.Context) ([]*models.UserResponse, error) {
+func (UserFuncs) GetAllUsers(ctx context.Context) ([]*models.UserResponse, error) {
 	list, err := database.Client.User.Query().All(ctx)
 
 	if err != nil {
@@ -45,7 +46,7 @@ func GetAllUsers(ctx context.Context) ([]*models.UserResponse, error) {
 }
 
 // GetUserByID 根据ID获取用户
-func GetUserByID(ctx context.Context, id uint64) (*ent.User, error) {
+func (UserFuncs) GetUserByID(ctx context.Context, id uint64) (*ent.User, error) {
 	user, err := database.Client.User.Query().Where(user.ID(id)).Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -57,7 +58,7 @@ func GetUserByID(ctx context.Context, id uint64) (*ent.User, error) {
 }
 
 // CreateUser 创建用户
-func CreateUser(ctx context.Context, req *models.CreateUserRequest) (*ent.User, error) {
+func (UserFuncs) CreateUser(ctx context.Context, req *models.CreateUserRequest) (*ent.User, error) {
 	builder := database.Client.User.Create().
 		SetName(req.Name).
 		SetAge(*req.Age).
@@ -72,7 +73,7 @@ func CreateUser(ctx context.Context, req *models.CreateUserRequest) (*ent.User, 
 }
 
 // UpdateUser 更新用户
-func UpdateUser(ctx context.Context, id uint64, req *models.UpdateUserRequest) (*ent.User, error) {
+func (UserFuncs) UpdateUser(ctx context.Context, id uint64, req *models.UpdateUserRequest) (*ent.User, error) {
 	// 首先检查用户是否存在
 	exists, err := database.Client.User.Query().Where(user.ID(id)).Exist(ctx)
 	if err != nil {
@@ -107,7 +108,7 @@ func UpdateUser(ctx context.Context, id uint64, req *models.UpdateUserRequest) (
 }
 
 // DeleteUser 删除用户
-func DeleteUser(ctx context.Context, id uint64) error {
+func (UserFuncs) DeleteUser(ctx context.Context, id uint64) error {
 	tx, err := database.Client.Tx(ctx)
 	if err != nil {
 		return err
@@ -150,7 +151,7 @@ func DeleteUser(ctx context.Context, id uint64) error {
 }
 
 // 设置头像
-func UpdateUserAvatar(ctx context.Context, userID, avatarID uint64) (*ent.User, error) {
+func (UserFuncs) UpdateUserAvatar(ctx context.Context, userID, avatarID uint64) (*ent.User, error) {
 	// 首先检查用户是否存在
 	exists, err := database.Client.User.Query().Where(user.ID(userID)).Exist(ctx)
 	if err != nil {
@@ -176,7 +177,7 @@ func UpdateUserAvatar(ctx context.Context, userID, avatarID uint64) (*ent.User, 
 }
 
 // GetUsersWithPagination 分页获取用户列表
-func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*models.UsersListResponse, error) {
+func (UserFuncs) GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*models.UsersListResponse, error) {
 	// 设置默认值
 	if req.Page < 1 {
 		req.Page = 1
@@ -331,7 +332,7 @@ func GetUsersWithPagination(ctx context.Context, req *models.GetUsersRequest) (*
 }
 
 // AssignUserRole 为用户分配角色
-func AssignUserRole(ctx context.Context, req *models.AssignUserRoleRequest) (*ent.UserRole, error) {
+func (UserFuncs) AssignUserRole(ctx context.Context, req *models.AssignUserRoleRequest) (*ent.UserRole, error) {
 	// 检查用户是否存在
 	exists, err := database.Client.User.Query().Where(user.ID(utils.StringToUint64(req.UserID))).Exist(ctx)
 	if err != nil {
@@ -386,7 +387,7 @@ func AssignUserRole(ctx context.Context, req *models.AssignUserRoleRequest) (*en
 }
 
 // RevokeUserRole 撤销用户角色
-func RevokeUserRole(ctx context.Context, userID, roleID uint64) error {
+func (UserFuncs) RevokeUserRole(ctx context.Context, userID, roleID uint64) error {
 	// 查找用户角色关联
 	userRole, err := database.Client.UserRole.Query().
 		Where(
@@ -410,7 +411,7 @@ func RevokeUserRole(ctx context.Context, userID, roleID uint64) error {
 }
 
 // GetUserRoles 获取用户的所有角色
-func GetUserRoles(ctx context.Context, userID uint64) ([]*ent.Role, error) {
+func (UserFuncs) GetUserRoles(ctx context.Context, userID uint64) ([]*ent.Role, error) {
 	// 检查用户是否存在
 	exists, err := database.Client.User.Query().Where(user.ID(userID)).Exist(ctx)
 	if err != nil {
@@ -435,7 +436,7 @@ func GetUserRoles(ctx context.Context, userID uint64) ([]*ent.Role, error) {
 }
 
 // GetRoleUsers 获取拥有指定角色的所有用户
-func GetRoleUsers(ctx context.Context, roleID uint64) ([]*ent.User, error) {
+func (UserFuncs) GetRoleUsers(ctx context.Context, roleID uint64) ([]*ent.User, error) {
 	// 检查角色是否存在
 	exists, err := database.Client.Role.Query().Where(role.ID(roleID)).Exist(ctx)
 	if err != nil {
@@ -459,7 +460,7 @@ func GetRoleUsers(ctx context.Context, roleID uint64) ([]*ent.User, error) {
 }
 
 // GetUserPermissions 获取用户的所有权限（通过角色继承）
-func GetUserPermissions(ctx context.Context, userID uint64) ([]*ent.Permission, error) {
+func (UserFuncs) GetUserPermissions(ctx context.Context, userID uint64) ([]*ent.Permission, error) {
 	// 检查用户是否存在
 	exists, err := database.Client.User.Query().Where(user.ID(userID)).Exist(ctx)
 	if err != nil {
@@ -488,7 +489,7 @@ func GetUserPermissions(ctx context.Context, userID uint64) ([]*ent.Permission, 
 
 	for _, userRole := range userRoles {
 		// 获取角色及其继承链的所有权限
-		rolePermissions, err := GetRoleInheritedPermissions(ctx, userRole.ID)
+		rolePermissions, err := RoleFuncs{}.GetRoleInheritedPermissions(ctx, userRole.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -509,7 +510,7 @@ func GetUserPermissions(ctx context.Context, userID uint64) ([]*ent.Permission, 
 }
 
 // CheckUserPermission 检查用户是否拥有指定权限
-func CheckUserPermission(ctx context.Context, userID, permissionID uint64) (bool, error) {
+func (UserFuncs) CheckUserPermission(ctx context.Context, userID, permissionID uint64) (bool, error) {
 	// 检查权限是否存在
 	exists, err := database.Client.Permission.Query().Where(permission.ID(permissionID)).Exist(ctx)
 	if err != nil {
@@ -520,7 +521,7 @@ func CheckUserPermission(ctx context.Context, userID, permissionID uint64) (bool
 	}
 
 	// 获取用户的所有权限
-	userPermissions, err := GetUserPermissions(ctx, userID)
+	userPermissions, err := UserFuncs{}.GetUserPermissions(ctx, userID)
 	if err != nil {
 		return false, err
 	}
@@ -536,7 +537,7 @@ func CheckUserPermission(ctx context.Context, userID, permissionID uint64) (bool
 }
 
 // ConvertUserRoleToResponse 将UserRole实体转换为响应格式
-func ConvertUserRoleToResponse(userRole *ent.UserRole) *models.UserRoleResponse {
+func (UserFuncs) ConvertUserRoleToResponse(userRole *ent.UserRole) *models.UserRoleResponse {
 	response := &models.UserRoleResponse{
 		ID:         strconv.FormatUint(userRole.ID, 10),
 		UserID:     utils.ToString(userRole.UserID),
@@ -547,19 +548,19 @@ func ConvertUserRoleToResponse(userRole *ent.UserRole) *models.UserRoleResponse 
 
 	// 如果加载了用户关联数据
 	if userRole.Edges.User != nil {
-		response.User = ConvertUserToResponse(userRole.Edges.User)
+		response.User = UserFuncs{}.ConvertUserToResponse(userRole.Edges.User)
 	}
 
 	// 如果加载了角色关联数据
 	if userRole.Edges.Role != nil {
-		response.Role = ConvertRoleToResponse(userRole.Edges.Role)
+		response.Role = RoleFuncs{}.ConvertRoleToResponse(userRole.Edges.Role)
 	}
 
 	return response
 }
 
 // GetUserRolesWithPagination 分页获取用户角色关联列表
-func GetUserRolesWithPagination(ctx context.Context, req *models.GetUserRolesRequest) (*models.UserRolesListResponse, error) {
+func (UserFuncs) GetUserRolesWithPagination(ctx context.Context, req *models.GetUserRolesRequest) (*models.UserRolesListResponse, error) {
 	// 设置默认值
 	if req.Page < 1 {
 		req.Page = 1
@@ -652,7 +653,7 @@ func GetUserRolesWithPagination(ctx context.Context, req *models.GetUserRolesReq
 	// 转换为响应格式
 	userRoleResponses := make([]*models.UserRoleResponse, len(userRoles))
 	for i, ur := range userRoles {
-		userRoleResponses[i] = ConvertUserRoleToResponse(ur)
+		userRoleResponses[i] = UserFuncs{}.ConvertUserRoleToResponse(ur)
 	}
 
 	// 构建分页信息
@@ -672,7 +673,7 @@ func GetUserRolesWithPagination(ctx context.Context, req *models.GetUserRolesReq
 }
 
 // ConvertUserToResponse 将User实体转换为响应格式
-func ConvertUserToResponse(user *ent.User) *models.UserResponse {
+func (UserFuncs) ConvertUserToResponse(user *ent.User) *models.UserResponse {
 	return &models.UserResponse{
 		ID:         utils.Uint64ToString(user.ID),
 		Name:       user.Name, // 假设Name字段对应Username
@@ -684,7 +685,7 @@ func ConvertUserToResponse(user *ent.User) *models.UserResponse {
 }
 
 // GetUserMenuTree 获取用户的菜单树
-func GetUserMenuTree(ctx context.Context, userID uint64) ([]*models.ScopeResponse, error) {
+func (UserFuncs) GetUserMenuTree(ctx context.Context, userID uint64) ([]*models.ScopeResponse, error) {
 	// 1. 获取用户的所有角色
 	userRoles, err := database.Client.UserRole.Query().
 		Where(userrole.UserID(userID)).
@@ -708,7 +709,7 @@ func GetUserMenuTree(ctx context.Context, userID uint64) ([]*models.ScopeRespons
 	// 3. 获取这些角色的所有权限（包括继承的权限）
 	var allPermissions []*ent.Permission
 	for _, roleID := range roleIDs {
-		rolePermissions, err := GetRoleInheritedPermissions(ctx, roleID)
+		rolePermissions, err := RoleFuncs{}.GetRoleInheritedPermissions(ctx, roleID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to query role permissions for role %d: %w", roleID, err)
 		}
@@ -757,9 +758,9 @@ func GetUserMenuTree(ctx context.Context, userID uint64) ([]*models.ScopeRespons
 
 	// 然后添加这些scope的所有父级（确保菜单路径完整）
 	for scopeID := range scopeIDs {
-		scope := findScopeByID(allScopes, scopeID)
+		scope := UserFuncs{}.findScopeByID(allScopes, scopeID)
 		if scope != nil {
-			addParentScopes(scope, allScopes, accessibleScopes)
+			UserFuncs{}.addParentScopes(scope, allScopes, accessibleScopes)
 		}
 	}
 
@@ -778,7 +779,7 @@ func GetUserMenuTree(ctx context.Context, userID uint64) ([]*models.ScopeRespons
 
 	// 创建所有节点
 	for _, scope := range filteredScopes {
-		scopeResp := ConvertScopeToResponseForTree(scope)
+		scopeResp := ScopeFuncs{}.ConvertScopeToResponseForTree(scope)
 		scopeMap[scope.ID] = scopeResp
 
 		// 如果没有父节点或父节点不在可访问列表中，则为根节点
@@ -811,7 +812,7 @@ func GetUserMenuTree(ctx context.Context, userID uint64) ([]*models.ScopeRespons
 }
 
 // findScopeByID 根据ID查找scope
-func findScopeByID(scopes []*ent.Scope, id uint64) *ent.Scope {
+func (UserFuncs) findScopeByID(scopes []*ent.Scope, id uint64) *ent.Scope {
 	for _, scope := range scopes {
 		if scope.ID == id {
 			return scope
@@ -821,12 +822,12 @@ func findScopeByID(scopes []*ent.Scope, id uint64) *ent.Scope {
 }
 
 // addParentScopes 递归添加父级scope
-func addParentScopes(scope *ent.Scope, allScopes []*ent.Scope, accessibleScopes map[uint64]*ent.Scope) {
+func (UserFuncs) addParentScopes(scope *ent.Scope, allScopes []*ent.Scope, accessibleScopes map[uint64]*ent.Scope) {
 	if scope.ParentID != 0 {
-		parent := findScopeByID(allScopes, scope.ParentID)
+		parent := UserFuncs{}.findScopeByID(allScopes, scope.ParentID)
 		if parent != nil {
 			accessibleScopes[parent.ID] = parent
-			addParentScopes(parent, allScopes, accessibleScopes)
+			UserFuncs{}.addParentScopes(parent, allScopes, accessibleScopes)
 		}
 	}
 }

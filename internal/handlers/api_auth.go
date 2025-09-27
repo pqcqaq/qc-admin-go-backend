@@ -32,7 +32,7 @@ func NewAPIAuthHandler() *APIAuthHandler {
 // @Router       /apiauth [get]
 func (h *APIAuthHandler) GetAPIAuths(c *gin.Context) {
 	ctx := middleware.GetRequestContext(c)
-	apiAuths, err := funcs.GetAllAPIAuths(ctx)
+	apiAuths, err := funcs.ApiAuthFuncs{}.GetAllAPIAuths(ctx)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取API认证记录列表失败", err.Error()))
 		return
@@ -83,7 +83,7 @@ func (h *APIAuthHandler) GetAPIAuthsWithPagination(c *gin.Context) {
 
 	// 调用服务层方法
 	ctx := middleware.GetRequestContext(c)
-	result, err := funcs.GetAPIAuthWithPagination(ctx, &req)
+	result, err := funcs.ApiAuthFuncs{}.GetAPIAuthWithPagination(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取API认证记录列表失败", err.Error()))
 		return
@@ -126,7 +126,7 @@ func (h *APIAuthHandler) GetAPIAuth(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	apiAuth, err := funcs.GetAPIAuthById(ctx, id)
+	apiAuth, err := funcs.ApiAuthFuncs{}.GetAPIAuthById(ctx, id)
 	if err != nil {
 		// 根据错误类型抛出不同的自定义错误
 		if err.Error() == "api auth not found" ||
@@ -181,7 +181,7 @@ func (h *APIAuthHandler) CreateAPIAuth(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	apiAuth, err := funcs.CreateAPIAuth(ctx, &req)
+	apiAuth, err := funcs.ApiAuthFuncs{}.CreateAPIAuth(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("创建API认证记录失败", err.Error()))
 		return
@@ -239,7 +239,7 @@ func (h *APIAuthHandler) UpdateAPIAuth(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	apiAuth, err := funcs.UpdateAPIAuth(ctx, id, &req)
+	apiAuth, err := funcs.ApiAuthFuncs{}.UpdateAPIAuth(ctx, id, &req)
 	if err != nil {
 		if err.Error() == "api auth not found" ||
 			err.Error() == "api auth with id "+strconv.FormatUint(id, 10)+" not found" {
@@ -283,7 +283,7 @@ func (h *APIAuthHandler) DeleteAPIAuth(c *gin.Context) {
 	}
 
 	ctx := middleware.GetRequestContext(c)
-	err = funcs.DeleteAPIAuth(ctx, id)
+	err = funcs.ApiAuthFuncs{}.DeleteAPIAuth(ctx, id)
 	if err != nil {
 		if err.Error() == "api auth not found" ||
 			err.Error() == "api auth with id "+strconv.FormatUint(id, 10)+" not found" {
@@ -340,7 +340,7 @@ func (h *APIAuthHandler) ExportAPIAuthsToExcel(c *gin.Context) {
 
 	// 获取数据
 	ctx := middleware.GetRequestContext(c)
-	result, err := funcs.GetAPIAuthWithPagination(ctx, &req)
+	result, err := funcs.ApiAuthFuncs{}.GetAPIAuthWithPagination(ctx, &req)
 	if err != nil {
 		middleware.ThrowError(c, middleware.DatabaseError("获取API认证记录失败", err.Error()))
 		return
