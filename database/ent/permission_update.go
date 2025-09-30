@@ -186,6 +186,20 @@ func (_u *PermissionUpdate) ClearDescription() *PermissionUpdate {
 	return _u
 }
 
+// SetIsPublic sets the "is_public" field.
+func (_u *PermissionUpdate) SetIsPublic(v bool) *PermissionUpdate {
+	_u.mutation.SetIsPublic(v)
+	return _u
+}
+
+// SetNillableIsPublic sets the "is_public" field if the given value is not nil.
+func (_u *PermissionUpdate) SetNillableIsPublic(v *bool) *PermissionUpdate {
+	if v != nil {
+		_u.SetIsPublic(*v)
+	}
+	return _u
+}
+
 // AddRolePermissionIDs adds the "role_permissions" edge to the RolePermission entity by IDs.
 func (_u *PermissionUpdate) AddRolePermissionIDs(ids ...uint64) *PermissionUpdate {
 	_u.mutation.AddRolePermissionIDs(ids...)
@@ -404,6 +418,9 @@ func (_u *PermissionUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(permission.FieldDescription, field.TypeString)
+	}
+	if value, ok := _u.mutation.IsPublic(); ok {
+		_spec.SetField(permission.FieldIsPublic, field.TypeBool, value)
 	}
 	if _u.mutation.RolePermissionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -699,6 +716,20 @@ func (_u *PermissionUpdateOne) ClearDescription() *PermissionUpdateOne {
 	return _u
 }
 
+// SetIsPublic sets the "is_public" field.
+func (_u *PermissionUpdateOne) SetIsPublic(v bool) *PermissionUpdateOne {
+	_u.mutation.SetIsPublic(v)
+	return _u
+}
+
+// SetNillableIsPublic sets the "is_public" field if the given value is not nil.
+func (_u *PermissionUpdateOne) SetNillableIsPublic(v *bool) *PermissionUpdateOne {
+	if v != nil {
+		_u.SetIsPublic(*v)
+	}
+	return _u
+}
+
 // AddRolePermissionIDs adds the "role_permissions" edge to the RolePermission entity by IDs.
 func (_u *PermissionUpdateOne) AddRolePermissionIDs(ids ...uint64) *PermissionUpdateOne {
 	_u.mutation.AddRolePermissionIDs(ids...)
@@ -947,6 +978,9 @@ func (_u *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission, 
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(permission.FieldDescription, field.TypeString)
+	}
+	if value, ok := _u.mutation.IsPublic(); ok {
+		_spec.SetField(permission.FieldIsPublic, field.TypeBool, value)
 	}
 	if _u.mutation.RolePermissionsCleared() {
 		edge := &sqlgraph.EdgeSpec{

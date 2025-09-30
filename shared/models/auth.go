@@ -33,6 +33,7 @@ type LoginRequest struct {
 	Secret         string `json:"secret,omitempty"`                                                        // 密码（密码登录时必需）
 	VerifyCode     string `json:"verifyCode,omitempty"`                                                    // 验证码（非密码登录时必需）
 	ClientCode     string `json:"clientCode,omitempty" binding:"required"`
+	RememberMe     *bool  `json:"rememberMe"` // 记住我
 }
 
 // LoginResponse 登录响应

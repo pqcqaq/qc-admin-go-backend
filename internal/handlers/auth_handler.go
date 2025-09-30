@@ -134,7 +134,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	var clientId uint64 = clientIdAny.(uint64)
 
 	// 构建用户信息和Token
-	userInfo, token, err := funcs.AuthFuncs{}.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, &clientId)
+	var rememberMe bool = false
+	if req.RememberMe != nil {
+		rememberMe = *req.RememberMe
+	}
+	userInfo, token, err := funcs.AuthFuncs{}.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, &clientId, rememberMe)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("构建用户信息失败", err.Error()))
 		return
@@ -197,7 +201,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	// 构建用户信息，注册时可选择是否生成Token
-	userInfo, token, err := funcs.AuthFuncs{}.BuildUserInfoWithToken(ctx, user, &cd.ID)
+	userInfo, token, err := funcs.AuthFuncs{}.BuildUserInfoWithToken(ctx, user, &cd.ID, false)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("构建用户信息失败", err.Error()))
 		return
@@ -284,9 +288,16 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
+	token, ex := middleware.GetCurrentAccessToken(c)
+	var tokenStr string
+	if ex {
+		tokenStr = token
+	} else {
+		tokenStr = ""
+	}
 	ctx := middleware.GetRequestContext(c)
 
-	newTokenInfo, err := funcs.AuthFuncs{}.RefreshToken(ctx, req.RefreshToken)
+	newTokenInfo, err := funcs.AuthFuncs{}.RefreshToken(ctx, tokenStr, req.RefreshToken)
 
 	if err != nil {
 		middleware.ThrowError(c, middleware.UnauthorizedError("Token刷新失败", err.Error()))
@@ -329,7 +340,7 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	}
 
 	// 构建完整的用户信息（包含角色和权限，但不包含新token）
-	userInfo, _, err := funcs.AuthFuncs{}.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, nil)
+	userInfo, _, err := funcs.AuthFuncs{}.BuildUserInfoWithToken(middleware.GetRequestContext(c), user, nil, false)
 	if err != nil {
 		middleware.ThrowError(c, middleware.InternalServerError("构建用户信息失败", err.Error()))
 		return

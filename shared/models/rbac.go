@@ -56,6 +56,7 @@ type CreatePermissionRequest struct {
 	Action      string `json:"action" binding:"required"`
 	Description string `json:"description,omitempty"`
 	ScopeId     string `json:"scopeId,omitempty"` // 权限域ID
+	IsPublic    bool   `json:"isPublic"`          // 是否为公共权限
 }
 
 // UpdatePermissionRequest 更新权限请求结构
@@ -63,7 +64,8 @@ type UpdatePermissionRequest struct {
 	Name        string `json:"name,omitempty"`
 	Action      string `json:"action,omitempty"`
 	Description string `json:"description,omitempty"`
-	ScopeId     string `json:"scopeId,omitempty"` // 权限域ID
+	ScopeId     string `json:"scopeId,omitempty"`  // 权限域ID
+	IsPublic    *bool  `json:"isPublic,omitempty"` // 是否为公共权限
 }
 
 // PermissionResponse 权限响应结构
@@ -75,6 +77,7 @@ type PermissionResponse struct {
 	Scope       *ScopeResponse `json:"scope,omitempty"` // 所属权限域
 	CreateTime  string         `json:"createTime"`
 	UpdateTime  string         `json:"updateTime"`
+	IsPublic    bool           `json:"isPublic"` // 是否为公共权限
 }
 
 // GetPermissionsRequest 获取权限列表请求结构
@@ -84,6 +87,7 @@ type GetPermissionsRequest struct {
 	Action      string `form:"action" json:"action"`           // 按操作类型搜索
 	Description string `form:"description" json:"description"` // 按描述模糊搜索
 	ScopeId     string `form:"scopeId" json:"scopeId"`         // 按权限域ID搜索
+	IsPublic    *bool  `form:"isPublic" json:"isPublic"`       // 按是否为公共权限搜索
 }
 
 // PermissionsListResponse 权限列表响应结构
@@ -163,6 +167,7 @@ type RoleTreeResponse struct {
 // RoleDetailedPermissionsResponse 角色详细权限响应结构
 type RoleDetailedPermissionsResponse struct {
 	Role                 *RoleResponse           `json:"role"`
+	PublicPermissions    []*PermissionWithSource `json:"publicPermissions"`    // 公开权限
 	DirectPermissions    []*PermissionWithSource `json:"directPermissions"`    // 直接分配的权限
 	InheritedPermissions []*PermissionWithSource `json:"inheritedPermissions"` // 继承的权限
 	AllPermissions       []*PermissionResponse   `json:"allPermissions"`       // 所有权限
@@ -171,7 +176,6 @@ type RoleDetailedPermissionsResponse struct {
 // PermissionWithSource 权限来源信息
 type PermissionWithSource struct {
 	Permission *PermissionResponse `json:"permission"`
-	Source     string              `json:"source"`     // 来源类型: "直接分配" | "角色继承"
 	SourceRole *RoleResponse       `json:"sourceRole"` // 来源角色
 }
 

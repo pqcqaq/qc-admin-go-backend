@@ -9364,6 +9364,7 @@ type PermissionMutation struct {
 	name                    *string
 	action                  *string
 	description             *string
+	is_public               *bool
 	clearedFields           map[string]struct{}
 	role_permissions        map[uint64]struct{}
 	removedrole_permissions map[uint64]struct{}
@@ -9934,6 +9935,42 @@ func (m *PermissionMutation) ResetDescription() {
 	delete(m.clearedFields, permission.FieldDescription)
 }
 
+// SetIsPublic sets the "is_public" field.
+func (m *PermissionMutation) SetIsPublic(b bool) {
+	m.is_public = &b
+}
+
+// IsPublic returns the value of the "is_public" field in the mutation.
+func (m *PermissionMutation) IsPublic() (r bool, exists bool) {
+	v := m.is_public
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsPublic returns the old "is_public" field's value of the Permission entity.
+// If the Permission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PermissionMutation) OldIsPublic(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsPublic is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsPublic requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsPublic: %w", err)
+	}
+	return oldValue.IsPublic, nil
+}
+
+// ResetIsPublic resets all changes to the "is_public" field.
+func (m *PermissionMutation) ResetIsPublic() {
+	m.is_public = nil
+}
+
 // AddRolePermissionIDs adds the "role_permissions" edge to the RolePermission entity by ids.
 func (m *PermissionMutation) AddRolePermissionIDs(ids ...uint64) {
 	if m.role_permissions == nil {
@@ -10115,7 +10152,7 @@ func (m *PermissionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PermissionMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.create_time != nil {
 		fields = append(fields, permission.FieldCreateTime)
 	}
@@ -10143,6 +10180,9 @@ func (m *PermissionMutation) Fields() []string {
 	if m.description != nil {
 		fields = append(fields, permission.FieldDescription)
 	}
+	if m.is_public != nil {
+		fields = append(fields, permission.FieldIsPublic)
+	}
 	return fields
 }
 
@@ -10169,6 +10209,8 @@ func (m *PermissionMutation) Field(name string) (ent.Value, bool) {
 		return m.Action()
 	case permission.FieldDescription:
 		return m.Description()
+	case permission.FieldIsPublic:
+		return m.IsPublic()
 	}
 	return nil, false
 }
@@ -10196,6 +10238,8 @@ func (m *PermissionMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldAction(ctx)
 	case permission.FieldDescription:
 		return m.OldDescription(ctx)
+	case permission.FieldIsPublic:
+		return m.OldIsPublic(ctx)
 	}
 	return nil, fmt.Errorf("unknown Permission field %s", name)
 }
@@ -10267,6 +10311,13 @@ func (m *PermissionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescription(v)
+		return nil
+	case permission.FieldIsPublic:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsPublic(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Permission field %s", name)
@@ -10415,6 +10466,9 @@ func (m *PermissionMutation) ResetField(name string) error {
 		return nil
 	case permission.FieldDescription:
 		m.ResetDescription()
+		return nil
+	case permission.FieldIsPublic:
+		m.ResetIsPublic()
 		return nil
 	}
 	return fmt.Errorf("unknown Permission field %s", name)

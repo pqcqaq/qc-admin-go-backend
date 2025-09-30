@@ -15,6 +15,7 @@ type Claims struct {
 	ClientDeviceId uint64 `json:"clientDeviceId"`
 	IsRefresh      bool   `json:"isRefresh"`
 	Expiry         uint64 `json:"expity"`
+	RememberMe     bool   `json:"rememberMe"`
 }
 
 // JWTService JWT服务
@@ -32,7 +33,7 @@ func NewJWTService(secretKey, issuer string) *JWTService {
 }
 
 // GenerateToken 生成JWT Token
-func (j *JWTService) GenerateToken(userID uint64, clientId uint64, expiry time.Duration, isRefresh bool) (string, error) {
+func (j *JWTService) GenerateToken(userID uint64, clientId uint64, expiry time.Duration, isRefresh bool, rememberMe bool) (string, error) {
 	now := time.Now()
 	claims := Claims{
 		UserID:         userID,
@@ -84,5 +85,5 @@ func (j *JWTService) RefreshToken(tokenString string, clientId uint64, expiry ti
 		return "", fmt.Errorf("不允许在不同终端刷新同一token")
 	}
 
-	return j.GenerateToken(claims.UserID, clientId, expiry, false)
+	return j.GenerateToken(claims.UserID, clientId, expiry, false, claims.RememberMe)
 }

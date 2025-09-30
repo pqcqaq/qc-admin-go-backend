@@ -394,6 +394,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "action", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "is_public", Type: field.TypeBool, Default: false},
 	}
 	// SysPermissionsTable holds the schema information for the "sys_permissions" table.
 	SysPermissionsTable = &schema.Table{

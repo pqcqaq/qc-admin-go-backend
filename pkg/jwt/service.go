@@ -40,15 +40,15 @@ func GenerateAccessToken(userID, clientId uint64, expiry time.Duration) (string,
 	if service == nil {
 		return "", ErrServiceNotInitialized
 	}
-	return service.GenerateToken(userID, clientId, expiry, false)
+	return service.GenerateToken(userID, clientId, expiry, false, false)
 }
 
 // GenerateRefreshToken 生成Token (全局函数)
-func GenerateRefreshToken(userID, clientId uint64, expiry time.Duration) (string, error) {
+func GenerateRefreshToken(userID, clientId uint64, expiry time.Duration, rememberMe bool) (string, error) {
 	if service == nil {
 		return "", ErrServiceNotInitialized
 	}
-	return service.GenerateToken(userID, clientId, expiry, true)
+	return service.GenerateToken(userID, clientId, expiry, true, rememberMe)
 }
 
 // ValidateToken 验证Token (全局函数)

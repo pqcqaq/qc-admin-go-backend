@@ -33,6 +33,8 @@ const (
 	FieldAction = "action"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// FieldIsPublic holds the string denoting the is_public field in the database.
+	FieldIsPublic = "is_public"
 	// EdgeRolePermissions holds the string denoting the role_permissions edge name in mutations.
 	EdgeRolePermissions = "role_permissions"
 	// EdgeScope holds the string denoting the scope edge name in mutations.
@@ -74,6 +76,7 @@ var Columns = []string{
 	FieldName,
 	FieldAction,
 	FieldDescription,
+	FieldIsPublic,
 }
 
 var (
@@ -110,6 +113,8 @@ var (
 	NameValidator func(string) error
 	// ActionValidator is a validator for the "action" field. It is called by the builders before save.
 	ActionValidator func(string) error
+	// DefaultIsPublic holds the default value on creation for the "is_public" field.
+	DefaultIsPublic bool
 )
 
 // OrderOption defines the ordering options for the Permission queries.
@@ -163,6 +168,11 @@ func ByAction(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByIsPublic orders the results by the is_public field.
+func ByIsPublic(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsPublic, opts...).ToFunc()
 }
 
 // ByRolePermissionsCount orders the results by role_permissions count.

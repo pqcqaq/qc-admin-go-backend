@@ -184,6 +184,19 @@ func GetRoleWithPermissions(ctx context.Context, roleID uint64) (*models.RoleDet
 		return nil, err
 	}
 
+	// 公共权限
+	var publicPermissions []*models.PermissionWithSource
+	publicPerms, err := PermissionFuncs{}.GetPublicPermissions(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, perm := range publicPerms {
+		publicPermissions = append(publicPermissions, &models.PermissionWithSource{
+			Permission: PermissionFuncs{}.ConvertPermissionToResponse(perm),
+			SourceRole: nil,
+		})
+	}
+
 	// 获取直接权限
 	var directPermissions []*models.PermissionWithSource
 	if role.Edges.RolePermissions != nil {
@@ -191,7 +204,6 @@ func GetRoleWithPermissions(ctx context.Context, roleID uint64) (*models.RoleDet
 			if rp.Edges.Permission != nil {
 				directPermissions = append(directPermissions, &models.PermissionWithSource{
 					Permission: PermissionFuncs{}.ConvertPermissionToResponse(rp.Edges.Permission),
-					Source:     "direct",
 					SourceRole: &models.RoleResponse{
 						ID:          utils.Uint64ToString(role.ID),
 						Name:        role.Name,
@@ -221,7 +233,6 @@ func GetRoleWithPermissions(ctx context.Context, roleID uint64) (*models.RoleDet
 					if rp.Edges.Permission != nil {
 						inheritedPermissions = append(inheritedPermissions, &models.PermissionWithSource{
 							Permission: PermissionFuncs{}.ConvertPermissionToResponse(rp.Edges.Permission),
-							Source:     "inherit",
 							SourceRole: &models.RoleResponse{
 								ID:          utils.Uint64ToString(parentRole.ID),
 								Name:        parentRole.Name,
@@ -236,6 +247,7 @@ func GetRoleWithPermissions(ctx context.Context, roleID uint64) (*models.RoleDet
 
 	return &models.RoleDetailedPermissionsResponse{
 		Role:                 RoleFuncs{}.ConvertRoleToResponse(role),
+		PublicPermissions:    publicPermissions,
 		DirectPermissions:    directPermissions,
 		InheritedPermissions: inheritedPermissions,
 	}, nil
@@ -715,6 +727,22 @@ func HasAnyPermissionsOptimized(ctx context.Context, userID uint64, permissions 
 	}
 	if !exists {
 		return false, fmt.Errorf("user not found")
+	}
+
+	// 如果permissions中有任意一个是public，直接通过
+	hasPublic, err := database.Client.Permission.Query().
+		Where(
+			permission.IsPublicEQ(true),
+			permission.And(
+				permission.ActionIn(permissions...),
+			),
+		).
+		Exist(ctx)
+	if err != nil {
+		return false, err
+	}
+	if hasPublic {
+		return true, nil
 	}
 
 	// 获取用户的所有角色ID（包括继承的角色）

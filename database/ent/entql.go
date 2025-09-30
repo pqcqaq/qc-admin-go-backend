@@ -226,6 +226,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			permission.FieldName:        {Type: field.TypeString, Column: permission.FieldName},
 			permission.FieldAction:      {Type: field.TypeString, Column: permission.FieldAction},
 			permission.FieldDescription: {Type: field.TypeString, Column: permission.FieldDescription},
+			permission.FieldIsPublic:    {Type: field.TypeBool, Column: permission.FieldIsPublic},
 		},
 	}
 	graph.Nodes[7] = &sqlgraph.Node{
@@ -1572,6 +1573,11 @@ func (f *PermissionFilter) WhereAction(p entql.StringP) {
 // WhereDescription applies the entql string predicate on the description field.
 func (f *PermissionFilter) WhereDescription(p entql.StringP) {
 	f.Where(p.Field(permission.FieldDescription))
+}
+
+// WhereIsPublic applies the entql bool predicate on the is_public field.
+func (f *PermissionFilter) WhereIsPublic(p entql.BoolP) {
+	f.Where(p.Field(permission.FieldIsPublic))
 }
 
 // WhereHasRolePermissions applies a predicate to check if query has an edge role_permissions.

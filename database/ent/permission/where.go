@@ -100,6 +100,11 @@ func Description(v string) predicate.Permission {
 	return predicate.Permission(sql.FieldEQ(FieldDescription, v))
 }
 
+// IsPublic applies equality check predicate on the "is_public" field. It's identical to IsPublicEQ.
+func IsPublic(v bool) predicate.Permission {
+	return predicate.Permission(sql.FieldEQ(FieldIsPublic, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.Permission {
 	return predicate.Permission(sql.FieldEQ(FieldCreateTime, v))
@@ -583,6 +588,16 @@ func DescriptionEqualFold(v string) predicate.Permission {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.Permission {
 	return predicate.Permission(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// IsPublicEQ applies the EQ predicate on the "is_public" field.
+func IsPublicEQ(v bool) predicate.Permission {
+	return predicate.Permission(sql.FieldEQ(FieldIsPublic, v))
+}
+
+// IsPublicNEQ applies the NEQ predicate on the "is_public" field.
+func IsPublicNEQ(v bool) predicate.Permission {
+	return predicate.Permission(sql.FieldNEQ(FieldIsPublic, v))
 }
 
 // HasRolePermissions applies the HasEdge predicate on the "role_permissions" edge.

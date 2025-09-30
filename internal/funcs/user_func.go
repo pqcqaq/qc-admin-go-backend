@@ -500,6 +500,15 @@ func (UserFuncs) GetUserPermissions(ctx context.Context, userID uint64) ([]*ent.
 		}
 	}
 
+	publicPermissions, err := database.Client.Permission.Query().Where(permission.IsPublicEQ(true)).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, perm := range publicPermissions {
+		permissionMap[perm.ID] = perm
+	}
+
 	// 转换为切片
 	permissions := make([]*ent.Permission, 0, len(permissionMap))
 	for _, perm := range permissionMap {

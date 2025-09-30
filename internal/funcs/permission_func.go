@@ -17,6 +17,17 @@ import (
 // PermissionService 权限服务
 type PermissionFuncs struct{}
 
+// 获取所有公共的permission
+func (p PermissionFuncs) GetPublicPermissions(ctx context.Context) ([]*ent.Permission, error) {
+	publicPermissions, err := database.Client.Permission.Query().Where(permission.IsPublicEQ(true)).All(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return make([]*ent.Permission, 0), nil
+		}
+	}
+	return publicPermissions, nil
+}
+
 // GetAllPermissions 获取所有权限
 func (PermissionFuncs) GetAllPermissions(ctx context.Context) ([]*ent.Permission, error) {
 	return database.Client.Permission.Query().
@@ -56,6 +67,10 @@ func (PermissionFuncs) CreatePermission(ctx context.Context, req *models.CreateP
 		builder = builder.SetScopeID(scopeId)
 	}
 
+	if req.IsPublic {
+		builder = builder.SetIsPublic(req.IsPublic)
+	}
+
 	permission, err := builder.Save(ctx)
 	if err != nil {
 		return nil, err
@@ -83,6 +98,10 @@ func (PermissionFuncs) UpdatePermission(ctx context.Context, id uint64, req *mod
 	if req.ScopeId != "" {
 		scopeId := utils.StringToUint64(req.ScopeId)
 		builder = builder.SetScopeID(scopeId)
+	}
+
+	if req.IsPublic != nil {
+		builder = builder.SetIsPublic(*req.IsPublic)
 	}
 
 	err := builder.Exec(ctx)
@@ -132,6 +151,10 @@ func (PermissionFuncs) GetPermissionsWithPagination(ctx context.Context, req *mo
 	if req.ScopeId != "" {
 		scopeId := utils.StringToUint64(req.ScopeId)
 		query = query.Where(permission.HasScopeWith(scope.ID(scopeId)))
+	}
+
+	if req.IsPublic != nil {
+		query = query.Where(permission.IsPublicEQ(*req.IsPublic))
 	}
 
 	// 获取总数
@@ -211,6 +234,7 @@ func (PermissionFuncs) ConvertPermissionToResponse(p *ent.Permission) *models.Pe
 		Description: p.Description,
 		CreateTime:  utils.FormatDateTime(p.CreateTime),
 		UpdateTime:  utils.FormatDateTime(p.UpdateTime),
+		IsPublic:    p.IsPublic,
 	}
 
 	// 转换权限域

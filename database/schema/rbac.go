@@ -84,6 +84,7 @@ func (Permission) Fields() []ent.Field {
 		field.String("name").NotEmpty(),
 		field.String("action").NotEmpty(), // 比如 aaa.read/bbb.write/ccc.delete
 		field.String("description").Optional(),
+		field.Bool("is_public").Default(false), // 是否公开权限，任何用户都将拥有这些权限
 	}
 }
 

@@ -133,6 +133,20 @@ func (_c *PermissionCreate) SetNillableDescription(v *string) *PermissionCreate 
 	return _c
 }
 
+// SetIsPublic sets the "is_public" field.
+func (_c *PermissionCreate) SetIsPublic(v bool) *PermissionCreate {
+	_c.mutation.SetIsPublic(v)
+	return _c
+}
+
+// SetNillableIsPublic sets the "is_public" field if the given value is not nil.
+func (_c *PermissionCreate) SetNillableIsPublic(v *bool) *PermissionCreate {
+	if v != nil {
+		_c.SetIsPublic(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *PermissionCreate) SetID(v uint64) *PermissionCreate {
 	_c.mutation.SetID(v)
@@ -239,6 +253,10 @@ func (_c *PermissionCreate) defaults() error {
 		v := permission.DefaultUpdateTime()
 		_c.mutation.SetUpdateTime(v)
 	}
+	if _, ok := _c.mutation.IsPublic(); !ok {
+		v := permission.DefaultIsPublic
+		_c.mutation.SetIsPublic(v)
+	}
 	return nil
 }
 
@@ -265,6 +283,9 @@ func (_c *PermissionCreate) check() error {
 		if err := permission.ActionValidator(v); err != nil {
 			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Permission.action": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.IsPublic(); !ok {
+		return &ValidationError{Name: "is_public", err: errors.New(`ent: missing required field "Permission.is_public"`)}
 	}
 	return nil
 }
@@ -333,6 +354,10 @@ func (_c *PermissionCreate) createSpec() (*Permission, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(permission.FieldDescription, field.TypeString, value)
 		_node.Description = value
+	}
+	if value, ok := _c.mutation.IsPublic(); ok {
+		_spec.SetField(permission.FieldIsPublic, field.TypeBool, value)
+		_node.IsPublic = value
 	}
 	if nodes := _c.mutation.RolePermissionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -37,6 +37,8 @@ type Permission struct {
 	Action string `json:"action,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
+	// IsPublic holds the value of the "is_public" field.
+	IsPublic bool `json:"is_public,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PermissionQuery when eager-loading is set.
 	Edges        PermissionEdges `json:"edges"`
@@ -92,6 +94,8 @@ func (*Permission) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case permission.FieldIsPublic:
+			values[i] = new(sql.NullBool)
 		case permission.FieldID, permission.FieldCreateBy, permission.FieldUpdateBy, permission.FieldDeleteBy:
 			values[i] = new(sql.NullInt64)
 		case permission.FieldName, permission.FieldAction, permission.FieldDescription:
@@ -173,6 +177,12 @@ func (_m *Permission) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Description = value.String
 			}
+		case permission.FieldIsPublic:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_public", values[i])
+			} else if value.Valid {
+				_m.IsPublic = value.Bool
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -250,6 +260,9 @@ func (_m *Permission) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)
+	builder.WriteString(", ")
+	builder.WriteString("is_public=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsPublic))
 	builder.WriteByte(')')
 	return builder.String()
 }

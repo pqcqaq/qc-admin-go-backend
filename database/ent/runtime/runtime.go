@@ -434,6 +434,10 @@ func init() {
 	permissionDescAction := permissionFields[1].Descriptor()
 	// permission.ActionValidator is a validator for the "action" field. It is called by the builders before save.
 	permission.ActionValidator = permissionDescAction.Validators[0].(func(string) error)
+	// permissionDescIsPublic is the schema descriptor for is_public field.
+	permissionDescIsPublic := permissionFields[3].Descriptor()
+	// permission.DefaultIsPublic holds the default value on creation for the is_public field.
+	permission.DefaultIsPublic = permissionDescIsPublic.Default.(bool)
 	roleMixin := schema.Role{}.Mixin()
 	roleMixinHooks0 := roleMixin[0].Hooks()
 	roleMixinHooks1 := roleMixin[1].Hooks()

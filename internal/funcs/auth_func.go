@@ -559,7 +559,7 @@ func (AuthFuncs) ResetPassword(ctx context.Context, credentialType, identifier, 
 }
 
 // BuildUserInfoWithToken 构建包含Token和角色权限的用户信息
-func (AuthFuncs) BuildUserInfoWithToken(ctx context.Context, user *ent.User, clientId *uint64) (*models.UserInfo, *models.TokenInfo, error) {
+func (AuthFuncs) BuildUserInfoWithToken(ctx context.Context, user *ent.User, clientId *uint64, rememberMe bool) (*models.UserInfo, *models.TokenInfo, error) {
 	userInfo := &models.UserInfo{
 		ID:         utils.ToString(user.ID),
 		Name:       user.Name,
@@ -628,7 +628,7 @@ func (AuthFuncs) BuildUserInfoWithToken(ctx context.Context, user *ent.User, cli
 			return nil, nil, fmt.Errorf("生成JWT Token失败: %w", err)
 		}
 
-		tokenInfo.RefreshToken, err = jwt.GenerateRefreshToken(user.ID, client.ID, timeoutRefresh)
+		tokenInfo.RefreshToken, err = jwt.GenerateRefreshToken(user.ID, client.ID, timeoutRefresh, rememberMe)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("生成JWT Token失败: %w", err)
@@ -637,34 +637,68 @@ func (AuthFuncs) BuildUserInfoWithToken(ctx context.Context, user *ent.User, cli
 
 	return userInfo, &tokenInfo, nil
 }
+func (AuthFuncs) RefreshToken(ctx context.Context, accessToken, refreshToken string) (*models.TokenInfo, error) {
+	// 如果accessToken没有过期，则不允许刷新
+	if accessToken != "" {
+		claims, err := jwt.ValidateToken(accessToken)
+		if err == nil && claims.ExpiresAt != nil && claims.ExpiresAt.After(time.Now()) {
+			return nil, fmt.Errorf("access Token未过期，无需刷新")
+		}
+	}
 
-func (AuthFuncs) RefreshToken(ctx context.Context, refreshToken string) (*models.TokenInfo, error) {
-	// 从JWT token中解析并获取clientId (假设JWT中包含clientId信息)
-	// 这里需要先解析token获取clientId，具体实现取决于您的JWT结构
+	// 验证refresh token的有效性
 	claims, err := jwt.ValidateToken(refreshToken)
 	if err != nil {
 		return nil, fmt.Errorf("验证Token失败")
 	}
 
+	// 获取客户端设备配置信息
 	client, err := ClientDeviceFuncs{}.GetClientDeviceByIdInner(ctx, claims.ClientDeviceId)
-
 	if err != nil {
 		return nil, fmt.Errorf("获取设备类型失败")
 	}
 
-	// 刷新token
+	// 生成新的access token
 	timeoutAccess := time.Duration(client.AccessTokenExpiry) * time.Millisecond
 	newToken, err := jwt.RefreshToken(refreshToken, client.ID, timeoutAccess)
 	if err != nil {
-		return nil, fmt.Errorf("Token刷新失败: %w", err)
+		return nil, fmt.Errorf("token刷新失败: %w", err)
 	}
 
-	// TODO: 如果选了记住我，则可以同时把RefreshToken更新了，否则只需要更新AccessToken即可
-	tokenInfo := models.TokenInfo{}
-	tokenInfo.RefreshExpiredIn = claims.Expiry
-	tokenInfo.RefreshToken = refreshToken
-	tokenInfo.AccessToken = newToken
-	tokenInfo.AccessExpiredIn = uint64(time.Now().Add(time.Duration(client.AccessTokenExpiry) * time.Millisecond).UnixMilli())
+	tokenInfo := models.TokenInfo{
+		AccessToken:     newToken,
+		AccessExpiredIn: uint64(time.Now().Add(timeoutAccess).UnixMilli()),
+	}
+
+	// 如果勾选了"记住我"功能，需要判断是否刷新refresh token
+	if claims.RememberMe {
+		timeoutRefresh := time.Duration(client.RefreshTokenExpiry) * time.Millisecond
+
+		// 计算refresh token的剩余有效时间
+		now := time.Now()
+		refreshExpiresAt := time.UnixMilli(int64(claims.Expiry))
+		remainingTime := refreshExpiresAt.Sub(now)
+		totalTime := timeoutRefresh
+
+		// 只有在refresh token过期时间过半时才重新生成，避免退化成单token模式
+		if remainingTime < totalTime/2 {
+			// 重新生成refresh token
+			newRefreshToken, err := jwt.GenerateRefreshToken(claims.UserID, client.ID, timeoutRefresh, claims.RememberMe)
+			if err != nil {
+				return nil, fmt.Errorf("refresh Token刷新失败: %w", err)
+			}
+			tokenInfo.RefreshToken = newRefreshToken
+			tokenInfo.RefreshExpiredIn = uint64(now.Add(timeoutRefresh).UnixMilli())
+		} else {
+			// 未过半，继续使用原refresh token
+			tokenInfo.RefreshToken = refreshToken
+			tokenInfo.RefreshExpiredIn = claims.Expiry
+		}
+	} else {
+		// 未勾选"记住我"，保持原refresh token不变
+		tokenInfo.RefreshToken = refreshToken
+		tokenInfo.RefreshExpiredIn = claims.Expiry
+	}
 
 	return &tokenInfo, nil
 }

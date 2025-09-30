@@ -11,11 +11,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type ContextKey string
+
 const (
+	// Token context key
+	Token ContextKey = "access_token"
 	// UserIDKey 用户ID的context key
-	UserIDKey string = "user_id"
+	UserIDKey ContextKey = "user_id"
 	// JWTClaimsKey JWT Claims的context key
-	JWTClaimsKey string = "jwt_claims"
+	JWTClaimsKey ContextKey = "jwt_claims"
 )
 
 // JWTAuthMiddleware JWT认证中间件
@@ -87,6 +91,8 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		c.Set("access_token", tokenString)
+
 		// 验证token
 		claims, err := jwt.ValidateToken(tokenString)
 		if err != nil {
@@ -129,6 +135,16 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+// GetCurrentUserID 从上下文中获取当前用户ID
+func GetCurrentAccessToken(c *gin.Context) (string, bool) {
+	if token, exists := c.Get("access_token"); exists {
+		if tk, ok := token.(string); ok {
+			return tk, true
+		}
+	}
+	return "", false
 }
 
 // GetCurrentUserID 从上下文中获取当前用户ID
@@ -176,6 +192,11 @@ func RequireAuth(c *gin.Context) (uint64, bool) {
 // 这是统一处理context传递的核心函数
 func GetRequestContext(c *gin.Context) context.Context {
 	ctx := c.Request.Context()
+
+	// 把Token放到上下文
+	if token, exists := GetCurrentAccessToken(c); exists {
+		ctx = context.WithValue(ctx, Token, token)
+	}
 
 	// 如果有用户ID，将其添加到context中
 	if userID, exists := GetCurrentUserID(c); exists {
