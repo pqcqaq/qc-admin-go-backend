@@ -8,7 +8,6 @@ import (
 	"go-backend/database/ent"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/rolepermission"
-	"go-backend/database/ent/scope"
 	"go-backend/pkg/database"
 	"go-backend/pkg/utils"
 	"go-backend/shared/models"
@@ -62,11 +61,6 @@ func (PermissionFuncs) CreatePermission(ctx context.Context, req *models.CreateP
 		builder = builder.SetDescription(req.Description)
 	}
 
-	if req.ScopeId != "" {
-		scopeId := utils.StringToUint64(req.ScopeId)
-		builder = builder.SetScopeID(scopeId)
-	}
-
 	if req.IsPublic {
 		builder = builder.SetIsPublic(req.IsPublic)
 	}
@@ -93,11 +87,6 @@ func (PermissionFuncs) UpdatePermission(ctx context.Context, id uint64, req *mod
 
 	if req.Description != "" {
 		builder = builder.SetDescription(req.Description)
-	}
-
-	if req.ScopeId != "" {
-		scopeId := utils.StringToUint64(req.ScopeId)
-		builder = builder.SetScopeID(scopeId)
 	}
 
 	if req.IsPublic != nil {
@@ -130,7 +119,6 @@ func (PermissionFuncs) DeletePermission(ctx context.Context, id uint64) error {
 // GetPermissionsWithPagination 分页获取权限列表
 func (PermissionFuncs) GetPermissionsWithPagination(ctx context.Context, req *models.GetPermissionsRequest) (*models.PermissionsListResponse, error) {
 	query := database.Client.Permission.Query().
-		WithScope().
 		WithRolePermissions(func(rp *ent.RolePermissionQuery) {
 			rp.WithRole()
 		})
@@ -146,11 +134,6 @@ func (PermissionFuncs) GetPermissionsWithPagination(ctx context.Context, req *mo
 
 	if req.Description != "" {
 		query = query.Where(permission.DescriptionContains(req.Description))
-	}
-
-	if req.ScopeId != "" {
-		scopeId := utils.StringToUint64(req.ScopeId)
-		query = query.Where(permission.HasScopeWith(scope.ID(scopeId)))
 	}
 
 	if req.IsPublic != nil {
@@ -237,9 +220,17 @@ func (PermissionFuncs) ConvertPermissionToResponse(p *ent.Permission) *models.Pe
 		IsPublic:    p.IsPublic,
 	}
 
-	// 转换权限域
-	if p.Edges.Scope != nil {
-		resp.Scope = ScopeFuncs{}.ConvertScopeToResponse(p.Edges.Scope)
+	if len(p.Edges.RolePermissions) > 0 {
+		roles := make([]*models.RoleResponse, 0, len(p.Edges.RolePermissions))
+		for _, rp := range p.Edges.RolePermissions {
+			if rp.Edges.Role != nil {
+				roles = append(roles, &models.RoleResponse{
+					ID:   utils.Uint64ToString(rp.Edges.Role.ID),
+					Name: rp.Edges.Role.Name,
+				})
+			}
+		}
+		resp.Roles = roles
 	}
 
 	return resp

@@ -55,8 +55,7 @@ type CreatePermissionRequest struct {
 	Name        string `json:"name" binding:"required"`
 	Action      string `json:"action" binding:"required"`
 	Description string `json:"description,omitempty"`
-	ScopeId     string `json:"scopeId,omitempty"` // 权限域ID
-	IsPublic    bool   `json:"isPublic"`          // 是否为公共权限
+	IsPublic    bool   `json:"isPublic"` // 是否为公共权限
 }
 
 // UpdatePermissionRequest 更新权限请求结构
@@ -64,20 +63,19 @@ type UpdatePermissionRequest struct {
 	Name        string `json:"name,omitempty"`
 	Action      string `json:"action,omitempty"`
 	Description string `json:"description,omitempty"`
-	ScopeId     string `json:"scopeId,omitempty"`  // 权限域ID
 	IsPublic    *bool  `json:"isPublic,omitempty"` // 是否为公共权限
 }
 
 // PermissionResponse 权限响应结构
 type PermissionResponse struct {
-	ID          string         `json:"id"`
-	Name        string         `json:"name"`
-	Action      string         `json:"action"`
-	Description string         `json:"description,omitempty"`
-	Scope       *ScopeResponse `json:"scope,omitempty"` // 所属权限域
-	CreateTime  string         `json:"createTime"`
-	UpdateTime  string         `json:"updateTime"`
-	IsPublic    bool           `json:"isPublic"` // 是否为公共权限
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Action      string          `json:"action"`
+	Description string          `json:"description,omitempty"`
+	CreateTime  string          `json:"createTime"`
+	UpdateTime  string          `json:"updateTime"`
+	IsPublic    bool            `json:"isPublic"`        // 是否为公共权限
+	Roles       []*RoleResponse `json:"roles,omitempty"` // 拥有该权限的角色
 }
 
 // GetPermissionsRequest 获取权限列表请求结构
@@ -86,7 +84,6 @@ type GetPermissionsRequest struct {
 	Name        string `form:"name" json:"name"`               // 按权限名称模糊搜索
 	Action      string `form:"action" json:"action"`           // 按操作类型搜索
 	Description string `form:"description" json:"description"` // 按描述模糊搜索
-	ScopeId     string `form:"scopeId" json:"scopeId"`         // 按权限域ID搜索
 	IsPublic    *bool  `form:"isPublic" json:"isPublic"`       // 按是否为公共权限搜索
 }
 
