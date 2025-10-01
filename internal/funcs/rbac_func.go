@@ -124,6 +124,20 @@ func collectAncestors(ctx context.Context, client *ent.Client, roleID uint64, vi
 	return nil
 }
 
+// GetRoleUserCount 获取角色下的用户数量
+func GetRoleUserCount(ctx context.Context, roleID uint64) (int, error) {
+	count, err := database.Client.UserRole.Query().
+		Where(userrole.RoleID(roleID)).
+		Count(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return count, nil
+}
+
 // GetRoleTree 获取角色树结构
 func GetRoleTree(ctx context.Context) ([]*models.RoleTreeResponse, error) {
 	// 获取所有角色
@@ -138,11 +152,17 @@ func GetRoleTree(ctx context.Context) ([]*models.RoleTreeResponse, error) {
 	// 创建角色映射
 	roleMap := make(map[uint64]*models.RoleTreeResponse)
 	for _, r := range roles {
+
+		currentUserCount, err := GetRoleUserCount(ctx, r.ID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get user count for role %d: %v", r.ID, err)
+		}
 		roleMap[r.ID] = &models.RoleTreeResponse{
 			ID:          utils.Uint64ToString(r.ID),
 			Name:        r.Name,
 			Description: r.Description,
 			Children:    []*models.RoleTreeResponse{},
+			UserCount:   currentUserCount,
 		}
 	}
 
