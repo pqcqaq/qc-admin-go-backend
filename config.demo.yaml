@@ -83,6 +83,15 @@ server:
       enabled: false   # 是否启用延迟中间件
       min: 0s          # 最小延迟时间
       max: 1s          # 最大延迟时间
+  components:
+    messaging:
+      enabled: true
+      group_name: "qc_admin_default_group"
+      stream_key: "qc_admin_stream"
+      max_retries: 3
+      read_timeout: 2000    # 2秒
+      read_count: 10
+      idle_timeout: 30000   # 30秒
 
 logging:
   level: "debug"   # 开发环境使用debug级别

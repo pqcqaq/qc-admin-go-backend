@@ -34,6 +34,7 @@ require (
 	github.com/swaggo/swag v1.16.6
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.1.12
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.1.0
+	github.com/vmihailenco/msgpack/v5 v5.3.5
 	github.com/xuri/excelize/v2 v2.9.1
 	golang.org/x/crypto v0.41.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
@@ -127,6 +128,7 @@ require (
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xuri/efp v0.0.1 // indirect
 	github.com/xuri/nfp v0.0.1 // indirect
 	github.com/zclconf/go-cty v1.14.4 // indirect

@@ -46,6 +46,7 @@ func (r *Router) SetupRoutes(config *configs.AppConfig, engine *gin.Engine) {
 	// API v1 路由组
 	api := prefixGroup.Group("/v1")
 	{
+		r.setupTestRoutes(api)
 		r.setupAuthRoutes(api)
 		r.setupUserRoutes(api)
 		r.setupAttachmentRoutes(api)

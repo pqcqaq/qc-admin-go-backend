@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"go-backend/pkg/configs/components"
 	"go-backend/pkg/configs/middleware"
 
 	"github.com/spf13/viper"
@@ -15,6 +16,7 @@ type ServerConfig struct {
 	CORS       CORSConfig                  `mapstructure:"cors"`   // 跨域配置
 	Prefix     string                      `mapstructure:"prefix"` // API前缀
 	Middleware middleware.MiddlewareConfig `mapstructure:"middleware"`
+	Components components.ComponentConfig  `mapstructure:"components"`
 }
 
 type StaticConfig struct {
@@ -55,4 +57,5 @@ func setServerConfigDefaults() {
 	viper.SetDefault("server.cors.max_age", 86400) // 24小时
 
 	middleware.SetMiddlewareConfigDefaults()
+	components.SetComponentsConfigDefaults()
 }

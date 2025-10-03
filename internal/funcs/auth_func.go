@@ -649,6 +649,7 @@ func (AuthFuncs) RefreshToken(ctx context.Context, accessToken, refreshToken str
 	// 验证refresh token的有效性
 	claims, err := jwt.ValidateToken(refreshToken)
 	if err != nil {
+		logging.Error("验证refresh Token失败: %v", err)
 		return nil, fmt.Errorf("验证Token失败")
 	}
 

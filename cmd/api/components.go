@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ import (
 	"go-backend/pkg/email"
 	"go-backend/pkg/jwt"
 	"go-backend/pkg/logging"
+	"go-backend/pkg/messaging"
 	"go-backend/pkg/openai"
 	"go-backend/pkg/s3"
 	"go-backend/pkg/sms"
@@ -43,6 +44,7 @@ func setupLogging(config *configs.AppConfig) {
 	s3.SetLogger(logging.WithName("S3Client"))
 	email.SetLogger(logging.WithName("EmailClient"))
 	sms.SetLogger(logging.WithName("SMSClient"))
+	messaging.SetLogger(logging.WithName("Messaging"))
 }
 
 // initializeComponents 并行初始化各个组件

@@ -19,10 +19,6 @@
 // @externalDocs.url          https://swagger.io/resources/open-api/
 package main
 
-import (
-	"go-backend/cmd"
-)
-
 func main() {
-	cmd.Execute()
+	Execute()
 }
