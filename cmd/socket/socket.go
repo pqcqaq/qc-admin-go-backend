@@ -247,6 +247,7 @@ func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request
 		// 读取客户端发送的消息
 		err := ws.ReadJSON(&msg)
 		if err != nil {
+			logger.Warn("读取客户端消息失败: %v", err)
 			s.LockAll()
 			// 客户端断开连接，清理数据结构
 			s.removeClient(client, "connection error or disconnect")
@@ -289,7 +290,7 @@ func SenderFunc(message messaging.SocketMessagePayload) error {
 		}
 
 		if utils.IsAnyMatch(subsList, topic) {
-			logger.Info("Sending message to user %d on topic %s", userId, topic)
+			logger.Info("Sending message to user %d on topic %s", *userId, topic)
 			c.SendMessage(message)
 		}
 	}

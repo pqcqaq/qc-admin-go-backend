@@ -31,5 +31,5 @@ func (h *TestHandler) TestSendUserSocketMsg(c *gin.Context) {
 		},
 		Priority: 1,
 	})
-	c.JSON(200, gin.H{"status": "message sent"})
+	c.JSON(200, gin.H{"status": "message sent", "success": true})
 }

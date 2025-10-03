@@ -20,7 +20,7 @@ type MessageStruct struct {
 }
 
 type SocketMessagePayload struct {
-	UserId *uint64 `msgpack:"user_id" json:"-"`   // 接收消息的用户ID, 如果为空则表示发送给所有用户
-	Topic  string  `msgpack:"topic" json:"topic"` // 订阅的主题
-	Data   any     `msgpack:"data" json:"data"`   // 具体消息内容
+	UserId *uint64 `msgpack:"user_id" json:"user_id"` // 接收消息的用户ID, 如果为空则表示发送给所有用户
+	Topic  string  `msgpack:"topic" json:"topic"`     // 订阅的主题
+	Data   any     `msgpack:"data" json:"data"`       // 具体消息内容
 }
