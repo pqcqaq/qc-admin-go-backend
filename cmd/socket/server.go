@@ -53,6 +53,10 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 	ctx := context.Background()
 
 	messaging.CreateGroup(ctx)
+
+	// 创建WebSocket服务器实例
+	wsServer := NewWsServer()
+
 	// 在goroutine中启动服务器
 	go func() {
 		// 尝试从banner.txt读取并显示字符图
@@ -60,7 +64,6 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 			logging.Info(string(bannerContent))
 		}
 		logging.Info("WsServer is starting on %s", config.Socket.Port)
-		wsServer := NewWsServer()
 		if err := wsServer.Start(config.Socket.Port); err != nil {
 			logging.Error("WebSocket Server failed to start: %v", err)
 			os.Exit(1)
@@ -82,6 +85,8 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 	// 优雅关闭服务器
 	_, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
+
+	wsServer.Shutdown()
 
 	// 关闭Redis连接
 	if err := redisClient.Close(); err != nil {

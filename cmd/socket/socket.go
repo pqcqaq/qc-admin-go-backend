@@ -296,3 +296,14 @@ func SenderFunc(message messaging.SocketMessagePayload) error {
 	}
 	return nil
 }
+
+// 优雅停机
+func (s *WsServer) Shutdown() {
+	s.LockAll()
+	defer s.UnlockAll()
+	for client := range connectedClients {
+		client.Conn.Close()
+		s.removeClient(client, "server shutdown")
+	}
+	logger.Info("WebSocket server shutdown complete")
+}
