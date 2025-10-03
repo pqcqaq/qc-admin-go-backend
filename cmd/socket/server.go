@@ -55,19 +55,10 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 	messaging.CreateGroup(ctx)
 	// 在goroutine中启动服务器
 	go func() {
-		logging.Info(
-			// easy_study banner
-			` 
-
- ██████   ██████        █████  ██████  ███    ███ ██ ███    ██ 
-██    ██ ██            ██   ██ ██   ██ ████  ████ ██ ████   ██ 
-██    ██ ██      █████ ███████ ██   ██ ██ ████ ██ ██ ██ ██  ██ 
-██ ▄▄ ██ ██            ██   ██ ██   ██ ██  ██  ██ ██ ██  ██ ██ 
- ██████   ██████       ██   ██ ██████  ██      ██ ██ ██   ████ 
-    ▀▀                                                         
-------------------------QC-ADMIN-SOCKET------------------------
-			`,
-		)
+		// 尝试从banner.txt读取并显示字符图
+		if bannerContent, err := os.ReadFile("banner.txt"); err == nil {
+			logging.Info(string(bannerContent))
+		}
 		logging.Info("Server is starting on %s", config.Server.Port)
 		consumer := messaging.NewMessageConsumer("qc-admin_socket")
 		consumer.Consume(ctx)

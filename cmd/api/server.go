@@ -69,19 +69,10 @@ func startServer(config *configs.AppConfig, engine *gin.Engine, dbClient *databa
 
 	// 在goroutine中启动服务器
 	go func() {
-		logging.Info(
-			// easy_study banner
-			` 
-
- ██████   ██████        █████  ██████  ███    ███ ██ ███    ██ 
-██    ██ ██            ██   ██ ██   ██ ████  ████ ██ ████   ██ 
-██    ██ ██      █████ ███████ ██   ██ ██ ████ ██ ██ ██ ██  ██ 
-██ ▄▄ ██ ██            ██   ██ ██   ██ ██  ██  ██ ██ ██  ██ ██ 
- ██████   ██████       ██   ██ ██████  ██      ██ ██ ██   ████ 
-    ▀▀                                                         
----------------------------QC-ADMIN---------------------------
-			`,
-		)
+		// 尝试从banner.txt读取并显示字符图
+		if bannerContent, err := os.ReadFile("banner.txt"); err == nil {
+			logging.Info(string(bannerContent))
+		}
 		logging.Info("Server is starting on %s", config.Server.Port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logging.Fatal("Server failed to start: %v", err)
