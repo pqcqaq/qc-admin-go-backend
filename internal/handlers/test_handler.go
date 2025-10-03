@@ -23,10 +23,11 @@ func (h *TestHandler) TestSendUserSocketMsg(c *gin.Context) {
 		return
 	}
 	messaging.Publish(ctx, messaging.MessageStruct{
-		Type: messaging.ToUserSocket,
-		Payload: map[string]any{
-			"user_id": userId, // 用户ID
-			"message": fmt.Sprintf("Hello, User %d! This is a test message from the server.", userId),
+		Type: messaging.ServerToUserSocket,
+		Payload: messaging.SocketMessagePayload{
+			UserId: &userId,
+			Topic:  "test_topic",
+			Data:   fmt.Sprintf("Hello User %d! This is a test message from server.", userId),
 		},
 		Priority: 1,
 	})

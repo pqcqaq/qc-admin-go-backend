@@ -59,7 +59,16 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 		if bannerContent, err := os.ReadFile("banner.txt"); err == nil {
 			logging.Info(string(bannerContent))
 		}
-		logging.Info("Server is starting on %s", config.Server.Port)
+		logging.Info("WsServer is starting on %s", config.Socket.Port)
+		wsServer := NewWsServer()
+		if err := wsServer.Start(config.Socket.Port); err != nil {
+			logging.Error("WebSocket Server failed to start: %v", err)
+			os.Exit(1)
+		}
+	}()
+
+	go func() {
+		logging.Info("Started messaging consumer")
 		consumer := messaging.NewMessageConsumer("qc-admin_socket")
 		consumer.Consume(ctx)
 	}()

@@ -5,6 +5,7 @@ import (
 	"go-backend/cmd/socket/handlers"
 	"go-backend/pkg/caching"
 	"go-backend/pkg/configs"
+	"go-backend/pkg/jwt"
 	"go-backend/pkg/logging"
 	"go-backend/pkg/messaging"
 	"sync"
@@ -26,6 +27,7 @@ func setupLogging(config *configs.AppConfig) {
 	// 设置各个包的logger
 	caching.SetLogger(logging.WithName("Caching"))
 	messaging.SetLogger(logging.WithName("Messaging"))
+	SetLogger(logging.WithName("WebSocket"))
 }
 
 // initializeComponents 并行初始化各个组件
@@ -56,8 +58,23 @@ func initializeComponents(config *configs.AppConfig) (*InitResults, error) {
 		defer wg.Done()
 		mu.Lock()
 		handlers.RegisterHandlers()
+		handlers.SetSender(SenderFunc)
 		mu.Unlock()
 		logging.Info("Socket handlers registered successfully")
+	}()
+
+	// 并行初始化JWT服务
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := jwt.InitializeService(&config.JWT); err != nil {
+			mu.Lock()
+			results.errors["jwt"] = err
+			mu.Unlock()
+			logging.Warn("Failed to initialize JWT service: %v", err)
+		} else {
+			logging.Info("JWT service initialized successfully")
+		}
 	}()
 
 	wg.Wait()

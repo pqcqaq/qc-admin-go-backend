@@ -5,8 +5,9 @@ import "time"
 type MessageType string // 消息类型，也代表这个消息的处理者是谁，需要实现对应的消息发送和处理器
 
 const (
-	ToUserSocket MessageType = "socket.user" // 发送给用户的websocket消息
-	ToWorker     MessageType = "worker"      // 发送给后台任务处理器的消息
+	ServerToUserSocket MessageType = "socket.user"   // 发送给用户的websocket消息
+	UserToServerSocket MessageType = "socket.server" // 用户通过websocket发送给服务器的消息
+	ServerToWorker     MessageType = "worker"        // 发送给后台任务处理器的消息
 )
 
 type MessageStruct struct {
@@ -16,4 +17,10 @@ type MessageStruct struct {
 	Type     MessageType `msgpack:"type"`     // 消息类型
 	Payload  any         `msgpack:"payload"`  // 根据消息的类型不同,这里会是不同的Payload结构体
 	Priority int         `msgpack:"priority"` // 优先级，数字越大优先级越高
+}
+
+type SocketMessagePayload struct {
+	UserId *uint64 `msgpack:"user_id" json:"-"`   // 接收消息的用户ID, 如果为空则表示发送给所有用户
+	Topic  string  `msgpack:"topic" json:"topic"` // 订阅的主题
+	Data   any     `msgpack:"data" json:"data"`   // 具体消息内容
 }

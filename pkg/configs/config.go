@@ -23,6 +23,7 @@ type AppConfig struct {
 	SMS      SMSConfig      `mapstructure:"sms"`
 	JWT      JWTConfig      `mapstructure:"jwt"`
 	OpenAI   OpenAIConfig   `mapstructure:"openai"`
+	Socket   SocketConfig   `mapstructure:"socket"`
 }
 
 var config *AppConfig
@@ -186,6 +187,9 @@ func setDefaults() {
 
 	// OpenAI默认配置
 	setOpenAIConfigDefaults()
+
+	// SocketIO默认配置
+	setSocketConfigDefaults()
 }
 
 // ResolveConfigPath 解析配置文件路径，支持相对路径和绝对路径

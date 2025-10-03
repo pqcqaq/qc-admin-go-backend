@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 )
 
@@ -88,4 +89,20 @@ func CompactJSON(jsonStr string) (string, error) {
 		return "", err
 	}
 	return string(data), nil
+}
+
+// MapToStruct 将 map[string]interface{} 转换为指定结构体
+func MapToStruct(m map[string]interface{}, out interface{}) error {
+	// 先把 map 转换成 JSON
+	data, err := json.Marshal(m)
+	if err != nil {
+		return fmt.Errorf("marshal map error: %w", err)
+	}
+
+	// 再把 JSON 转换为结构体
+	if err := json.Unmarshal(data, out); err != nil {
+		return fmt.Errorf("unmarshal to struct error: %w", err)
+	}
+
+	return nil
 }
