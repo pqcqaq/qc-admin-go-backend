@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go-backend/cmd/socket/types"
 	"go-backend/pkg/configs"
 	"go-backend/pkg/jwt"
 	"go-backend/pkg/messaging"
@@ -44,14 +45,21 @@ type WsServer struct {
 
 	allowList []string
 	allowAll  bool
+
+	connectedClients    map[*ClientConnWrapper]bool            // 连接的客户端
+	userClients         map[uint64]map[*ClientConnWrapper]bool // 用户ID -> 客户端列表映射
+	clientSubscriptions map[*ClientConnWrapper]map[string]bool // 客户端 -> 订阅的频道列表映射
 }
 
 func NewWsServer() *WsServer {
 	allowList := configs.GetConfig().Socket.AllowOrigins
 	allowAll := len(allowList) == 0
 	return &WsServer{
-		allowList: allowList,
-		allowAll:  allowAll,
+		allowList:           allowList,
+		allowAll:            allowAll,
+		connectedClients:    make(map[*ClientConnWrapper]bool),
+		userClients:         make(map[uint64]map[*ClientConnWrapper]bool),
+		clientSubscriptions: make(map[*ClientConnWrapper]map[string]bool),
 	}
 }
 
@@ -76,7 +84,7 @@ func (s *WsServer) cleanupExpiredClients() {
 	defer s.UnlockAll()
 
 	var expiredClients []*ClientConnWrapper
-	for client := range connectedClients {
+	for client := range s.connectedClients {
 		if now.Sub(client.lastPong) > timeoutDuration {
 			expiredClients = append(expiredClients, client)
 		}
@@ -114,19 +122,19 @@ func (s *WsServer) removeClient(client *ClientConnWrapper, reason string) {
 	logger.Info("Removing client %s (user %d), reason: %s", client.id, client.UserId, reason)
 
 	// 从全局数据结构中移除
-	delete(connectedClients, client)
+	delete(s.connectedClients, client)
 
 	// 从userClients中移除
-	if userClients[client.UserId] != nil {
-		delete(userClients[client.UserId], client)
+	if s.userClients[client.UserId] != nil {
+		delete(s.userClients[client.UserId], client)
 		// 如果该用户没有其他客户端了，删除整个用户记录
-		if len(userClients[client.UserId]) == 0 {
-			delete(userClients, client.UserId)
+		if len(s.userClients[client.UserId]) == 0 {
+			delete(s.userClients, client.UserId)
 		}
 	}
 
 	// 从订阅记录中移除
-	delete(clientSubscriptions, client)
+	delete(s.clientSubscriptions, client)
 }
 
 func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMessage) error {
@@ -136,16 +144,16 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 		return client.Pong()
 	case "subscribe":
 		s.cSMu.Lock()
-		if clientSubscriptions[client] == nil {
-			clientSubscriptions[client] = make(map[string]bool)
+		if s.clientSubscriptions[client] == nil {
+			s.clientSubscriptions[client] = make(map[string]bool)
 		}
-		clientSubscriptions[client][msg.Topic] = true
+		s.clientSubscriptions[client][msg.Topic] = true
 		s.cSMu.Unlock()
 		logger.Info("Client %s subscribed to topic %s", client.id, msg.Topic)
 	case "unsubscribe":
 		s.cSMu.Lock()
-		if clientSubscriptions[client] != nil {
-			delete(clientSubscriptions[client], msg.Topic)
+		if s.clientSubscriptions[client] != nil {
+			delete(s.clientSubscriptions[client], msg.Topic)
 		}
 		s.cSMu.Unlock()
 		logger.Info("Client %s unsubscribed from topic %s", client.id, msg.Topic)
@@ -177,10 +185,6 @@ func (c *ClientConnWrapper) Pong() error {
 func (c *ClientConnWrapper) SendMessage(message any) error {
 	return c.Conn.WriteJSON(message)
 }
-
-var connectedClients = make(map[*ClientConnWrapper]bool) // 连接的客户端
-var userClients = make(map[uint64]map[*ClientConnWrapper]bool)
-var clientSubscriptions = make(map[*ClientConnWrapper]map[string]bool)
 
 func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request) {
 	wsConfig := configs.GetConfig().Socket
@@ -243,12 +247,12 @@ func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request
 		UserId:   claims.UserID,
 		lastPong: time.Now(),
 	}
-	connectedClients[client] = true
-	if userClients[client.UserId] == nil {
-		userClients[client.UserId] = make(map[*ClientConnWrapper]bool)
+	s.connectedClients[client] = true
+	if s.userClients[client.UserId] == nil {
+		s.userClients[client.UserId] = make(map[*ClientConnWrapper]bool)
 	}
-	userClients[client.UserId][client] = true
-	clientSubscriptions[client] = make(map[string]bool)
+	s.userClients[client.UserId][client] = true
+	s.clientSubscriptions[client] = make(map[string]bool)
 
 	s.UnlockAll()
 
@@ -281,37 +285,39 @@ func (s *WsServer) Start(address string) error {
 	return http.ListenAndServe(address, nil)
 }
 
-func SenderFunc(message messaging.SocketMessagePayload) error {
-	topic := message.Topic
-	userId := message.UserId
+func (s *WsServer) CreateSender() types.MessageSender {
+	return func(message messaging.SocketMessagePayload) error {
+		topic := message.Topic
+		userId := message.UserId
 
-	var userC map[*ClientConnWrapper]bool
-	if userId != nil {
-		userC = userClients[*userId]
-	} else {
-		userC = connectedClients
-	}
-	for c := range userC {
-		subs := clientSubscriptions[c]
-
-		subsList := make([]string, 0, len(subs))
-		for sub := range subs {
-			subsList = append(subsList, sub)
+		var userC map[*ClientConnWrapper]bool
+		if userId != nil {
+			userC = s.userClients[*userId]
+		} else {
+			userC = s.connectedClients
 		}
+		for c := range userC {
+			subs := s.clientSubscriptions[c]
 
-		if utils.IsAnyMatch(subsList, topic) {
-			logger.Info("Sending message to user %d on topic %s", *userId, topic)
-			c.SendMessage(message)
+			subsList := make([]string, 0, len(subs))
+			for sub := range subs {
+				subsList = append(subsList, sub)
+			}
+
+			if utils.IsAnyMatch(subsList, topic) {
+				logger.Info("Sending message to user %d on topic %s", *userId, topic)
+				c.SendMessage(message)
+			}
 		}
+		return nil
 	}
-	return nil
 }
 
 // 优雅停机
 func (s *WsServer) Shutdown() {
 	s.LockAll()
 	defer s.UnlockAll()
-	for client := range connectedClients {
+	for client := range s.connectedClients {
 		client.Conn.Close()
 		s.removeClient(client, "server shutdown")
 	}

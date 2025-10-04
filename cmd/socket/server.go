@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"go-backend/cmd/socket/handlers"
 	"go-backend/pkg/configs"
 	"go-backend/pkg/logging"
 	"go-backend/pkg/messaging"
@@ -56,6 +57,8 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 
 	// 创建WebSocket服务器实例
 	wsServer := NewWsServer()
+	sender := wsServer.CreateSender()
+	handlers.SetSender(sender)
 
 	// 在goroutine中启动服务器
 	go func() {

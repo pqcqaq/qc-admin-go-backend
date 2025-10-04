@@ -2,14 +2,15 @@ package handlers
 
 import (
 	"fmt"
+	"go-backend/cmd/socket/types"
 	"go-backend/pkg/logging"
 	"go-backend/pkg/messaging"
 	"go-backend/pkg/utils"
 )
 
-var sender MessageSender
+var sender types.MessageSender
 
-func SetSender(s MessageSender) {
+func SetSender(s types.MessageSender) {
 	sender = s
 }
 

@@ -58,7 +58,6 @@ func initializeComponents(config *configs.AppConfig) (*InitResults, error) {
 		defer wg.Done()
 		mu.Lock()
 		handlers.RegisterHandlers()
-		handlers.SetSender(SenderFunc)
 		mu.Unlock()
 		logging.Info("Socket handlers registered successfully")
 	}()
