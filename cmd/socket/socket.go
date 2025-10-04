@@ -221,7 +221,17 @@ func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request
 
 	if err != nil {
 		logger.Warn("无效的JWT令牌: %v", err)
-		ws.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.ClosePolicyViolation, "无效的令牌"))
+		// 发送自定义 JSON 错误消息
+		response := map[string]interface{}{
+			"topic": "?dc",
+			"data": map[string]interface{}{
+				"code":   "TOKEN_EXPIRED",
+				"detail": err.Error(),
+			},
+			"timestamp": time.Now().Unix(),
+		}
+
+		ws.WriteJSON(response)
 		return
 	}
 
