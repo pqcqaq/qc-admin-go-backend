@@ -1,11 +1,13 @@
-package main
+package websocket
 
 import (
-	"go-backend/cmd/socket/types"
+	"context"
+	"fmt"
 	"go-backend/pkg/configs"
 	"go-backend/pkg/jwt"
 	"go-backend/pkg/messaging"
 	"go-backend/pkg/utils"
+	"go-backend/pkg/websocket/types"
 	"net/http"
 	"sync"
 	"time"
@@ -32,9 +34,9 @@ func SetLogger(l Logger) {
 //  客户端id -> 订阅的频道列表映射
 
 type ClientMessage struct {
-	Action string `json:"action"` // "subscribe" or "unsubscribe"
-	Topic  string `json:"topic"`  // 频道名称
-	Data   string `json:"data"`   // 消息内容（仅在发布消息时使用）
+	Action string `json:"action"`         // "subscribe" or "unsubscribe"
+	Topic  string `json:"topic"`          // 频道名称
+	Data   any    `json:"data,omitempty"` // 消息内容（仅在发布消息时使用）
 }
 
 type WsServer struct {
@@ -42,6 +44,9 @@ type WsServer struct {
 	ccMu sync.Mutex
 	uCMu sync.Mutex
 	cSMu sync.Mutex
+
+	// 发送消息的ctx
+	sendCtx context.Context
 
 	allowList []string
 	allowAll  bool
@@ -60,6 +65,7 @@ func NewWsServer() *WsServer {
 		connectedClients:    make(map[*ClientConnWrapper]bool),
 		userClients:         make(map[uint64]map[*ClientConnWrapper]bool),
 		clientSubscriptions: make(map[*ClientConnWrapper]map[string]bool),
+		sendCtx:             context.Background(),
 	}
 }
 
@@ -157,6 +163,22 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 		}
 		s.cSMu.Unlock()
 		logger.Info("Client %s unsubscribed from topic %s", client.id, msg.Topic)
+	case "msg":
+
+		if utils.IsEmpty(msg.Topic) {
+			client.SendErrorMsg(ErrInvalidMessageId, fmt.Errorf("topic is required for action 'msg'"))
+			return fmt.Errorf("topic is required for action 'msg'")
+		}
+
+		messaging.Publish(s.sendCtx, messaging.MessageStruct{
+			Type: messaging.UserToServerSocket,
+			Payload: messaging.UserMessagePayload{
+				MessageId: msg.Topic,
+				UserId:    client.UserId,
+				Data:      msg.Data,
+				ClientId:  client.ClientId,
+			},
+		})
 	default:
 		logger.Warn("Unknown action from client %s: %s", client.id, msg.Action)
 	}
@@ -171,6 +193,7 @@ type ClientConnWrapper struct {
 	id       string
 	Conn     *websocket.Conn
 	UserId   uint64
+	ClientId uint64
 	lastPong time.Time
 }
 
@@ -184,6 +207,18 @@ func (c *ClientConnWrapper) Pong() error {
 
 func (c *ClientConnWrapper) SendMessage(message any) error {
 	return c.Conn.WriteJSON(message)
+}
+
+func (c *ClientConnWrapper) SendErrorMsg(code ErroeCode, err error) {
+	response := map[string]interface{}{
+		"topic": "?er",
+		"data": map[string]interface{}{
+			"code":   code,
+			"detail": err.Error(),
+		},
+		"timestamp": time.Now().Unix(),
+	}
+	c.Conn.WriteJSON(response)
 }
 
 func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request) {
@@ -229,7 +264,7 @@ func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request
 		response := map[string]interface{}{
 			"topic": "?dc",
 			"data": map[string]interface{}{
-				"code":   "TOKEN_EXPIRED",
+				"code":   ErrTokenExpired,
 				"detail": err.Error(),
 			},
 			"timestamp": time.Now().Unix(),
@@ -245,6 +280,7 @@ func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request
 		id:       s.generateSessionID(),
 		Conn:     ws,
 		UserId:   claims.UserID,
+		ClientId: claims.ClientDeviceId,
 		lastPong: time.Now(),
 	}
 	s.connectedClients[client] = true

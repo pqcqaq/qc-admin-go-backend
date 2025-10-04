@@ -117,7 +117,7 @@ func messageDispatcher(message MessageStruct) error {
 	handlers := GetHandlers(message.Type)
 	if len(handlers) == 0 {
 		logger.Warn("没有注册处理器来处理消息类型: %s", message.Type)
-		return fmt.Errorf("没有注册处理器来处理消息类型: %s", message.Type)
+		return nil
 	}
 	anySuccess := false
 	for _, handler := range handlers {

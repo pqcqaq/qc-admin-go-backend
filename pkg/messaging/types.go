@@ -24,3 +24,10 @@ type SocketMessagePayload struct {
 	Topic  string  `msgpack:"topic" json:"topic"`     // 订阅的主题
 	Data   any     `msgpack:"data" json:"data"`       // 具体消息内容
 }
+
+type UserMessagePayload struct {
+	MessageId string `msgpack:"message_id" json:"message_id"` // 这条消息的唯一标识, 用于回复
+	UserId    uint64 `msgpack:"user_id" json:"user_id"`       // 消息的用户ID
+	ClientId  uint64 `msgpack:"client_id" json:"client_id"`   // 消息的客户端ID
+	Data      any    `msgpack:"data" json:"data"`             // 具体消息内容
+}

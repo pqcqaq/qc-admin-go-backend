@@ -8,6 +8,7 @@ import (
 	"go-backend/pkg/jwt"
 	"go-backend/pkg/logging"
 	"go-backend/pkg/messaging"
+	"go-backend/pkg/websocket"
 	"sync"
 
 	"github.com/redis/go-redis/v9"
@@ -27,7 +28,7 @@ func setupLogging(config *configs.AppConfig) {
 	// 设置各个包的logger
 	caching.SetLogger(logging.WithName("Caching"))
 	messaging.SetLogger(logging.WithName("Messaging"))
-	SetLogger(logging.WithName("WebSocket"))
+	websocket.SetLogger(logging.WithName("WebSocket"))
 }
 
 // initializeComponents 并行初始化各个组件

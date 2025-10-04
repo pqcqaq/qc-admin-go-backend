@@ -7,6 +7,7 @@ import (
 	"go-backend/pkg/configs"
 	"go-backend/pkg/logging"
 	"go-backend/pkg/messaging"
+	"go-backend/pkg/websocket"
 	"os"
 	"os/signal"
 	"syscall"
@@ -56,7 +57,7 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 	messaging.CreateGroup(ctx)
 
 	// 创建WebSocket服务器实例
-	wsServer := NewWsServer()
+	wsServer := websocket.NewWsServer()
 	sender := wsServer.CreateSender()
 	handlers.SetSender(sender)
 
