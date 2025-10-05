@@ -2,10 +2,10 @@ package messaging
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"go-backend/pkg/caching"
 	"go-backend/pkg/configs"
+	"go-backend/pkg/utils"
 	"strconv"
 	"strings"
 	"sync"
@@ -275,31 +275,23 @@ func (c *MessageCunsumer) processMessage(ctx context.Context, message redis.XMes
 	client := caching.GetInstanceUnsafe()
 
 	// 解码消息
-	encoded, ok := message.Values["data"].(string)
+	data, ok := message.Values["data"].(string)
 	if !ok {
 		logger.Error("[%s] 消息格式错误: %s", c.consumerName, message.ID)
 		client.XAck(ctx, streamKey, groupName, message.ID)
 		return
 	}
 
-	// base64 解码
-	data, err := base64.StdEncoding.DecodeString(encoded)
-	if err != nil {
-		logger.Error("[%s] base64 解码失败: %v", c.consumerName, err)
-		client.XAck(ctx, streamKey, groupName, message.ID)
-		return
-	}
-
 	// msgpack 反序列化
-	var MessageStruct MessageStruct
-	if err := msgpack.Unmarshal(data, &MessageStruct); err != nil {
+	var messageStruct MessageStruct
+	if err := msgpack.Unmarshal(utils.StringToByte(data), &messageStruct); err != nil {
 		logger.Error("[%s] msgpack 反序列化失败: %v", c.consumerName, err)
 		client.XAck(ctx, streamKey, groupName, message.ID)
 		return
 	}
 
 	// 执行业务处理
-	if err := handler(MessageStruct); err != nil {
+	if err := handler(messageStruct); err != nil {
 		logger.Error("[%s] 处理消息失败 %s: %v", c.consumerName, message.ID, err)
 		// 不 ACK，让消息进入 pending 状态，等待重试
 		return

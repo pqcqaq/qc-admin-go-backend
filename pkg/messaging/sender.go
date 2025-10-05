@@ -2,7 +2,6 @@ package messaging
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"go-backend/pkg/caching"
 	"go-backend/pkg/configs"
@@ -29,14 +28,11 @@ func Publish(ctx context.Context, task MessageStruct) (string, error) {
 		return "", fmt.Errorf("msgpack 序列化失败: %w", err)
 	}
 
-	// 转为 base64 存储（Redis Stream 的值必须是字符串）
-	encoded := base64.StdEncoding.EncodeToString(data)
-
 	// 添加到 Stream
 	result, err := caching.GetInstanceUnsafe().XAdd(ctx, &redis.XAddArgs{
 		Stream: streamKey,
-		Values: map[string]interface{}{
-			"data": encoded,
+		Values: map[string]any{
+			"data": utils.ByteToString(data),
 		},
 	}).Result()
 

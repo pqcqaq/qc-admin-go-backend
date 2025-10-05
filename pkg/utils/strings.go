@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"unsafe"
 )
 
 // IsEmpty 检查字符串是否为空或只包含空白字符
@@ -127,4 +128,23 @@ func IsValidEmail(email string) bool {
 func IsValidPhone(phone string) bool {
 	phoneRegex := regexp.MustCompile(`^1[3-9]\d{9}$`)
 	return phoneRegex.MatchString(phone)
+}
+
+// StringToByte 将字符串转换为字节切片（零拷贝，高性能）
+// 警告：返回的 []byte 与原字符串共享底层数据，不可修改
+// 如果需要修改字节切片，请使用标准的 []byte(s) 转换
+func StringToByte(s string) []byte {
+	if s == "" {
+		return nil
+	}
+	return unsafe.Slice(unsafe.StringData(s), len(s))
+}
+
+// ByteToString 将字节切片转换为字符串（零拷贝，高性能）
+// 警告：如果修改了原 []byte，字符串内容也会改变
+func ByteToString(b []byte) string {
+	if len(b) == 0 {
+		return ""
+	}
+	return unsafe.String(unsafe.SliceData(b), len(b))
 }
