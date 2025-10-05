@@ -2,8 +2,8 @@ package utils
 
 import "strings"
 
-// matchTopic 检查消息topic是否匹配订阅pattern
-func matchTopic(subPattern, msgTopic string) bool {
+// MatchTopic 检查消息topic是否匹配订阅pattern
+func MatchTopic(subPattern, msgTopic string) bool {
 	// 分割topic为层级
 	subLevels := strings.Split(subPattern, "/")
 	msgLevels := strings.Split(msgTopic, "/")
@@ -45,7 +45,7 @@ func matchTopic(subPattern, msgTopic string) bool {
 // IsAnyMatch 检查msgTopic是否匹配subsList中的任意一个订阅
 func IsAnyMatch(subsList []string, msgTopic string) bool {
 	for _, sub := range subsList {
-		if matchTopic(sub, msgTopic) {
+		if MatchTopic(sub, msgTopic) {
 			return true
 		}
 	}
@@ -59,7 +59,7 @@ func IsAllMatch(subsList []string, msgTopic string) bool {
 	}
 
 	for _, sub := range subsList {
-		if !matchTopic(sub, msgTopic) {
+		if !MatchTopic(sub, msgTopic) {
 			return false
 		}
 	}

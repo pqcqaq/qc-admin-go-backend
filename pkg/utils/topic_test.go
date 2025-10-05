@@ -93,7 +93,7 @@ func TestMatchTopic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := matchTopic(tc.sub, tc.topic)
+			result := MatchTopic(tc.sub, tc.topic)
 			if result != tc.expected {
 				t.Errorf("matchTopic(%q, %q) = %v, want %v", tc.sub, tc.topic, result, tc.expected)
 			}

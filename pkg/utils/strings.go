@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"unicode/utf8"
 	"unsafe"
 )
 
@@ -189,4 +190,12 @@ func StringShorten(s string, length int) string {
 	}
 
 	return result[:length]
+}
+
+// IsValidUTF8 检查字节数组是否是有效的UTF-8编码
+func IsValidUTF8(data []byte) bool {
+	if len(data) == 0 {
+		return true
+	}
+	return utf8.Valid(data)
 }

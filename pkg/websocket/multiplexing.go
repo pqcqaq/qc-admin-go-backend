@@ -47,10 +47,13 @@ func (s *WsServer) CreateToServerChannelSender(ctx context.Context) channel.ToSe
 		channelId := msg.GetChannelId()
 		userId := msg.GetChannelCreatorId()
 
+		channel := s.GetChannelById(channelId)
+
 		_, err := messaging.Publish(ctx, messaging.MessageStruct{
 			Type: messaging.ChannelToServer,
 			Payload: messaging.ChannelMessagePayLoad{
 				ID:     channelId,
+				Topic:  channel.Topic,
 				UserID: userId,
 				Action: messaging.ChannelActionMsg,
 				Data:   msg.Data,
@@ -158,10 +161,8 @@ func (c *ClientConnWrapper) SendChannelError(id string, code ErroeCode, err erro
 
 func (c *ClientConnWrapper) SendChannelMsg(id string, msg channel.ChannelMsg) {
 	response := map[string]interface{}{
-		"topic": id,
-		"data": map[string]interface{}{
-			"msg": msg,
-		},
+		"topic":     id,
+		"data":      msg.Data,
 		"timestamp": utils.Now().Unix(),
 	}
 	c.Conn.WriteJSON(response)

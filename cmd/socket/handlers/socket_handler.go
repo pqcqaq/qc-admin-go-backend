@@ -78,6 +78,12 @@ func createChannelUserMsgHandler(ws *websocket.WsServer) messaging.MessageHandle
 		}
 
 		channel := ws.GetChannelById(socketMsg.ID)
+
+		if socketMsg.Action == messaging.ChannelActionClose {
+			channel.Close()
+			return nil
+		}
+
 		channel.NewMessage(socketMsg.Data).ToClient()
 		return nil
 	}
@@ -87,4 +93,6 @@ func registerSocketHandler(ws *websocket.WsServer) {
 	messaging.RegisterHandler(messaging.ServerToUserSocket, handleMessage)
 	messaging.RegisterHandler(messaging.UserToServerSocket, testChatHandler)
 	messaging.RegisterHandler(messaging.ChannelToUser, createChannelUserMsgHandler(ws))
+	RegisterIsolate()
+	RegisterChat()
 }

@@ -1,5 +1,9 @@
 package channelhandler
 
+import (
+	"sync"
+)
+
 type IsolateChannelLifecycle int
 
 type Logger interface {
@@ -17,7 +21,7 @@ func SetLogger(l Logger) {
 }
 
 const (
-	Channel_Started IsolateChannelLifecycle = iota
+	Channel_Ready IsolateChannelLifecycle = iota
 	Channel_Running
 	Channel_Closed
 )
@@ -36,4 +40,33 @@ type IsolateChannel struct {
 
 	history []IsolateChannelMsg
 	status  IsolateChannelLifecycle
+
+	sMu      sync.Mutex
+	readChan chan (*IsolateChannelMsg)
+
+	closeChan chan struct{}
+
+	factory *ChannelHandler
+}
+
+type ChannelReceiver func(channel *IsolateChannel) error
+type ChannelSender func(channelId string, msg any) error
+type ChannelCloser func(channelId string) error
+
+type CreateChannelHandlerOptions struct {
+	Topic              string
+	NewChannelReceived ChannelReceiver
+	SendMessage        ChannelSender
+	CloseChannel       ChannelCloser
+}
+
+type ChannelHandler struct {
+	topic      string
+	onReceived ChannelReceiver
+	send       ChannelSender
+	close      ChannelCloser
+
+	// 记录当前 所有活跃的频道
+	channels map[string]*IsolateChannel
+	cMu      sync.Mutex
 }
