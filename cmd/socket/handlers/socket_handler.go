@@ -5,6 +5,7 @@ import (
 	"go-backend/pkg/logging"
 	"go-backend/pkg/messaging"
 	"go-backend/pkg/utils"
+	"go-backend/pkg/websocket"
 	"go-backend/pkg/websocket/types"
 )
 
@@ -61,7 +62,29 @@ func testChatHandler(message messaging.MessageStruct) error {
 	return nil
 }
 
-func registerSocketHandler() {
+func createChannelUserMsgHandler(ws *websocket.WsServer) messaging.MessageHandler {
+	return func(message messaging.MessageStruct) error {
+		socketMsgMap, ok := message.Payload.(map[string]interface{})
+		if !ok {
+			logging.Error("Invalid message payload type")
+			return fmt.Errorf("invalid message payload type")
+		}
+
+		var socketMsg messaging.ChannelMessagePayLoad
+		err := utils.MapToStruct(socketMsgMap, &socketMsg)
+		if err != nil {
+			logging.Error("Failed to convert payload to SocketMessagePayload: %v", err)
+			return fmt.Errorf("failed to convert payload to SocketMessagePayload: %w", err)
+		}
+
+		channel := ws.GetChannelById(socketMsg.ID)
+		channel.NewMessage(socketMsg.Data).ToClient()
+		return nil
+	}
+}
+
+func registerSocketHandler(ws *websocket.WsServer) {
 	messaging.RegisterHandler(messaging.ServerToUserSocket, handleMessage)
 	messaging.RegisterHandler(messaging.UserToServerSocket, testChatHandler)
+	messaging.RegisterHandler(messaging.ChannelToUser, createChannelUserMsgHandler(ws))
 }

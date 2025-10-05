@@ -7,6 +7,7 @@ import (
 	"go-backend/pkg/jwt"
 	"go-backend/pkg/messaging"
 	"go-backend/pkg/utils"
+	"go-backend/pkg/websocket/channel"
 	"go-backend/pkg/websocket/types"
 	"net/http"
 	"sync"
@@ -34,16 +35,18 @@ func SetLogger(l Logger) {
 //  客户端id -> 订阅的频道列表映射
 
 type ClientMessage struct {
-	Action string `json:"action"`         // "subscribe" or "unsubscribe"
-	Topic  string `json:"topic"`          // 频道名称
-	Data   any    `json:"data,omitempty"` // 消息内容（仅在发布消息时使用）
+	Action string `json:"action"`          // "subscribe" or "unsubscribe"
+	Topic  string `json:"topic,omitempty"` // 频道名称
+	Data   any    `json:"data,omitempty"`  // 消息内容（仅在发布消息时使用）
 }
 
 type WsServer struct {
 	// 操作全局结构体的锁
-	ccMu sync.Mutex
+	cMu  sync.Mutex
 	uCMu sync.Mutex
 	cSMu sync.Mutex
+	cCMu sync.Mutex
+	cIMu sync.Mutex
 
 	// 发送消息的ctx
 	sendCtx context.Context
@@ -54,10 +57,28 @@ type WsServer struct {
 	connectedClients    map[*ClientConnWrapper]bool            // 连接的客户端
 	userClients         map[uint64]map[*ClientConnWrapper]bool // 用户ID -> 客户端列表映射
 	clientSubscriptions map[*ClientConnWrapper]map[string]bool // 客户端 -> 订阅的频道列表映射
+	channelsClient      map[string]map[*ClientConnWrapper]bool // 频道ID -> 订阅的客户端列表映射
+
+	// channel的ID必然不可能是重复的,因为它是由用户ID,客户端ID,和频道主题三部分组成,而且本身就不可能重复创建
+	channelIdMap map[string]*channel.Channel
+
+	// channel factory
+	channelFactory *channel.ChannelFactory
 }
 
-func NewWsServer() *WsServer {
-	allowList := configs.GetConfig().Socket.AllowOrigins
+func (s *WsServer) GetChannelById(channelId string) *channel.Channel {
+	s.cIMu.Lock()
+	defer s.cIMu.Unlock()
+	return s.channelIdMap[channelId]
+}
+
+type WsServerOptions struct {
+	AllowOrigins   []string
+	ChannelFactory *channel.ChannelFactory
+}
+
+func NewWsServer(options WsServerOptions) *WsServer {
+	allowList := options.AllowOrigins
 	allowAll := len(allowList) == 0
 	return &WsServer{
 		allowList:           allowList,
@@ -65,12 +86,15 @@ func NewWsServer() *WsServer {
 		connectedClients:    make(map[*ClientConnWrapper]bool),
 		userClients:         make(map[uint64]map[*ClientConnWrapper]bool),
 		clientSubscriptions: make(map[*ClientConnWrapper]map[string]bool),
+		channelsClient:      make(map[string]map[*ClientConnWrapper]bool),
+		channelIdMap:        make(map[string]*channel.Channel),
 		sendCtx:             context.Background(),
+		channelFactory:      options.ChannelFactory,
 	}
 }
 
 func (s *WsServer) LockAll() {
-	s.ccMu.Lock()
+	s.cMu.Lock()
 	s.uCMu.Lock()
 	s.cSMu.Lock()
 }
@@ -78,7 +102,7 @@ func (s *WsServer) LockAll() {
 func (s *WsServer) UnlockAll() {
 	s.cSMu.Unlock()
 	s.uCMu.Unlock()
-	s.ccMu.Unlock()
+	s.cMu.Unlock()
 }
 
 // cleanupExpiredClients 清理超时的客户端连接
@@ -91,7 +115,7 @@ func (s *WsServer) cleanupExpiredClients() {
 
 	var expiredClients []*ClientConnWrapper
 	for client := range s.connectedClients {
-		if now.Sub(client.lastPong) > timeoutDuration {
+		if now.Sub(client.GetLastPong()) > timeoutDuration {
 			expiredClients = append(expiredClients, client)
 		}
 	}
@@ -141,6 +165,31 @@ func (s *WsServer) removeClient(client *ClientConnWrapper, reason string) {
 
 	// 从订阅记录中移除
 	delete(s.clientSubscriptions, client)
+
+	// 清理客户端的频道
+	for channelId := range client.channels {
+		// 关闭频道并清理资源
+		if channel := client.channels[channelId]; channel != nil {
+			channel.Close()
+		}
+		delete(client.channels, channelId)
+	}
+
+	// 从频道客户端映射中移除
+	for channelId, clientsMap := range s.channelsClient {
+		if clientsMap != nil {
+			delete(clientsMap, client)
+			// 如果该频道没有其他客户端了，删除整个频道记录
+			if len(clientsMap) == 0 {
+				delete(s.channelsClient, channelId)
+
+				// 同时从channelIdMap中移除该频道
+				s.cIMu.Lock()
+				delete(s.channelIdMap, channelId)
+				s.cIMu.Unlock()
+			}
+		}
+	}
 }
 
 func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMessage) error {
@@ -179,6 +228,68 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 				ClientId:  client.ClientId,
 			},
 		})
+	case "channel_start":
+		if s.channelFactory == nil {
+			client.SendChannelCreatedFailed(msg.Topic, ErrInternalServer, fmt.Errorf("channel factory is not set"))
+			return fmt.Errorf("channel factory is not set")
+		}
+
+		if utils.IsEmpty(msg.Topic) {
+			// client.SendChannelError(msg.Topic, ErrEmptyTopic, fmt.Errorf("topic is required for action 'channel_start'"))
+			// topic为空时,根本就不知道id是什么,没办法发送channel的错误信息
+			client.SendErrorMsg(ErrEmptyTopic, fmt.Errorf("topic is required for action 'channel_start'"))
+			return fmt.Errorf("topic is required for action 'channel_start'")
+		}
+
+		channelId := s.CreateChannelId(client.UserId, client.ClientId, msg)
+
+		// 这里如果允许加入的话,就可以支持多客户端加入到一个频道,但是这样会不会有安全性问题?
+		if s.GetChannelById(channelId) != nil {
+			client.SendChannelCreatedFailed(msg.Topic, ErrChannelExists, fmt.Errorf("channel %s already exists", channelId))
+			return fmt.Errorf("channel %s already exists", channelId)
+		}
+		channel := s.channelFactory.StartNewChannel(msg.Topic, channelId, client.UserId)
+
+		client.AddChannel(channel)
+		s.AddChannelClientMapping(channel.ID, client)
+		client.SendChannelCreatedSuccess(msg.Topic, channel)
+
+	case "channel":
+		if s.channelFactory == nil {
+			client.SendErrorMsg(ErrInternalServer, fmt.Errorf("channel factory is not set"))
+			return fmt.Errorf("channel factory is not set")
+		}
+
+		if utils.IsEmpty(msg.Topic) {
+			client.SendErrorMsg(ErrInvalidMessageId, fmt.Errorf("topic is required for action 'channel_start'"))
+			return fmt.Errorf("topic is required for action 'channel_start'")
+		}
+
+		// 这里是直接将topic用作id
+		channel := s.GetChannelById(msg.Topic)
+		if channel == nil {
+			client.SendErrorMsg(ErrInvalidMessageId, fmt.Errorf("channel %s not found", msg.Topic))
+			return fmt.Errorf("channel %s not found", msg.Topic)
+		}
+
+		channel.NewMessage(msg.Data).ToServer()
+
+	case "channel_close":
+		if s.channelFactory == nil {
+			client.SendErrorMsg(ErrInternalServer, fmt.Errorf("channel factory is not set"))
+			return fmt.Errorf("channel factory is not set")
+		}
+		if utils.IsEmpty(msg.Topic) {
+			client.SendErrorMsg(ErrInvalidMessageId, fmt.Errorf("topic is required for action 'channel_close'"))
+			return fmt.Errorf("topic is required for action 'channel_close'")
+		}
+		channel := s.GetChannelById(msg.Topic)
+		if channel == nil {
+			client.SendErrorMsg(ErrInvalidMessageId, fmt.Errorf("channel %s not found", msg.Topic))
+			return fmt.Errorf("channel %s not found", msg.Topic)
+		}
+		channel.Close()
+		logger.Info("Client %s closed channel %s", client.id, channel.ID)
 	default:
 		logger.Warn("Unknown action from client %s: %s", client.id, msg.Action)
 	}
@@ -195,14 +306,36 @@ type ClientConnWrapper struct {
 	UserId   uint64
 	ClientId uint64
 	lastPong time.Time
+
+	channels map[string]*channel.Channel
+
+	// channels Lock
+	cMu sync.Mutex
+	// lastPong Lock
+	lastPongMu sync.RWMutex
 }
 
 func (c *ClientConnWrapper) Pong() error {
+	c.lastPongMu.Lock()
 	c.lastPong = time.Now()
+	c.lastPongMu.Unlock()
 	return c.SendMessage(ClientMessage{
 		Action: "pong",
-		Topic:  "",
 	})
+}
+
+// GetLastPong 安全地获取最后一次pong时间
+func (c *ClientConnWrapper) GetLastPong() time.Time {
+	c.lastPongMu.RLock()
+	defer c.lastPongMu.RUnlock()
+	return c.lastPong
+}
+
+// SetLastPong 安全地设置最后一次pong时间
+func (c *ClientConnWrapper) SetLastPong(t time.Time) {
+	c.lastPongMu.Lock()
+	defer c.lastPongMu.Unlock()
+	c.lastPong = t
 }
 
 func (c *ClientConnWrapper) SendMessage(message any) error {
@@ -281,8 +414,12 @@ func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request
 		Conn:     ws,
 		UserId:   claims.UserID,
 		ClientId: claims.ClientDeviceId,
-		lastPong: time.Now(),
+
+		channels: make(map[string]*channel.Channel, 16),
 	}
+	// 安全地设置初始 lastPong 时间
+	client.SetLastPong(time.Now())
+
 	s.connectedClients[client] = true
 	if s.userClients[client.UserId] == nil {
 		s.userClients[client.UserId] = make(map[*ClientConnWrapper]bool)
@@ -354,6 +491,11 @@ func (s *WsServer) Shutdown() {
 	s.LockAll()
 	defer s.UnlockAll()
 	for client := range s.connectedClients {
+		// 释放所有的channel
+		for _, channel := range client.channels {
+			client.SendChannelClosed(channel.ID)
+		}
+		// 关闭连接
 		client.Conn.Close()
 		s.removeClient(client, "server shutdown")
 	}

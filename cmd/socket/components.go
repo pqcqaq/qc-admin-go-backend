@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"go-backend/cmd/socket/handlers"
 	"go-backend/pkg/caching"
 	"go-backend/pkg/configs"
 	"go-backend/pkg/jwt"
@@ -52,15 +51,6 @@ func initializeComponents(config *configs.AppConfig) (*InitResults, error) {
 		results.redisClient = redisClient
 		mu.Unlock()
 		logging.Info("Redis client initialized successfully with address: %s", config.Redis.Addr)
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		mu.Lock()
-		handlers.RegisterHandlers()
-		mu.Unlock()
-		logging.Info("Socket handlers registered successfully")
 	}()
 
 	// 并行初始化JWT服务

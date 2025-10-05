@@ -3,7 +3,9 @@ package utils
 import (
 	"crypto/md5"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"math/rand"
 	"regexp"
 	"strings"
@@ -147,4 +149,44 @@ func ByteToString(b []byte) string {
 		return ""
 	}
 	return unsafe.String(unsafe.SliceData(b), len(b))
+}
+
+// StringShorten 使用哈希算法生成固定长度的字符串指纹
+// 参数:
+//
+//	s: 原始字符串
+//	length: 目标长度
+//
+// 返回:
+//
+//	固定长度的字符串指纹（使用 Base64 编码，包含大小写字母、数字和+/）
+func StringShorten(s string, length int) string {
+	if len(s) == 0 || length <= 0 {
+		return ""
+	}
+
+	// 使用 SHA-256 计算哈希值
+	hash := sha256.Sum256([]byte(s))
+
+	// 转换为 Base64 编码（更高的信息密度）
+	encoded := base64.StdEncoding.EncodeToString(hash[:])
+
+	// 如果需要的长度小于等于哈希长度，直接截取
+	if length <= len(encoded) {
+		return encoded[:length]
+	}
+
+	// 如果需要更长的输出，使用多轮哈希
+	result := encoded
+	counter := 1
+
+	for len(result) < length {
+		// 用原始字符串 + 计数器生成新的哈希
+		nextHash := sha256.Sum256([]byte(fmt.Sprintf("%s:%d", s, counter)))
+		nextEncoded := base64.StdEncoding.EncodeToString(nextHash[:])
+		result += nextEncoded
+		counter++
+	}
+
+	return result[:length]
 }

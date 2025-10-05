@@ -8,6 +8,7 @@ import (
 	"go-backend/pkg/logging"
 	"go-backend/pkg/messaging"
 	"go-backend/pkg/websocket"
+	"go-backend/pkg/websocket/channel"
 	"os"
 	"os/signal"
 	"syscall"
@@ -57,9 +58,18 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 	messaging.CreateGroup(ctx)
 
 	// 创建WebSocket服务器实例
-	wsServer := websocket.NewWsServer()
+	wsServer := websocket.NewWsServer(websocket.WsServerOptions{
+		AllowOrigins: config.Socket.AllowOrigins,
+	})
+	factory := channel.CreateChannelFactory(channel.ChannelFactoryOptions{
+		ToClient: wsServer.CreateToClientChannelSender(ctx),
+		ToServer: wsServer.CreateToServerChannelSender(ctx),
+		OnClose:  wsServer.CreateChannelCloser(ctx),
+	})
+	wsServer.SetChannelFactory(factory)
 	sender := wsServer.CreateSender()
 	handlers.SetSender(sender)
+	handlers.RegisterHandlers(wsServer)
 
 	// 在goroutine中启动服务器
 	go func() {
