@@ -250,6 +250,11 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 		}
 		channel := s.channelFactory.StartNewChannel(msg.Topic, channelId, client.UserId)
 
+		// 将新创建的频道加入到全局映射中
+		s.cIMu.Lock()
+		s.channelIdMap[channelId] = channel
+		s.cIMu.Unlock()
+
 		client.AddChannel(channel)
 		s.AddChannelClientMapping(channel.ID, client)
 		client.SendChannelCreatedSuccess(msg.Topic, channel)
