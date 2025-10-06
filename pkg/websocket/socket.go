@@ -456,7 +456,7 @@ func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request
 
 		// 处理客户端消息
 		if err := s.handleClientMessage(client, msg); err != nil {
-			logger.Error("处理客户端消息失败: %v", err)
+			logger.Error("处理客户端消息失败: %v, data is :%+v", err, msg.Data)
 		}
 	}
 }

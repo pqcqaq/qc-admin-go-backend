@@ -14,7 +14,7 @@ func RegisterIsolate() {
 		NewChannelReceived: func(channel *channelhandler.IsolateChannel) error {
 			count := 0
 			for {
-				if count >= 5 {
+				if count >= 50 {
 					logging.Info("Channel %s reached max message count, closing.", channel.ID)
 					channel.Close()
 					break
