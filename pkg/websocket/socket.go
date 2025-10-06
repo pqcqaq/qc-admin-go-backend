@@ -176,6 +176,7 @@ func (s *WsServer) removeClient(client *ClientConnWrapper, reason string) {
 	}
 
 	// 从频道客户端映射中移除
+	s.cCMu.Lock()
 	for channelId, clientsMap := range s.channelsClient {
 		if clientsMap != nil {
 			delete(clientsMap, client)
@@ -190,6 +191,7 @@ func (s *WsServer) removeClient(client *ClientConnWrapper, reason string) {
 			}
 		}
 	}
+	s.cCMu.Unlock()
 }
 
 func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMessage) error {
@@ -241,14 +243,14 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 			return fmt.Errorf("topic is required for action 'channel_start'")
 		}
 
-		channelId := s.CreateChannelId(client.UserId, client.ClientId, msg)
+		channelId := s.CreateChannelId(client.id, client.UserId, client.ClientId, msg)
 
 		// 这里如果允许加入的话,就可以支持多客户端加入到一个频道,但是这样会不会有安全性问题?
 		if s.GetChannelById(channelId) != nil {
 			client.SendChannelCreatedFailed(msg.Topic, ErrChannelExists, fmt.Errorf("channel %s already exists", channelId))
 			return fmt.Errorf("channel %s already exists", channelId)
 		}
-		channel := s.channelFactory.StartNewChannel(msg.Topic, channelId, client.UserId)
+		channel := s.channelFactory.StartNewChannel(msg.Topic, channelId, client.id, client.UserId, client.ClientId)
 
 		// 将新创建的频道加入到全局映射中
 		s.cIMu.Lock()
@@ -318,6 +320,8 @@ type ClientConnWrapper struct {
 	cMu sync.Mutex
 	// lastPong Lock
 	lastPongMu sync.RWMutex
+	// WebSocket write Lock
+	writeMu sync.Mutex
 }
 
 func (c *ClientConnWrapper) Pong() error {
@@ -344,6 +348,8 @@ func (c *ClientConnWrapper) SetLastPong(t time.Time) {
 }
 
 func (c *ClientConnWrapper) SendMessage(message any) error {
+	c.writeMu.Lock()
+	defer c.writeMu.Unlock()
 	return c.Conn.WriteJSON(message)
 }
 
@@ -356,7 +362,7 @@ func (c *ClientConnWrapper) SendErrorMsg(code ErroeCode, err error) {
 		},
 		"timestamp": time.Now().Unix(),
 	}
-	c.Conn.WriteJSON(response)
+	c.SendMessage(response)
 }
 
 func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request) {
@@ -408,6 +414,7 @@ func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request
 			"timestamp": time.Now().Unix(),
 		}
 
+		// 在此阶段直接使用ws写入是安全的，因为只有一个goroutine
 		ws.WriteJSON(response)
 		return
 	}

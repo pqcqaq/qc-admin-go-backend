@@ -15,26 +15,31 @@ func CreateChannelFactory(options ChannelFactoryOptions) *ChannelFactory {
 	}
 }
 
-func (c *ChannelFactory) StartNewChannel(topic, id string, userId uint64) *Channel {
+func (c *ChannelFactory) StartNewChannel(topic, id, sessionId string, userId, clientId uint64) *Channel {
 	newChannel := Channel{
 		ID:        id,
 		Topic:     topic,
 		CreatorId: userId,
 		factory:   c,
+		SessionId: sessionId,
+		ClientId:  clientId,
+		history:   make([]*ChannelMsg, 0),
 	}
 	newChannel.SetStatus(Channel_Started)
-	c.notifyServer(topic, id, userId, messaging.ChannelActionCreate)
+	c.notifyServer(topic, id, sessionId, userId, clientId, messaging.ChannelActionCreate)
 	return &newChannel
 }
 
-func (c *ChannelFactory) notifyServer(topic, id string, userId uint64, action messaging.ChannelAction) {
+func (c *ChannelFactory) notifyServer(topic, id, sessionId string, userId, clientId uint64, action messaging.ChannelAction) {
 	_, err := messaging.Publish(c.sendCtx, messaging.MessageStruct{
 		Type: messaging.ChannelToServer,
 		Payload: messaging.ChannelMessagePayLoad{
-			ID:     id,
-			Topic:  topic,
-			UserID: userId,
-			Action: action,
+			ID:        id,
+			Topic:     topic,
+			UserID:    userId,
+			SessionId: sessionId,
+			ClientId:  clientId,
+			Action:    action,
 		},
 	})
 	if err != nil {
@@ -43,12 +48,18 @@ func (c *ChannelFactory) notifyServer(topic, id string, userId uint64, action me
 }
 
 func (c *Channel) NewMessage(data any) *ChannelMsg {
-	return &ChannelMsg{
+	if c == nil {
+		logger.Error("尝试在 nil Channel 上创建消息")
+		return nil
+	}
+	msg := &ChannelMsg{
 		Data:    data,
 		channel: c,
 
 		timestamp: utils.Now().Unix(),
 	}
+	c.history = append(c.history, msg)
+	return msg
 }
 
 func (c *ChannelMsg) GetChannelId() string {
@@ -60,7 +71,6 @@ func (c *ChannelMsg) GetChannelCreatorId() uint64 {
 }
 
 func (c *ChannelMsg) ToClient() error {
-	c.channel.history = append(c.channel.history, *c)
 	err := c.channel.factory.toClient(*c)
 
 	if err != nil {
@@ -71,7 +81,6 @@ func (c *ChannelMsg) ToClient() error {
 }
 
 func (c *ChannelMsg) ToServer() error {
-	c.channel.history = append(c.channel.history, *c)
 	err := c.channel.factory.toServer(*c)
 
 	if err != nil {
@@ -82,7 +91,7 @@ func (c *ChannelMsg) ToServer() error {
 }
 
 func (c *Channel) Close() error {
-	c.factory.notifyServer(c.Topic, c.ID, c.CreatorId, messaging.ChannelActionClose)
+	c.factory.notifyServer(c.Topic, c.ID, c.SessionId, c.CreatorId, c.ClientId, messaging.ChannelActionClose)
 	if c.factory.onClose != nil {
 		err := c.factory.onClose(c)
 		if err != nil {

@@ -35,10 +35,12 @@ const (
 )
 
 type Channel struct {
-	ID        string       // 这次对话的ID
-	Topic     string       // 频道主题
-	CreatorId uint64       // 创建者的用户ID
-	history   []ChannelMsg // 历史消息
+	ID        string        // 这次对话的ID
+	Topic     string        // 频道主题
+	CreatorId uint64        // 创建者的用户ID
+	SessionId string        // 创建者的会话ID
+	ClientId  uint64        // 创建者的客户端ID
+	history   []*ChannelMsg // 历史消息
 
 	factory *ChannelFactory
 

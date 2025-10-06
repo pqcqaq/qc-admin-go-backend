@@ -78,13 +78,19 @@ func createChannelUserMsgHandler(ws *websocket.WsServer) messaging.MessageHandle
 		}
 
 		channel := ws.GetChannelById(socketMsg.ID)
+		if channel == nil {
+			return fmt.Errorf("channel %s not found", socketMsg.ID)
+		}
 
 		if socketMsg.Action == messaging.ChannelActionClose {
 			channel.Close()
 			return nil
 		}
 
-		channel.NewMessage(socketMsg.Data).ToClient()
+		msg := channel.NewMessage(socketMsg.Data)
+		if msg != nil {
+			msg.ToClient()
+		}
 		return nil
 	}
 }

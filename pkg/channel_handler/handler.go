@@ -1,11 +1,16 @@
 package channelhandler
 
 import (
+	"context"
 	"fmt"
 	"go-backend/pkg/logging"
 	"go-backend/pkg/messaging"
 	"go-backend/pkg/utils"
 )
+
+func (ch *ChannelHandler) SetLogger(l Logger) {
+	ch.logger = l
+}
 
 // 获取状态
 func (i *IsolateChannel) GetStatus() IsolateChannelLifecycle {
@@ -77,9 +82,9 @@ func (i *IsolateChannel) Signal() error {
 
 func (ch *ChannelHandler) onReceiveStarted(msg messaging.ChannelMessagePayLoad) {
 	if utils.MatchTopic(ch.topic, msg.Topic) {
-		channel := ch.StartNewChannel(ch.topic, msg.ID, msg.UserID)
+		channel := ch.StartNewChannel(ch.topic, msg.ID, msg.SessionId, msg.UserID, msg.ClientId)
 		ch.putChannel(channel)
-		logger.Info("New channel created: %s, topic: %s, userId: %d", msg.ID, msg.Topic, msg.UserID)
+		ch.logger.Info("New channel created: %s, topic: %s, userId: %d", msg.ID, msg.Topic, msg.UserID)
 	}
 }
 
@@ -87,7 +92,7 @@ func (ch *ChannelHandler) onReceiveMsg(msg messaging.ChannelMessagePayLoad) {
 	if utils.MatchTopic(ch.topic, msg.Topic) {
 		channel, exists := ch.getChannel(msg.ID)
 		if !exists {
-			logger.Error("Channel %s not found for topic %s", msg.ID, msg.Topic)
+			ch.logger.Error("Channel %s not found for topic %s", msg.ID, msg.Topic)
 			return
 		}
 		channel.readChan <- &IsolateChannelMsg{
@@ -102,7 +107,7 @@ func (ch *ChannelHandler) onReceiveStoped(msg messaging.ChannelMessagePayLoad) {
 	if utils.MatchTopic(ch.topic, msg.Topic) {
 		channel, exists := ch.getChannel(msg.ID)
 		if !exists {
-			logger.Error("Channel %s not found for topic %s", msg.ID, msg.Topic)
+			ch.logger.Error("Channel %s not found for topic %s", msg.ID, msg.Topic)
 			return
 		}
 
@@ -114,7 +119,7 @@ func (ch *ChannelHandler) onReceiveStoped(msg messaging.ChannelMessagePayLoad) {
 
 		// 从管理器中删除 channel
 		ch.deleteChannel(msg.ID)
-		logger.Info("Channel closed: %s, topic: %s", msg.ID, msg.Topic)
+		ch.logger.Info("Channel closed: %s, topic: %s", msg.ID, msg.Topic)
 	}
 }
 
@@ -173,16 +178,19 @@ func NewChannelHandler(options CreateChannelHandlerOptions) *ChannelHandler {
 		onReceived: options.NewChannelReceived,
 		send:       options.SendMessage,
 		close:      options.CloseChannel,
+		logger:     options.Logger,
 
 		channels: make(map[string]*IsolateChannel),
 	}
 }
 
-func (ch *ChannelHandler) StartNewChannel(topic, channelId string, creatorId uint64) *IsolateChannel {
+func (ch *ChannelHandler) StartNewChannel(topic, channelId, sessionId string, creatorId, clientId uint64) *IsolateChannel {
 	channel := &IsolateChannel{
 		ID:        channelId,
 		Topic:     topic,
 		CreatorId: creatorId,
+		SessionId: sessionId,
+		ClientId:  clientId,
 		history:   make([]IsolateChannelMsg, 0),
 		status:    Channel_Running,
 		readChan:  make(chan *IsolateChannelMsg, 100),
@@ -191,4 +199,31 @@ func (ch *ChannelHandler) StartNewChannel(topic, channelId string, creatorId uin
 	}
 	go ch.onReceived(channel)
 	return channel
+}
+
+func NewCloseChannelHandler(ctx context.Context) ChannelCloser {
+	return func(channelId string) error {
+		messaging.Publish(ctx, messaging.MessageStruct{
+			Type: messaging.ChannelToUser,
+			Payload: messaging.ChannelMessagePayLoad{
+				ID:     channelId,
+				Action: messaging.ChannelActionClose,
+			},
+		})
+		return nil
+	}
+}
+
+func NewMessageSender(ctx context.Context) ChannelSender {
+	return func(channelId string, msg any) error {
+		messaging.Publish(ctx, messaging.MessageStruct{
+			Type: messaging.ChannelToUser,
+			Payload: messaging.ChannelMessagePayLoad{
+				ID:     channelId,
+				Data:   msg,
+				Action: messaging.ChannelActionMsg,
+			},
+		})
+		return nil
+	}
 }

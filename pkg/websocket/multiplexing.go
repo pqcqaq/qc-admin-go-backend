@@ -104,8 +104,8 @@ func (c *ClientConnWrapper) AddChannel(channel *channel.Channel) {
 	c.cMu.Unlock()
 }
 
-func (c *WsServer) CreateChannelId(userId uint64, clientId uint64, msg ClientMessage) string {
-	return utils.StringShorten(fmt.Sprintf("%d_%d_%s", userId, clientId, msg.Topic), 8)
+func (c *WsServer) CreateChannelId(clientId string, userId uint64, clientDeviceId uint64, msg ClientMessage) string {
+	return utils.StringShorten(fmt.Sprintf("%s_%d_%d_%s", clientId, userId, clientDeviceId, msg.Topic), 8)
 }
 
 func (c *ClientConnWrapper) SendChannelCreatedSuccess(id string, channel *channel.Channel) {
@@ -116,7 +116,7 @@ func (c *ClientConnWrapper) SendChannelCreatedSuccess(id string, channel *channe
 		},
 		"timestamp": utils.Now().Unix(),
 	}
-	c.Conn.WriteJSON(response)
+	c.SendMessage(response)
 }
 
 func (c *ClientConnWrapper) SendChannelCreatedFailed(id string, code ErroeCode, err error) {
@@ -130,7 +130,7 @@ func (c *ClientConnWrapper) SendChannelCreatedFailed(id string, code ErroeCode, 
 		},
 		"timestamp": utils.Now().Unix(),
 	}
-	c.Conn.WriteJSON(response)
+	c.SendMessage(response)
 }
 
 func (c *ClientConnWrapper) SendChannelClosed(id string) {
@@ -142,7 +142,7 @@ func (c *ClientConnWrapper) SendChannelClosed(id string) {
 		},
 		"timestamp": utils.Now().Unix(),
 	}
-	c.Conn.WriteJSON(response)
+	c.SendMessage(response)
 }
 
 func (c *ClientConnWrapper) SendChannelError(id string, code ErroeCode, err error) {
@@ -156,7 +156,7 @@ func (c *ClientConnWrapper) SendChannelError(id string, code ErroeCode, err erro
 		},
 		"timestamp": utils.Now().Unix(),
 	}
-	c.Conn.WriteJSON(response)
+	c.SendMessage(response)
 }
 
 func (c *ClientConnWrapper) SendChannelMsg(id string, msg channel.ChannelMsg) {
@@ -165,7 +165,7 @@ func (c *ClientConnWrapper) SendChannelMsg(id string, msg channel.ChannelMsg) {
 		"data":      msg.Data,
 		"timestamp": utils.Now().Unix(),
 	}
-	c.Conn.WriteJSON(response)
+	c.SendMessage(response)
 }
 
 // AddChannelClientMapping
@@ -182,16 +182,17 @@ func (s *WsServer) AddChannelClientMapping(channelId string, client *ClientConnW
 func (s *WsServer) GetClientFromChannelId(channelId string) []*ClientConnWrapper {
 	s.cCMu.Lock()
 	clientsMap := s.channelsClient[channelId]
-	s.cCMu.Unlock()
-
 	if clientsMap == nil {
+		s.cCMu.Unlock()
 		return []*ClientConnWrapper{}
 	}
 
+	// 在锁内创建副本，避免数据竞争
 	clients := make([]*ClientConnWrapper, 0, len(clientsMap))
 	for client := range clientsMap {
 		clients = append(clients, client)
 	}
+	s.cCMu.Unlock()
 	return clients
 }
 

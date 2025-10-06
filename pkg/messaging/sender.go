@@ -40,7 +40,6 @@ func Publish(ctx context.Context, task MessageStruct) (string, error) {
 		return "", fmt.Errorf("发布到 Stream 失败: %w", err)
 	}
 
-	logger.Info("✓ 发布消息成功 - ID: %s, TaskID: %s", result, task.id)
 	return result, nil
 }
 

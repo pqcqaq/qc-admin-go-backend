@@ -4,29 +4,15 @@ import (
 	"context"
 	channelhandler "go-backend/pkg/channel_handler"
 	"go-backend/pkg/logging"
-	"go-backend/pkg/messaging"
 	"go-backend/pkg/utils"
 	"time"
 )
 
 func RegisterChat() {
-
-	channelhandler.SetLogger(logging.WithName("ChatChannelHandler"))
-
 	ctx := context.Background()
 	handler := channelhandler.NewChannelHandler(channelhandler.CreateChannelHandlerOptions{
-		Topic: "chat_room/#",
-		SendMessage: func(channelId string, msg any) error {
-			messaging.Publish(ctx, messaging.MessageStruct{
-				Type: messaging.ChannelToUser,
-				Payload: messaging.ChannelMessagePayLoad{
-					ID:     channelId,
-					Data:   msg,
-					Action: messaging.ChannelActionMsg,
-				},
-			})
-			return nil
-		},
+		Topic:       "chat_room/#",
+		SendMessage: channelhandler.NewMessageSender(ctx),
 		NewChannelReceived: func(channel *channelhandler.IsolateChannel) error {
 			// 创建字节队列用于存储消息
 			messageQueue := make([]byte, 0)
@@ -67,12 +53,10 @@ func RegisterChat() {
 					if msgBytes, ok := msg.Data.([]byte); ok {
 						messageQueue = append(messageQueue, msgBytes...)
 						lastMessageTime = time.Now()
-						logging.Info("Chat room channel %s received %d bytes, queue size: %d", channel.ID, len(msgBytes), len(messageQueue))
 					} else if msgStr, ok := msg.Data.(string); ok {
 						msgBytes := []byte(msgStr)
 						messageQueue = append(messageQueue, msgBytes...)
 						lastMessageTime = time.Now()
-						logging.Info("Chat room channel %s received string message: %s, queue size: %d", channel.ID, msgStr, len(messageQueue))
 					} else {
 						logging.Warn("Chat room channel %s received unsupported message type", channel.ID)
 						continue
@@ -104,26 +88,15 @@ func RegisterChat() {
 							return err
 						}
 
-						logging.Info("Chat room channel %s sent %d-byte chunk: %s, remaining queue size: %d", channel.ID, len(chunk), utils.ByteToString(chunk), len(messageQueue))
-
 						// 等待100毫秒
 						time.Sleep(100 * time.Millisecond)
 					}
 				}
 			}
 		},
-		CloseChannel: func(channelId string) error {
-			logging.Info("Chat room channel %s is closing", channelId)
-			messaging.Publish(ctx, messaging.MessageStruct{
-				Type: messaging.ChannelToUser,
-				Payload: messaging.ChannelMessagePayLoad{
-					ID:     channelId,
-					Action: messaging.ChannelActionClose,
-				},
-			})
-			return nil
-		},
+		CloseChannel: channelhandler.NewCloseChannelHandler(ctx),
 	})
 
+	handler.SetLogger(logging.WithName("ChatChannelHandler"))
 	handler.RegisterHandler()
 }

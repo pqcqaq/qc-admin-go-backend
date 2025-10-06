@@ -43,9 +43,11 @@ const (
 )
 
 type ChannelMessagePayLoad struct {
-	ID     string        `msgpack:"id" json:"id"` // 频道ID
-	Topic  string        `msgpack:"topic,omitempty" json:"topic,omitempty"`
-	UserID uint64        `msgpack:"user_id,omitempty" json:"user_id,omitempty"`
-	Action ChannelAction `msgpack:"action,omitempty" json:"action,omitempty"`
-	Data   any           `msgpack:"data" json:"data"`
+	ID        string        `msgpack:"id" json:"id"` // 频道ID
+	Topic     string        `msgpack:"topic,omitempty" json:"topic,omitempty"`
+	UserID    uint64        `msgpack:"user_id,omitempty" json:"user_id,omitempty"`
+	SessionId string        `msgpack:"session_id,omitempty" json:"session_id,omitempty"`
+	ClientId  uint64        `msgpack:"client_id,omitempty" json:"client_id,omitempty"`
+	Action    ChannelAction `msgpack:"action,omitempty" json:"action,omitempty"`
+	Data      any           `msgpack:"data" json:"data"`
 }

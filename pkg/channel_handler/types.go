@@ -14,12 +14,6 @@ type Logger interface {
 	Fatal(fmt string, args ...any)
 }
 
-var logger Logger
-
-func SetLogger(l Logger) {
-	logger = l
-}
-
 const (
 	Channel_Ready IsolateChannelLifecycle = iota
 	Channel_Running
@@ -37,6 +31,8 @@ type IsolateChannel struct {
 	ID        string
 	Topic     string
 	CreatorId uint64
+	SessionId string
+	ClientId  uint64
 
 	history []IsolateChannelMsg
 	status  IsolateChannelLifecycle
@@ -58,9 +54,12 @@ type CreateChannelHandlerOptions struct {
 	NewChannelReceived ChannelReceiver
 	SendMessage        ChannelSender
 	CloseChannel       ChannelCloser
+	Logger             Logger
 }
 
 type ChannelHandler struct {
+	logger Logger
+
 	topic      string
 	onReceived ChannelReceiver
 	send       ChannelSender
