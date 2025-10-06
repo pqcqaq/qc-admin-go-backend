@@ -87,6 +87,14 @@ func createChannelUserMsgHandler(ws *websocket.WsServer) messaging.MessageHandle
 			return nil
 		}
 
+		if socketMsg.Action == messaging.ChannelActionErr {
+			clients := ws.GetClientFromChannelId(channel.ID)
+			for _, client := range clients {
+				client.SendChannelError(channel.ID, websocket.ErrInternalServer, fmt.Errorf("%s", socketMsg.Data))
+			}
+			return nil
+		}
+
 		msg := channel.NewMessage(socketMsg.Data)
 		if msg != nil {
 			msg.ToClient()
@@ -101,4 +109,5 @@ func registerSocketHandler(ws *websocket.WsServer) {
 	messaging.RegisterHandler(messaging.ChannelToUser, createChannelUserMsgHandler(ws))
 	RegisterIsolate()
 	RegisterChat()
+	RegisterPanicTest()
 }

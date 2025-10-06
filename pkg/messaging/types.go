@@ -39,6 +39,7 @@ type ChannelAction int
 const (
 	ChannelActionCreate ChannelAction = iota
 	ChannelActionMsg
+	ChannelActionErr
 	ChannelActionClose
 )
 

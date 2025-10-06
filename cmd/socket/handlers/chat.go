@@ -95,6 +95,7 @@ func RegisterChat() {
 			}
 		},
 		CloseChannel: channelhandler.NewCloseChannelHandler(ctx),
+		ErrSender:    channelhandler.NewErrorSender(ctx),
 	})
 
 	handler.SetLogger(logging.WithName("ChatChannelHandler"))

@@ -55,12 +55,12 @@ func main() {
 	}
 
 	// 创建频道进行双向通信
-	channel, err := client.CreateChannel("test_handler/1",
+	channel, err := client.CreateChannel("test_panic/1",
 		func(data interface{}) {
 			log.Printf("频道消息: %+v", data)
 		},
 		func(reason pkgClient.ErrorMsgData) {
-			log.Printf("Channel closed: %s - %s", reason.Code, reason.Detail)
+			log.Printf("err: Channel closed: %s - %s", reason.Code, reason.Detail)
 		},
 	)
 	if err != nil {

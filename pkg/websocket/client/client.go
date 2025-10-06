@@ -438,16 +438,23 @@ func (c *SocketClient) setupChannel(channelID string, handler ChannelMessageHand
 		errorUnsub = c.Subscribe(fmt.Sprintf("%s.err", channelID), func(data interface{}, topic string) {
 			if dataMap, ok := data.(map[string]interface{}); ok {
 				errorData := ErrorMsgData{}
-				if code, exists := dataMap["code"]; exists {
-					if codeStr, ok := code.(string); ok {
-						errorData.Code = codeStr
+				err, exists := dataMap["error"]
+				if !exists {
+					errHandler[0](errorData)
+				} else {
+					errMap := err.(map[string]interface{})
+					if code, exists := errMap["code"]; exists {
+						if codeStr, ok := code.(string); ok {
+							errorData.Code = codeStr
+						}
+					}
+					if detail, exists := errMap["detail"]; exists {
+						if detailStr, ok := detail.(string); ok {
+							errorData.Detail = detailStr
+						}
 					}
 				}
-				if detail, exists := dataMap["detail"]; exists {
-					if detailStr, ok := detail.(string); ok {
-						errorData.Detail = detailStr
-					}
-				}
+
 				errHandler[0](errorData)
 			}
 		})

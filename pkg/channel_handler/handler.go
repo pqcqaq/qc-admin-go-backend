@@ -85,6 +85,33 @@ func (i *IsolateChannel) Send(msg any) error {
 	return i.factory.send(i.ID, msg)
 }
 
+// 发送错误
+func (i *IsolateChannel) Error(err error) error {
+	if i.GetStatus() == Channel_Closed {
+		return fmt.Errorf("channel %s is closed", i.ID)
+	}
+
+	if i.GetStatus() != Channel_Running {
+		return fmt.Errorf("channel %s is not running, cannot send", i.ID)
+	}
+
+	return i.factory.errorSender(i.ID, err)
+}
+
+// 发送错误后直接结束channel
+func (i *IsolateChannel) Panic(err error) error {
+	if i.GetStatus() == Channel_Closed {
+		return fmt.Errorf("channel %s is closed", i.ID)
+	}
+
+	if i.GetStatus() != Channel_Running {
+		return fmt.Errorf("channel %s is not running, cannot send", i.ID)
+	}
+
+	defer i.Close()
+	return i.factory.errorSender(i.ID, err)
+}
+
 // 等待关闭信号
 func (i *IsolateChannel) Signal() error {
 	if i.GetStatus() == Channel_Closed {
@@ -193,11 +220,12 @@ func (ch *ChannelHandler) deleteChannel(channelId string) {
 
 func NewChannelHandler(options CreateChannelHandlerOptions) *ChannelHandler {
 	return &ChannelHandler{
-		topic:      options.Topic,
-		onReceived: options.NewChannelReceived,
-		send:       options.SendMessage,
-		close:      options.CloseChannel,
-		logger:     options.Logger,
+		topic:       options.Topic,
+		onReceived:  options.NewChannelReceived,
+		send:        options.SendMessage,
+		close:       options.CloseChannel,
+		errorSender: options.ErrSender,
+		logger:      options.Logger,
 
 		channels: make(map[string]*IsolateChannel),
 	}
@@ -241,6 +269,20 @@ func NewMessageSender(ctx context.Context) ChannelSender {
 				ID:     channelId,
 				Data:   msg,
 				Action: messaging.ChannelActionMsg,
+			},
+		})
+		return nil
+	}
+}
+
+func NewErrorSender(ctx context.Context) ChannelError {
+	return func(channelId string, err error) error {
+		messaging.Publish(ctx, messaging.MessageStruct{
+			Type: messaging.ChannelToUser,
+			Payload: messaging.ChannelMessagePayLoad{
+				ID:     channelId,
+				Data:   err.Error(),
+				Action: messaging.ChannelActionErr,
 			},
 		})
 		return nil
