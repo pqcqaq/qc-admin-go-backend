@@ -30,7 +30,6 @@ func main() {
 	stateUnsub := client.OnStateChange(func(state pkgClient.WebSocketState) {
 		log.Printf("Connection state changed to: %s", state.String())
 	})
-	defer stateUnsub()
 
 	// 连接到服务器
 	if err := client.Connect(); err != nil {
@@ -41,13 +40,11 @@ func main() {
 	unsub1 := client.Subscribe("user/+/message", func(data interface{}, topic string) {
 		log.Printf("Received message on topic %s: %+v", topic, data)
 	})
-	defer unsub1()
 
 	// 订阅系统通知
 	unsub2 := client.Subscribe("system/#", func(data interface{}, topic string) {
 		log.Printf("System notification on topic %s: %+v", topic, data)
 	})
-	defer unsub2()
 
 	// 发送消息
 	if err := client.SendMessage("user/123/message", "Hello, World!"); err != nil {
@@ -70,7 +67,7 @@ func main() {
 
 		// 创建一个计数器和定时器
 		count := 0
-		ticker := time.NewTicker(300 * time.Millisecond)
+		ticker := time.NewTicker(100 * time.Millisecond)
 
 		// 启动一个 goroutine 定期发送消息
 		go func() {
@@ -113,6 +110,11 @@ func main() {
 	// 	<-closeDone // 等待频道关闭完成
 	// 	log.Printf("频道关闭完成")
 	// }
+
+	// 取消订阅
+	unsub1()
+	unsub2()
+	stateUnsub()
 
 	// 断开连接
 	log.Printf("断开连接...")
