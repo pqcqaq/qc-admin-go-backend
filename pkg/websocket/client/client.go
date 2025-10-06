@@ -43,6 +43,7 @@ type SocketClient struct {
 
 	// 控制
 	isManualDisconnect bool
+	connChan           chan struct{}
 	stopChan           chan struct{}
 	doneChan           chan struct{}
 	mutex              sync.Mutex
@@ -53,6 +54,7 @@ type SocketClient struct {
 	// 内部系统订阅
 	disconnectUnsub UnsubscribeFunction
 	errorUnsub      UnsubscribeFunction
+	connectedUnsub  UnsubscribeFunction
 }
 
 // NewSocketClient 创建新的WebSocket客户端
@@ -70,11 +72,21 @@ func NewSocketClient(options SocketOptions) *SocketClient {
 		baseBackoffDelay:    500 * time.Millisecond,
 		maxBackoffDelay:     16 * time.Second,
 		currentBackoffDelay: 500 * time.Millisecond,
+		connChan:            make(chan struct{}),
 		stopChan:            make(chan struct{}),
 		doneChan:            make(chan struct{}),
 	}
 
 	return client
+}
+
+// State 获取当前连接状态
+func (c *SocketClient) OnRefreshToken(fn RefreshTokenFunction) error {
+	if c.options.RefreshToken != nil {
+		return fmt.Errorf("refresh token function already set")
+	}
+	c.options.RefreshToken = fn
+	return nil
 }
 
 // State 获取当前连接状态
@@ -85,18 +97,18 @@ func (c *SocketClient) State() WebSocketState {
 }
 
 // Connect 连接到WebSocket服务器
-func (c *SocketClient) Connect(token ...string) error {
+func (c *SocketClient) Connect(token ...string) (<-chan struct{}, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
 	if c.state == Connected {
 		c.log("Already connected")
-		return nil
+		return nil, fmt.Errorf("already connected")
 	}
 
 	if c.state == Connecting {
 		c.log("Already connecting")
-		return nil
+		return nil, fmt.Errorf("already connecting")
 	}
 
 	// 确定使用的token
@@ -106,11 +118,11 @@ func (c *SocketClient) Connect(token ...string) error {
 	}
 
 	if authToken == "" {
-		return fmt.Errorf("token is required for WebSocket connection")
+		return nil, fmt.Errorf("token is required for WebSocket connection")
 	}
 
 	if c.options.URL == "" {
-		return fmt.Errorf("WebSocket URL is required")
+		return nil, fmt.Errorf("WebSocket URL is required")
 	}
 
 	// 重置手动断开标记
@@ -124,7 +136,7 @@ func (c *SocketClient) Connect(token ...string) error {
 	u, err := url.Parse(c.options.URL)
 	if err != nil {
 		c.setState(Error)
-		return fmt.Errorf("invalid WebSocket URL: %w", err)
+		return nil, fmt.Errorf("invalid WebSocket URL: %w", err)
 	}
 
 	q := u.Query()
@@ -133,22 +145,35 @@ func (c *SocketClient) Connect(token ...string) error {
 
 	// 连接WebSocket
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+
 	if err != nil {
 		c.setState(Error)
-		return fmt.Errorf("failed to connect to WebSocket: %w", err)
+		return nil, fmt.Errorf("failed to connect to WebSocket: %w", err)
 	}
 
 	c.conn = conn
-	c.setState(Connected)
+	// 注意：这里不立即设置为Connected，而是等待服务器的confirmed消息
+	// c.setState(Connected) // 移除这行
 	c.resetBackoffDelay()
 
-	// 启动消息处理和心跳
+	// 启动消息处理
 	go c.handleMessages()
-	c.startHeartbeat()
-	c.resubscribeAll()
+	// 注意：心跳和重新订阅在收到connected确认后再启动
 
-	c.log("WebSocket connected")
-	return nil
+	// 设置连接确认超时（30秒）
+	go func() {
+		time.Sleep(30 * time.Second)
+		if c.State() == Connecting {
+			c.log("Connection confirmation timeout, disconnecting")
+			c.setState(Error)
+			if c.conn != nil {
+				c.conn.Close()
+			}
+		}
+	}()
+
+	c.log("WebSocket connection established, waiting for server confirmation")
+	return c.connChan, nil
 }
 
 // Disconnect 断开连接
@@ -186,10 +211,17 @@ func (c *SocketClient) Subscribe(topic string, handler MessageHandler) Unsubscri
 	defer c.subscriptionMutex.Unlock()
 
 	id := c.generateID()
-	record := &SubscriptionRecord{
-		Topic:   topic,
-		Handler: handler,
+
+	// 创建HandlerWrapper
+	handlerWrapper := &HandlerWrapper{
 		ID:      id,
+		Handler: handler,
+	}
+
+	record := &SubscriptionRecord{
+		Topic:          topic,
+		HandlerWrapper: handlerWrapper,
+		ID:             id,
 	}
 
 	// 检查是否是该主题的第一个订阅
@@ -212,6 +244,14 @@ func (c *SocketClient) Subscribe(topic string, handler MessageHandler) Unsubscri
 }
 
 // Unsubscribe 取消订阅
+//
+// 警告：此方法通过函数指针比较来识别处理器，在某些情况下可能不可靠。
+// 强烈建议使用Subscribe方法返回的UnsubscribeFunction来取消订阅，
+// 这样可以确保精确且安全地取消特定的订阅。
+//
+// 参数：
+//   - topic: 要取消订阅的主题
+//   - handler: 可选的处理器，如果提供则只取消该处理器的订阅，否则取消主题的所有订阅
 func (c *SocketClient) Unsubscribe(topic string, handler ...MessageHandler) {
 	c.subscriptionMutex.Lock()
 	defer c.subscriptionMutex.Unlock()
@@ -225,9 +265,9 @@ func (c *SocketClient) Unsubscribe(topic string, handler ...MessageHandler) {
 		// 取消特定处理器的订阅
 		targetHandler := handler[0]
 		for i, record := range records {
-			// 由于Go中函数比较的限制，这里使用指针比较
-			// 实际应用中可能需要其他方式来标识处理器
-			if fmt.Sprintf("%p", record.Handler) == fmt.Sprintf("%p", targetHandler) {
+			// 注意：由于Go中函数比较的限制，这种方法仍然不够安全
+			// 强烈建议使用Subscribe返回的UnsubscribeFunction而不是直接调用Unsubscribe
+			if record.HandlerWrapper != nil && fmt.Sprintf("%p", record.HandlerWrapper.Handler) == fmt.Sprintf("%p", targetHandler) {
 				records = append(records[:i], records[i+1:]...)
 				if len(records) == 0 {
 					delete(c.subscriptions, topic)
@@ -515,7 +555,17 @@ func (c *SocketClient) setupChannel(channelID string, handler ChannelMessageHand
 
 // 处理接收到的消息
 func (c *SocketClient) handleMessages() {
-	defer close(c.doneChan)
+	defer func() {
+		// 如果未关闭,则关闭 chan
+		c.mutex.Lock()
+		defer c.mutex.Unlock()
+		select {
+		case <-c.doneChan:
+			// already closed
+		default:
+			close(c.doneChan)
+		}
+	}()
 
 	for {
 		select {
@@ -528,7 +578,11 @@ func (c *SocketClient) handleMessages() {
 
 			_, messageData, err := c.conn.ReadMessage()
 			if err != nil {
-				c.log(fmt.Sprintf("WebSocket read error: %v", err))
+				if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+					c.log("WebSocket closed normally")
+				} else {
+					c.log(fmt.Sprintf("WebSocket read error: %v", err))
+				}
 				c.setState(Disconnected)
 				c.scheduleReconnect()
 				return
@@ -541,13 +595,50 @@ func (c *SocketClient) handleMessages() {
 
 // 处理单个消息
 func (c *SocketClient) handleMessage(data []byte) {
-	var message SocketMessagePayload
-	if err := json.Unmarshal(data, &message); err != nil {
+	// 首先解析为通用的map来检查消息类型
+	var rawMessage map[string]interface{}
+	if err := json.Unmarshal(data, &rawMessage); err != nil {
 		c.log(fmt.Sprintf("Error parsing message: %v", err))
 		return
 	}
 
-	c.log(fmt.Sprintf("Received message: %+v", message))
+	// 检查是否是action类型的消息（如connected消息）
+	if action, exists := rawMessage["action"]; exists {
+		actionStr, ok := action.(string)
+		if ok {
+			c.log(fmt.Sprintf("Received action message: action=%s", actionStr))
+
+			// 使用action作为topic来分发消息
+			c.subscriptionMutex.RLock()
+			defer c.subscriptionMutex.RUnlock()
+
+			for subscribedTopic, records := range c.subscriptions {
+				if utils.MatchTopic(subscribedTopic, actionStr) {
+					for _, record := range records {
+						// 在goroutine中执行处理器，避免阻塞消息循环
+						go func(handler MessageHandler, data interface{}, topic string) {
+							defer func() {
+								if r := recover(); r != nil {
+									c.log(fmt.Sprintf("Error in message handler: %v", r))
+								}
+							}()
+							handler(data, topic)
+						}(record.HandlerWrapper.Handler, rawMessage, actionStr)
+					}
+				}
+			}
+		}
+		return
+	}
+
+	// 如果不是action消息，则按照标准的SocketMessagePayload处理
+	var message SocketMessagePayload
+	if err := json.Unmarshal(data, &message); err != nil {
+		c.log(fmt.Sprintf("Error parsing standard message: %v", err))
+		return
+	}
+
+	c.log(fmt.Sprintf("Received topic message: %+v", message))
 
 	// 获取所有订阅的主题
 	c.subscriptionMutex.RLock()
@@ -565,7 +656,7 @@ func (c *SocketClient) handleMessage(data []byte) {
 						}
 					}()
 					handler(data, topic)
-				}(record.Handler, message.Data, message.Topic)
+				}(record.HandlerWrapper.Handler, message.Data, message.Topic)
 			}
 		}
 	}
@@ -661,10 +752,12 @@ func (c *SocketClient) scheduleReconnect() {
 
 	c.reconnectTimer = time.AfterFunc(c.currentBackoffDelay, func() {
 		c.log(fmt.Sprintf("Attempting to reconnect (delay: %v)", c.currentBackoffDelay))
-		if err := c.Connect(); err != nil {
+		conn, err := c.Connect()
+		if err != nil {
 			c.log(fmt.Sprintf("Reconnect failed: %v", err))
 			c.increaseBackoffDelay()
 		}
+		<-conn
 	})
 }
 
@@ -768,34 +861,36 @@ func (c *SocketClient) setupInternalSubscriptions() {
 	if c.errorUnsub != nil {
 		c.errorUnsub()
 	}
+	if c.connectedUnsub != nil {
+		c.connectedUnsub()
+	}
+
+	// 订阅连接确认消息
+	c.connectedUnsub = c.Subscribe("connected", func(data interface{}, topic string) {
+		c.log("[SocketClient] Received connected confirmation from server")
+
+		// 设置状态为已连接
+		c.setState(Connected)
+
+		// 通知连接成功
+		c.connChan <- struct{}{}
+
+		// 启动心跳和重新订阅
+		c.startHeartbeat()
+		c.resubscribeAll()
+
+		c.log("WebSocket connection confirmed and fully established")
+	})
 
 	// 订阅断开连接消息
 	c.disconnectUnsub = c.Subscribe("?dc", func(data interface{}, topic string) {
 		c.log(fmt.Sprintf("[SocketClient] Received disconnect message: %+v", data))
 
+		<-c.Disconnect()
 		// 尝试解析断开连接消息
 		if dataMap, ok := data.(map[string]interface{}); ok {
 			if code, exists := dataMap["code"]; exists && code == "TOKEN_EXPIRED" {
-				c.Disconnect()
-				c.log("Disconnected due to token expiration")
-
-				if c.options.RefreshToken != nil {
-					newToken, err := c.options.RefreshToken()
-					if err != nil {
-						c.log(fmt.Sprintf("Failed to refresh token: %v", err))
-						return
-					}
-					if newToken == "" {
-						c.log("No new token obtained, cannot reconnect")
-						return
-					}
-
-					c.log("Token refreshed, reconnecting...")
-					c.options.Token = newToken
-					if err := c.Connect(newToken); err != nil {
-						c.log(fmt.Sprintf("Reconnection failed: %v", err))
-					}
-				}
+				c.handleTokenRefresh()
 			}
 		}
 	})
@@ -803,6 +898,22 @@ func (c *SocketClient) setupInternalSubscriptions() {
 	// 订阅错误消息
 	c.errorUnsub = c.Subscribe("?er", func(data interface{}, topic string) {
 		c.log(fmt.Sprintf("[SocketClient] Received error message: %+v", data))
+
+		// 如果连接过程中收到错误，需要特殊处理
+		if c.State() == Connecting {
+			// 尝试解析错误消息
+			if dataMap, ok := data.(map[string]interface{}); ok {
+				if code, exists := dataMap["code"]; exists && code == "TOKEN_EXPIRED" {
+					c.log("Token expired during connection, attempting refresh")
+					c.setState(Error)
+					c.handleTokenRefresh()
+					return
+				}
+			}
+			// 其他连接错误
+			c.setState(Error)
+			c.log("Connection failed due to server error")
+		}
 
 		if c.options.ErrorHandler != nil {
 			// 尝试将data转换为ErrorMsgData
@@ -822,6 +933,32 @@ func (c *SocketClient) setupInternalSubscriptions() {
 			}
 		}
 	})
+}
+
+func (c *SocketClient) handleTokenRefresh() {
+	c.log("Disconnected due to token expiration")
+
+	if c.options.RefreshToken != nil {
+		newToken, err := c.options.RefreshToken()
+		if err != nil {
+			c.log(fmt.Sprintf("Failed to refresh token: %v", err))
+			return
+		}
+		if newToken == "" {
+			c.log("No new token obtained, cannot reconnect")
+			return
+		}
+
+		c.log("Token refreshed, reconnecting...")
+		c.options.Token = newToken
+		conn, err := c.Connect(newToken)
+		if err != nil {
+			c.log(fmt.Sprintf("Reconnection failed: %v", err))
+		}
+		<-conn
+	} else {
+		c.log("No refresh token function provided, cannot reconnect")
+	}
 }
 
 // 日志输出

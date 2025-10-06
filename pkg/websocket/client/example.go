@@ -33,9 +33,12 @@ func Example() {
 	defer stateUnsub()
 
 	// 连接到服务器
-	if err := client.Connect(); err != nil {
+	conn, err := client.Connect()
+	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
+
+	<-conn
 
 	// 订阅消息
 	unsub1 := client.Subscribe("user/+/message", func(data interface{}, topic string) {
@@ -102,9 +105,11 @@ func ExampleBasicUsage() {
 	})
 
 	// 连接
-	if err := client.Connect(); err != nil {
+	conn, err := client.Connect()
+	if err != nil {
 		log.Fatalf("Connection failed: %v", err)
 	}
+	<-conn
 	defer client.Disconnect()
 
 	// 订阅并处理消息
@@ -128,9 +133,11 @@ func ExampleChannelUsage() {
 		Debug: true,
 	})
 
-	if err := client.Connect(); err != nil {
+	conn, err := client.Connect()
+	if err != nil {
 		log.Fatalf("Connection failed: %v", err)
 	}
+	<-conn
 	defer client.Disconnect()
 
 	// 创建文件上传频道

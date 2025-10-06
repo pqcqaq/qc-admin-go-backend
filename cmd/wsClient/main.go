@@ -11,13 +11,9 @@ func main() {
 	// 创建客户端配置
 	options := pkgClient.SocketOptions{
 		URL:               "ws://localhost:8088/ws",
-		Token:             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1iYWNrZW5kIiwic3ViIjoiNTg0MTE4MTg2NDEzMTI5NzI5QDU4NTYzMjkxMzM0OTkzNjE1MCIsImV4cCI6MTc2MDM3NDkzOSwibmJmIjoxNzU5NTEwOTM5LCJpYXQiOjE3NTk1MTA5MzksInVzZXJfaWQiOjU4NDExODE4NjQxMzEyOTcyOSwiY2xpZW50RGV2aWNlSWQiOjU4NTYzMjkxMzM0OTkzNjE1MCwiaXNSZWZyZXNoIjp0cnVlLCJleHBpdHkiOjE3NjAzNzQ5MzkxOTEsInJlbWVtYmVyTWUiOmZhbHNlfQ.lD0VyOImNp5ZJYVbJ0gDsf9vg_EouTFczbfM7fgkcGI",
+		Token:             "456465465",
 		HeartbeatInterval: 30 * time.Second,
 		Debug:             true,
-		RefreshToken: func() (string, error) {
-			// 实现token刷新逻辑
-			return "new-token", nil
-		},
 		ErrorHandler: func(msg pkgClient.ErrorMsgData) {
 			log.Printf("WebSocket error: %s - %s", msg.Code, msg.Detail)
 		},
@@ -26,15 +22,22 @@ func main() {
 	// 创建客户端实例
 	client := pkgClient.NewSocketClient(options)
 
+	client.OnRefreshToken(func() (string, error) {
+		// 实现token刷新逻辑
+		return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnby1iYWNrZW5kIiwic3ViIjoiNTg0MTE4MTg2NDEzMTI5NzI5QDU4NTYzMjkxMzM0OTkzNjE1MCIsImV4cCI6MTc2MDM3NDkzOSwibmJmIjoxNzU5NTEwOTM5LCJpYXQiOjE3NTk1MTA5MzksInVzZXJfaWQiOjU4NDExODE4NjQxMzEyOTcyOSwiY2xpZW50RGV2aWNlSWQiOjU4NTYzMjkxMzM0OTkzNjE1MCwiaXNSZWZyZXNoIjp0cnVlLCJleHBpdHkiOjE3NjAzNzQ5MzkxOTEsInJlbWVtYmVyTWUiOmZhbHNlfQ.lD0VyOImNp5ZJYVbJ0gDsf9vg_EouTFczbfM7fgkcGI", nil
+	})
+
 	// 监听连接状态变化
 	stateUnsub := client.OnStateChange(func(state pkgClient.WebSocketState) {
 		log.Printf("Connection state changed to: %s", state.String())
 	})
 
 	// 连接到服务器
-	if err := client.Connect(); err != nil {
+	conn, err := client.Connect()
+	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
+	<-conn
 
 	// 订阅消息
 	unsub1 := client.Subscribe("user/+/message", func(data interface{}, topic string) {
@@ -87,14 +90,6 @@ func main() {
 			log.Printf("频道已关闭: %s - %s", reason.Code, reason.Detail)
 			ticker.Stop()
 		})
-
-		// 在程序结束时清理资源
-		defer func() {
-			ticker.Stop()
-			if channel != nil {
-				<-channel.Close() // 等待频道关闭完成
-			}
-		}()
 	}
 
 	// 等待频道结束或超时
@@ -102,14 +97,6 @@ func main() {
 		log.Printf("等待频道结束...")
 		<-channel.Wait()
 	}
-
-	// // 显式关闭频道（如果存在）
-	// if channel != nil {
-	// 	log.Printf("关闭频道...")
-	// 	closeDone := channel.Close()
-	// 	<-closeDone // 等待频道关闭完成
-	// 	log.Printf("频道关闭完成")
-	// }
 
 	// 取消订阅
 	unsub1()

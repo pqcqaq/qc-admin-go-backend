@@ -106,3 +106,11 @@ func MapToStruct(m map[string]interface{}, out interface{}) error {
 
 	return nil
 }
+
+func MapToString(m map[string]interface{}) string {
+	data, err := json.Marshal(m)
+	if err != nil {
+		return "{}"
+	}
+	return string(data)
+}

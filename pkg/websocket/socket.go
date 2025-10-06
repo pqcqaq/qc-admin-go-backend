@@ -10,71 +10,15 @@ import (
 	"go-backend/pkg/websocket/channel"
 	"go-backend/pkg/websocket/types"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
 
-type Logger interface {
-	Info(format string, v ...any)
-	Error(format string, v ...any)
-	Debug(format string, v ...any)
-	Warn(format string, v ...any)
-}
-
-var logger Logger
-
-func SetLogger(l Logger) {
-	logger = l
-}
-
-// 关键的数据结构：
-//  全部客户端记录,
-//  用户id -> 客户端列表映射（一个用户可以有多个客户端同时连接）
-//  客户端id -> 订阅的频道列表映射
-
-type ClientMessage struct {
-	Action string `json:"action"`          // "subscribe" or "unsubscribe"
-	Topic  string `json:"topic,omitempty"` // 频道名称
-	Data   any    `json:"data,omitempty"`  // 消息内容（仅在发布消息时使用）
-}
-
-type WsServer struct {
-	// 操作全局结构体的锁
-	cMu  sync.Mutex
-	uCMu sync.Mutex
-	cSMu sync.Mutex
-	cCMu sync.Mutex
-	cIMu sync.Mutex
-
-	// 发送消息的ctx
-	sendCtx context.Context
-
-	allowList []string
-	allowAll  bool
-
-	connectedClients    map[*ClientConnWrapper]bool            // 连接的客户端
-	userClients         map[uint64]map[*ClientConnWrapper]bool // 用户ID -> 客户端列表映射
-	clientSubscriptions map[*ClientConnWrapper]map[string]bool // 客户端 -> 订阅的频道列表映射
-	channelsClient      map[string]map[*ClientConnWrapper]bool // 频道ID -> 订阅的客户端列表映射
-
-	// channel的ID必然不可能是重复的,因为它是由用户ID,客户端ID,和频道主题三部分组成,而且本身就不可能重复创建
-	channelIdMap map[string]*channel.Channel
-
-	// channel factory
-	channelFactory *channel.ChannelFactory
-}
-
 func (s *WsServer) GetChannelById(channelId string) *channel.Channel {
 	s.cIMu.Lock()
 	defer s.cIMu.Unlock()
 	return s.channelIdMap[channelId]
-}
-
-type WsServerOptions struct {
-	AllowOrigins   []string
-	ChannelFactory *channel.ChannelFactory
 }
 
 func NewWsServer(options WsServerOptions) *WsServer {
@@ -307,23 +251,6 @@ func (s *WsServer) generateSessionID() string {
 	return utils.UUIDString()
 }
 
-type ClientConnWrapper struct {
-	id       string
-	Conn     *websocket.Conn
-	UserId   uint64
-	ClientId uint64
-	lastPong time.Time
-
-	channels map[string]*channel.Channel
-
-	// channels Lock
-	cMu sync.Mutex
-	// lastPong Lock
-	lastPongMu sync.RWMutex
-	// WebSocket write Lock
-	writeMu sync.Mutex
-}
-
 func (c *ClientConnWrapper) Pong() error {
 	c.lastPongMu.Lock()
 	c.lastPong = time.Now()
@@ -366,6 +293,14 @@ func (c *ClientConnWrapper) SendErrorMsg(code ErroeCode, err error) {
 }
 
 func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request) {
+	// 检查是否是 WebSocket 升级请求
+	if r.Header.Get("Upgrade") != "websocket" {
+		// 对于普通 HTTP 请求
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintln(w, "HTTP 403 - This endpoint is for WebSocket connections only.")
+		return
+	}
+
 	wsConfig := configs.GetConfig().Socket
 
 	if s.allowAll {
@@ -416,6 +351,7 @@ func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request
 
 		// 在此阶段直接使用ws写入是安全的，因为只有一个goroutine
 		ws.WriteJSON(response)
+		ws.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.ClosePolicyViolation, utils.MapToString(response)))
 		return
 	}
 
@@ -441,12 +377,19 @@ func (s *WsServer) handleClientConnection(w http.ResponseWriter, r *http.Request
 
 	s.UnlockAll()
 
+	client.SendConnectedSuccess()
+	logger.Info("New client connected: %s (user %d)", client.id, client.UserId)
+
 	for {
 		var msg ClientMessage
 		// 读取客户端发送的消息
 		err := ws.ReadJSON(&msg)
 		if err != nil {
-			logger.Warn("读取客户端消息失败: %v", err)
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+				logger.Info("Client %s disconnected normally", client.id)
+			} else {
+				logger.Warn("读取客户端消息失败: %v", err)
+			}
 			s.LockAll()
 			// 客户端断开连接，清理数据结构
 			s.removeClient(client, "connection error or disconnect")

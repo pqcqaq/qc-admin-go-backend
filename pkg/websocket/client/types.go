@@ -49,6 +49,12 @@ type SocketMessagePayload struct {
 // MessageHandler 消息处理器函数类型
 type MessageHandler func(data interface{}, topic string)
 
+// HandlerWrapper 处理器包装器，用于安全地管理和标识处理器
+type HandlerWrapper struct {
+	ID      string
+	Handler MessageHandler
+}
+
 // StateChangeCallback 状态变化回调函数类型
 type StateChangeCallback func(state WebSocketState)
 
@@ -73,9 +79,9 @@ type SocketOptions struct {
 
 // SubscriptionRecord 内部订阅记录
 type SubscriptionRecord struct {
-	Topic   string
-	Handler MessageHandler
-	ID      string
+	Topic          string
+	HandlerWrapper *HandlerWrapper
+	ID             string
 }
 
 // DisConnectMsg 服务器断开连接消息

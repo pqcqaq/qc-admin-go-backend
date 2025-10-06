@@ -108,6 +108,13 @@ func (c *WsServer) CreateChannelId(clientId string, userId uint64, clientDeviceI
 	return utils.StringShorten(fmt.Sprintf("%s_%d_%d_%s", clientId, userId, clientDeviceId, msg.Topic), 8)
 }
 
+func (c *ClientConnWrapper) SendConnectedSuccess() {
+	response := map[string]interface{}{
+		"action": "connected",
+	}
+	c.SendMessage(response)
+}
+
 func (c *ClientConnWrapper) SendChannelCreatedSuccess(id string, channel *channel.Channel) {
 	response := map[string]interface{}{
 		"topic": fmt.Sprintf("%s.cre", id),
