@@ -26,6 +26,25 @@ func (i *IsolateChannel) setStatus(status IsolateChannelLifecycle) {
 	i.status = status
 }
 
+// 尝试读取消息
+func (i *IsolateChannel) TryRead() (*IsolateChannelMsg, bool) {
+	if i.GetStatus() == Channel_Closed {
+		return nil, false
+	}
+
+	if i.GetStatus() != Channel_Running {
+		return nil, false
+	}
+
+	// 非阻塞读取
+	select {
+	case msg := <-i.readChan:
+		return msg, true
+	default:
+		return nil, false
+	}
+}
+
 // 读取消息
 func (i *IsolateChannel) Read() (*IsolateChannelMsg, error) {
 	if i.GetStatus() == Channel_Closed {
