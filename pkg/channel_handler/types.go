@@ -45,6 +45,7 @@ type IsolateChannel struct {
 	factory *ChannelHandler
 }
 
+type ChannelStartSender func(topic string, userID uint64) error
 type ChannelReceiver func(channel *IsolateChannel) error
 type ChannelSender func(channelId string, msg any) error
 type ChannelCloser func(channelId string) error
@@ -53,6 +54,7 @@ type ChannelError func(channelId string, err error) error
 type CreateChannelHandlerOptions struct {
 	Topic              string
 	NewChannelReceived ChannelReceiver
+	StartSender        ChannelStartSender
 	SendMessage        ChannelSender
 	CloseChannel       ChannelCloser
 	ErrSender          ChannelError
@@ -67,6 +69,7 @@ type ChannelHandler struct {
 	send        ChannelSender
 	close       ChannelCloser
 	errorSender ChannelError
+	start       ChannelStartSender
 
 	// 记录当前 所有活跃的频道
 	channels map[string]*IsolateChannel

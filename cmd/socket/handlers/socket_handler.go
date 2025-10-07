@@ -77,6 +77,28 @@ func createChannelUserMsgHandler(ws *websocket.WsServer) messaging.MessageHandle
 			return fmt.Errorf("failed to convert payload to SocketMessagePayload: %w", err)
 		}
 
+		if socketMsg.Action == messaging.ChannelActionCreate {
+			var payload messaging.SocketMessagePayload
+			payloadMap, ok := socketMsg.Data.(map[string]interface{})
+			if !ok {
+				logging.Error("Invalid create channel payload type")
+				return fmt.Errorf("invalid create channel payload type")
+			}
+			err := utils.MapToStruct(payloadMap, &payload)
+			if err != nil {
+				logging.Error("Failed to convert create channel payload: %v", err)
+				return fmt.Errorf("failed to convert create channel payload: %w", err)
+			}
+			sender(messaging.SocketMessagePayload{
+				UserId: payload.UserId,
+				Topic:  fmt.Sprintf("?cr/%s", payload.Topic),
+				Data: map[string]interface{}{
+					"topic": payload.Topic,
+				},
+			})
+			return nil
+		}
+
 		channel := ws.GetChannelById(socketMsg.ID)
 		if channel == nil {
 			return fmt.Errorf("channel %s not found", socketMsg.ID)

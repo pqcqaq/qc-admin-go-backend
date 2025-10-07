@@ -128,7 +128,7 @@ func (i *IsolateChannel) Signal() error {
 
 func (ch *ChannelHandler) onReceiveStarted(msg messaging.ChannelMessagePayLoad) {
 	if utils.MatchTopic(ch.topic, msg.Topic) {
-		channel := ch.StartNewChannel(ch.topic, msg.ID, msg.SessionId, msg.UserID, msg.ClientId)
+		channel := ch.startNewChannel(ch.topic, msg.ID, msg.SessionId, msg.UserID, msg.ClientId)
 		ch.putChannel(channel)
 		ch.logger.Info("New channel created: %s, topic: %s, userId: %d", msg.ID, msg.Topic, msg.UserID)
 	}
@@ -223,6 +223,7 @@ func NewChannelHandler(options CreateChannelHandlerOptions) *ChannelHandler {
 		topic:       options.Topic,
 		onReceived:  options.NewChannelReceived,
 		send:        options.SendMessage,
+		start:       options.StartSender,
 		close:       options.CloseChannel,
 		errorSender: options.ErrSender,
 		logger:      options.Logger,
@@ -231,7 +232,7 @@ func NewChannelHandler(options CreateChannelHandlerOptions) *ChannelHandler {
 	}
 }
 
-func (ch *ChannelHandler) StartNewChannel(topic, channelId, sessionId string, creatorId, clientId uint64) *IsolateChannel {
+func (ch *ChannelHandler) startNewChannel(topic, channelId, sessionId string, creatorId, clientId uint64) *IsolateChannel {
 	channel := &IsolateChannel{
 		ID:        channelId,
 		Topic:     topic,
@@ -246,6 +247,11 @@ func (ch *ChannelHandler) StartNewChannel(topic, channelId, sessionId string, cr
 	}
 	go ch.onReceived(channel)
 	return channel
+}
+
+func (ch *ChannelHandler) CreateChannel(topic string, userId uint64) error {
+	ch.logger.Info("Creating channel for topic: %s, userId: %d", topic, userId)
+	return ch.start(topic, userId)
 }
 
 func NewCloseChannelHandler(ctx context.Context) ChannelCloser {
@@ -283,6 +289,23 @@ func NewErrorSender(ctx context.Context) ChannelError {
 				ID:     channelId,
 				Data:   err.Error(),
 				Action: messaging.ChannelActionErr,
+			},
+		})
+		return nil
+	}
+}
+
+func NewStartSender(ctx context.Context) ChannelStartSender {
+	// 发送开始消息,要有办法能定位到具体哪一个session最好,不然一个消息发出去全部都开新channel了
+	return func(topic string, userID uint64) error {
+		messaging.Publish(ctx, messaging.MessageStruct{
+			Type: messaging.ChannelToUser,
+			Payload: messaging.ChannelMessagePayLoad{
+				Data: messaging.SocketMessagePayload{
+					Topic:  topic,
+					UserId: &userID,
+				},
+				Action: messaging.ChannelActionCreate,
 			},
 		})
 		return nil

@@ -422,7 +422,11 @@ func (s *WsServer) CreateSender() types.MessageSender {
 		if userId != nil {
 			userC = s.userClients[*userId]
 		} else {
+			logger.Info("Broadcasting message on topic %s", topic)
 			userC = s.connectedClients
+		}
+		if len(userC) == 0 {
+			return nil
 		}
 		for c := range userC {
 			subs := s.clientSubscriptions[c]
@@ -433,7 +437,6 @@ func (s *WsServer) CreateSender() types.MessageSender {
 			}
 
 			if utils.IsAnyMatch(subsList, topic) {
-				logger.Info("Sending message to user %d on topic %s", *userId, topic)
 				c.SendMessage(message)
 			}
 		}

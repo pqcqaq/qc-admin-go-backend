@@ -216,3 +216,15 @@ func (s *WsServer) RemoveChannelClientMapping(channelId string, client *ClientCo
 		}
 	}
 }
+
+func (s *WsServer) GetClientByUserId(userId uint64) []*ClientConnWrapper {
+	s.cMu.Lock()
+	defer s.cMu.Unlock()
+	clients := make([]*ClientConnWrapper, 0)
+	for client := range s.connectedClients {
+		if client.UserId == userId {
+			clients = append(clients, client)
+		}
+	}
+	return clients
+}

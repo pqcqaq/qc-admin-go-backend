@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/go-viper/mapstructure/v2"
 )
 
 // ToJSON 将对象转换为JSON字符串
@@ -93,15 +95,19 @@ func CompactJSON(jsonStr string) (string, error) {
 
 // MapToStruct 将 map[string]interface{} 转换为指定结构体
 func MapToStruct(m map[string]interface{}, out interface{}) error {
-	// 先把 map 转换成 JSON
-	data, err := json.Marshal(m)
-	if err != nil {
-		return fmt.Errorf("marshal map error: %w", err)
+	config := &mapstructure.DecoderConfig{
+		WeaklyTypedInput: true,
+		Result:           out,
+		TagName:          "json", // 使用 json tag
 	}
 
-	// 再把 JSON 转换为结构体
-	if err := json.Unmarshal(data, out); err != nil {
-		return fmt.Errorf("unmarshal to struct error: %w", err)
+	decoder, err := mapstructure.NewDecoder(config)
+	if err != nil {
+		return fmt.Errorf("create decoder error: %w", err)
+	}
+
+	if err := decoder.Decode(m); err != nil {
+		return fmt.Errorf("decode map to struct error: %w", err)
 	}
 
 	return nil

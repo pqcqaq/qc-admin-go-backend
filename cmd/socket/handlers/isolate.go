@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	channelhandler "go-backend/pkg/channel_handler"
 	"go-backend/pkg/logging"
+	"time"
 )
 
 func RegisterIsolate() {
@@ -32,8 +34,27 @@ func RegisterIsolate() {
 		},
 		CloseChannel: channelhandler.NewCloseChannelHandler(ctx),
 		ErrSender:    channelhandler.NewErrorSender(ctx),
+		StartSender:  channelhandler.NewStartSender(ctx),
 	})
 
 	handler.SetLogger(logging.WithName("ChannelHandler"))
 	handler.RegisterHandler()
+
+	// 启动协程每五秒执行一次
+	go func() {
+		count := 0
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			count++
+			select {
+			case <-ticker.C:
+				handler.CreateChannel(fmt.Sprintf("test_handler/%d", count), 584118186413129729)
+			case <-ctx.Done():
+				logging.Info("Context cancelled, stopping ticker")
+				return
+			}
+		}
+	}()
 }

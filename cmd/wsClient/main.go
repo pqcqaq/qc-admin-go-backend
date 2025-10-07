@@ -54,6 +54,48 @@ func main() {
 		log.Printf("Failed to send message: %v", err)
 	}
 
+	hookChan := make(chan struct{})
+	// 注册频道开放钩子 - 监听服务器主动创建的频道
+	channelHookUnsub := client.RegisterChannelOpen("test_handler/+", func(channel pkgClient.Channel) {
+		log.Printf("新频道打开: topic: %s", channel.Topic())
+
+		count := 0
+		ticker := time.NewTicker(10 * time.Millisecond)
+
+		// 启动一个 goroutine 定期发送消息
+		go func() {
+			defer ticker.Stop()
+			for {
+				select {
+				case <-ticker.C:
+					// 这里我们无法直接检查频道是否关闭，所以使用 channel.Wait() 来判断
+					select {
+					case <-channel.Wait():
+						log.Printf("频道钩子检测到频道已关闭，停止发送消息")
+						hookChan <- struct{}{}
+						return
+					default:
+						// 频道仍然开放，发送消息
+						count++
+						message := fmt.Sprintf("hello from hook %d", count)
+						if err := channel.Send(message); err != nil {
+							log.Printf("频道钩子发送消息失败: %v", err)
+							return
+						}
+					}
+				case <-channel.Wait():
+					log.Printf("频道钩子检测到频道关闭")
+					return
+				}
+			}
+		}()
+
+		// 设置频道关闭处理器
+		channel.OnClose(func(reason pkgClient.ErrorMsgData) {
+			log.Printf("频道钩子: 频道已关闭: %s - %s", reason.Code, reason.Detail)
+		})
+	})
+
 	// 创建频道进行双向通信
 	channel, err := client.CreateChannel("test_panic/1",
 		func(data interface{}) {
@@ -98,10 +140,14 @@ func main() {
 		<-channel.Wait()
 	}
 
+	// 等待hook结束
+	log.Printf("等待频道钩子结束...")
+	<-hookChan
 	// 取消订阅
 	unsub1()
 	unsub2()
 	stateUnsub()
+	channelHookUnsub() // 取消频道开放钩子
 
 	// 断开连接
 	log.Printf("断开连接...")

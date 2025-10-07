@@ -55,6 +55,11 @@ type SocketClient struct {
 	disconnectUnsub UnsubscribeFunction
 	errorUnsub      UnsubscribeFunction
 	connectedUnsub  UnsubscribeFunction
+	crchannelUnsub  UnsubscribeFunction
+
+	// 频道开放处理器
+	channelOpenHandlers     map[string][]*ChannelOpenRecord
+	channelOpenHandlerMutex sync.RWMutex
 }
 
 // NewSocketClient 创建新的WebSocket客户端
@@ -69,6 +74,7 @@ func NewSocketClient(options SocketOptions) *SocketClient {
 		options:             options,
 		subscriptions:       make(map[string][]*SubscriptionRecord),
 		stateCallbacks:      make(map[string]StateChangeCallback),
+		channelOpenHandlers: make(map[string][]*ChannelOpenRecord),
 		baseBackoffDelay:    500 * time.Millisecond,
 		maxBackoffDelay:     16 * time.Second,
 		currentBackoffDelay: 500 * time.Millisecond,
@@ -391,7 +397,7 @@ func (c *SocketClient) createChannelWithTimeout(topic string, handler ChannelMes
 			c.log(fmt.Sprintf("Channel created with ID: %s", channelID))
 
 			// 创建频道实例
-			channel := c.setupChannel(channelID, handler, errHandler...)
+			channel := c.setupChannel(topic, channelID, handler, errHandler...)
 			select {
 			case resultChan <- channel:
 			default:
@@ -422,7 +428,7 @@ func (c *SocketClient) createChannelWithTimeout(topic string, handler ChannelMes
 }
 
 // setupChannel 设置频道实例
-func (c *SocketClient) setupChannel(channelID string, handler ChannelMessageHandler, errHandler ...ChannelCloseHandler) *Channel {
+func (c *SocketClient) setupChannel(topic, channelID string, handler ChannelMessageHandler, errHandler ...ChannelCloseHandler) *Channel {
 	// 创建等待通道，用于通知频道结束
 	waitChan := make(chan struct{})
 	var waitOnce sync.Once
@@ -553,6 +559,8 @@ func (c *SocketClient) setupChannel(channelID string, handler ChannelMessageHand
 	}
 
 	return &Channel{
+		id:      channelID,
+		topic:   topic,
 		Send:    send,
 		Close:   closer,
 		Wait:    waiter,
@@ -871,6 +879,9 @@ func (c *SocketClient) setupInternalSubscriptions() {
 	if c.connectedUnsub != nil {
 		c.connectedUnsub()
 	}
+	if c.crchannelUnsub != nil {
+		c.crchannelUnsub()
+	}
 
 	// 订阅连接确认消息
 	c.connectedUnsub = c.Subscribe("connected", func(data interface{}, topic string) {
@@ -940,6 +951,8 @@ func (c *SocketClient) setupInternalSubscriptions() {
 			}
 		}
 	})
+
+	c.crchannelUnsub = c.subscribeChannelCreate()
 }
 
 func (c *SocketClient) handleTokenRefresh() {
@@ -965,6 +978,127 @@ func (c *SocketClient) handleTokenRefresh() {
 		<-conn
 	} else {
 		c.log("No refresh token function provided, cannot reconnect")
+	}
+}
+
+func (c *SocketClient) RegisterChannelOpen(topic string, handler ChannelHandler) UnsubscribeFunction {
+	c.channelOpenHandlerMutex.Lock()
+	defer c.channelOpenHandlerMutex.Unlock()
+
+	id := c.generateID()
+	record := &ChannelOpenRecord{
+		Topic:   topic,
+		Handler: handler,
+		ID:      id,
+	}
+
+	// 检查是否是该主题的第一个处理器
+	isFirstHandler := len(c.channelOpenHandlers[topic]) == 0
+
+	// 保存处理器记录
+	c.channelOpenHandlers[topic] = append(c.channelOpenHandlers[topic], record)
+
+	// 只有在第一次注册该主题且已连接时，才发送订阅请求到服务器
+	// 监听服务器发送的频道创建消息，格式为 "?cr/<topic>"
+	var channelCreateUnsub UnsubscribeFunction
+	if isFirstHandler && c.State() == Connected {
+		channelCreateUnsub = c.subscribeChannelCreate()
+	}
+
+	c.log(fmt.Sprintf("Registered channel open handler for topic: %s (handlers: %d)", topic, len(c.channelOpenHandlers[topic])))
+
+	// 返回取消注册函数
+	return func() {
+		c.unregisterChannelOpenByID(id)
+		if channelCreateUnsub != nil {
+			channelCreateUnsub()
+		}
+	}
+}
+
+// subscribeChannelCreate 订阅频道创建消息
+func (c *SocketClient) subscribeChannelCreate() UnsubscribeFunction {
+	return c.Subscribe("?cr/#", func(data interface{}, responseTopic string) {
+		// 解析频道创建数据
+		dataMap, ok := data.(map[string]interface{})
+		if !ok {
+			c.log("Invalid channel create data format")
+			return
+		}
+
+		channelTopic, exists := dataMap["topic"]
+		if !exists {
+			c.log("Missing topic in channel create data")
+			return
+		}
+
+		channelTopicStr, ok := channelTopic.(string)
+		if !ok {
+			c.log("Invalid topic type in channel create data")
+			return
+		}
+
+		// 检查是否有匹配的处理器
+		c.channelOpenHandlerMutex.RLock()
+		// 遍历所有的处理器,直到找到匹配的
+		var handlers []*ChannelOpenRecord
+		for topic, records := range c.channelOpenHandlers {
+			if utils.MatchTopic(topic, channelTopicStr) {
+				handlers = append(handlers, records...)
+			}
+		}
+		c.channelOpenHandlerMutex.RUnlock()
+
+		if !exists || len(handlers) == 0 {
+			c.log(fmt.Sprintf("No handlers registered for channel open topic: %s", channelTopicStr))
+			return
+		}
+
+		// 为每个处理器创建频道实例
+		for _, record := range handlers {
+			go func(handler ChannelHandler, topic string) {
+				defer func() {
+					if r := recover(); r != nil {
+						c.log(fmt.Sprintf("Error in channel open handler: %v", r))
+					}
+				}()
+
+				// 创建频道实例
+				channel, err := c.CreateChannel(topic, func(data interface{}) {
+					// 这里可以根据需要处理频道消息
+					c.log(fmt.Sprintf("Received channel message: %+v", data))
+				})
+
+				if err != nil {
+					c.log(fmt.Sprintf("Failed to create channel: %v", err))
+					return
+				}
+
+				// 调用用户注册的处理器
+				handler(*channel)
+			}(record.Handler, channelTopicStr)
+		}
+	})
+}
+
+// unregisterChannelOpenByID 根据ID取消注册频道开放处理器
+func (c *SocketClient) unregisterChannelOpenByID(id string) {
+	c.channelOpenHandlerMutex.Lock()
+	defer c.channelOpenHandlerMutex.Unlock()
+
+	for topic, records := range c.channelOpenHandlers {
+		for i, record := range records {
+			if record.ID == id {
+				records = append(records[:i], records[i+1:]...)
+				if len(records) == 0 {
+					delete(c.channelOpenHandlers, topic)
+				} else {
+					c.channelOpenHandlers[topic] = records
+				}
+				c.log(fmt.Sprintf("Unregistered channel open handler by ID: %s from topic: %s", id, topic))
+				return
+			}
+		}
 	}
 }
 

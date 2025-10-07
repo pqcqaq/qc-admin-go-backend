@@ -84,6 +84,13 @@ type SubscriptionRecord struct {
 	ID             string
 }
 
+// ChannelOpenRecord 频道开放处理器记录
+type ChannelOpenRecord struct {
+	Topic   string
+	Handler ChannelHandler
+	ID      string
+}
+
 // DisConnectMsg 服务器断开连接消息
 type DisConnectMsg struct {
 	Topic string `json:"topic"` // "?dc"
@@ -112,6 +119,7 @@ type ChannelCreateRes struct {
 }
 
 // Channel 频道相关类型
+type ChannelHandler func(channel Channel)
 type ChannelSender func(data interface{}) error
 type ChannelMessageHandler func(data interface{})
 type ChannelCloser func() <-chan struct{}
@@ -120,10 +128,21 @@ type ChannelWaiter func() <-chan struct{}
 
 // Channel 频道实例
 type Channel struct {
+	id    string
+	topic string
+
 	Send    ChannelSender
 	Close   ChannelCloser
 	Wait    ChannelWaiter
 	OnClose func(handler ChannelCloseHandler)
+}
+
+func (c Channel) ID() string {
+	return c.id
+}
+
+func (c Channel) Topic() string {
+	return c.topic
 }
 
 // ISocketClient WebSocket 客户端接口
@@ -154,4 +173,7 @@ type ISocketClient interface {
 
 	// CreateChannel 创建频道
 	CreateChannel(topic string, handler ChannelMessageHandler, errHandler ...ChannelCloseHandler) (*Channel, error)
+
+	// RegisterChannelOpen 注册频道开放处理器，当服务器主动创建频道时会调用
+	RegisterChannelOpen(topic string, handler ChannelHandler) UnsubscribeFunction
 }
