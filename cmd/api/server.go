@@ -52,6 +52,8 @@ func runServer(cmd *cobra.Command, args []string) error {
 
 	// 初始化事件系统
 	initializeEventSystem()
+	sendCtx := context.Background()
+	setupHandlers(sendCtx)
 
 	// 设置路由
 	engine := setupRoutes(config, results.engine)

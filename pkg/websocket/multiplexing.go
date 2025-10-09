@@ -3,6 +3,7 @@ package websocket
 import (
 	"context"
 	"fmt"
+	"go-backend/pkg/logging"
 	"go-backend/pkg/messaging"
 	"go-backend/pkg/utils"
 	"go-backend/pkg/websocket/channel"
@@ -227,4 +228,52 @@ func (s *WsServer) GetClientByUserId(userId uint64) []*ClientConnWrapper {
 		}
 	}
 	return clients
+}
+
+func (s *WsServer) startChannelOpenListener() {
+	messaging.RegisterHandler(messaging.ChannelOpenRes, func(message messaging.MessageStruct) error {
+		socketMsgMap, ok := message.Payload.(map[string]interface{})
+		if !ok {
+			logging.Error("Invalid message payload type")
+			return fmt.Errorf("invalid message payload type")
+		}
+
+		var socketMsg messaging.ChannelOpenCheckPayload
+		err := utils.MapToStruct(socketMsgMap, &socketMsg)
+		if err != nil {
+			logging.Error("Failed to convert payload to SocketMessagePayload: %v", err)
+			return fmt.Errorf("failed to convert payload to SocketMessagePayload: %w", err)
+		}
+
+		logger.Info("Received channel open response for channel ID: %s, topic: %s, userID: %d, sessionId: %s, clientId: %d, allowed: %v", socketMsg.ChannelID, socketMsg.Topic, socketMsg.UserID, socketMsg.SessionId, socketMsg.ClientId, socketMsg.Allowed)
+		// 若已经超时五秒钟则不管了
+		if utils.Now().Unix()-socketMsg.Timestamp > 5 {
+			logging.Warn("Channel open check message timed out for channel ID: %s", socketMsg.ChannelID)
+			return nil
+		}
+
+		s.createNewChannel(socketMsg.Topic, socketMsg.ChannelID, socketMsg.SessionId, socketMsg.UserID, socketMsg.ClientId)
+
+		return nil
+	})
+}
+
+func (s *WsServer) createNewChannel(topic string, channelId string, sessionId string, userId, clientId uint64) {
+	channel := s.channelFactory.StartNewChannel(topic, channelId, sessionId, userId, clientId)
+
+	// 将新创建的频道加入到全局映射中
+	s.cIMu.Lock()
+	s.channelIdMap[channelId] = channel
+	s.cIMu.Unlock()
+
+	client := s.GetClientFromSessionId(sessionId)
+
+	if client == nil {
+		logger.Error("Client with session ID %s not found when creating channel %s", sessionId, channelId)
+		return
+	}
+
+	client.AddChannel(channel)
+	s.AddChannelClientMapping(channel.ID, client)
+	client.SendChannelCreatedSuccess(topic, channel)
 }

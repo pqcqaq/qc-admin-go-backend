@@ -24,7 +24,7 @@ func (s *WsServer) GetChannelById(channelId string) *channel.Channel {
 func NewWsServer(options WsServerOptions) *WsServer {
 	allowList := options.AllowOrigins
 	allowAll := len(allowList) == 0
-	return &WsServer{
+	wsServer := &WsServer{
 		allowList:           allowList,
 		allowAll:            allowAll,
 		connectedClients:    make(map[*ClientConnWrapper]bool),
@@ -35,6 +35,8 @@ func NewWsServer(options WsServerOptions) *WsServer {
 		sendCtx:             context.Background(),
 		channelFactory:      options.ChannelFactory,
 	}
+	wsServer.startChannelOpenListener()
+	return wsServer
 }
 
 func (s *WsServer) LockAll() {
@@ -194,16 +196,29 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 			client.SendChannelCreatedFailed(msg.Topic, ErrChannelExists, fmt.Errorf("channel %s already exists", channelId))
 			return fmt.Errorf("channel %s already exists", channelId)
 		}
-		channel := s.channelFactory.StartNewChannel(msg.Topic, channelId, client.id, client.UserId, client.ClientId)
+		// s.createNewChannel(msg, channelId, client)
 
-		// 将新创建的频道加入到全局映射中
-		s.cIMu.Lock()
-		s.channelIdMap[channelId] = channel
-		s.cIMu.Unlock()
+		// 这里发送创建请求, 若五秒钟之后还没应答则创建失败
+		logger.Info("Client %s requests to create channel %s for topic %s", client.id, channelId, msg.Topic)
+		messaging.Publish(s.sendCtx, messaging.MessageStruct{
+			Type: messaging.ChannelOpenCheck,
+			Payload: messaging.ChannelOpenCheckPayload{
+				ChannelID: channelId,
+				Topic:     msg.Topic,
+				UserID:    client.UserId,
+				SessionId: client.id,
+				ClientId:  client.ClientId,
+				Allowed:   false, // 初始为不允许, 需要后台服务确认
+				Timestamp: utils.Now().Unix(),
+			},
+		})
 
-		client.AddChannel(channel)
-		s.AddChannelClientMapping(channel.ID, client)
-		client.SendChannelCreatedSuccess(msg.Topic, channel)
+		time.AfterFunc(5*time.Second, func() {
+			// 五秒钟之后还没创建成功则表示失败
+			if s.GetChannelById(channelId) == nil {
+				client.SendChannelCreatedFailed(msg.Topic, ErrChannelCreateTimeout, fmt.Errorf("channel %s creation timed out", channelId))
+			}
+		})
 
 	case "channel":
 		if s.channelFactory == nil {
@@ -243,6 +258,17 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 		logger.Info("Client %s closed channel %s", client.id, channel.ID)
 	default:
 		logger.Warn("Unknown action from client %s: %s", client.id, msg.Action)
+	}
+	return nil
+}
+
+func (s *WsServer) GetClientFromSessionId(sessionId string) *ClientConnWrapper {
+	s.cMu.Lock()
+	defer s.cMu.Unlock()
+	for client := range s.connectedClients {
+		if client.id == sessionId {
+			return client
+		}
 	}
 	return nil
 }

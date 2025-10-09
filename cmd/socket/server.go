@@ -55,8 +55,6 @@ func runServer(cmd *cobra.Command, args []string) error {
 func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 	ctx := context.Background()
 
-	messaging.CreateGroup(ctx)
-
 	// 创建WebSocket服务器实例
 	wsServer := websocket.NewWsServer(websocket.WsServerOptions{
 		AllowOrigins: config.Socket.AllowOrigins,
@@ -86,7 +84,15 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 
 	go func() {
 		logging.Info("Started messaging consumer")
-		consumer := messaging.NewMessageConsumer("qc-admin_socket")
+		consumer := messaging.NewMessageConsumer(
+			"qc-admin_socket",
+			messaging.ServerToUserSocket,
+			messaging.UserToServerSocket,
+			messaging.ChannelToUser,
+			messaging.ChannelToServer,
+			messaging.ChannelOpenRes,
+		)
+		consumer.CreateGroup(ctx)
 		consumer.Consume(ctx)
 	}()
 

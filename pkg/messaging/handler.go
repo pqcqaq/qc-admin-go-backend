@@ -85,15 +85,24 @@ func GetRedisVersion(ctx context.Context) (*RedisVersion, error) {
 }
 
 type MessageCunsumer struct {
+	mType        []MessageType
 	consumerName string
 }
 
-func NewMessageConsumer(consumerName string) *MessageCunsumer {
-	return &MessageCunsumer{consumerName: consumerName}
+func NewMessageConsumer(consumerName string, mType ...MessageType) *MessageCunsumer {
+	// 如果为空则不允许
+	if len(mType) == 0 {
+		panic("MessageConsumer must have at least one MessageType")
+	}
+
+	return &MessageCunsumer{
+		mType:        mType,
+		consumerName: consumerName,
+	}
 }
 
 // CreateGroup 创建消费者组
-func CreateGroup(ctx context.Context) error {
+func (mc *MessageCunsumer) CreateGroup(ctx context.Context) error {
 	groupName := configs.GetConfig().Server.Components.Messaging.GroupName
 	streamKey := configs.GetConfig().Server.Components.Messaging.StreamKey
 	client := caching.GetInstanceUnsafe()
@@ -105,7 +114,9 @@ func CreateGroup(ctx context.Context) error {
 	}
 
 	// 尝试创建消费者组，如果已存在会返回错误，可以忽略
-	err = client.XGroupCreateMkStream(ctx, streamKey, groupName, "0").Err()
+	for _, iType := range mc.mType {
+		err = client.XGroupCreateMkStream(ctx, fmt.Sprintf("%s:%s", streamKey, iType), groupName, "0").Err()
+	}
 	if err != nil && err.Error() != "BUSYGROUP Consumer Group name already exists" {
 		return fmt.Errorf("创建消费者组失败: %w", err)
 	}
@@ -162,10 +173,20 @@ func (c *MessageCunsumer) readNewMessages(ctx context.Context, handler func(Mess
 	readCount := configs.GetConfig().Server.Components.Messaging.ReadCount
 	client := caching.GetInstanceUnsafe()
 
+	streamKeys := make([]string, 0, len(c.mType)*2)
+	for _, mType := range c.mType {
+		streamKeys = append(streamKeys, fmt.Sprintf("%s:%s", streamKey, mType))
+	}
+	// 每个流后面跟一个 ">" 表示从该流读取新消息
+	for range c.mType {
+		streamKeys = append(streamKeys, ">")
+	}
+
+	// 读取新消息
 	streams, err := client.XReadGroup(ctx, &redis.XReadGroupArgs{
 		Group:    groupName,
 		Consumer: c.consumerName,
-		Streams:  []string{streamKey, ">"}, // ">" 表示只读取新消息
+		Streams:  streamKeys, // ">" 表示只读取新消息
 		Count:    readCount,
 		Block:    time.Duration(readTimeout) * time.Millisecond,
 	}).Result()
@@ -178,8 +199,16 @@ func (c *MessageCunsumer) readNewMessages(ctx context.Context, handler func(Mess
 	}
 
 	for _, stream := range streams {
+		// 从stream名称中提取消息类型
+		streamParts := strings.Split(stream.Stream, ":")
+		if len(streamParts) < 2 {
+			logger.Error("[%s] 无效的stream名称: %s", c.consumerName, stream.Stream)
+			continue
+		}
+		messageType := streamParts[len(streamParts)-1]
+
 		for _, message := range stream.Messages {
-			c.processMessage(ctx, message, handler)
+			c.processMessage(ctx, message, messageType, handler)
 		}
 	}
 
@@ -202,66 +231,73 @@ func (c *MessageCunsumer) processPendingMessages(ctx context.Context, handler fu
 		useIdleParam = true
 	}
 
-	var pending []redis.XPendingExt
+	for _, iType := range c.mType {
+		var pending []redis.XPendingExt
 
-	if useIdleParam {
-		// Redis 6.2.0+ 支持 Idle 参数
-		pending, err = client.XPendingExt(ctx, &redis.XPendingExtArgs{
-			Stream: streamKey,
-			Group:  groupName,
-			Start:  "-",
-			End:    "+",
-			Count:  readCount,
-			Idle:   time.Duration(idleTimeout) * time.Millisecond,
-		}).Result()
-	} else {
-		// 旧版本Redis，不使用 Idle 参数
-		pending, err = client.XPendingExt(ctx, &redis.XPendingExtArgs{
-			Stream: streamKey,
-			Group:  groupName,
-			Start:  "-",
-			End:    "+",
-			Count:  readCount,
-		}).Result()
-	}
-
-	if err != nil {
-		return err
-	}
-
-	for _, p := range pending {
-		// 如果没有使用Idle参数，需要手动过滤
-		if !useIdleParam {
-			idleDuration := time.Duration(p.Idle.Milliseconds()) * time.Millisecond
-			if idleDuration < time.Duration(idleTimeout)*time.Millisecond {
-				continue // 跳过未超时的消息
+		if useIdleParam {
+			// Redis 6.2.0+ 支持 Idle 参数
+			newPending, err := client.XPendingExt(ctx, &redis.XPendingExtArgs{
+				Stream: fmt.Sprintf("%s:%s", streamKey, iType),
+				Group:  groupName,
+				Start:  "-",
+				End:    "+",
+				Count:  readCount,
+				Idle:   time.Duration(idleTimeout) * time.Millisecond,
+			}).Result()
+			if err != nil {
+				return err
 			}
+			pending = newPending
+		} else {
+			// 旧版本Redis，不使用 Idle 参数
+			newPending, err := client.XPendingExt(ctx, &redis.XPendingExtArgs{
+				Stream: fmt.Sprintf("%s:%s", streamKey, iType),
+				Group:  groupName,
+				Start:  "-",
+				End:    "+",
+				Count:  readCount,
+			}).Result()
+			if err != nil {
+				return err
+			}
+			pending = newPending
 		}
 
-		// 检查重试次数
-		if p.RetryCount >= int64(maxRetries) {
-			logger.Error("[%s] 消息 %s 重试次数已达上限，移至死信队列", c.consumerName, p.ID)
-			c.moveToDeadLetter(ctx, p.ID)
-			continue
-		}
+		// 处理当前类型的pending消息
+		for _, p := range pending {
+			// 如果没有使用Idle参数，需要手动过滤
+			if !useIdleParam {
+				idleDuration := time.Duration(p.Idle.Milliseconds()) * time.Millisecond
+				if idleDuration < time.Duration(idleTimeout)*time.Millisecond {
+					continue // 跳过未超时的消息
+				}
+			}
 
-		// 认领消息
-		messages, err := client.XClaim(ctx, &redis.XClaimArgs{
-			Stream:   streamKey,
-			Group:    groupName,
-			Consumer: c.consumerName,
-			MinIdle:  time.Duration(idleTimeout) * time.Millisecond,
-			Messages: []string{p.ID},
-		}).Result()
+			// 检查重试次数
+			if p.RetryCount >= int64(maxRetries) {
+				logger.Error("[%s] 消息 %s 重试次数已达上限，移至死信队列", c.consumerName, p.ID)
+				c.moveToDeadLetter(ctx, p.ID, string(iType))
+				continue
+			}
 
-		if err != nil {
-			logger.Error("[%s] 认领消息失败: %v", c.consumerName, err)
-			continue
-		}
+			// 认领消息
+			messages, err := client.XClaim(ctx, &redis.XClaimArgs{
+				Stream:   fmt.Sprintf("%s:%s", streamKey, iType),
+				Group:    groupName,
+				Consumer: c.consumerName,
+				MinIdle:  time.Duration(idleTimeout) * time.Millisecond,
+				Messages: []string{p.ID},
+			}).Result()
 
-		for _, message := range messages {
-			logger.Warn("[%s] 重试处理消息: %s (第 %d 次)", c.consumerName, message.ID, p.RetryCount+1)
-			c.processMessage(ctx, message, handler)
+			if err != nil {
+				logger.Error("[%s] 认领消息失败: %v", c.consumerName, err)
+				continue
+			}
+
+			for _, message := range messages {
+				logger.Warn("[%s] 重试处理消息: %s (第 %d 次)", c.consumerName, message.ID, p.RetryCount+1)
+				c.processMessage(ctx, message, string(iType), handler)
+			}
 		}
 	}
 
@@ -269,7 +305,7 @@ func (c *MessageCunsumer) processPendingMessages(ctx context.Context, handler fu
 }
 
 // processMessage 处理单条消息
-func (c *MessageCunsumer) processMessage(ctx context.Context, message redis.XMessage, handler func(MessageStruct) error) {
+func (c *MessageCunsumer) processMessage(ctx context.Context, message redis.XMessage, messageType string, handler func(MessageStruct) error) {
 	groupName := configs.GetConfig().Server.Components.Messaging.GroupName
 	streamKey := configs.GetConfig().Server.Components.Messaging.StreamKey
 	client := caching.GetInstanceUnsafe()
@@ -278,7 +314,7 @@ func (c *MessageCunsumer) processMessage(ctx context.Context, message redis.XMes
 	data, ok := message.Values["data"].(string)
 	if !ok {
 		logger.Error("[%s] 消息格式错误: %s", c.consumerName, message.ID)
-		client.XAck(ctx, streamKey, groupName, message.ID)
+		client.XAck(ctx, fmt.Sprintf("%s:%s", streamKey, messageType), groupName, message.ID)
 		return
 	}
 
@@ -286,7 +322,7 @@ func (c *MessageCunsumer) processMessage(ctx context.Context, message redis.XMes
 	var messageStruct MessageStruct
 	if err := msgpack.Unmarshal(utils.StringToByte(data), &messageStruct); err != nil {
 		logger.Error("[%s] msgpack 反序列化失败: %v", c.consumerName, err)
-		client.XAck(ctx, streamKey, groupName, message.ID)
+		client.XAck(ctx, fmt.Sprintf("%s:%s", streamKey, messageType), groupName, message.ID)
 		return
 	}
 
@@ -298,22 +334,22 @@ func (c *MessageCunsumer) processMessage(ctx context.Context, message redis.XMes
 	}
 
 	// 处理成功，ACK 消息
-	if err := client.XAck(ctx, streamKey, groupName, message.ID).Err(); err != nil {
+	if err := client.XAck(ctx, fmt.Sprintf("%s:%s", streamKey, messageType), groupName, message.ID).Err(); err != nil {
 		logger.Error("[%s] ACK 失败: %v", c.consumerName, err)
 		return
 	}
 }
 
 // moveToDeadLetter 将消息移至死信队列
-func (c *MessageCunsumer) moveToDeadLetter(ctx context.Context, messageID string) {
+func (c *MessageCunsumer) moveToDeadLetter(ctx context.Context, messageID string, messageType string) {
 	groupName := configs.GetConfig().Server.Components.Messaging.GroupName
 	streamKey := configs.GetConfig().Server.Components.Messaging.StreamKey
 	client := caching.GetInstanceUnsafe()
 
-	deadLetterKey := streamKey + ":dead_letter"
+	deadLetterKey := fmt.Sprintf("%s:%s:dead_letter", streamKey, messageType)
 
 	// 获取原始消息
-	messages, err := client.XRange(ctx, streamKey, messageID, messageID).Result()
+	messages, err := client.XRange(ctx, fmt.Sprintf("%s:%s", streamKey, messageType), messageID, messageID).Result()
 	if err != nil || len(messages) == 0 {
 		logger.Error("无法获取消息 %s", messageID)
 		return
@@ -326,23 +362,25 @@ func (c *MessageCunsumer) moveToDeadLetter(ctx context.Context, messageID string
 	})
 
 	// ACK 原消息
-	client.XAck(ctx, streamKey, groupName, messageID)
+	client.XAck(ctx, fmt.Sprintf("%s:%s", streamKey, messageType), groupName, messageID)
 	logger.Warn("消息 %s 已移至死信队列", messageID)
 }
 
 // GetGroupInfo 获取消费者组信息
-func GetGroupInfo(ctx context.Context) {
+func (c *MessageCunsumer) GetGroupInfo(ctx context.Context) {
 	streamKey := configs.GetConfig().Server.Components.Messaging.StreamKey
 	client := caching.GetInstanceUnsafe()
 
-	info, err := client.XInfoGroups(ctx, streamKey).Result()
-	if err != nil {
-		logger.Error("获取消费者组信息失败: %v", err)
-		return
-	}
+	for _, mType := range c.mType {
+		info, err := client.XInfoGroups(ctx, fmt.Sprintf("%s:%s", streamKey, mType)).Result()
+		if err != nil {
+			logger.Error("获取消费者组信息失败 (类型: %s): %v", mType, err)
+			continue
+		}
 
-	for _, group := range info {
-		logger.Info("消费者组: %s, Pending: %d, LastDeliveredID: %s",
-			group.Name, group.Pending, group.LastDeliveredID)
+		for _, group := range info {
+			logger.Info("消费者组 (类型: %s): %s, Pending: %d, LastDeliveredID: %s",
+				mType, group.Name, group.Pending, group.LastDeliveredID)
+		}
 	}
 }

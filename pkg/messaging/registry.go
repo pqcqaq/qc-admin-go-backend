@@ -35,6 +35,7 @@ func RegisterHandler(messageType MessageType, handler MessageHandler) HandlerRem
 
 	handlers[messageType] = append(handlers[messageType], wrapper)
 
+	logger.Info("Registered handler %d for message type %d", id, messageType)
 	// 返回移除函数
 	return func() {
 		mu.Lock()

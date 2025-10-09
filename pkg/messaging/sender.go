@@ -30,7 +30,7 @@ func Publish(ctx context.Context, task MessageStruct) (string, error) {
 
 	// 添加到 Stream
 	result, err := caching.GetInstanceUnsafe().XAdd(ctx, &redis.XAddArgs{
-		Stream: streamKey,
+		Stream: fmt.Sprintf("%s:%s", streamKey, task.Type), // 使用不同的 Stream 存储不同类型的消息
 		Values: map[string]any{
 			"data": utils.ByteToString(data),
 		},
