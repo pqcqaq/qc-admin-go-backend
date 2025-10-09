@@ -93,6 +93,17 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 			messaging.ChannelOpenRes,
 		)
 		consumer.CreateGroup(ctx)
+
+		// 启动Stream清理器
+		cleaner := messaging.NewStreamCleaner(
+			messaging.ServerToUserSocket,
+			messaging.UserToServerSocket,
+			messaging.ChannelToUser,
+			messaging.ChannelToServer,
+			messaging.ChannelOpenRes,
+		)
+		cleaner.StartCleanup(ctx)
+
 		consumer.Consume(ctx)
 	}()
 

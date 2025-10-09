@@ -395,3 +395,189 @@ func (c *MessageCunsumer) GetGroupInfo(ctx context.Context) {
 		}
 	}
 }
+
+// StreamCleaner Stream清理器
+type StreamCleaner struct {
+	mTypes []MessageType
+}
+
+// NewStreamCleaner 创建新的Stream清理器
+func NewStreamCleaner(mTypes ...MessageType) *StreamCleaner {
+	return &StreamCleaner{
+		mTypes: mTypes,
+	}
+}
+
+// StartCleanup 启动清理任务
+func (sc *StreamCleaner) StartCleanup(ctx context.Context) {
+	config := configs.GetConfig().Server.Components.Messaging
+
+	// 检查是否启用清理功能
+	if !config.Cleanup.Enabled {
+		logger.Info("Stream清理功能未启用")
+		return
+	}
+
+	interval := time.Duration(config.Cleanup.Interval) * time.Second
+
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		logger.Info("Stream清理器已启动，清理间隔: %v", interval)
+
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Info("Stream清理器已停止")
+				return
+			case <-ticker.C:
+				sc.performCleanup(ctx)
+			}
+		}
+	}()
+}
+
+// performCleanup 执行清理操作
+func (sc *StreamCleaner) performCleanup(ctx context.Context) {
+	config := configs.GetConfig().Server.Components.Messaging
+	streamKey := config.StreamKey
+
+	logger.Info("开始执行Stream清理操作")
+
+	for _, mType := range sc.mTypes {
+		streamName := fmt.Sprintf("%s:%s", streamKey, mType)
+		deadLetterKey := fmt.Sprintf("%s:%s:dead_letter", streamKey, mType)
+
+		// 清理主Stream
+		sc.cleanupStream(ctx, streamName, config.Cleanup.MaxLen, config.Cleanup.MaxAge)
+
+		// 清理死信队列
+		sc.cleanupDeadLetter(ctx, deadLetterKey, config.Cleanup.DeadLetterMaxAge)
+	}
+
+	logger.Info("Stream清理操作完成")
+}
+
+// cleanupStream 清理Stream
+func (sc *StreamCleaner) cleanupStream(ctx context.Context, streamName string, maxLen int64, maxAge int64) {
+	client := caching.GetInstanceUnsafe()
+
+	// 方法1: 使用XTRIM按长度清理
+	if maxLen > 0 {
+		err := client.XTrimMaxLen(ctx, streamName, maxLen).Err()
+		if err != nil && err != redis.Nil {
+			logger.Error("清理Stream %s 按长度失败: %v", streamName, err)
+		} else {
+			logger.Debug("清理Stream %s 按长度成功，保留最新 %d 条消息", streamName, maxLen)
+		}
+	}
+
+	// 方法2: 使用XTRIM按时间清理
+	if maxAge > 0 {
+		cutoffTime := time.Now().Add(-time.Duration(maxAge) * time.Second).UnixMilli()
+		cutoffID := fmt.Sprintf("%d-0", cutoffTime)
+
+		// 获取Redis版本来决定使用哪种方法
+		version, err := GetRedisVersion(ctx)
+		if err == nil && version.IsAtLeast(6, 2, 0) {
+			// Redis 6.2.0+ 支持 MINID
+			err = client.XTrimMinID(ctx, streamName, cutoffID).Err()
+			if err != nil && err != redis.Nil {
+				logger.Error("清理Stream %s 按时间失败: %v", streamName, err)
+			} else {
+				logger.Debug("清理Stream %s 按时间成功，删除时间早于 %s 的消息", streamName, cutoffID)
+			}
+		} else {
+			// 旧版本Redis，手动删除
+			sc.manualCleanupByTime(ctx, streamName, cutoffID)
+		}
+	}
+}
+
+// manualCleanupByTime 手动按时间清理（兼容旧版Redis）
+func (sc *StreamCleaner) manualCleanupByTime(ctx context.Context, streamName, cutoffID string) {
+	client := caching.GetInstanceUnsafe()
+
+	// 获取需要删除的消息ID列表
+	messages, err := client.XRange(ctx, streamName, "-", cutoffID).Result()
+	if err != nil {
+		logger.Error("获取过期消息列表失败 %s: %v", streamName, err)
+		return
+	}
+
+	if len(messages) == 0 {
+		return
+	}
+
+	// 批量删除过期消息
+	var idsToDelete []string
+	for _, msg := range messages {
+		idsToDelete = append(idsToDelete, msg.ID)
+	}
+
+	if len(idsToDelete) > 0 {
+		err = client.XDel(ctx, streamName, idsToDelete...).Err()
+		if err != nil {
+			logger.Error("删除过期消息失败 %s: %v", streamName, err)
+		} else {
+			logger.Debug("删除 %s 中 %d 条过期消息", streamName, len(idsToDelete))
+		}
+	}
+}
+
+// cleanupDeadLetter 清理死信队列
+func (sc *StreamCleaner) cleanupDeadLetter(ctx context.Context, deadLetterKey string, maxAge int64) {
+	if maxAge <= 0 {
+		return
+	}
+
+	client := caching.GetInstanceUnsafe()
+	cutoffTime := time.Now().Add(-time.Duration(maxAge) * time.Second).UnixMilli()
+	cutoffID := fmt.Sprintf("%d-0", cutoffTime)
+
+	// 获取Redis版本
+	version, err := GetRedisVersion(ctx)
+	if err == nil && version.IsAtLeast(6, 2, 0) {
+		// 使用XTRIM MINID
+		err = client.XTrimMinID(ctx, deadLetterKey, cutoffID).Err()
+		if err != nil && err != redis.Nil {
+			logger.Error("清理死信队列 %s 失败: %v", deadLetterKey, err)
+		} else {
+			logger.Debug("清理死信队列 %s 成功", deadLetterKey)
+		}
+	} else {
+		// 手动清理
+		sc.manualCleanupByTime(ctx, deadLetterKey, cutoffID)
+	}
+}
+
+// GetStreamInfo 获取Stream信息（用于监控）
+func (sc *StreamCleaner) GetStreamInfo(ctx context.Context) {
+	config := configs.GetConfig().Server.Components.Messaging
+	streamKey := config.StreamKey
+	client := caching.GetInstanceUnsafe()
+
+	for _, mType := range sc.mTypes {
+		streamName := fmt.Sprintf("%s:%s", streamKey, mType)
+		deadLetterKey := fmt.Sprintf("%s:%s:dead_letter", streamKey, mType)
+
+		// 获取主Stream信息
+		info, err := client.XInfoStream(ctx, streamName).Result()
+		if err != nil {
+			logger.Error("获取Stream信息失败 %s: %v", streamName, err)
+			continue
+		}
+
+		logger.Info("Stream %s: 长度=%d, 第一个消息ID=%s, 最后一个消息ID=%s",
+			streamName, info.Length, info.FirstEntry.ID, info.LastEntry.ID)
+
+		// 获取死信队列信息
+		deadInfo, err := client.XInfoStream(ctx, deadLetterKey).Result()
+		if err != nil && err != redis.Nil {
+			logger.Error("获取死信队列信息失败 %s: %v", deadLetterKey, err)
+		} else if err != redis.Nil {
+			logger.Info("死信队列 %s: 长度=%d", deadLetterKey, deadInfo.Length)
+		}
+	}
+}

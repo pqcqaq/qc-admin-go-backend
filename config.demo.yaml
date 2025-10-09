@@ -92,6 +92,13 @@ server:
       read_timeout: 2000    # 2秒
       read_count: 10
       idle_timeout: 30000   # 30秒
+      # Stream 清理配置
+      cleanup:
+        enabled: true
+        interval: 3600        # 清理间隔（秒），1小时
+        max_len: 10000        # Stream最大长度
+        max_age: 604800       # 消息最大保留时间（秒），7天
+        dead_letter_max_age: 2592000  # 死信队列最大保留时间（秒），30天
 
 logging:
   level: "debug"   # 开发环境使用debug级别

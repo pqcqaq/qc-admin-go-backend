@@ -14,6 +14,11 @@ func setupHandlers(ctx context.Context) {
 		messaging.ChannelOpenCheck,
 	)
 	consumer.CreateGroup(ctx)
+
+	// 启动Stream清理器
+	cleaner := messaging.NewStreamCleaner(messaging.ChannelOpenCheck)
+	cleaner.StartCleanup(ctx)
+
 	// 注册处理器来处理创建channel的请求
 	logging.Info("Register channel open check handler")
 	messaging.RegisterHandler(messaging.ChannelOpenCheck, func(message messaging.MessageStruct) error {
