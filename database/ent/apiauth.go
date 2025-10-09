@@ -37,12 +37,14 @@ type APIAuth struct {
 	Description string `json:"description,omitempty"`
 	// HTTP方法
 	Method string `json:"method,omitempty"`
-	// API路径
+	// API路径或者topic
 	Path string `json:"path,omitempty"`
 	// 是否为公开API，true表示允许所有请求通过
 	IsPublic bool `json:"is_public,omitempty"`
 	// 是否启用
 	IsActive bool `json:"is_active,omitempty"`
+	// API类型，http或websocket
+	Type apiauth.Type `json:"type,omitempty"`
 	// 额外的元数据信息
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -81,7 +83,7 @@ func (*APIAuth) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case apiauth.FieldID, apiauth.FieldCreateBy, apiauth.FieldUpdateBy, apiauth.FieldDeleteBy:
 			values[i] = new(sql.NullInt64)
-		case apiauth.FieldName, apiauth.FieldDescription, apiauth.FieldMethod, apiauth.FieldPath:
+		case apiauth.FieldName, apiauth.FieldDescription, apiauth.FieldMethod, apiauth.FieldPath, apiauth.FieldType:
 			values[i] = new(sql.NullString)
 		case apiauth.FieldCreateTime, apiauth.FieldUpdateTime, apiauth.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
@@ -178,6 +180,12 @@ func (_m *APIAuth) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.IsActive = value.Bool
 			}
+		case apiauth.FieldType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field type", values[i])
+			} else if value.Valid {
+				_m.Type = apiauth.Type(value.String)
+			}
 		case apiauth.FieldMetadata:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field metadata", values[i])
@@ -262,6 +270,9 @@ func (_m *APIAuth) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("is_active=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsActive))
+	builder.WriteString(", ")
+	builder.WriteString("type=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Type))
 	builder.WriteString(", ")
 	builder.WriteString("metadata=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Metadata))

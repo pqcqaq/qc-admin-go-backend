@@ -165,6 +165,20 @@ func (_c *APIAuthCreate) SetNillableIsActive(v *bool) *APIAuthCreate {
 	return _c
 }
 
+// SetType sets the "type" field.
+func (_c *APIAuthCreate) SetType(v apiauth.Type) *APIAuthCreate {
+	_c.mutation.SetType(v)
+	return _c
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (_c *APIAuthCreate) SetNillableType(v *apiauth.Type) *APIAuthCreate {
+	if v != nil {
+		_c.SetType(*v)
+	}
+	return _c
+}
+
 // SetMetadata sets the "metadata" field.
 func (_c *APIAuthCreate) SetMetadata(v map[string]interface{}) *APIAuthCreate {
 	_c.mutation.SetMetadata(v)
@@ -251,6 +265,10 @@ func (_c *APIAuthCreate) defaults() error {
 		v := apiauth.DefaultIsActive
 		_c.mutation.SetIsActive(v)
 	}
+	if _, ok := _c.mutation.GetType(); !ok {
+		v := apiauth.DefaultType
+		_c.mutation.SetType(v)
+	}
 	return nil
 }
 
@@ -291,6 +309,14 @@ func (_c *APIAuthCreate) check() error {
 	}
 	if _, ok := _c.mutation.IsActive(); !ok {
 		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "APIAuth.is_active"`)}
+	}
+	if _, ok := _c.mutation.GetType(); !ok {
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "APIAuth.type"`)}
+	}
+	if v, ok := _c.mutation.GetType(); ok {
+		if err := apiauth.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "APIAuth.type": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -371,6 +397,10 @@ func (_c *APIAuthCreate) createSpec() (*APIAuth, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.IsActive(); ok {
 		_spec.SetField(apiauth.FieldIsActive, field.TypeBool, value)
 		_node.IsActive = value
+	}
+	if value, ok := _c.mutation.GetType(); ok {
+		_spec.SetField(apiauth.FieldType, field.TypeEnum, value)
+		_node.Type = value
 	}
 	if value, ok := _c.mutation.Metadata(); ok {
 		_spec.SetField(apiauth.FieldMetadata, field.TypeJSON, value)

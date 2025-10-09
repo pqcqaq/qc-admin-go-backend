@@ -24,6 +24,7 @@ var (
 		{Name: "path", Type: field.TypeString},
 		{Name: "is_public", Type: field.TypeBool, Default: false},
 		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"http", "websocket"}, Default: "http"},
 		{Name: "metadata", Type: field.TypeJSON, Nullable: true},
 	}
 	// SysAPIAuthTable holds the schema information for the "sys_api_auth" table.

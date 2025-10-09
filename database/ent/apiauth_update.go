@@ -226,6 +226,20 @@ func (_u *APIAuthUpdate) SetNillableIsActive(v *bool) *APIAuthUpdate {
 	return _u
 }
 
+// SetType sets the "type" field.
+func (_u *APIAuthUpdate) SetType(v apiauth.Type) *APIAuthUpdate {
+	_u.mutation.SetType(v)
+	return _u
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (_u *APIAuthUpdate) SetNillableType(v *apiauth.Type) *APIAuthUpdate {
+	if v != nil {
+		_u.SetType(*v)
+	}
+	return _u
+}
+
 // SetMetadata sets the "metadata" field.
 func (_u *APIAuthUpdate) SetMetadata(v map[string]interface{}) *APIAuthUpdate {
 	_u.mutation.SetMetadata(v)
@@ -338,6 +352,11 @@ func (_u *APIAuthUpdate) check() error {
 			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "APIAuth.path": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.GetType(); ok {
+		if err := apiauth.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "APIAuth.type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -409,6 +428,9 @@ func (_u *APIAuthUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.IsActive(); ok {
 		_spec.SetField(apiauth.FieldIsActive, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.GetType(); ok {
+		_spec.SetField(apiauth.FieldType, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.Metadata(); ok {
 		_spec.SetField(apiauth.FieldMetadata, field.TypeJSON, value)
@@ -678,6 +700,20 @@ func (_u *APIAuthUpdateOne) SetNillableIsActive(v *bool) *APIAuthUpdateOne {
 	return _u
 }
 
+// SetType sets the "type" field.
+func (_u *APIAuthUpdateOne) SetType(v apiauth.Type) *APIAuthUpdateOne {
+	_u.mutation.SetType(v)
+	return _u
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (_u *APIAuthUpdateOne) SetNillableType(v *apiauth.Type) *APIAuthUpdateOne {
+	if v != nil {
+		_u.SetType(*v)
+	}
+	return _u
+}
+
 // SetMetadata sets the "metadata" field.
 func (_u *APIAuthUpdateOne) SetMetadata(v map[string]interface{}) *APIAuthUpdateOne {
 	_u.mutation.SetMetadata(v)
@@ -803,6 +839,11 @@ func (_u *APIAuthUpdateOne) check() error {
 			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "APIAuth.path": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.GetType(); ok {
+		if err := apiauth.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "APIAuth.type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -891,6 +932,9 @@ func (_u *APIAuthUpdateOne) sqlSave(ctx context.Context) (_node *APIAuth, err er
 	}
 	if value, ok := _u.mutation.IsActive(); ok {
 		_spec.SetField(apiauth.FieldIsActive, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.GetType(); ok {
+		_spec.SetField(apiauth.FieldType, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.Metadata(); ok {
 		_spec.SetField(apiauth.FieldMetadata, field.TypeJSON, value)

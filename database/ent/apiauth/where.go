@@ -685,6 +685,26 @@ func IsActiveNEQ(v bool) predicate.APIAuth {
 	return predicate.APIAuth(sql.FieldNEQ(FieldIsActive, v))
 }
 
+// TypeEQ applies the EQ predicate on the "type" field.
+func TypeEQ(v Type) predicate.APIAuth {
+	return predicate.APIAuth(sql.FieldEQ(FieldType, v))
+}
+
+// TypeNEQ applies the NEQ predicate on the "type" field.
+func TypeNEQ(v Type) predicate.APIAuth {
+	return predicate.APIAuth(sql.FieldNEQ(FieldType, v))
+}
+
+// TypeIn applies the In predicate on the "type" field.
+func TypeIn(vs ...Type) predicate.APIAuth {
+	return predicate.APIAuth(sql.FieldIn(FieldType, vs...))
+}
+
+// TypeNotIn applies the NotIn predicate on the "type" field.
+func TypeNotIn(vs ...Type) predicate.APIAuth {
+	return predicate.APIAuth(sql.FieldNotIn(FieldType, vs...))
+}
+
 // MetadataIsNil applies the IsNil predicate on the "metadata" field.
 func MetadataIsNil() predicate.APIAuth {
 	return predicate.APIAuth(sql.FieldIsNull(FieldMetadata))

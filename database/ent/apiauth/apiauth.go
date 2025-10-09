@@ -3,6 +3,7 @@
 package apiauth
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent"
@@ -39,6 +40,8 @@ const (
 	FieldIsPublic = "is_public"
 	// FieldIsActive holds the string denoting the is_active field in the database.
 	FieldIsActive = "is_active"
+	// FieldType holds the string denoting the type field in the database.
+	FieldType = "type"
 	// FieldMetadata holds the string denoting the metadata field in the database.
 	FieldMetadata = "metadata"
 	// EdgePermissions holds the string denoting the permissions edge name in mutations.
@@ -67,6 +70,7 @@ var Columns = []string{
 	FieldPath,
 	FieldIsPublic,
 	FieldIsActive,
+	FieldType,
 	FieldMetadata,
 }
 
@@ -111,6 +115,32 @@ var (
 	// DefaultIsActive holds the default value on creation for the "is_active" field.
 	DefaultIsActive bool
 )
+
+// Type defines the type for the "type" enum field.
+type Type string
+
+// TypeHTTP is the default value of the Type enum.
+const DefaultType = TypeHTTP
+
+// Type values.
+const (
+	TypeHTTP      Type = "http"
+	TypeWebsocket Type = "websocket"
+)
+
+func (_type Type) String() string {
+	return string(_type)
+}
+
+// TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
+func TypeValidator(_type Type) error {
+	switch _type {
+	case TypeHTTP, TypeWebsocket:
+		return nil
+	default:
+		return fmt.Errorf("apiauth: invalid enum value for type field: %q", _type)
+	}
+}
 
 // OrderOption defines the ordering options for the APIAuth queries.
 type OrderOption func(*sql.Selector)
@@ -178,6 +208,11 @@ func ByIsPublic(opts ...sql.OrderTermOption) OrderOption {
 // ByIsActive orders the results by the is_active field.
 func ByIsActive(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsActive, opts...).ToFunc()
+}
+
+// ByType orders the results by the type field.
+func ByType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldType, opts...).ToFunc()
 }
 
 // ByPermissionsCount orders the results by permissions count.

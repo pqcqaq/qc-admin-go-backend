@@ -36,9 +36,10 @@ func (APIAuth) Fields() []ent.Field {
 		field.String("name").NotEmpty().Comment("API名称"),
 		field.String("description").Optional().Comment("API描述"),
 		field.String("method").NotEmpty().Comment("HTTP方法"),
-		field.String("path").NotEmpty().Comment("API路径"),
+		field.String("path").NotEmpty().Comment("API路径或者topic"),
 		field.Bool("is_public").Default(false).Comment("是否为公开API，true表示允许所有请求通过"),
 		field.Bool("is_active").Default(true).Comment("是否启用"),
+		field.Enum("type").Values("http", "websocket").Default("http").Comment("API类型，http或websocket"),
 		field.JSON("metadata", map[string]interface{}{}).Optional().Comment("额外的元数据信息"),
 	}
 }

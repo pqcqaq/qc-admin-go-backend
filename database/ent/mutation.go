@@ -74,6 +74,7 @@ type APIAuthMutation struct {
 	_path              *string
 	is_public          *bool
 	is_active          *bool
+	_type              *apiauth.Type
 	metadata           *map[string]interface{}
 	clearedFields      map[string]struct{}
 	permissions        map[uint64]struct{}
@@ -748,6 +749,42 @@ func (m *APIAuthMutation) ResetIsActive() {
 	m.is_active = nil
 }
 
+// SetType sets the "type" field.
+func (m *APIAuthMutation) SetType(a apiauth.Type) {
+	m._type = &a
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *APIAuthMutation) GetType() (r apiauth.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the APIAuth entity.
+// If the APIAuth object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIAuthMutation) OldType(ctx context.Context) (v apiauth.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *APIAuthMutation) ResetType() {
+	m._type = nil
+}
+
 // SetMetadata sets the "metadata" field.
 func (m *APIAuthMutation) SetMetadata(value map[string]interface{}) {
 	m.metadata = &value
@@ -885,7 +922,7 @@ func (m *APIAuthMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *APIAuthMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 14)
 	if m.create_time != nil {
 		fields = append(fields, apiauth.FieldCreateTime)
 	}
@@ -922,6 +959,9 @@ func (m *APIAuthMutation) Fields() []string {
 	if m.is_active != nil {
 		fields = append(fields, apiauth.FieldIsActive)
 	}
+	if m._type != nil {
+		fields = append(fields, apiauth.FieldType)
+	}
 	if m.metadata != nil {
 		fields = append(fields, apiauth.FieldMetadata)
 	}
@@ -957,6 +997,8 @@ func (m *APIAuthMutation) Field(name string) (ent.Value, bool) {
 		return m.IsPublic()
 	case apiauth.FieldIsActive:
 		return m.IsActive()
+	case apiauth.FieldType:
+		return m.GetType()
 	case apiauth.FieldMetadata:
 		return m.Metadata()
 	}
@@ -992,6 +1034,8 @@ func (m *APIAuthMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldIsPublic(ctx)
 	case apiauth.FieldIsActive:
 		return m.OldIsActive(ctx)
+	case apiauth.FieldType:
+		return m.OldType(ctx)
 	case apiauth.FieldMetadata:
 		return m.OldMetadata(ctx)
 	}
@@ -1086,6 +1130,13 @@ func (m *APIAuthMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIsActive(v)
+		return nil
+	case apiauth.FieldType:
+		v, ok := value.(apiauth.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
 		return nil
 	case apiauth.FieldMetadata:
 		v, ok := value.(map[string]interface{})
@@ -1256,6 +1307,9 @@ func (m *APIAuthMutation) ResetField(name string) error {
 		return nil
 	case apiauth.FieldIsActive:
 		m.ResetIsActive()
+		return nil
+	case apiauth.FieldType:
+		m.ResetType()
 		return nil
 	case apiauth.FieldMetadata:
 		m.ResetMetadata()

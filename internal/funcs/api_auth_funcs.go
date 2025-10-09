@@ -27,6 +27,7 @@ func (ApiAuthFuncs) GetAllAPIAuths(ctx context.Context) ([]*models.APIAuthRespon
 			ID:          utils.Uint64ToString(record.ID),
 			CreateTime:  utils.FormatDateTime(record.CreateTime),
 			UpdateTime:  utils.FormatDateTime(record.UpdateTime),
+			Type:        record.Type.String(),
 			Name:        record.Name,
 			Description: record.Description,
 			Method:      record.Method,
@@ -58,6 +59,7 @@ func (ApiAuthFuncs) GetAPIAuthById(ctx context.Context, id uint64) (*models.APIA
 		CreateTime:  utils.FormatDateTime(apiAuth.CreateTime),
 		UpdateTime:  utils.FormatDateTime(apiAuth.UpdateTime),
 		Name:        apiAuth.Name,
+		Type:        apiAuth.Type.String(),
 		Description: apiAuth.Description,
 		Method:      apiAuth.Method,
 		Path:        apiAuth.Path,
@@ -78,6 +80,7 @@ func (ApiAuthFuncs) CreateAPIAuth(ctx context.Context, req *models.CreateAPIAuth
 		SetPath(req.Path).
 		SetIsPublic(*req.IsPublic).
 		SetIsActive(*req.IsActive).
+		SetType(apiauth.Type(req.Type)).
 		AddPermissionIDs(pIdsList...)
 
 	if req.Description != "" {
@@ -134,19 +137,16 @@ func (ApiAuthFuncs) UpdateAPIAuth(ctx context.Context, id uint64, req *models.Up
 		SetPath(req.Path).
 		SetIsPublic(*req.IsPublic).
 		SetIsActive(*req.IsActive).
+		SetType(apiauth.Type(req.Type)).
 		RemovePermissionIDs(toRemove...).
 		AddPermissionIDs(toAdd...)
 
 	if req.Description != "" {
 		builder = builder.SetDescription(req.Description)
-	} else {
-		builder = builder.ClearDescription()
 	}
 
 	if req.Metadata != nil {
 		builder = builder.SetMetadata(req.Metadata)
-	} else {
-		builder = builder.ClearMetadata()
 	}
 
 	return builder.Save(ctx)
@@ -231,6 +231,11 @@ func (ApiAuthFuncs) GetAPIAuthWithPagination(ctx context.Context, req *models.Pa
 		query = query.Order(ent.Desc("create_time"))
 	}
 
+	// type过滤
+	if req.Type != "" {
+		query = query.Where(apiauth.TypeEQ(apiauth.Type(req.Type)))
+	}
+
 	// 模糊搜索
 	if req.Name != "" {
 		query = query.Where(apiauth.NameContains(req.Name))
@@ -291,6 +296,7 @@ func (ApiAuthFuncs) GetAPIAuthWithPagination(ctx context.Context, req *models.Pa
 			CreateTime:  utils.FormatDateTime(apiAuth.CreateTime),
 			UpdateTime:  utils.FormatDateTime(apiAuth.UpdateTime),
 			Name:        apiAuth.Name,
+			Type:        apiAuth.Type.String(),
 			Description: apiAuth.Description,
 			Method:      apiAuth.Method,
 			Path:        apiAuth.Path,

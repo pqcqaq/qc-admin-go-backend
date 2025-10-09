@@ -51,6 +51,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			apiauth.FieldPath:        {Type: field.TypeString, Column: apiauth.FieldPath},
 			apiauth.FieldIsPublic:    {Type: field.TypeBool, Column: apiauth.FieldIsPublic},
 			apiauth.FieldIsActive:    {Type: field.TypeBool, Column: apiauth.FieldIsActive},
+			apiauth.FieldType:        {Type: field.TypeEnum, Column: apiauth.FieldType},
 			apiauth.FieldMetadata:    {Type: field.TypeJSON, Column: apiauth.FieldMetadata},
 		},
 	}
@@ -792,6 +793,11 @@ func (f *APIAuthFilter) WhereIsPublic(p entql.BoolP) {
 // WhereIsActive applies the entql bool predicate on the is_active field.
 func (f *APIAuthFilter) WhereIsActive(p entql.BoolP) {
 	f.Where(p.Field(apiauth.FieldIsActive))
+}
+
+// WhereType applies the entql string predicate on the type field.
+func (f *APIAuthFilter) WhereType(p entql.StringP) {
+	f.Where(p.Field(apiauth.FieldType))
 }
 
 // WhereMetadata applies the entql json.RawMessage predicate on the metadata field.
