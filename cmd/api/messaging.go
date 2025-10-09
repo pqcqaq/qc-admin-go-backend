@@ -53,5 +53,5 @@ func setupHandlers(ctx context.Context) {
 
 		return nil
 	})
-	go consumer.Consume(ctx)
+	consumer.Consume(ctx)
 }

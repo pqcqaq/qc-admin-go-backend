@@ -57,7 +57,7 @@ func testChatHandler(message messaging.MessageStruct) error {
 		return fmt.Errorf("failed to convert payload to SocketMessagePayload: %w", err)
 	}
 
-	logging.WithName("Test_Chat_Handler").Info("Received test chat message from user %d: %s, content is: %v", socketMsg.UserId, socketMsg.MessageId, socketMsg.Data)
+	logging.WithName("Test_Chat_Handler").Info("Received test chat message from user %d: %s, content is: %v", socketMsg.UserId, socketMsg.Topic, socketMsg.Data)
 
 	return nil
 }

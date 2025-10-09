@@ -145,24 +145,34 @@ func messageDispatcher(message MessageStruct) error {
 }
 
 // Consume 开始消费消息
-func (c *MessageCunsumer) Consume(ctx context.Context) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-			// 读取新消息
-			if err := c.readNewMessages(ctx, messageDispatcher); err != nil {
-				logger.Error("[%s] 读取新消息错误: %v", c.consumerName, err)
-				time.Sleep(time.Second)
-			}
-
-			// 处理待处理消息（pending messages）
-			if err := c.processPendingMessages(ctx, messageDispatcher); err != nil {
-				logger.Error("[%s] 处理待处理消息错误: %v", c.consumerName, err)
+func (c *MessageCunsumer) Consume(ctx context.Context) {
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				// 读取新消息
+				if err := c.readNewMessages(ctx, messageDispatcher); err != nil {
+					logger.Error("[%s] 读取新消息错误: %v", c.consumerName, err)
+				}
 			}
 		}
-	}
+	}()
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				// 处理待处理消息（pending messages）
+				if err := c.processPendingMessages(ctx, messageDispatcher); err != nil {
+					logger.Error("[%s] 处理待处理消息错误: %v", c.consumerName, err)
+				}
+			}
+		}
+	}()
 }
 
 // readNewMessages 读取新消息
@@ -327,7 +337,8 @@ func (c *MessageCunsumer) processMessage(ctx context.Context, message redis.XMes
 	}
 
 	// 执行业务处理
-	if err := handler(messageStruct); err != nil {
+	err := handler(messageStruct)
+	if err != nil {
 		logger.Error("[%s] 处理消息失败 %s: %v", c.consumerName, message.ID, err)
 		// 不 ACK，让消息进入 pending 状态，等待重试
 		return

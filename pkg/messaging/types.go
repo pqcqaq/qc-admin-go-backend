@@ -14,13 +14,16 @@ const (
 	ChannelOpenRes     MessageType = "channel.open_res"   // 频道创建结果的响应
 )
 
+type TopicPayload interface {
+}
+
 type MessageStruct struct {
 	id        string    `msgpack:"id"` // 这条消息的唯一标识
 	createdAt time.Time `msgpack:"created_at"`
 
-	Type     MessageType `msgpack:"type"`     // 消息类型
-	Payload  any         `msgpack:"payload"`  // 根据消息的类型不同,这里会是不同的Payload结构体
-	Priority int         `msgpack:"priority"` // 优先级，数字越大优先级越高
+	Type     MessageType  `msgpack:"type"`     // 消息类型
+	Payload  TopicPayload `msgpack:"payload"`  // 根据消息的类型不同,这里会是不同的Payload结构体
+	Priority int          `msgpack:"priority"` // 优先级，数字越大优先级越高
 }
 
 type ChannelOpenCheckPayload struct {
@@ -40,20 +43,11 @@ type SocketMessagePayload struct {
 }
 
 type UserMessagePayload struct {
-	MessageId string `msgpack:"message_id" json:"message_id"` // 这条消息的唯一标识, 用于回复
-	UserId    uint64 `msgpack:"user_id" json:"user_id"`       // 消息的用户ID
-	ClientId  uint64 `msgpack:"client_id" json:"client_id"`   // 消息的客户端ID
-	Data      any    `msgpack:"data" json:"data"`             // 具体消息内容
+	Topic    string `msgpack:"message_id" json:"message_id"` // 这条消息的唯一标识, 用于回复
+	UserId   uint64 `msgpack:"user_id" json:"user_id"`       // 消息的用户ID
+	ClientId uint64 `msgpack:"client_id" json:"client_id"`   // 消息的客户端ID
+	Data     any    `msgpack:"data" json:"data"`             // 具体消息内容
 }
-
-type ChannelAction int
-
-const (
-	ChannelActionCreate ChannelAction = iota
-	ChannelActionMsg
-	ChannelActionErr
-	ChannelActionClose
-)
 
 type ChannelMessagePayLoad struct {
 	ID        string        `msgpack:"id" json:"id"` // 频道ID
@@ -64,3 +58,12 @@ type ChannelMessagePayLoad struct {
 	Action    ChannelAction `msgpack:"action,omitempty" json:"action,omitempty"`
 	Data      any           `msgpack:"data" json:"data"`
 }
+
+type ChannelAction int
+
+const (
+	ChannelActionCreate ChannelAction = iota
+	ChannelActionMsg
+	ChannelActionErr
+	ChannelActionClose
+)

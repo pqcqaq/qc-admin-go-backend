@@ -170,10 +170,10 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 		messaging.Publish(s.sendCtx, messaging.MessageStruct{
 			Type: messaging.UserToServerSocket,
 			Payload: messaging.UserMessagePayload{
-				MessageId: msg.Topic,
-				UserId:    client.UserId,
-				Data:      msg.Data,
-				ClientId:  client.ClientId,
+				Topic:    msg.Topic,
+				UserId:   client.UserId,
+				Data:     msg.Data,
+				ClientId: client.ClientId,
 			},
 		})
 	case "channel_start":
@@ -228,14 +228,14 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 
 		if utils.IsEmpty(msg.Topic) {
 			client.SendErrorMsg(ErrInvalidMessageId, fmt.Errorf("topic is required for action 'channel_start'"))
-			return fmt.Errorf("topic is required for action 'channel_start'")
+			return nil
 		}
 
 		// 这里是直接将topic用作id
 		channel := s.GetChannelById(msg.Topic)
 		if channel == nil {
 			client.SendErrorMsg(ErrInvalidMessageId, fmt.Errorf("channel %s not found", msg.Topic))
-			return fmt.Errorf("channel %s not found", msg.Topic)
+			return nil
 		}
 
 		channel.NewMessage(msg.Data).ToServer()
@@ -247,12 +247,12 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 		}
 		if utils.IsEmpty(msg.Topic) {
 			client.SendErrorMsg(ErrInvalidMessageId, fmt.Errorf("topic is required for action 'channel_close'"))
-			return fmt.Errorf("topic is required for action 'channel_close'")
+			return nil
 		}
 		channel := s.GetChannelById(msg.Topic)
 		if channel == nil {
 			client.SendErrorMsg(ErrInvalidMessageId, fmt.Errorf("channel %s not found", msg.Topic))
-			return fmt.Errorf("channel %s not found", msg.Topic)
+			return nil
 		}
 		channel.Close()
 		logger.Info("Client %s closed channel %s", client.id, channel.ID)
