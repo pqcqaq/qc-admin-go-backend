@@ -459,39 +459,26 @@ func (sc *StreamCleaner) performCleanup(ctx context.Context) {
 	logger.Info("Stream清理操作完成")
 }
 
-// cleanupStream 清理Stream
+// cleanupStream 清理Stream - 只清理已ACK的消息，保留pending消息
 func (sc *StreamCleaner) cleanupStream(ctx context.Context, streamName string, maxLen int64, maxAge int64) {
-	client := caching.GetInstanceUnsafe()
+	groupName := configs.GetConfig().Server.Components.Messaging.GroupName
 
-	// 方法1: 使用XTRIM按长度清理
-	if maxLen > 0 {
-		err := client.XTrimMaxLen(ctx, streamName, maxLen).Err()
-		if err != nil && err != redis.Nil {
-			logger.Error("清理Stream %s 按长度失败: %v", streamName, err)
-		} else {
-			logger.Debug("清理Stream %s 按长度成功，保留最新 %d 条消息", streamName, maxLen)
-		}
-	}
+	// 获取所有pending消息的ID，这些消息不能被删除
+	pendingIDs := sc.getAllPendingMessageIDs(ctx, streamName, groupName)
 
-	// 方法2: 使用XTRIM按时间清理
+	// 优先使用时间清理，如果没有配置时间限制则使用长度清理
 	if maxAge > 0 {
+		// 方法1: 按时间清理（优先）
 		cutoffTime := time.Now().Add(-time.Duration(maxAge) * time.Second).UnixMilli()
 		cutoffID := fmt.Sprintf("%d-0", cutoffTime)
-
-		// 获取Redis版本来决定使用哪种方法
-		version, err := GetRedisVersion(ctx)
-		if err == nil && version.IsAtLeast(6, 2, 0) {
-			// Redis 6.2.0+ 支持 MINID
-			err = client.XTrimMinID(ctx, streamName, cutoffID).Err()
-			if err != nil && err != redis.Nil {
-				logger.Error("清理Stream %s 按时间失败: %v", streamName, err)
-			} else {
-				logger.Debug("清理Stream %s 按时间成功，删除时间早于 %s 的消息", streamName, cutoffID)
-			}
-		} else {
-			// 旧版本Redis，手动删除
-			sc.manualCleanupByTime(ctx, streamName, cutoffID)
-		}
+		sc.cleanupByTimeSafely(ctx, streamName, cutoffID, pendingIDs)
+		logger.Debug("使用时间清理策略清理Stream: %s", streamName)
+	} else if maxLen > 0 {
+		// 方法2: 按长度清理（备选）
+		sc.cleanupByLengthSafely(ctx, streamName, maxLen, pendingIDs)
+		logger.Debug("使用长度清理策略清理Stream: %s", streamName)
+	} else {
+		logger.Debug("Stream %s 未配置清理策略", streamName)
 	}
 }
 
@@ -579,5 +566,127 @@ func (sc *StreamCleaner) GetStreamInfo(ctx context.Context) {
 		} else if err != redis.Nil {
 			logger.Info("死信队列 %s: 长度=%d", deadLetterKey, deadInfo.Length)
 		}
+	}
+}
+
+// getAllPendingMessageIDs 获取所有pending消息的ID
+func (sc *StreamCleaner) getAllPendingMessageIDs(ctx context.Context, streamName, groupName string) map[string]bool {
+	client := caching.GetInstanceUnsafe()
+	pendingIDs := make(map[string]bool)
+
+	// 获取所有pending消息
+	pending, err := client.XPendingExt(ctx, &redis.XPendingExtArgs{
+		Stream: streamName,
+		Group:  groupName,
+		Start:  "-",
+		End:    "+",
+		Count:  10000, // 获取大量pending消息
+	}).Result()
+
+	if err != nil {
+		logger.Error("获取pending消息失败 %s: %v", streamName, err)
+		return pendingIDs
+	}
+
+	for _, p := range pending {
+		pendingIDs[p.ID] = true
+	}
+
+	logger.Debug("Stream %s 中有 %d 条pending消息", streamName, len(pendingIDs))
+	return pendingIDs
+}
+
+// cleanupByLengthSafely 安全地按长度清理（保留pending消息）
+func (sc *StreamCleaner) cleanupByLengthSafely(ctx context.Context, streamName string, maxLen int64, pendingIDs map[string]bool) {
+	client := caching.GetInstanceUnsafe()
+
+	// 获取当前Stream长度
+	info, err := client.XInfoStream(ctx, streamName).Result()
+	if err != nil {
+		logger.Error("获取Stream信息失败 %s: %v", streamName, err)
+		return
+	}
+
+	if info.Length <= maxLen {
+		logger.Debug("Stream %s 长度 %d 未超过限制 %d，无需清理", streamName, info.Length, maxLen)
+		return
+	}
+
+	// 需要删除的消息数量
+	toDelete := info.Length - maxLen
+
+	// 从最旧的消息开始获取，但跳过pending消息
+	messages, err := client.XRange(ctx, streamName, "-", "+").Result()
+	if err != nil {
+		logger.Error("获取消息列表失败 %s: %v", streamName, err)
+		return
+	}
+
+	var idsToDelete []string
+	deletedCount := int64(0)
+
+	for _, msg := range messages {
+		// 如果是pending消息，跳过
+		if pendingIDs[msg.ID] {
+			logger.Debug("跳过pending消息: %s", msg.ID)
+			continue
+		}
+
+		idsToDelete = append(idsToDelete, msg.ID)
+		deletedCount++
+
+		// 达到删除数量后停止
+		if deletedCount >= toDelete {
+			break
+		}
+	}
+
+	if len(idsToDelete) > 0 {
+		err = client.XDel(ctx, streamName, idsToDelete...).Err()
+		if err != nil {
+			logger.Error("删除消息失败 %s: %v", streamName, err)
+		} else {
+			logger.Debug("安全删除Stream %s 中 %d 条已ACK消息（按长度限制）", streamName, len(idsToDelete))
+		}
+	} else {
+		logger.Debug("Stream %s 中没有可安全删除的消息（按长度限制）", streamName)
+	}
+}
+
+// cleanupByTimeSafely 安全地按时间清理（保留pending消息）
+func (sc *StreamCleaner) cleanupByTimeSafely(ctx context.Context, streamName, cutoffID string, pendingIDs map[string]bool) {
+	client := caching.GetInstanceUnsafe()
+
+	// 获取过期的消息
+	messages, err := client.XRange(ctx, streamName, "-", cutoffID).Result()
+	if err != nil {
+		logger.Error("获取过期消息列表失败 %s: %v", streamName, err)
+		return
+	}
+
+	if len(messages) == 0 {
+		logger.Debug("Stream %s 中没有过期消息", streamName)
+		return
+	}
+
+	var idsToDelete []string
+	for _, msg := range messages {
+		// 如果是pending消息，跳过
+		if pendingIDs[msg.ID] {
+			logger.Debug("跳过过期但仍pending的消息: %s", msg.ID)
+			continue
+		}
+		idsToDelete = append(idsToDelete, msg.ID)
+	}
+
+	if len(idsToDelete) > 0 {
+		err = client.XDel(ctx, streamName, idsToDelete...).Err()
+		if err != nil {
+			logger.Error("删除过期消息失败 %s: %v", streamName, err)
+		} else {
+			logger.Debug("安全删除Stream %s 中 %d 条过期且已ACK的消息", streamName, len(idsToDelete))
+		}
+	} else {
+		logger.Debug("Stream %s 中没有可安全删除的过期消息", streamName)
 	}
 }

@@ -1,0 +1,19 @@
+server:
+  components:
+    messaging:
+      enabled: true
+      group_name: "qc_admin_default_group"
+      stream_key: "qc_admin_stream"
+      max_retries: 3
+      read_timeout: 2000    # 2秒
+      read_count: 10
+      idle_timeout: 30000   # 30秒
+      # Stream 清理配置
+      cleanup:
+        enabled: true
+        interval: 600        # 清理间隔（秒），10分钟
+        # 推荐：主要使用时间清理
+        max_age: 60       # 消息最大保留时间（秒），60s
+        # 当max_age = 0 时，使用长度清理
+        max_len: 10000        # Stream最大长度
+        dead_letter_max_age: 2592000  # 死信队列最大保留时间（秒），30天

@@ -34,7 +34,7 @@ func setMessagingConfigDefaults() {
 	// 清理配置默认值
 	viper.SetDefault("server.components.messaging.cleanup.enabled", true)
 	viper.SetDefault("server.components.messaging.cleanup.interval", 3600)               // 1小时
-	viper.SetDefault("server.components.messaging.cleanup.max_len", 10000)               // 最多保留10000条消息
-	viper.SetDefault("server.components.messaging.cleanup.max_age", 604800)              // 7天
+	viper.SetDefault("server.components.messaging.cleanup.max_len", 0)                   // 0表示不使用长度清理
+	viper.SetDefault("server.components.messaging.cleanup.max_age", 0)                   // 0表示不使用时间清理
 	viper.SetDefault("server.components.messaging.cleanup.dead_letter_max_age", 2592000) // 30天
 }
