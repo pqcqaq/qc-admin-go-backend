@@ -39,7 +39,8 @@ type ChannelOpenCheckPayload struct {
 type SocketMessagePayload struct {
 	UserId *uint64 `msgpack:"user_id" json:"user_id"` // 接收消息的用户ID, 如果为空则表示发送给所有用户
 	Topic  string  `msgpack:"topic" json:"topic"`     // 订阅的主题
-	Data   any     `msgpack:"data" json:"data"`       // 具体消息内容
+	// 注意！！ 因为分为了两个服务，在传递之后json标签会丢失，若需要传输struct，请先转换成map格式
+	Data any `msgpack:"data" json:"data"` // 具体消息内容
 }
 
 type UserMessagePayload struct {

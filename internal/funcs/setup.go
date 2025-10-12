@@ -10,7 +10,7 @@ func Setup() {
 
 	monitorConfig := config.Server.Components.Monitor
 	if monitorConfig.Enabled {
-		interval := time.Duration(monitorConfig.Interval)
+		interval := time.Duration(monitorConfig.Interval) * time.Second
 		ent := monitorConfig.RetentionDays
 		// 启动系统监控
 		InitSystemMonitor(interval, ent)

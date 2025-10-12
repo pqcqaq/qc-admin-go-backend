@@ -1,0 +1,6 @@
+server:
+  components:
+    monitor:
+      enabled: true
+      interval: 10        # 监控间隔（秒）
+      retention_days: 31   # 监控数据保留天数

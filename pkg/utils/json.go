@@ -113,6 +113,23 @@ func MapToStruct(m map[string]interface{}, out interface{}) error {
 	return nil
 }
 
+// StructToMap 将结构体转换为 map[string]interface{}
+func StructToMap(in interface{}) (map[string]interface{}, error) {
+	// 将结构体序列化为 JSON
+	data, err := json.Marshal(in)
+	if err != nil {
+		return nil, fmt.Errorf("marshal struct error: %w", err)
+	}
+
+	// 将 JSON 反序列化为 map
+	var result map[string]interface{}
+	if err := json.Unmarshal(data, &result); err != nil {
+		return nil, fmt.Errorf("unmarshal to map error: %w", err)
+	}
+
+	return result, nil
+}
+
 func MapToString(m map[string]interface{}) string {
 	data, err := json.Marshal(m)
 	if err != nil {

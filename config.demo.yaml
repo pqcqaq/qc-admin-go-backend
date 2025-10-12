@@ -12,6 +12,7 @@ config:
     - file:configs/${env.name}/s3.yaml
     - file:configs/${env.name}/sms.yaml
     - file:configs/${env.name}/messaging.yaml
+    - file:configs/${env.name}/monitor.yaml
 
 # =======================
 # SQLite 配置

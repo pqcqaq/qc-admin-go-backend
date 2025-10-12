@@ -11,6 +11,8 @@ import (
 	"go-backend/database/ent/systemmonitor"
 	"go-backend/pkg/database"
 	"go-backend/pkg/logging"
+	"go-backend/pkg/messaging"
+	"go-backend/pkg/utils"
 	"go-backend/shared/models"
 
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -114,20 +116,36 @@ func InitSystemMonitor(interval time.Duration, retentionDays int) error {
 	// 启动监控协程
 	go func() {
 		// 立即执行一次
-		if err := collectSystemMetrics(); err != nil {
+		if _, err := collectSystemMetrics(); err != nil {
 			logging.Error("Failed to collect system metrics: %v\n", err)
 		}
 
 		for {
 			select {
 			case <-monitorTicker.C:
-				if err := collectSystemMetrics(); err != nil {
+				record, err := collectSystemMetrics()
+				if err != nil {
 					logging.Error("Failed to collect system metrics: %v\n", err)
 				}
 				// 清理过期数据
 				if err := cleanupOldRecords(retentionDays); err != nil {
 					logging.Error("Failed to cleanup old records: %v\n", err)
 				}
+
+				// 通过ws发送到前端
+				data, err := utils.StructToMap(convertToResponse(record))
+				if err != nil {
+					logging.Error("Failed to convert system monitor record to map: %v\n", err)
+					continue
+				}
+				messaging.Publish(context.Background(), messaging.MessageStruct{
+					Type: messaging.ServerToUserSocket,
+					Payload: messaging.SocketMessagePayload{
+						UserId: nil,
+						Topic:  "system/monitor/update",
+						Data:   data,
+					},
+				})
 			case <-stopChan:
 				return
 			}
@@ -150,13 +168,13 @@ func StopSystemMonitor() {
 }
 
 // collectSystemMetrics 收集系统指标
-func collectSystemMetrics() error {
+func collectSystemMetrics() (*ent.SystemMonitor, error) {
 	ctx := context.Background()
 
 	// 收集 CPU 信息
 	cpuPercent, err := cpu.Percent(time.Second, false)
 	if err != nil {
-		return fmt.Errorf("failed to get CPU usage: %w", err)
+		return nil, fmt.Errorf("failed to get CPU usage: %w", err)
 	}
 	cpuUsage := 0.0
 	if len(cpuPercent) > 0 {
@@ -165,19 +183,19 @@ func collectSystemMetrics() error {
 
 	cpuCores, err := cpu.Counts(true)
 	if err != nil {
-		return fmt.Errorf("failed to get CPU cores: %w", err)
+		return nil, fmt.Errorf("failed to get CPU cores: %w", err)
 	}
 
 	// 收集内存信息
 	memInfo, err := mem.VirtualMemory()
 	if err != nil {
-		return fmt.Errorf("failed to get memory info: %w", err)
+		return nil, fmt.Errorf("failed to get memory info: %w", err)
 	}
 
 	// 收集磁盘信息
 	diskInfo, err := disk.Usage("/")
 	if err != nil {
-		return fmt.Errorf("failed to get disk info: %w", err)
+		return nil, fmt.Errorf("failed to get disk info: %w", err)
 	}
 
 	// 收集网络信息
@@ -192,7 +210,7 @@ func collectSystemMetrics() error {
 	// 收集系统信息
 	hostInfo, err := host.Info()
 	if err != nil {
-		return fmt.Errorf("failed to get host info: %w", err)
+		return nil, fmt.Errorf("failed to get host info: %w", err)
 	}
 
 	// 收集负载信息 (仅Unix系统)
@@ -208,7 +226,7 @@ func collectSystemMetrics() error {
 	runtime.ReadMemStats(&memStats)
 
 	// 创建监控记录
-	_, err = database.Client.SystemMonitor.Create().
+	record, err := database.Client.SystemMonitor.Create().
 		SetCPUUsagePercent(cpuUsage).
 		SetCPUCores(cpuCores).
 		SetMemoryTotal(memInfo.Total).
@@ -237,10 +255,10 @@ func collectSystemMetrics() error {
 		Save(ctx)
 
 	if err != nil {
-		return fmt.Errorf("failed to save system monitor record: %w", err)
+		return nil, fmt.Errorf("failed to save system monitor record: %w", err)
 	}
 
-	return nil
+	return record, nil
 }
 
 // cleanupOldRecords 清理过期的监控记录
