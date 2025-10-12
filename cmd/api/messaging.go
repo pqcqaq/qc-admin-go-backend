@@ -12,6 +12,7 @@ func setupHandlers(ctx context.Context) {
 	consumer := messaging.NewMessageConsumer(
 		"qc-admin_api_server",
 		messaging.ChannelOpenCheck,
+		messaging.SubscribeCheck,
 	)
 	consumer.CreateGroup(ctx)
 
@@ -43,7 +44,7 @@ func setupHandlers(ctx context.Context) {
 
 		logging.Info("Received channel open check for channel ID: %s, topic: %s, userID: %d, sessionId: %s, clientId: %d", socketMsg.ChannelID, socketMsg.Topic, socketMsg.UserID, socketMsg.SessionId, socketMsg.ClientId)
 		// 这里发送创建请求, 若五秒钟之后还没应答则创建失败
-		messaging.Publish(ctx, messaging.MessageStruct{
+		_, err = messaging.Publish(ctx, messaging.MessageStruct{
 			Type: messaging.ChannelOpenRes,
 			Payload: messaging.ChannelOpenCheckPayload{
 				ChannelID: socketMsg.ChannelID,
@@ -56,7 +57,55 @@ func setupHandlers(ctx context.Context) {
 			},
 		})
 
+		if err != nil {
+			logging.Error("Failed to publish channel open response: %v", err)
+			return fmt.Errorf("failed to publish channel open response: %w", err)
+		}
+
 		return nil
 	})
+
+	messaging.RegisterHandler(messaging.SubscribeCheck, func(message messaging.MessageStruct) error {
+		socketMsgMap, ok := message.Payload.(map[string]interface{})
+		if !ok {
+			logging.Error("Invalid message payload type")
+			return fmt.Errorf("invalid message payload type")
+		}
+
+		var socketMsg messaging.SubscribeCheckPayload
+		err := utils.MapToStruct(socketMsgMap, &socketMsg)
+		if err != nil {
+			logging.Error("Failed to convert payload to SocketMessagePayload: %v", err)
+			return fmt.Errorf("failed to convert payload to SocketMessagePayload: %w", err)
+		}
+
+		// 若已经超时五秒钟则不管了
+		if utils.Now().Unix()-socketMsg.Timestamp > 5 {
+			logging.Warn("Channel open check message timed out for subscribe to topic: %s", socketMsg.Topic)
+			return nil
+		}
+
+		logging.Info("Received channel open check for subscribe to topic: %s, userID: %d, sessionId: %s, clientId: %d", socketMsg.Topic, socketMsg.UserID, socketMsg.SessionId, socketMsg.ClientId)
+		// 这里发送创建请求, 若五秒钟之后还没应答则创建失败
+		_, err = messaging.Publish(ctx, messaging.MessageStruct{
+			Type: messaging.SubscribeRes,
+			Payload: messaging.SubscribeCheckPayload{
+				Topic:     socketMsg.Topic,
+				UserID:    socketMsg.UserID,
+				SessionId: socketMsg.SessionId,
+				ClientId:  socketMsg.ClientId,
+				Allowed:   true, // 初始为不允许, 需要后台服务确认
+				Timestamp: utils.Now().Unix(),
+			},
+		})
+
+		if err != nil {
+			logging.Error("Failed to publish subscribe response: %v", err)
+			return fmt.Errorf("failed to publish subscribe response: %w", err)
+		}
+
+		return nil
+	})
+
 	consumer.Consume(ctx)
 }

@@ -199,3 +199,23 @@ func IsValidUTF8(data []byte) bool {
 	}
 	return utf8.Valid(data)
 }
+
+// StartsWithAlphanumeric 判断字符串是否以数字或字母开头
+func StartsWithAlphanumeric(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+
+	firstChar := rune(s[0])
+	return unicode.IsLetter(firstChar) || unicode.IsDigit(firstChar)
+}
+
+// IsEndWith 判断字符串是否以指定的任意一个后缀结尾
+func IsEndWith(str string, ext ...string) bool {
+	for _, suffix := range ext {
+		if strings.HasSuffix(str, suffix) {
+			return true
+		}
+	}
+	return false
+}

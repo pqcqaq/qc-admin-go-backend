@@ -12,6 +12,8 @@ const (
 	ServerToWorker     MessageType = "worker"             // 发送给后台任务处理器的消息
 	ChannelOpenCheck   MessageType = "channel.open_check" // 请求创建频道的消息
 	ChannelOpenRes     MessageType = "channel.open_res"   // 频道创建结果的响应
+	SubscribeCheck     MessageType = "subscribe.check"    // 订阅频道的权限检查
+	SubscribeRes       MessageType = "subscribe.res"      // 订阅频道的权限检查结果
 )
 
 type TopicPayload interface {
@@ -33,6 +35,15 @@ type ChannelOpenCheckPayload struct {
 	SessionId string `msgpack:"session_id" json:"session_id"` // 频道所属会话ID
 	ClientId  uint64 `msgpack:"client_id" json:"client_id"`   // 频道所属客户端ID
 	Allowed   bool   `msgpack:"allowed" json:"allowed"`       // 是否允许创建频道
+	Timestamp int64  `msgpack:"timestamp" json:"timestamp"`   // 消息发送的时间戳, 用于判断是否超时
+}
+
+type SubscribeCheckPayload struct {
+	Topic     string `msgpack:"topic" json:"topic"`           // 频道主题
+	UserID    uint64 `msgpack:"user_id" json:"user_id"`       // 频道所属用户ID
+	SessionId string `msgpack:"session_id" json:"session_id"` // 频道所属会话ID
+	ClientId  uint64 `msgpack:"client_id" json:"client_id"`   // 频道所属客户端ID
+	Allowed   bool   `msgpack:"allowed" json:"allowed"`       // 是否允许订阅频道
 	Timestamp int64  `msgpack:"timestamp" json:"timestamp"`   // 消息发送的时间戳, 用于判断是否超时
 }
 

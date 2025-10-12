@@ -15,6 +15,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var internalExts = []string{".err", ".res", ".cre", ".clo"}
+
 func (s *WsServer) GetChannelById(channelId string) *channel.Channel {
 	s.cIMu.Lock()
 	defer s.cIMu.Unlock()
@@ -36,6 +38,7 @@ func NewWsServer(options WsServerOptions) *WsServer {
 		channelFactory:      options.ChannelFactory,
 	}
 	wsServer.startChannelOpenListener()
+	wsServer.startSubscribeListener()
 	return wsServer
 }
 
@@ -146,13 +149,54 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 		// 响应心跳
 		return client.Pong()
 	case "subscribe":
-		s.cSMu.Lock()
-		if s.clientSubscriptions[client] == nil {
-			s.clientSubscriptions[client] = make(map[string]bool)
+		// 若是以字母或者数字开头的，则是内部订阅，可以直接订阅
+		if utils.IsEmpty(msg.Topic) {
+			client.SendErrorMsg(ErrInvalidMessageId, fmt.Errorf("topic is required for action 'subscribe'"))
+			return fmt.Errorf("topic is required for action 'subscribe'")
 		}
-		s.clientSubscriptions[client][msg.Topic] = true
-		s.cSMu.Unlock()
-		logger.Info("Client %s subscribed to topic %s", client.id, msg.Topic)
+
+		logger.Info("Client %s requests to subscribe to internal topic %s", client.id, msg.Topic)
+		// 内部的频道订阅请求, 直接订阅
+		// 规则: 以字母或者数字开头的,或者以.err/.res/.cre/.clo结尾的都是内部频道
+		// 其他的都需要后台服务进行权限验证
+		// 这样设计的目的是为了让一些公共频道可以直接订阅,而不需要每次都经过后台服务验证,提高效率
+		// 例如用户的个人消息频道,系统公告频道等
+		// 当然,如果有安全性要求的频道,还是需要经过后台服务验证的
+		// 例如用户的订单消息频道,支付消息频道等
+		// 这些频道一般都是以用户ID开头的,这样就可以避免普通用户订阅到其他用户的频道
+		// 这样就可以保证只有用户12345自己可以订阅到这些频道,而其他用户无法订阅到
+		if !utils.StartsWithAlphanumeric(msg.Topic) || utils.IsEndWith(msg.Topic, internalExts...) {
+			s.subsTopic(client, msg.Topic)
+			return nil
+		}
+
+		// 发送订阅请求到后台服务进行权限验证
+		_, err := messaging.Publish(s.sendCtx, messaging.MessageStruct{
+			Type: messaging.SubscribeCheck,
+			Payload: messaging.SubscribeCheckPayload{
+				Topic:     msg.Topic,
+				UserID:    client.UserId,
+				SessionId: client.id,
+				ClientId:  client.ClientId,
+				Allowed:   false, // 初始为不允许, 需要后台服务确认
+				Timestamp: utils.Now().Unix(),
+			},
+		})
+
+		if err != nil {
+			client.SendSubsFailed(msg.Topic, fmt.Errorf("failed to publish subscribe check: %w", err))
+			return fmt.Errorf("failed to publish subscribe check: %w", err)
+		}
+
+		// 五秒钟之后还没创建成功则表示失败
+		time.AfterFunc(5*time.Second, func() {
+			s.cSMu.Lock()
+			if s.clientSubscriptions[client] == nil || !s.clientSubscriptions[client][msg.Topic] {
+				client.SendSubsFailed(msg.Topic, fmt.Errorf("subscribe to topic %s timed out", msg.Topic))
+			}
+			s.cSMu.Unlock()
+		})
+
 	case "unsubscribe":
 		s.cSMu.Lock()
 		if s.clientSubscriptions[client] != nil {
@@ -167,7 +211,7 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 			return fmt.Errorf("topic is required for action 'msg'")
 		}
 
-		messaging.Publish(s.sendCtx, messaging.MessageStruct{
+		_, err := messaging.Publish(s.sendCtx, messaging.MessageStruct{
 			Type: messaging.UserToServerSocket,
 			Payload: messaging.UserMessagePayload{
 				Topic:    msg.Topic,
@@ -176,6 +220,12 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 				ClientId: client.ClientId,
 			},
 		})
+
+		if err != nil {
+			client.SendErrorMsg(ErrInternalServer, fmt.Errorf("failed to publish user message: %w", err))
+			return fmt.Errorf("failed to publish user message: %w", err)
+		}
+
 	case "channel_start":
 		if s.channelFactory == nil {
 			client.SendChannelCreatedFailed(msg.Topic, ErrInternalServer, fmt.Errorf("channel factory is not set"))
@@ -200,7 +250,7 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 
 		// 这里发送创建请求, 若五秒钟之后还没应答则创建失败
 		logger.Info("Client %s requests to create channel %s for topic %s", client.id, channelId, msg.Topic)
-		messaging.Publish(s.sendCtx, messaging.MessageStruct{
+		_, err := messaging.Publish(s.sendCtx, messaging.MessageStruct{
 			Type: messaging.ChannelOpenCheck,
 			Payload: messaging.ChannelOpenCheckPayload{
 				ChannelID: channelId,
@@ -212,6 +262,11 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 				Timestamp: utils.Now().Unix(),
 			},
 		})
+
+		if err != nil {
+			client.SendChannelCreatedFailed(msg.Topic, ErrInternalServer, fmt.Errorf("failed to publish channel open check: %w", err))
+			return fmt.Errorf("failed to publish channel open check: %w", err)
+		}
 
 		time.AfterFunc(5*time.Second, func() {
 			// 五秒钟之后还没创建成功则表示失败
@@ -260,6 +315,17 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 		logger.Warn("Unknown action from client %s: %s", client.id, msg.Action)
 	}
 	return nil
+}
+
+func (s *WsServer) subsTopic(client *ClientConnWrapper, topic string) {
+	s.cSMu.Lock()
+	if s.clientSubscriptions[client] == nil {
+		s.clientSubscriptions[client] = make(map[string]bool)
+	}
+	s.clientSubscriptions[client][topic] = true
+	s.cSMu.Unlock()
+	logger.Info("Client %s subscribed to topic %s", client.id, topic)
+	client.SendSubsSuccess(topic)
 }
 
 func (s *WsServer) GetClientFromSessionId(sessionId string) *ClientConnWrapper {

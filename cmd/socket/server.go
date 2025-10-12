@@ -91,6 +91,7 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 			messaging.ChannelToUser,
 			messaging.ChannelToServer,
 			messaging.ChannelOpenRes,
+			messaging.SubscribeRes,
 		)
 		consumer.CreateGroup(ctx)
 

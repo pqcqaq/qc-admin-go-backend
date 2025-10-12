@@ -176,6 +176,31 @@ func (c *ClientConnWrapper) SendChannelMsg(id string, msg channel.ChannelMsg) {
 	c.SendMessage(response)
 }
 
+func (c *ClientConnWrapper) SendSubsSuccess(topic string) {
+	response := map[string]interface{}{
+		"topic": fmt.Sprintf("%s.res", topic),
+		"data": map[string]interface{}{
+			"success": true,
+		},
+		"timestamp": utils.Now().Unix(),
+	}
+	c.SendMessage(response)
+}
+
+func (c *ClientConnWrapper) SendSubsFailed(topic string, err error) {
+	response := map[string]interface{}{
+		"topic": fmt.Sprintf("%s.res", topic),
+		"data": map[string]interface{}{
+			"error": map[string]interface{}{
+				"code":   400,
+				"detail": err.Error(),
+			},
+		},
+		"timestamp": utils.Now().Unix(),
+	}
+	c.SendMessage(response)
+}
+
 // AddChannelClientMapping
 func (s *WsServer) AddChannelClientMapping(channelId string, client *ClientConnWrapper) {
 	s.cCMu.Lock()
@@ -276,4 +301,40 @@ func (s *WsServer) createNewChannel(topic string, channelId string, sessionId st
 	client.AddChannel(channel)
 	s.AddChannelClientMapping(channel.ID, client)
 	client.SendChannelCreatedSuccess(topic, channel)
+}
+
+func (s *WsServer) startSubscribeListener() {
+	messaging.RegisterHandler(messaging.SubscribeRes, func(message messaging.MessageStruct) error {
+		socketMsgMap, ok := message.Payload.(map[string]interface{})
+		if !ok {
+			logging.Error("Invalid message payload type")
+			return fmt.Errorf("invalid message payload type")
+		}
+
+		var socketMsg messaging.SubscribeCheckPayload
+		err := utils.MapToStruct(socketMsgMap, &socketMsg)
+		if err != nil {
+			logging.Error("Failed to convert payload to SocketMessagePayload: %v", err)
+			return fmt.Errorf("failed to convert payload to SocketMessagePayload: %w", err)
+		}
+
+		// 若已经超时五秒钟则不管了
+		if utils.Now().Unix()-socketMsg.Timestamp > 5 {
+			logging.Warn("Channel open check message timed out for user Subscribe topic: %s", socketMsg.Topic)
+			return nil
+		}
+
+		session := s.GetClientFromSessionId(socketMsg.SessionId)
+
+		if !socketMsg.Allowed {
+			logger.Warn("Subscription to topic %s denied for userID: %d, sessionId: %s, clientId: %d", socketMsg.Topic, socketMsg.UserID, socketMsg.SessionId, socketMsg.ClientId)
+			session.SendSubsFailed(socketMsg.Topic, fmt.Errorf("subscription denied"))
+			return nil
+		}
+
+		logger.Info("Subscription to topic %s approved for userID: %d, sessionId: %s, clientId: %d", socketMsg.Topic, socketMsg.UserID, socketMsg.SessionId, socketMsg.ClientId)
+		s.subsTopic(session, socketMsg.Topic)
+
+		return nil
+	})
 }
