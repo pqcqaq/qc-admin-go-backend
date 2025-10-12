@@ -22,6 +22,7 @@ import (
 	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scan"
 	"go-backend/database/ent/scope"
+	"go-backend/database/ent/systemmonitor"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
@@ -61,6 +62,8 @@ type Client struct {
 	Scan *ScanClient
 	// Scope is the client for interacting with the Scope builders.
 	Scope *ScopeClient
+	// SystemMonitor is the client for interacting with the SystemMonitor builders.
+	SystemMonitor *SystemMonitorClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserRole is the client for interacting with the UserRole builders.
@@ -89,6 +92,7 @@ func (c *Client) init() {
 	c.RolePermission = NewRolePermissionClient(c.config)
 	c.Scan = NewScanClient(c.config)
 	c.Scope = NewScopeClient(c.config)
+	c.SystemMonitor = NewSystemMonitorClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.UserRole = NewUserRoleClient(c.config)
 	c.VerifyCode = NewVerifyCodeClient(c.config)
@@ -195,6 +199,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		RolePermission: NewRolePermissionClient(cfg),
 		Scan:           NewScanClient(cfg),
 		Scope:          NewScopeClient(cfg),
+		SystemMonitor:  NewSystemMonitorClient(cfg),
 		User:           NewUserClient(cfg),
 		UserRole:       NewUserRoleClient(cfg),
 		VerifyCode:     NewVerifyCodeClient(cfg),
@@ -228,6 +233,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		RolePermission: NewRolePermissionClient(cfg),
 		Scan:           NewScanClient(cfg),
 		Scope:          NewScopeClient(cfg),
+		SystemMonitor:  NewSystemMonitorClient(cfg),
 		User:           NewUserClient(cfg),
 		UserRole:       NewUserRoleClient(cfg),
 		VerifyCode:     NewVerifyCodeClient(cfg),
@@ -261,8 +267,8 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.APIAuth, c.Attachment, c.ClientDevice, c.Credential, c.Logging, c.LoginRecord,
-		c.Permission, c.Role, c.RolePermission, c.Scan, c.Scope, c.User, c.UserRole,
-		c.VerifyCode,
+		c.Permission, c.Role, c.RolePermission, c.Scan, c.Scope, c.SystemMonitor,
+		c.User, c.UserRole, c.VerifyCode,
 	} {
 		n.Use(hooks...)
 	}
@@ -273,8 +279,8 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.APIAuth, c.Attachment, c.ClientDevice, c.Credential, c.Logging, c.LoginRecord,
-		c.Permission, c.Role, c.RolePermission, c.Scan, c.Scope, c.User, c.UserRole,
-		c.VerifyCode,
+		c.Permission, c.Role, c.RolePermission, c.Scan, c.Scope, c.SystemMonitor,
+		c.User, c.UserRole, c.VerifyCode,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -305,6 +311,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Scan.mutate(ctx, m)
 	case *ScopeMutation:
 		return c.Scope.mutate(ctx, m)
+	case *SystemMonitorMutation:
+		return c.SystemMonitor.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	case *UserRoleMutation:
@@ -2088,6 +2096,140 @@ func (c *ScopeClient) mutate(ctx context.Context, m *ScopeMutation) (Value, erro
 	}
 }
 
+// SystemMonitorClient is a client for the SystemMonitor schema.
+type SystemMonitorClient struct {
+	config
+}
+
+// NewSystemMonitorClient returns a client for the SystemMonitor from the given config.
+func NewSystemMonitorClient(c config) *SystemMonitorClient {
+	return &SystemMonitorClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `systemmonitor.Hooks(f(g(h())))`.
+func (c *SystemMonitorClient) Use(hooks ...Hook) {
+	c.hooks.SystemMonitor = append(c.hooks.SystemMonitor, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `systemmonitor.Intercept(f(g(h())))`.
+func (c *SystemMonitorClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemMonitor = append(c.inters.SystemMonitor, interceptors...)
+}
+
+// Create returns a builder for creating a SystemMonitor entity.
+func (c *SystemMonitorClient) Create() *SystemMonitorCreate {
+	mutation := newSystemMonitorMutation(c.config, OpCreate)
+	return &SystemMonitorCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SystemMonitor entities.
+func (c *SystemMonitorClient) CreateBulk(builders ...*SystemMonitorCreate) *SystemMonitorCreateBulk {
+	return &SystemMonitorCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SystemMonitorClient) MapCreateBulk(slice any, setFunc func(*SystemMonitorCreate, int)) *SystemMonitorCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SystemMonitorCreateBulk{err: fmt.Errorf("calling to SystemMonitorClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SystemMonitorCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SystemMonitorCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SystemMonitor.
+func (c *SystemMonitorClient) Update() *SystemMonitorUpdate {
+	mutation := newSystemMonitorMutation(c.config, OpUpdate)
+	return &SystemMonitorUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SystemMonitorClient) UpdateOne(_m *SystemMonitor) *SystemMonitorUpdateOne {
+	mutation := newSystemMonitorMutation(c.config, OpUpdateOne, withSystemMonitor(_m))
+	return &SystemMonitorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SystemMonitorClient) UpdateOneID(id uint64) *SystemMonitorUpdateOne {
+	mutation := newSystemMonitorMutation(c.config, OpUpdateOne, withSystemMonitorID(id))
+	return &SystemMonitorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SystemMonitor.
+func (c *SystemMonitorClient) Delete() *SystemMonitorDelete {
+	mutation := newSystemMonitorMutation(c.config, OpDelete)
+	return &SystemMonitorDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SystemMonitorClient) DeleteOne(_m *SystemMonitor) *SystemMonitorDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SystemMonitorClient) DeleteOneID(id uint64) *SystemMonitorDeleteOne {
+	builder := c.Delete().Where(systemmonitor.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SystemMonitorDeleteOne{builder}
+}
+
+// Query returns a query builder for SystemMonitor.
+func (c *SystemMonitorClient) Query() *SystemMonitorQuery {
+	return &SystemMonitorQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSystemMonitor},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SystemMonitor entity by its id.
+func (c *SystemMonitorClient) Get(ctx context.Context, id uint64) (*SystemMonitor, error) {
+	return c.Query().Where(systemmonitor.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SystemMonitorClient) GetX(ctx context.Context, id uint64) *SystemMonitor {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *SystemMonitorClient) Hooks() []Hook {
+	hooks := c.hooks.SystemMonitor
+	return append(hooks[:len(hooks):len(hooks)], systemmonitor.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *SystemMonitorClient) Interceptors() []Interceptor {
+	return c.inters.SystemMonitor
+}
+
+func (c *SystemMonitorClient) mutate(ctx context.Context, m *SystemMonitorMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SystemMonitorCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SystemMonitorUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SystemMonitorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SystemMonitorDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SystemMonitor mutation op: %q", m.Op())
+	}
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -2593,11 +2735,13 @@ func (c *VerifyCodeClient) mutate(ctx context.Context, m *VerifyCodeMutation) (V
 type (
 	hooks struct {
 		APIAuth, Attachment, ClientDevice, Credential, Logging, LoginRecord, Permission,
-		Role, RolePermission, Scan, Scope, User, UserRole, VerifyCode []ent.Hook
+		Role, RolePermission, Scan, Scope, SystemMonitor, User, UserRole,
+		VerifyCode []ent.Hook
 	}
 	inters struct {
 		APIAuth, Attachment, ClientDevice, Credential, Logging, LoginRecord, Permission,
-		Role, RolePermission, Scan, Scope, User, UserRole, VerifyCode []ent.Interceptor
+		Role, RolePermission, Scan, Scope, SystemMonitor, User, UserRole,
+		VerifyCode []ent.Interceptor
 	}
 )
 

@@ -14,6 +14,7 @@ import (
 	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scan"
 	"go-backend/database/ent/scope"
+	"go-backend/database/ent/systemmonitor"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
@@ -570,6 +571,110 @@ func init() {
 	scopeDescDisabled := scopeFields[10].Descriptor()
 	// scope.DefaultDisabled holds the default value on creation for the disabled field.
 	scope.DefaultDisabled = scopeDescDisabled.Default.(bool)
+	systemmonitorMixin := schema.SystemMonitor{}.Mixin()
+	systemmonitorMixinHooks0 := systemmonitorMixin[0].Hooks()
+	systemmonitor.Hooks[0] = systemmonitorMixinHooks0[0]
+	systemmonitor.Hooks[1] = systemmonitorMixinHooks0[1]
+	systemmonitorMixinFields0 := systemmonitorMixin[0].Fields()
+	_ = systemmonitorMixinFields0
+	systemmonitorFields := schema.SystemMonitor{}.Fields()
+	_ = systemmonitorFields
+	// systemmonitorDescCreateTime is the schema descriptor for create_time field.
+	systemmonitorDescCreateTime := systemmonitorMixinFields0[1].Descriptor()
+	// systemmonitor.DefaultCreateTime holds the default value on creation for the create_time field.
+	systemmonitor.DefaultCreateTime = systemmonitorDescCreateTime.Default.(func() time.Time)
+	// systemmonitorDescUpdateTime is the schema descriptor for update_time field.
+	systemmonitorDescUpdateTime := systemmonitorMixinFields0[3].Descriptor()
+	// systemmonitor.DefaultUpdateTime holds the default value on creation for the update_time field.
+	systemmonitor.DefaultUpdateTime = systemmonitorDescUpdateTime.Default.(func() time.Time)
+	// systemmonitor.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	systemmonitor.UpdateDefaultUpdateTime = systemmonitorDescUpdateTime.UpdateDefault.(func() time.Time)
+	// systemmonitorDescCPUUsagePercent is the schema descriptor for cpu_usage_percent field.
+	systemmonitorDescCPUUsagePercent := systemmonitorFields[0].Descriptor()
+	// systemmonitor.CPUUsagePercentValidator is a validator for the "cpu_usage_percent" field. It is called by the builders before save.
+	systemmonitor.CPUUsagePercentValidator = func() func(float64) error {
+		validators := systemmonitorDescCPUUsagePercent.Validators
+		fns := [...]func(float64) error{
+			validators[0].(func(float64) error),
+			validators[1].(func(float64) error),
+		}
+		return func(cpu_usage_percent float64) error {
+			for _, fn := range fns {
+				if err := fn(cpu_usage_percent); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// systemmonitorDescCPUCores is the schema descriptor for cpu_cores field.
+	systemmonitorDescCPUCores := systemmonitorFields[1].Descriptor()
+	// systemmonitor.CPUCoresValidator is a validator for the "cpu_cores" field. It is called by the builders before save.
+	systemmonitor.CPUCoresValidator = systemmonitorDescCPUCores.Validators[0].(func(int) error)
+	// systemmonitorDescMemoryUsagePercent is the schema descriptor for memory_usage_percent field.
+	systemmonitorDescMemoryUsagePercent := systemmonitorFields[5].Descriptor()
+	// systemmonitor.MemoryUsagePercentValidator is a validator for the "memory_usage_percent" field. It is called by the builders before save.
+	systemmonitor.MemoryUsagePercentValidator = func() func(float64) error {
+		validators := systemmonitorDescMemoryUsagePercent.Validators
+		fns := [...]func(float64) error{
+			validators[0].(func(float64) error),
+			validators[1].(func(float64) error),
+		}
+		return func(memory_usage_percent float64) error {
+			for _, fn := range fns {
+				if err := fn(memory_usage_percent); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// systemmonitorDescDiskUsagePercent is the schema descriptor for disk_usage_percent field.
+	systemmonitorDescDiskUsagePercent := systemmonitorFields[9].Descriptor()
+	// systemmonitor.DiskUsagePercentValidator is a validator for the "disk_usage_percent" field. It is called by the builders before save.
+	systemmonitor.DiskUsagePercentValidator = func() func(float64) error {
+		validators := systemmonitorDescDiskUsagePercent.Validators
+		fns := [...]func(float64) error{
+			validators[0].(func(float64) error),
+			validators[1].(func(float64) error),
+		}
+		return func(disk_usage_percent float64) error {
+			for _, fn := range fns {
+				if err := fn(disk_usage_percent); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// systemmonitorDescNetworkBytesSent is the schema descriptor for network_bytes_sent field.
+	systemmonitorDescNetworkBytesSent := systemmonitorFields[10].Descriptor()
+	// systemmonitor.DefaultNetworkBytesSent holds the default value on creation for the network_bytes_sent field.
+	systemmonitor.DefaultNetworkBytesSent = systemmonitorDescNetworkBytesSent.Default.(uint64)
+	// systemmonitorDescNetworkBytesRecv is the schema descriptor for network_bytes_recv field.
+	systemmonitorDescNetworkBytesRecv := systemmonitorFields[11].Descriptor()
+	// systemmonitor.DefaultNetworkBytesRecv holds the default value on creation for the network_bytes_recv field.
+	systemmonitor.DefaultNetworkBytesRecv = systemmonitorDescNetworkBytesRecv.Default.(uint64)
+	// systemmonitorDescOs is the schema descriptor for os field.
+	systemmonitorDescOs := systemmonitorFields[12].Descriptor()
+	// systemmonitor.OsValidator is a validator for the "os" field. It is called by the builders before save.
+	systemmonitor.OsValidator = systemmonitorDescOs.Validators[0].(func(string) error)
+	// systemmonitorDescPlatform is the schema descriptor for platform field.
+	systemmonitorDescPlatform := systemmonitorFields[13].Descriptor()
+	// systemmonitor.PlatformValidator is a validator for the "platform" field. It is called by the builders before save.
+	systemmonitor.PlatformValidator = systemmonitorDescPlatform.Validators[0].(func(string) error)
+	// systemmonitorDescPlatformVersion is the schema descriptor for platform_version field.
+	systemmonitorDescPlatformVersion := systemmonitorFields[14].Descriptor()
+	// systemmonitor.PlatformVersionValidator is a validator for the "platform_version" field. It is called by the builders before save.
+	systemmonitor.PlatformVersionValidator = systemmonitorDescPlatformVersion.Validators[0].(func(string) error)
+	// systemmonitorDescHostname is the schema descriptor for hostname field.
+	systemmonitorDescHostname := systemmonitorFields[15].Descriptor()
+	// systemmonitor.HostnameValidator is a validator for the "hostname" field. It is called by the builders before save.
+	systemmonitor.HostnameValidator = systemmonitorDescHostname.Validators[0].(func(string) error)
+	// systemmonitorDescGoroutinesCount is the schema descriptor for goroutines_count field.
+	systemmonitorDescGoroutinesCount := systemmonitorFields[16].Descriptor()
+	// systemmonitor.GoroutinesCountValidator is a validator for the "goroutines_count" field. It is called by the builders before save.
+	systemmonitor.GoroutinesCountValidator = systemmonitorDescGoroutinesCount.Validators[0].(func(int) error)
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks0 := userMixin[0].Hooks()
 	userMixinHooks1 := userMixin[1].Hooks()

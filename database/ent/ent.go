@@ -17,6 +17,7 @@ import (
 	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scan"
 	"go-backend/database/ent/scope"
+	"go-backend/database/ent/systemmonitor"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
@@ -97,6 +98,7 @@ func checkColumn(t, c string) error {
 			rolepermission.Table: rolepermission.ValidColumn,
 			scan.Table:           scan.ValidColumn,
 			scope.Table:          scope.ValidColumn,
+			systemmonitor.Table:  systemmonitor.ValidColumn,
 			user.Table:           user.ValidColumn,
 			userrole.Table:       userrole.ValidColumn,
 			verifycode.Table:     verifycode.ValidColumn,

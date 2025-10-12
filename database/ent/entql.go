@@ -15,6 +15,7 @@ import (
 	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scan"
 	"go-backend/database/ent/scope"
+	"go-backend/database/ent/systemmonitor"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
@@ -27,7 +28,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 14)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 15)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   apiauth.Table,
@@ -327,6 +328,48 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[11] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   systemmonitor.Table,
+			Columns: systemmonitor.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: systemmonitor.FieldID,
+			},
+		},
+		Type: "SystemMonitor",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			systemmonitor.FieldCreateTime:         {Type: field.TypeTime, Column: systemmonitor.FieldCreateTime},
+			systemmonitor.FieldCreateBy:           {Type: field.TypeUint64, Column: systemmonitor.FieldCreateBy},
+			systemmonitor.FieldUpdateTime:         {Type: field.TypeTime, Column: systemmonitor.FieldUpdateTime},
+			systemmonitor.FieldUpdateBy:           {Type: field.TypeUint64, Column: systemmonitor.FieldUpdateBy},
+			systemmonitor.FieldCPUUsagePercent:    {Type: field.TypeFloat64, Column: systemmonitor.FieldCPUUsagePercent},
+			systemmonitor.FieldCPUCores:           {Type: field.TypeInt, Column: systemmonitor.FieldCPUCores},
+			systemmonitor.FieldMemoryTotal:        {Type: field.TypeUint64, Column: systemmonitor.FieldMemoryTotal},
+			systemmonitor.FieldMemoryUsed:         {Type: field.TypeUint64, Column: systemmonitor.FieldMemoryUsed},
+			systemmonitor.FieldMemoryFree:         {Type: field.TypeUint64, Column: systemmonitor.FieldMemoryFree},
+			systemmonitor.FieldMemoryUsagePercent: {Type: field.TypeFloat64, Column: systemmonitor.FieldMemoryUsagePercent},
+			systemmonitor.FieldDiskTotal:          {Type: field.TypeUint64, Column: systemmonitor.FieldDiskTotal},
+			systemmonitor.FieldDiskUsed:           {Type: field.TypeUint64, Column: systemmonitor.FieldDiskUsed},
+			systemmonitor.FieldDiskFree:           {Type: field.TypeUint64, Column: systemmonitor.FieldDiskFree},
+			systemmonitor.FieldDiskUsagePercent:   {Type: field.TypeFloat64, Column: systemmonitor.FieldDiskUsagePercent},
+			systemmonitor.FieldNetworkBytesSent:   {Type: field.TypeUint64, Column: systemmonitor.FieldNetworkBytesSent},
+			systemmonitor.FieldNetworkBytesRecv:   {Type: field.TypeUint64, Column: systemmonitor.FieldNetworkBytesRecv},
+			systemmonitor.FieldOs:                 {Type: field.TypeString, Column: systemmonitor.FieldOs},
+			systemmonitor.FieldPlatform:           {Type: field.TypeString, Column: systemmonitor.FieldPlatform},
+			systemmonitor.FieldPlatformVersion:    {Type: field.TypeString, Column: systemmonitor.FieldPlatformVersion},
+			systemmonitor.FieldHostname:           {Type: field.TypeString, Column: systemmonitor.FieldHostname},
+			systemmonitor.FieldGoroutinesCount:    {Type: field.TypeInt, Column: systemmonitor.FieldGoroutinesCount},
+			systemmonitor.FieldHeapAlloc:          {Type: field.TypeUint64, Column: systemmonitor.FieldHeapAlloc},
+			systemmonitor.FieldHeapSys:            {Type: field.TypeUint64, Column: systemmonitor.FieldHeapSys},
+			systemmonitor.FieldGcCount:            {Type: field.TypeUint32, Column: systemmonitor.FieldGcCount},
+			systemmonitor.FieldLoadAvg1:           {Type: field.TypeFloat64, Column: systemmonitor.FieldLoadAvg1},
+			systemmonitor.FieldLoadAvg5:           {Type: field.TypeFloat64, Column: systemmonitor.FieldLoadAvg5},
+			systemmonitor.FieldLoadAvg15:          {Type: field.TypeFloat64, Column: systemmonitor.FieldLoadAvg15},
+			systemmonitor.FieldUptime:             {Type: field.TypeUint64, Column: systemmonitor.FieldUptime},
+			systemmonitor.FieldRecordedAt:         {Type: field.TypeTime, Column: systemmonitor.FieldRecordedAt},
+		},
+	}
+	graph.Nodes[12] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -349,7 +392,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldAvatarID:   {Type: field.TypeUint64, Column: user.FieldAvatarID},
 		},
 	}
-	graph.Nodes[12] = &sqlgraph.Node{
+	graph.Nodes[13] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   userrole.Table,
 			Columns: userrole.Columns,
@@ -370,7 +413,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			userrole.FieldRoleID:     {Type: field.TypeUint64, Column: userrole.FieldRoleID},
 		},
 	}
-	graph.Nodes[13] = &sqlgraph.Node{
+	graph.Nodes[14] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   verifycode.Table,
 			Columns: verifycode.Columns,
@@ -2158,6 +2201,191 @@ func (f *ScopeFilter) WhereHasPermissionWith(preds ...predicate.Permission) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *SystemMonitorQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the SystemMonitorQuery builder.
+func (_q *SystemMonitorQuery) Filter() *SystemMonitorFilter {
+	return &SystemMonitorFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *SystemMonitorMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the SystemMonitorMutation builder.
+func (m *SystemMonitorMutation) Filter() *SystemMonitorFilter {
+	return &SystemMonitorFilter{config: m.config, predicateAdder: m}
+}
+
+// SystemMonitorFilter provides a generic filtering capability at runtime for SystemMonitorQuery.
+type SystemMonitorFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *SystemMonitorFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *SystemMonitorFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *SystemMonitorFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(systemmonitor.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *SystemMonitorFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *SystemMonitorFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(systemmonitor.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *SystemMonitorFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldUpdateBy))
+}
+
+// WhereCPUUsagePercent applies the entql float64 predicate on the cpu_usage_percent field.
+func (f *SystemMonitorFilter) WhereCPUUsagePercent(p entql.Float64P) {
+	f.Where(p.Field(systemmonitor.FieldCPUUsagePercent))
+}
+
+// WhereCPUCores applies the entql int predicate on the cpu_cores field.
+func (f *SystemMonitorFilter) WhereCPUCores(p entql.IntP) {
+	f.Where(p.Field(systemmonitor.FieldCPUCores))
+}
+
+// WhereMemoryTotal applies the entql uint64 predicate on the memory_total field.
+func (f *SystemMonitorFilter) WhereMemoryTotal(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldMemoryTotal))
+}
+
+// WhereMemoryUsed applies the entql uint64 predicate on the memory_used field.
+func (f *SystemMonitorFilter) WhereMemoryUsed(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldMemoryUsed))
+}
+
+// WhereMemoryFree applies the entql uint64 predicate on the memory_free field.
+func (f *SystemMonitorFilter) WhereMemoryFree(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldMemoryFree))
+}
+
+// WhereMemoryUsagePercent applies the entql float64 predicate on the memory_usage_percent field.
+func (f *SystemMonitorFilter) WhereMemoryUsagePercent(p entql.Float64P) {
+	f.Where(p.Field(systemmonitor.FieldMemoryUsagePercent))
+}
+
+// WhereDiskTotal applies the entql uint64 predicate on the disk_total field.
+func (f *SystemMonitorFilter) WhereDiskTotal(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldDiskTotal))
+}
+
+// WhereDiskUsed applies the entql uint64 predicate on the disk_used field.
+func (f *SystemMonitorFilter) WhereDiskUsed(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldDiskUsed))
+}
+
+// WhereDiskFree applies the entql uint64 predicate on the disk_free field.
+func (f *SystemMonitorFilter) WhereDiskFree(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldDiskFree))
+}
+
+// WhereDiskUsagePercent applies the entql float64 predicate on the disk_usage_percent field.
+func (f *SystemMonitorFilter) WhereDiskUsagePercent(p entql.Float64P) {
+	f.Where(p.Field(systemmonitor.FieldDiskUsagePercent))
+}
+
+// WhereNetworkBytesSent applies the entql uint64 predicate on the network_bytes_sent field.
+func (f *SystemMonitorFilter) WhereNetworkBytesSent(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldNetworkBytesSent))
+}
+
+// WhereNetworkBytesRecv applies the entql uint64 predicate on the network_bytes_recv field.
+func (f *SystemMonitorFilter) WhereNetworkBytesRecv(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldNetworkBytesRecv))
+}
+
+// WhereOs applies the entql string predicate on the os field.
+func (f *SystemMonitorFilter) WhereOs(p entql.StringP) {
+	f.Where(p.Field(systemmonitor.FieldOs))
+}
+
+// WherePlatform applies the entql string predicate on the platform field.
+func (f *SystemMonitorFilter) WherePlatform(p entql.StringP) {
+	f.Where(p.Field(systemmonitor.FieldPlatform))
+}
+
+// WherePlatformVersion applies the entql string predicate on the platform_version field.
+func (f *SystemMonitorFilter) WherePlatformVersion(p entql.StringP) {
+	f.Where(p.Field(systemmonitor.FieldPlatformVersion))
+}
+
+// WhereHostname applies the entql string predicate on the hostname field.
+func (f *SystemMonitorFilter) WhereHostname(p entql.StringP) {
+	f.Where(p.Field(systemmonitor.FieldHostname))
+}
+
+// WhereGoroutinesCount applies the entql int predicate on the goroutines_count field.
+func (f *SystemMonitorFilter) WhereGoroutinesCount(p entql.IntP) {
+	f.Where(p.Field(systemmonitor.FieldGoroutinesCount))
+}
+
+// WhereHeapAlloc applies the entql uint64 predicate on the heap_alloc field.
+func (f *SystemMonitorFilter) WhereHeapAlloc(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldHeapAlloc))
+}
+
+// WhereHeapSys applies the entql uint64 predicate on the heap_sys field.
+func (f *SystemMonitorFilter) WhereHeapSys(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldHeapSys))
+}
+
+// WhereGcCount applies the entql uint32 predicate on the gc_count field.
+func (f *SystemMonitorFilter) WhereGcCount(p entql.Uint32P) {
+	f.Where(p.Field(systemmonitor.FieldGcCount))
+}
+
+// WhereLoadAvg1 applies the entql float64 predicate on the load_avg_1 field.
+func (f *SystemMonitorFilter) WhereLoadAvg1(p entql.Float64P) {
+	f.Where(p.Field(systemmonitor.FieldLoadAvg1))
+}
+
+// WhereLoadAvg5 applies the entql float64 predicate on the load_avg_5 field.
+func (f *SystemMonitorFilter) WhereLoadAvg5(p entql.Float64P) {
+	f.Where(p.Field(systemmonitor.FieldLoadAvg5))
+}
+
+// WhereLoadAvg15 applies the entql float64 predicate on the load_avg_15 field.
+func (f *SystemMonitorFilter) WhereLoadAvg15(p entql.Float64P) {
+	f.Where(p.Field(systemmonitor.FieldLoadAvg15))
+}
+
+// WhereUptime applies the entql uint64 predicate on the uptime field.
+func (f *SystemMonitorFilter) WhereUptime(p entql.Uint64P) {
+	f.Where(p.Field(systemmonitor.FieldUptime))
+}
+
+// WhereRecordedAt applies the entql time.Time predicate on the recorded_at field.
+func (f *SystemMonitorFilter) WhereRecordedAt(p entql.TimeP) {
+	f.Where(p.Field(systemmonitor.FieldRecordedAt))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *UserQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -2186,7 +2414,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[12].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2337,7 +2565,7 @@ type UserRoleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserRoleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[12].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[13].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2445,7 +2673,7 @@ type VerifyCodeFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *VerifyCodeFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[13].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[14].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

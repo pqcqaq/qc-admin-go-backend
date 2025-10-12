@@ -18,6 +18,7 @@ import (
 	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scan"
 	"go-backend/database/ent/scope"
+	"go-backend/database/ent/systemmonitor"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
@@ -48,6 +49,7 @@ const (
 	TypeRolePermission = "RolePermission"
 	TypeScan           = "Scan"
 	TypeScope          = "Scope"
+	TypeSystemMonitor  = "SystemMonitor"
 	TypeUser           = "User"
 	TypeUserRole       = "UserRole"
 	TypeVerifyCode     = "VerifyCode"
@@ -15832,6 +15834,2682 @@ func (m *ScopeMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Scope edge %s", name)
+}
+
+// SystemMonitorMutation represents an operation that mutates the SystemMonitor nodes in the graph.
+type SystemMonitorMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *uint64
+	create_time             *time.Time
+	create_by               *uint64
+	addcreate_by            *int64
+	update_time             *time.Time
+	update_by               *uint64
+	addupdate_by            *int64
+	cpu_usage_percent       *float64
+	addcpu_usage_percent    *float64
+	cpu_cores               *int
+	addcpu_cores            *int
+	memory_total            *uint64
+	addmemory_total         *int64
+	memory_used             *uint64
+	addmemory_used          *int64
+	memory_free             *uint64
+	addmemory_free          *int64
+	memory_usage_percent    *float64
+	addmemory_usage_percent *float64
+	disk_total              *uint64
+	adddisk_total           *int64
+	disk_used               *uint64
+	adddisk_used            *int64
+	disk_free               *uint64
+	adddisk_free            *int64
+	disk_usage_percent      *float64
+	adddisk_usage_percent   *float64
+	network_bytes_sent      *uint64
+	addnetwork_bytes_sent   *int64
+	network_bytes_recv      *uint64
+	addnetwork_bytes_recv   *int64
+	os                      *string
+	platform                *string
+	platform_version        *string
+	hostname                *string
+	goroutines_count        *int
+	addgoroutines_count     *int
+	heap_alloc              *uint64
+	addheap_alloc           *int64
+	heap_sys                *uint64
+	addheap_sys             *int64
+	gc_count                *uint32
+	addgc_count             *int32
+	load_avg_1              *float64
+	addload_avg_1           *float64
+	load_avg_5              *float64
+	addload_avg_5           *float64
+	load_avg_15             *float64
+	addload_avg_15          *float64
+	uptime                  *uint64
+	adduptime               *int64
+	recorded_at             *time.Time
+	clearedFields           map[string]struct{}
+	done                    bool
+	oldValue                func(context.Context) (*SystemMonitor, error)
+	predicates              []predicate.SystemMonitor
+}
+
+var _ ent.Mutation = (*SystemMonitorMutation)(nil)
+
+// systemmonitorOption allows management of the mutation configuration using functional options.
+type systemmonitorOption func(*SystemMonitorMutation)
+
+// newSystemMonitorMutation creates new mutation for the SystemMonitor entity.
+func newSystemMonitorMutation(c config, op Op, opts ...systemmonitorOption) *SystemMonitorMutation {
+	m := &SystemMonitorMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSystemMonitor,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSystemMonitorID sets the ID field of the mutation.
+func withSystemMonitorID(id uint64) systemmonitorOption {
+	return func(m *SystemMonitorMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *SystemMonitor
+		)
+		m.oldValue = func(ctx context.Context) (*SystemMonitor, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().SystemMonitor.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSystemMonitor sets the old SystemMonitor of the mutation.
+func withSystemMonitor(node *SystemMonitor) systemmonitorOption {
+	return func(m *SystemMonitorMutation) {
+		m.oldValue = func(context.Context) (*SystemMonitor, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SystemMonitorMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SystemMonitorMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of SystemMonitor entities.
+func (m *SystemMonitorMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SystemMonitorMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SystemMonitorMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().SystemMonitor.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *SystemMonitorMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *SystemMonitorMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *SystemMonitorMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *SystemMonitorMutation) SetCreateBy(u uint64) {
+	m.create_by = &u
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *SystemMonitorMutation) CreateBy() (r uint64, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldCreateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds u to the "create_by" field.
+func (m *SystemMonitorMutation) AddCreateBy(u int64) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += u
+	} else {
+		m.addcreate_by = &u
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *SystemMonitorMutation) AddedCreateBy() (r int64, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *SystemMonitorMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[systemmonitor.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *SystemMonitorMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[systemmonitor.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *SystemMonitorMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, systemmonitor.FieldCreateBy)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *SystemMonitorMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *SystemMonitorMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *SystemMonitorMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (m *SystemMonitorMutation) SetUpdateBy(u uint64) {
+	m.update_by = &u
+	m.addupdate_by = nil
+}
+
+// UpdateBy returns the value of the "update_by" field in the mutation.
+func (m *SystemMonitorMutation) UpdateBy() (r uint64, exists bool) {
+	v := m.update_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateBy returns the old "update_by" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldUpdateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateBy: %w", err)
+	}
+	return oldValue.UpdateBy, nil
+}
+
+// AddUpdateBy adds u to the "update_by" field.
+func (m *SystemMonitorMutation) AddUpdateBy(u int64) {
+	if m.addupdate_by != nil {
+		*m.addupdate_by += u
+	} else {
+		m.addupdate_by = &u
+	}
+}
+
+// AddedUpdateBy returns the value that was added to the "update_by" field in this mutation.
+func (m *SystemMonitorMutation) AddedUpdateBy() (r int64, exists bool) {
+	v := m.addupdate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (m *SystemMonitorMutation) ClearUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	m.clearedFields[systemmonitor.FieldUpdateBy] = struct{}{}
+}
+
+// UpdateByCleared returns if the "update_by" field was cleared in this mutation.
+func (m *SystemMonitorMutation) UpdateByCleared() bool {
+	_, ok := m.clearedFields[systemmonitor.FieldUpdateBy]
+	return ok
+}
+
+// ResetUpdateBy resets all changes to the "update_by" field.
+func (m *SystemMonitorMutation) ResetUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	delete(m.clearedFields, systemmonitor.FieldUpdateBy)
+}
+
+// SetCPUUsagePercent sets the "cpu_usage_percent" field.
+func (m *SystemMonitorMutation) SetCPUUsagePercent(f float64) {
+	m.cpu_usage_percent = &f
+	m.addcpu_usage_percent = nil
+}
+
+// CPUUsagePercent returns the value of the "cpu_usage_percent" field in the mutation.
+func (m *SystemMonitorMutation) CPUUsagePercent() (r float64, exists bool) {
+	v := m.cpu_usage_percent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCPUUsagePercent returns the old "cpu_usage_percent" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldCPUUsagePercent(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCPUUsagePercent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCPUUsagePercent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCPUUsagePercent: %w", err)
+	}
+	return oldValue.CPUUsagePercent, nil
+}
+
+// AddCPUUsagePercent adds f to the "cpu_usage_percent" field.
+func (m *SystemMonitorMutation) AddCPUUsagePercent(f float64) {
+	if m.addcpu_usage_percent != nil {
+		*m.addcpu_usage_percent += f
+	} else {
+		m.addcpu_usage_percent = &f
+	}
+}
+
+// AddedCPUUsagePercent returns the value that was added to the "cpu_usage_percent" field in this mutation.
+func (m *SystemMonitorMutation) AddedCPUUsagePercent() (r float64, exists bool) {
+	v := m.addcpu_usage_percent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCPUUsagePercent resets all changes to the "cpu_usage_percent" field.
+func (m *SystemMonitorMutation) ResetCPUUsagePercent() {
+	m.cpu_usage_percent = nil
+	m.addcpu_usage_percent = nil
+}
+
+// SetCPUCores sets the "cpu_cores" field.
+func (m *SystemMonitorMutation) SetCPUCores(i int) {
+	m.cpu_cores = &i
+	m.addcpu_cores = nil
+}
+
+// CPUCores returns the value of the "cpu_cores" field in the mutation.
+func (m *SystemMonitorMutation) CPUCores() (r int, exists bool) {
+	v := m.cpu_cores
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCPUCores returns the old "cpu_cores" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldCPUCores(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCPUCores is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCPUCores requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCPUCores: %w", err)
+	}
+	return oldValue.CPUCores, nil
+}
+
+// AddCPUCores adds i to the "cpu_cores" field.
+func (m *SystemMonitorMutation) AddCPUCores(i int) {
+	if m.addcpu_cores != nil {
+		*m.addcpu_cores += i
+	} else {
+		m.addcpu_cores = &i
+	}
+}
+
+// AddedCPUCores returns the value that was added to the "cpu_cores" field in this mutation.
+func (m *SystemMonitorMutation) AddedCPUCores() (r int, exists bool) {
+	v := m.addcpu_cores
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCPUCores resets all changes to the "cpu_cores" field.
+func (m *SystemMonitorMutation) ResetCPUCores() {
+	m.cpu_cores = nil
+	m.addcpu_cores = nil
+}
+
+// SetMemoryTotal sets the "memory_total" field.
+func (m *SystemMonitorMutation) SetMemoryTotal(u uint64) {
+	m.memory_total = &u
+	m.addmemory_total = nil
+}
+
+// MemoryTotal returns the value of the "memory_total" field in the mutation.
+func (m *SystemMonitorMutation) MemoryTotal() (r uint64, exists bool) {
+	v := m.memory_total
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMemoryTotal returns the old "memory_total" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldMemoryTotal(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMemoryTotal is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMemoryTotal requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMemoryTotal: %w", err)
+	}
+	return oldValue.MemoryTotal, nil
+}
+
+// AddMemoryTotal adds u to the "memory_total" field.
+func (m *SystemMonitorMutation) AddMemoryTotal(u int64) {
+	if m.addmemory_total != nil {
+		*m.addmemory_total += u
+	} else {
+		m.addmemory_total = &u
+	}
+}
+
+// AddedMemoryTotal returns the value that was added to the "memory_total" field in this mutation.
+func (m *SystemMonitorMutation) AddedMemoryTotal() (r int64, exists bool) {
+	v := m.addmemory_total
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMemoryTotal resets all changes to the "memory_total" field.
+func (m *SystemMonitorMutation) ResetMemoryTotal() {
+	m.memory_total = nil
+	m.addmemory_total = nil
+}
+
+// SetMemoryUsed sets the "memory_used" field.
+func (m *SystemMonitorMutation) SetMemoryUsed(u uint64) {
+	m.memory_used = &u
+	m.addmemory_used = nil
+}
+
+// MemoryUsed returns the value of the "memory_used" field in the mutation.
+func (m *SystemMonitorMutation) MemoryUsed() (r uint64, exists bool) {
+	v := m.memory_used
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMemoryUsed returns the old "memory_used" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldMemoryUsed(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMemoryUsed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMemoryUsed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMemoryUsed: %w", err)
+	}
+	return oldValue.MemoryUsed, nil
+}
+
+// AddMemoryUsed adds u to the "memory_used" field.
+func (m *SystemMonitorMutation) AddMemoryUsed(u int64) {
+	if m.addmemory_used != nil {
+		*m.addmemory_used += u
+	} else {
+		m.addmemory_used = &u
+	}
+}
+
+// AddedMemoryUsed returns the value that was added to the "memory_used" field in this mutation.
+func (m *SystemMonitorMutation) AddedMemoryUsed() (r int64, exists bool) {
+	v := m.addmemory_used
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMemoryUsed resets all changes to the "memory_used" field.
+func (m *SystemMonitorMutation) ResetMemoryUsed() {
+	m.memory_used = nil
+	m.addmemory_used = nil
+}
+
+// SetMemoryFree sets the "memory_free" field.
+func (m *SystemMonitorMutation) SetMemoryFree(u uint64) {
+	m.memory_free = &u
+	m.addmemory_free = nil
+}
+
+// MemoryFree returns the value of the "memory_free" field in the mutation.
+func (m *SystemMonitorMutation) MemoryFree() (r uint64, exists bool) {
+	v := m.memory_free
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMemoryFree returns the old "memory_free" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldMemoryFree(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMemoryFree is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMemoryFree requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMemoryFree: %w", err)
+	}
+	return oldValue.MemoryFree, nil
+}
+
+// AddMemoryFree adds u to the "memory_free" field.
+func (m *SystemMonitorMutation) AddMemoryFree(u int64) {
+	if m.addmemory_free != nil {
+		*m.addmemory_free += u
+	} else {
+		m.addmemory_free = &u
+	}
+}
+
+// AddedMemoryFree returns the value that was added to the "memory_free" field in this mutation.
+func (m *SystemMonitorMutation) AddedMemoryFree() (r int64, exists bool) {
+	v := m.addmemory_free
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMemoryFree resets all changes to the "memory_free" field.
+func (m *SystemMonitorMutation) ResetMemoryFree() {
+	m.memory_free = nil
+	m.addmemory_free = nil
+}
+
+// SetMemoryUsagePercent sets the "memory_usage_percent" field.
+func (m *SystemMonitorMutation) SetMemoryUsagePercent(f float64) {
+	m.memory_usage_percent = &f
+	m.addmemory_usage_percent = nil
+}
+
+// MemoryUsagePercent returns the value of the "memory_usage_percent" field in the mutation.
+func (m *SystemMonitorMutation) MemoryUsagePercent() (r float64, exists bool) {
+	v := m.memory_usage_percent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMemoryUsagePercent returns the old "memory_usage_percent" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldMemoryUsagePercent(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMemoryUsagePercent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMemoryUsagePercent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMemoryUsagePercent: %w", err)
+	}
+	return oldValue.MemoryUsagePercent, nil
+}
+
+// AddMemoryUsagePercent adds f to the "memory_usage_percent" field.
+func (m *SystemMonitorMutation) AddMemoryUsagePercent(f float64) {
+	if m.addmemory_usage_percent != nil {
+		*m.addmemory_usage_percent += f
+	} else {
+		m.addmemory_usage_percent = &f
+	}
+}
+
+// AddedMemoryUsagePercent returns the value that was added to the "memory_usage_percent" field in this mutation.
+func (m *SystemMonitorMutation) AddedMemoryUsagePercent() (r float64, exists bool) {
+	v := m.addmemory_usage_percent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMemoryUsagePercent resets all changes to the "memory_usage_percent" field.
+func (m *SystemMonitorMutation) ResetMemoryUsagePercent() {
+	m.memory_usage_percent = nil
+	m.addmemory_usage_percent = nil
+}
+
+// SetDiskTotal sets the "disk_total" field.
+func (m *SystemMonitorMutation) SetDiskTotal(u uint64) {
+	m.disk_total = &u
+	m.adddisk_total = nil
+}
+
+// DiskTotal returns the value of the "disk_total" field in the mutation.
+func (m *SystemMonitorMutation) DiskTotal() (r uint64, exists bool) {
+	v := m.disk_total
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDiskTotal returns the old "disk_total" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldDiskTotal(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDiskTotal is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDiskTotal requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDiskTotal: %w", err)
+	}
+	return oldValue.DiskTotal, nil
+}
+
+// AddDiskTotal adds u to the "disk_total" field.
+func (m *SystemMonitorMutation) AddDiskTotal(u int64) {
+	if m.adddisk_total != nil {
+		*m.adddisk_total += u
+	} else {
+		m.adddisk_total = &u
+	}
+}
+
+// AddedDiskTotal returns the value that was added to the "disk_total" field in this mutation.
+func (m *SystemMonitorMutation) AddedDiskTotal() (r int64, exists bool) {
+	v := m.adddisk_total
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDiskTotal resets all changes to the "disk_total" field.
+func (m *SystemMonitorMutation) ResetDiskTotal() {
+	m.disk_total = nil
+	m.adddisk_total = nil
+}
+
+// SetDiskUsed sets the "disk_used" field.
+func (m *SystemMonitorMutation) SetDiskUsed(u uint64) {
+	m.disk_used = &u
+	m.adddisk_used = nil
+}
+
+// DiskUsed returns the value of the "disk_used" field in the mutation.
+func (m *SystemMonitorMutation) DiskUsed() (r uint64, exists bool) {
+	v := m.disk_used
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDiskUsed returns the old "disk_used" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldDiskUsed(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDiskUsed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDiskUsed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDiskUsed: %w", err)
+	}
+	return oldValue.DiskUsed, nil
+}
+
+// AddDiskUsed adds u to the "disk_used" field.
+func (m *SystemMonitorMutation) AddDiskUsed(u int64) {
+	if m.adddisk_used != nil {
+		*m.adddisk_used += u
+	} else {
+		m.adddisk_used = &u
+	}
+}
+
+// AddedDiskUsed returns the value that was added to the "disk_used" field in this mutation.
+func (m *SystemMonitorMutation) AddedDiskUsed() (r int64, exists bool) {
+	v := m.adddisk_used
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDiskUsed resets all changes to the "disk_used" field.
+func (m *SystemMonitorMutation) ResetDiskUsed() {
+	m.disk_used = nil
+	m.adddisk_used = nil
+}
+
+// SetDiskFree sets the "disk_free" field.
+func (m *SystemMonitorMutation) SetDiskFree(u uint64) {
+	m.disk_free = &u
+	m.adddisk_free = nil
+}
+
+// DiskFree returns the value of the "disk_free" field in the mutation.
+func (m *SystemMonitorMutation) DiskFree() (r uint64, exists bool) {
+	v := m.disk_free
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDiskFree returns the old "disk_free" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldDiskFree(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDiskFree is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDiskFree requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDiskFree: %w", err)
+	}
+	return oldValue.DiskFree, nil
+}
+
+// AddDiskFree adds u to the "disk_free" field.
+func (m *SystemMonitorMutation) AddDiskFree(u int64) {
+	if m.adddisk_free != nil {
+		*m.adddisk_free += u
+	} else {
+		m.adddisk_free = &u
+	}
+}
+
+// AddedDiskFree returns the value that was added to the "disk_free" field in this mutation.
+func (m *SystemMonitorMutation) AddedDiskFree() (r int64, exists bool) {
+	v := m.adddisk_free
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDiskFree resets all changes to the "disk_free" field.
+func (m *SystemMonitorMutation) ResetDiskFree() {
+	m.disk_free = nil
+	m.adddisk_free = nil
+}
+
+// SetDiskUsagePercent sets the "disk_usage_percent" field.
+func (m *SystemMonitorMutation) SetDiskUsagePercent(f float64) {
+	m.disk_usage_percent = &f
+	m.adddisk_usage_percent = nil
+}
+
+// DiskUsagePercent returns the value of the "disk_usage_percent" field in the mutation.
+func (m *SystemMonitorMutation) DiskUsagePercent() (r float64, exists bool) {
+	v := m.disk_usage_percent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDiskUsagePercent returns the old "disk_usage_percent" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldDiskUsagePercent(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDiskUsagePercent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDiskUsagePercent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDiskUsagePercent: %w", err)
+	}
+	return oldValue.DiskUsagePercent, nil
+}
+
+// AddDiskUsagePercent adds f to the "disk_usage_percent" field.
+func (m *SystemMonitorMutation) AddDiskUsagePercent(f float64) {
+	if m.adddisk_usage_percent != nil {
+		*m.adddisk_usage_percent += f
+	} else {
+		m.adddisk_usage_percent = &f
+	}
+}
+
+// AddedDiskUsagePercent returns the value that was added to the "disk_usage_percent" field in this mutation.
+func (m *SystemMonitorMutation) AddedDiskUsagePercent() (r float64, exists bool) {
+	v := m.adddisk_usage_percent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDiskUsagePercent resets all changes to the "disk_usage_percent" field.
+func (m *SystemMonitorMutation) ResetDiskUsagePercent() {
+	m.disk_usage_percent = nil
+	m.adddisk_usage_percent = nil
+}
+
+// SetNetworkBytesSent sets the "network_bytes_sent" field.
+func (m *SystemMonitorMutation) SetNetworkBytesSent(u uint64) {
+	m.network_bytes_sent = &u
+	m.addnetwork_bytes_sent = nil
+}
+
+// NetworkBytesSent returns the value of the "network_bytes_sent" field in the mutation.
+func (m *SystemMonitorMutation) NetworkBytesSent() (r uint64, exists bool) {
+	v := m.network_bytes_sent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNetworkBytesSent returns the old "network_bytes_sent" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldNetworkBytesSent(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNetworkBytesSent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNetworkBytesSent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNetworkBytesSent: %w", err)
+	}
+	return oldValue.NetworkBytesSent, nil
+}
+
+// AddNetworkBytesSent adds u to the "network_bytes_sent" field.
+func (m *SystemMonitorMutation) AddNetworkBytesSent(u int64) {
+	if m.addnetwork_bytes_sent != nil {
+		*m.addnetwork_bytes_sent += u
+	} else {
+		m.addnetwork_bytes_sent = &u
+	}
+}
+
+// AddedNetworkBytesSent returns the value that was added to the "network_bytes_sent" field in this mutation.
+func (m *SystemMonitorMutation) AddedNetworkBytesSent() (r int64, exists bool) {
+	v := m.addnetwork_bytes_sent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNetworkBytesSent resets all changes to the "network_bytes_sent" field.
+func (m *SystemMonitorMutation) ResetNetworkBytesSent() {
+	m.network_bytes_sent = nil
+	m.addnetwork_bytes_sent = nil
+}
+
+// SetNetworkBytesRecv sets the "network_bytes_recv" field.
+func (m *SystemMonitorMutation) SetNetworkBytesRecv(u uint64) {
+	m.network_bytes_recv = &u
+	m.addnetwork_bytes_recv = nil
+}
+
+// NetworkBytesRecv returns the value of the "network_bytes_recv" field in the mutation.
+func (m *SystemMonitorMutation) NetworkBytesRecv() (r uint64, exists bool) {
+	v := m.network_bytes_recv
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNetworkBytesRecv returns the old "network_bytes_recv" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldNetworkBytesRecv(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNetworkBytesRecv is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNetworkBytesRecv requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNetworkBytesRecv: %w", err)
+	}
+	return oldValue.NetworkBytesRecv, nil
+}
+
+// AddNetworkBytesRecv adds u to the "network_bytes_recv" field.
+func (m *SystemMonitorMutation) AddNetworkBytesRecv(u int64) {
+	if m.addnetwork_bytes_recv != nil {
+		*m.addnetwork_bytes_recv += u
+	} else {
+		m.addnetwork_bytes_recv = &u
+	}
+}
+
+// AddedNetworkBytesRecv returns the value that was added to the "network_bytes_recv" field in this mutation.
+func (m *SystemMonitorMutation) AddedNetworkBytesRecv() (r int64, exists bool) {
+	v := m.addnetwork_bytes_recv
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNetworkBytesRecv resets all changes to the "network_bytes_recv" field.
+func (m *SystemMonitorMutation) ResetNetworkBytesRecv() {
+	m.network_bytes_recv = nil
+	m.addnetwork_bytes_recv = nil
+}
+
+// SetOs sets the "os" field.
+func (m *SystemMonitorMutation) SetOs(s string) {
+	m.os = &s
+}
+
+// Os returns the value of the "os" field in the mutation.
+func (m *SystemMonitorMutation) Os() (r string, exists bool) {
+	v := m.os
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOs returns the old "os" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldOs(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOs is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOs: %w", err)
+	}
+	return oldValue.Os, nil
+}
+
+// ResetOs resets all changes to the "os" field.
+func (m *SystemMonitorMutation) ResetOs() {
+	m.os = nil
+}
+
+// SetPlatform sets the "platform" field.
+func (m *SystemMonitorMutation) SetPlatform(s string) {
+	m.platform = &s
+}
+
+// Platform returns the value of the "platform" field in the mutation.
+func (m *SystemMonitorMutation) Platform() (r string, exists bool) {
+	v := m.platform
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPlatform returns the old "platform" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldPlatform(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPlatform is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPlatform requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPlatform: %w", err)
+	}
+	return oldValue.Platform, nil
+}
+
+// ResetPlatform resets all changes to the "platform" field.
+func (m *SystemMonitorMutation) ResetPlatform() {
+	m.platform = nil
+}
+
+// SetPlatformVersion sets the "platform_version" field.
+func (m *SystemMonitorMutation) SetPlatformVersion(s string) {
+	m.platform_version = &s
+}
+
+// PlatformVersion returns the value of the "platform_version" field in the mutation.
+func (m *SystemMonitorMutation) PlatformVersion() (r string, exists bool) {
+	v := m.platform_version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPlatformVersion returns the old "platform_version" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldPlatformVersion(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPlatformVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPlatformVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPlatformVersion: %w", err)
+	}
+	return oldValue.PlatformVersion, nil
+}
+
+// ResetPlatformVersion resets all changes to the "platform_version" field.
+func (m *SystemMonitorMutation) ResetPlatformVersion() {
+	m.platform_version = nil
+}
+
+// SetHostname sets the "hostname" field.
+func (m *SystemMonitorMutation) SetHostname(s string) {
+	m.hostname = &s
+}
+
+// Hostname returns the value of the "hostname" field in the mutation.
+func (m *SystemMonitorMutation) Hostname() (r string, exists bool) {
+	v := m.hostname
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHostname returns the old "hostname" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldHostname(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHostname is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHostname requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHostname: %w", err)
+	}
+	return oldValue.Hostname, nil
+}
+
+// ResetHostname resets all changes to the "hostname" field.
+func (m *SystemMonitorMutation) ResetHostname() {
+	m.hostname = nil
+}
+
+// SetGoroutinesCount sets the "goroutines_count" field.
+func (m *SystemMonitorMutation) SetGoroutinesCount(i int) {
+	m.goroutines_count = &i
+	m.addgoroutines_count = nil
+}
+
+// GoroutinesCount returns the value of the "goroutines_count" field in the mutation.
+func (m *SystemMonitorMutation) GoroutinesCount() (r int, exists bool) {
+	v := m.goroutines_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoroutinesCount returns the old "goroutines_count" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldGoroutinesCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoroutinesCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoroutinesCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoroutinesCount: %w", err)
+	}
+	return oldValue.GoroutinesCount, nil
+}
+
+// AddGoroutinesCount adds i to the "goroutines_count" field.
+func (m *SystemMonitorMutation) AddGoroutinesCount(i int) {
+	if m.addgoroutines_count != nil {
+		*m.addgoroutines_count += i
+	} else {
+		m.addgoroutines_count = &i
+	}
+}
+
+// AddedGoroutinesCount returns the value that was added to the "goroutines_count" field in this mutation.
+func (m *SystemMonitorMutation) AddedGoroutinesCount() (r int, exists bool) {
+	v := m.addgoroutines_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetGoroutinesCount resets all changes to the "goroutines_count" field.
+func (m *SystemMonitorMutation) ResetGoroutinesCount() {
+	m.goroutines_count = nil
+	m.addgoroutines_count = nil
+}
+
+// SetHeapAlloc sets the "heap_alloc" field.
+func (m *SystemMonitorMutation) SetHeapAlloc(u uint64) {
+	m.heap_alloc = &u
+	m.addheap_alloc = nil
+}
+
+// HeapAlloc returns the value of the "heap_alloc" field in the mutation.
+func (m *SystemMonitorMutation) HeapAlloc() (r uint64, exists bool) {
+	v := m.heap_alloc
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHeapAlloc returns the old "heap_alloc" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldHeapAlloc(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHeapAlloc is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHeapAlloc requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHeapAlloc: %w", err)
+	}
+	return oldValue.HeapAlloc, nil
+}
+
+// AddHeapAlloc adds u to the "heap_alloc" field.
+func (m *SystemMonitorMutation) AddHeapAlloc(u int64) {
+	if m.addheap_alloc != nil {
+		*m.addheap_alloc += u
+	} else {
+		m.addheap_alloc = &u
+	}
+}
+
+// AddedHeapAlloc returns the value that was added to the "heap_alloc" field in this mutation.
+func (m *SystemMonitorMutation) AddedHeapAlloc() (r int64, exists bool) {
+	v := m.addheap_alloc
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetHeapAlloc resets all changes to the "heap_alloc" field.
+func (m *SystemMonitorMutation) ResetHeapAlloc() {
+	m.heap_alloc = nil
+	m.addheap_alloc = nil
+}
+
+// SetHeapSys sets the "heap_sys" field.
+func (m *SystemMonitorMutation) SetHeapSys(u uint64) {
+	m.heap_sys = &u
+	m.addheap_sys = nil
+}
+
+// HeapSys returns the value of the "heap_sys" field in the mutation.
+func (m *SystemMonitorMutation) HeapSys() (r uint64, exists bool) {
+	v := m.heap_sys
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHeapSys returns the old "heap_sys" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldHeapSys(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHeapSys is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHeapSys requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHeapSys: %w", err)
+	}
+	return oldValue.HeapSys, nil
+}
+
+// AddHeapSys adds u to the "heap_sys" field.
+func (m *SystemMonitorMutation) AddHeapSys(u int64) {
+	if m.addheap_sys != nil {
+		*m.addheap_sys += u
+	} else {
+		m.addheap_sys = &u
+	}
+}
+
+// AddedHeapSys returns the value that was added to the "heap_sys" field in this mutation.
+func (m *SystemMonitorMutation) AddedHeapSys() (r int64, exists bool) {
+	v := m.addheap_sys
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetHeapSys resets all changes to the "heap_sys" field.
+func (m *SystemMonitorMutation) ResetHeapSys() {
+	m.heap_sys = nil
+	m.addheap_sys = nil
+}
+
+// SetGcCount sets the "gc_count" field.
+func (m *SystemMonitorMutation) SetGcCount(u uint32) {
+	m.gc_count = &u
+	m.addgc_count = nil
+}
+
+// GcCount returns the value of the "gc_count" field in the mutation.
+func (m *SystemMonitorMutation) GcCount() (r uint32, exists bool) {
+	v := m.gc_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGcCount returns the old "gc_count" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldGcCount(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGcCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGcCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGcCount: %w", err)
+	}
+	return oldValue.GcCount, nil
+}
+
+// AddGcCount adds u to the "gc_count" field.
+func (m *SystemMonitorMutation) AddGcCount(u int32) {
+	if m.addgc_count != nil {
+		*m.addgc_count += u
+	} else {
+		m.addgc_count = &u
+	}
+}
+
+// AddedGcCount returns the value that was added to the "gc_count" field in this mutation.
+func (m *SystemMonitorMutation) AddedGcCount() (r int32, exists bool) {
+	v := m.addgc_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetGcCount resets all changes to the "gc_count" field.
+func (m *SystemMonitorMutation) ResetGcCount() {
+	m.gc_count = nil
+	m.addgc_count = nil
+}
+
+// SetLoadAvg1 sets the "load_avg_1" field.
+func (m *SystemMonitorMutation) SetLoadAvg1(f float64) {
+	m.load_avg_1 = &f
+	m.addload_avg_1 = nil
+}
+
+// LoadAvg1 returns the value of the "load_avg_1" field in the mutation.
+func (m *SystemMonitorMutation) LoadAvg1() (r float64, exists bool) {
+	v := m.load_avg_1
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLoadAvg1 returns the old "load_avg_1" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldLoadAvg1(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLoadAvg1 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLoadAvg1 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLoadAvg1: %w", err)
+	}
+	return oldValue.LoadAvg1, nil
+}
+
+// AddLoadAvg1 adds f to the "load_avg_1" field.
+func (m *SystemMonitorMutation) AddLoadAvg1(f float64) {
+	if m.addload_avg_1 != nil {
+		*m.addload_avg_1 += f
+	} else {
+		m.addload_avg_1 = &f
+	}
+}
+
+// AddedLoadAvg1 returns the value that was added to the "load_avg_1" field in this mutation.
+func (m *SystemMonitorMutation) AddedLoadAvg1() (r float64, exists bool) {
+	v := m.addload_avg_1
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearLoadAvg1 clears the value of the "load_avg_1" field.
+func (m *SystemMonitorMutation) ClearLoadAvg1() {
+	m.load_avg_1 = nil
+	m.addload_avg_1 = nil
+	m.clearedFields[systemmonitor.FieldLoadAvg1] = struct{}{}
+}
+
+// LoadAvg1Cleared returns if the "load_avg_1" field was cleared in this mutation.
+func (m *SystemMonitorMutation) LoadAvg1Cleared() bool {
+	_, ok := m.clearedFields[systemmonitor.FieldLoadAvg1]
+	return ok
+}
+
+// ResetLoadAvg1 resets all changes to the "load_avg_1" field.
+func (m *SystemMonitorMutation) ResetLoadAvg1() {
+	m.load_avg_1 = nil
+	m.addload_avg_1 = nil
+	delete(m.clearedFields, systemmonitor.FieldLoadAvg1)
+}
+
+// SetLoadAvg5 sets the "load_avg_5" field.
+func (m *SystemMonitorMutation) SetLoadAvg5(f float64) {
+	m.load_avg_5 = &f
+	m.addload_avg_5 = nil
+}
+
+// LoadAvg5 returns the value of the "load_avg_5" field in the mutation.
+func (m *SystemMonitorMutation) LoadAvg5() (r float64, exists bool) {
+	v := m.load_avg_5
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLoadAvg5 returns the old "load_avg_5" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldLoadAvg5(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLoadAvg5 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLoadAvg5 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLoadAvg5: %w", err)
+	}
+	return oldValue.LoadAvg5, nil
+}
+
+// AddLoadAvg5 adds f to the "load_avg_5" field.
+func (m *SystemMonitorMutation) AddLoadAvg5(f float64) {
+	if m.addload_avg_5 != nil {
+		*m.addload_avg_5 += f
+	} else {
+		m.addload_avg_5 = &f
+	}
+}
+
+// AddedLoadAvg5 returns the value that was added to the "load_avg_5" field in this mutation.
+func (m *SystemMonitorMutation) AddedLoadAvg5() (r float64, exists bool) {
+	v := m.addload_avg_5
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearLoadAvg5 clears the value of the "load_avg_5" field.
+func (m *SystemMonitorMutation) ClearLoadAvg5() {
+	m.load_avg_5 = nil
+	m.addload_avg_5 = nil
+	m.clearedFields[systemmonitor.FieldLoadAvg5] = struct{}{}
+}
+
+// LoadAvg5Cleared returns if the "load_avg_5" field was cleared in this mutation.
+func (m *SystemMonitorMutation) LoadAvg5Cleared() bool {
+	_, ok := m.clearedFields[systemmonitor.FieldLoadAvg5]
+	return ok
+}
+
+// ResetLoadAvg5 resets all changes to the "load_avg_5" field.
+func (m *SystemMonitorMutation) ResetLoadAvg5() {
+	m.load_avg_5 = nil
+	m.addload_avg_5 = nil
+	delete(m.clearedFields, systemmonitor.FieldLoadAvg5)
+}
+
+// SetLoadAvg15 sets the "load_avg_15" field.
+func (m *SystemMonitorMutation) SetLoadAvg15(f float64) {
+	m.load_avg_15 = &f
+	m.addload_avg_15 = nil
+}
+
+// LoadAvg15 returns the value of the "load_avg_15" field in the mutation.
+func (m *SystemMonitorMutation) LoadAvg15() (r float64, exists bool) {
+	v := m.load_avg_15
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLoadAvg15 returns the old "load_avg_15" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldLoadAvg15(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLoadAvg15 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLoadAvg15 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLoadAvg15: %w", err)
+	}
+	return oldValue.LoadAvg15, nil
+}
+
+// AddLoadAvg15 adds f to the "load_avg_15" field.
+func (m *SystemMonitorMutation) AddLoadAvg15(f float64) {
+	if m.addload_avg_15 != nil {
+		*m.addload_avg_15 += f
+	} else {
+		m.addload_avg_15 = &f
+	}
+}
+
+// AddedLoadAvg15 returns the value that was added to the "load_avg_15" field in this mutation.
+func (m *SystemMonitorMutation) AddedLoadAvg15() (r float64, exists bool) {
+	v := m.addload_avg_15
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearLoadAvg15 clears the value of the "load_avg_15" field.
+func (m *SystemMonitorMutation) ClearLoadAvg15() {
+	m.load_avg_15 = nil
+	m.addload_avg_15 = nil
+	m.clearedFields[systemmonitor.FieldLoadAvg15] = struct{}{}
+}
+
+// LoadAvg15Cleared returns if the "load_avg_15" field was cleared in this mutation.
+func (m *SystemMonitorMutation) LoadAvg15Cleared() bool {
+	_, ok := m.clearedFields[systemmonitor.FieldLoadAvg15]
+	return ok
+}
+
+// ResetLoadAvg15 resets all changes to the "load_avg_15" field.
+func (m *SystemMonitorMutation) ResetLoadAvg15() {
+	m.load_avg_15 = nil
+	m.addload_avg_15 = nil
+	delete(m.clearedFields, systemmonitor.FieldLoadAvg15)
+}
+
+// SetUptime sets the "uptime" field.
+func (m *SystemMonitorMutation) SetUptime(u uint64) {
+	m.uptime = &u
+	m.adduptime = nil
+}
+
+// Uptime returns the value of the "uptime" field in the mutation.
+func (m *SystemMonitorMutation) Uptime() (r uint64, exists bool) {
+	v := m.uptime
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUptime returns the old "uptime" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldUptime(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUptime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUptime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUptime: %w", err)
+	}
+	return oldValue.Uptime, nil
+}
+
+// AddUptime adds u to the "uptime" field.
+func (m *SystemMonitorMutation) AddUptime(u int64) {
+	if m.adduptime != nil {
+		*m.adduptime += u
+	} else {
+		m.adduptime = &u
+	}
+}
+
+// AddedUptime returns the value that was added to the "uptime" field in this mutation.
+func (m *SystemMonitorMutation) AddedUptime() (r int64, exists bool) {
+	v := m.adduptime
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUptime resets all changes to the "uptime" field.
+func (m *SystemMonitorMutation) ResetUptime() {
+	m.uptime = nil
+	m.adduptime = nil
+}
+
+// SetRecordedAt sets the "recorded_at" field.
+func (m *SystemMonitorMutation) SetRecordedAt(t time.Time) {
+	m.recorded_at = &t
+}
+
+// RecordedAt returns the value of the "recorded_at" field in the mutation.
+func (m *SystemMonitorMutation) RecordedAt() (r time.Time, exists bool) {
+	v := m.recorded_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRecordedAt returns the old "recorded_at" field's value of the SystemMonitor entity.
+// If the SystemMonitor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMonitorMutation) OldRecordedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRecordedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRecordedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRecordedAt: %w", err)
+	}
+	return oldValue.RecordedAt, nil
+}
+
+// ResetRecordedAt resets all changes to the "recorded_at" field.
+func (m *SystemMonitorMutation) ResetRecordedAt() {
+	m.recorded_at = nil
+}
+
+// Where appends a list predicates to the SystemMonitorMutation builder.
+func (m *SystemMonitorMutation) Where(ps ...predicate.SystemMonitor) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the SystemMonitorMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *SystemMonitorMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.SystemMonitor, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *SystemMonitorMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *SystemMonitorMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (SystemMonitor).
+func (m *SystemMonitorMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SystemMonitorMutation) Fields() []string {
+	fields := make([]string, 0, 29)
+	if m.create_time != nil {
+		fields = append(fields, systemmonitor.FieldCreateTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, systemmonitor.FieldCreateBy)
+	}
+	if m.update_time != nil {
+		fields = append(fields, systemmonitor.FieldUpdateTime)
+	}
+	if m.update_by != nil {
+		fields = append(fields, systemmonitor.FieldUpdateBy)
+	}
+	if m.cpu_usage_percent != nil {
+		fields = append(fields, systemmonitor.FieldCPUUsagePercent)
+	}
+	if m.cpu_cores != nil {
+		fields = append(fields, systemmonitor.FieldCPUCores)
+	}
+	if m.memory_total != nil {
+		fields = append(fields, systemmonitor.FieldMemoryTotal)
+	}
+	if m.memory_used != nil {
+		fields = append(fields, systemmonitor.FieldMemoryUsed)
+	}
+	if m.memory_free != nil {
+		fields = append(fields, systemmonitor.FieldMemoryFree)
+	}
+	if m.memory_usage_percent != nil {
+		fields = append(fields, systemmonitor.FieldMemoryUsagePercent)
+	}
+	if m.disk_total != nil {
+		fields = append(fields, systemmonitor.FieldDiskTotal)
+	}
+	if m.disk_used != nil {
+		fields = append(fields, systemmonitor.FieldDiskUsed)
+	}
+	if m.disk_free != nil {
+		fields = append(fields, systemmonitor.FieldDiskFree)
+	}
+	if m.disk_usage_percent != nil {
+		fields = append(fields, systemmonitor.FieldDiskUsagePercent)
+	}
+	if m.network_bytes_sent != nil {
+		fields = append(fields, systemmonitor.FieldNetworkBytesSent)
+	}
+	if m.network_bytes_recv != nil {
+		fields = append(fields, systemmonitor.FieldNetworkBytesRecv)
+	}
+	if m.os != nil {
+		fields = append(fields, systemmonitor.FieldOs)
+	}
+	if m.platform != nil {
+		fields = append(fields, systemmonitor.FieldPlatform)
+	}
+	if m.platform_version != nil {
+		fields = append(fields, systemmonitor.FieldPlatformVersion)
+	}
+	if m.hostname != nil {
+		fields = append(fields, systemmonitor.FieldHostname)
+	}
+	if m.goroutines_count != nil {
+		fields = append(fields, systemmonitor.FieldGoroutinesCount)
+	}
+	if m.heap_alloc != nil {
+		fields = append(fields, systemmonitor.FieldHeapAlloc)
+	}
+	if m.heap_sys != nil {
+		fields = append(fields, systemmonitor.FieldHeapSys)
+	}
+	if m.gc_count != nil {
+		fields = append(fields, systemmonitor.FieldGcCount)
+	}
+	if m.load_avg_1 != nil {
+		fields = append(fields, systemmonitor.FieldLoadAvg1)
+	}
+	if m.load_avg_5 != nil {
+		fields = append(fields, systemmonitor.FieldLoadAvg5)
+	}
+	if m.load_avg_15 != nil {
+		fields = append(fields, systemmonitor.FieldLoadAvg15)
+	}
+	if m.uptime != nil {
+		fields = append(fields, systemmonitor.FieldUptime)
+	}
+	if m.recorded_at != nil {
+		fields = append(fields, systemmonitor.FieldRecordedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SystemMonitorMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case systemmonitor.FieldCreateTime:
+		return m.CreateTime()
+	case systemmonitor.FieldCreateBy:
+		return m.CreateBy()
+	case systemmonitor.FieldUpdateTime:
+		return m.UpdateTime()
+	case systemmonitor.FieldUpdateBy:
+		return m.UpdateBy()
+	case systemmonitor.FieldCPUUsagePercent:
+		return m.CPUUsagePercent()
+	case systemmonitor.FieldCPUCores:
+		return m.CPUCores()
+	case systemmonitor.FieldMemoryTotal:
+		return m.MemoryTotal()
+	case systemmonitor.FieldMemoryUsed:
+		return m.MemoryUsed()
+	case systemmonitor.FieldMemoryFree:
+		return m.MemoryFree()
+	case systemmonitor.FieldMemoryUsagePercent:
+		return m.MemoryUsagePercent()
+	case systemmonitor.FieldDiskTotal:
+		return m.DiskTotal()
+	case systemmonitor.FieldDiskUsed:
+		return m.DiskUsed()
+	case systemmonitor.FieldDiskFree:
+		return m.DiskFree()
+	case systemmonitor.FieldDiskUsagePercent:
+		return m.DiskUsagePercent()
+	case systemmonitor.FieldNetworkBytesSent:
+		return m.NetworkBytesSent()
+	case systemmonitor.FieldNetworkBytesRecv:
+		return m.NetworkBytesRecv()
+	case systemmonitor.FieldOs:
+		return m.Os()
+	case systemmonitor.FieldPlatform:
+		return m.Platform()
+	case systemmonitor.FieldPlatformVersion:
+		return m.PlatformVersion()
+	case systemmonitor.FieldHostname:
+		return m.Hostname()
+	case systemmonitor.FieldGoroutinesCount:
+		return m.GoroutinesCount()
+	case systemmonitor.FieldHeapAlloc:
+		return m.HeapAlloc()
+	case systemmonitor.FieldHeapSys:
+		return m.HeapSys()
+	case systemmonitor.FieldGcCount:
+		return m.GcCount()
+	case systemmonitor.FieldLoadAvg1:
+		return m.LoadAvg1()
+	case systemmonitor.FieldLoadAvg5:
+		return m.LoadAvg5()
+	case systemmonitor.FieldLoadAvg15:
+		return m.LoadAvg15()
+	case systemmonitor.FieldUptime:
+		return m.Uptime()
+	case systemmonitor.FieldRecordedAt:
+		return m.RecordedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SystemMonitorMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case systemmonitor.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case systemmonitor.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case systemmonitor.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case systemmonitor.FieldUpdateBy:
+		return m.OldUpdateBy(ctx)
+	case systemmonitor.FieldCPUUsagePercent:
+		return m.OldCPUUsagePercent(ctx)
+	case systemmonitor.FieldCPUCores:
+		return m.OldCPUCores(ctx)
+	case systemmonitor.FieldMemoryTotal:
+		return m.OldMemoryTotal(ctx)
+	case systemmonitor.FieldMemoryUsed:
+		return m.OldMemoryUsed(ctx)
+	case systemmonitor.FieldMemoryFree:
+		return m.OldMemoryFree(ctx)
+	case systemmonitor.FieldMemoryUsagePercent:
+		return m.OldMemoryUsagePercent(ctx)
+	case systemmonitor.FieldDiskTotal:
+		return m.OldDiskTotal(ctx)
+	case systemmonitor.FieldDiskUsed:
+		return m.OldDiskUsed(ctx)
+	case systemmonitor.FieldDiskFree:
+		return m.OldDiskFree(ctx)
+	case systemmonitor.FieldDiskUsagePercent:
+		return m.OldDiskUsagePercent(ctx)
+	case systemmonitor.FieldNetworkBytesSent:
+		return m.OldNetworkBytesSent(ctx)
+	case systemmonitor.FieldNetworkBytesRecv:
+		return m.OldNetworkBytesRecv(ctx)
+	case systemmonitor.FieldOs:
+		return m.OldOs(ctx)
+	case systemmonitor.FieldPlatform:
+		return m.OldPlatform(ctx)
+	case systemmonitor.FieldPlatformVersion:
+		return m.OldPlatformVersion(ctx)
+	case systemmonitor.FieldHostname:
+		return m.OldHostname(ctx)
+	case systemmonitor.FieldGoroutinesCount:
+		return m.OldGoroutinesCount(ctx)
+	case systemmonitor.FieldHeapAlloc:
+		return m.OldHeapAlloc(ctx)
+	case systemmonitor.FieldHeapSys:
+		return m.OldHeapSys(ctx)
+	case systemmonitor.FieldGcCount:
+		return m.OldGcCount(ctx)
+	case systemmonitor.FieldLoadAvg1:
+		return m.OldLoadAvg1(ctx)
+	case systemmonitor.FieldLoadAvg5:
+		return m.OldLoadAvg5(ctx)
+	case systemmonitor.FieldLoadAvg15:
+		return m.OldLoadAvg15(ctx)
+	case systemmonitor.FieldUptime:
+		return m.OldUptime(ctx)
+	case systemmonitor.FieldRecordedAt:
+		return m.OldRecordedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown SystemMonitor field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SystemMonitorMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case systemmonitor.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case systemmonitor.FieldCreateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case systemmonitor.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case systemmonitor.FieldUpdateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateBy(v)
+		return nil
+	case systemmonitor.FieldCPUUsagePercent:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCPUUsagePercent(v)
+		return nil
+	case systemmonitor.FieldCPUCores:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCPUCores(v)
+		return nil
+	case systemmonitor.FieldMemoryTotal:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMemoryTotal(v)
+		return nil
+	case systemmonitor.FieldMemoryUsed:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMemoryUsed(v)
+		return nil
+	case systemmonitor.FieldMemoryFree:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMemoryFree(v)
+		return nil
+	case systemmonitor.FieldMemoryUsagePercent:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMemoryUsagePercent(v)
+		return nil
+	case systemmonitor.FieldDiskTotal:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDiskTotal(v)
+		return nil
+	case systemmonitor.FieldDiskUsed:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDiskUsed(v)
+		return nil
+	case systemmonitor.FieldDiskFree:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDiskFree(v)
+		return nil
+	case systemmonitor.FieldDiskUsagePercent:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDiskUsagePercent(v)
+		return nil
+	case systemmonitor.FieldNetworkBytesSent:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNetworkBytesSent(v)
+		return nil
+	case systemmonitor.FieldNetworkBytesRecv:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNetworkBytesRecv(v)
+		return nil
+	case systemmonitor.FieldOs:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOs(v)
+		return nil
+	case systemmonitor.FieldPlatform:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPlatform(v)
+		return nil
+	case systemmonitor.FieldPlatformVersion:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPlatformVersion(v)
+		return nil
+	case systemmonitor.FieldHostname:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHostname(v)
+		return nil
+	case systemmonitor.FieldGoroutinesCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoroutinesCount(v)
+		return nil
+	case systemmonitor.FieldHeapAlloc:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHeapAlloc(v)
+		return nil
+	case systemmonitor.FieldHeapSys:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHeapSys(v)
+		return nil
+	case systemmonitor.FieldGcCount:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGcCount(v)
+		return nil
+	case systemmonitor.FieldLoadAvg1:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLoadAvg1(v)
+		return nil
+	case systemmonitor.FieldLoadAvg5:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLoadAvg5(v)
+		return nil
+	case systemmonitor.FieldLoadAvg15:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLoadAvg15(v)
+		return nil
+	case systemmonitor.FieldUptime:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUptime(v)
+		return nil
+	case systemmonitor.FieldRecordedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRecordedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SystemMonitor field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SystemMonitorMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, systemmonitor.FieldCreateBy)
+	}
+	if m.addupdate_by != nil {
+		fields = append(fields, systemmonitor.FieldUpdateBy)
+	}
+	if m.addcpu_usage_percent != nil {
+		fields = append(fields, systemmonitor.FieldCPUUsagePercent)
+	}
+	if m.addcpu_cores != nil {
+		fields = append(fields, systemmonitor.FieldCPUCores)
+	}
+	if m.addmemory_total != nil {
+		fields = append(fields, systemmonitor.FieldMemoryTotal)
+	}
+	if m.addmemory_used != nil {
+		fields = append(fields, systemmonitor.FieldMemoryUsed)
+	}
+	if m.addmemory_free != nil {
+		fields = append(fields, systemmonitor.FieldMemoryFree)
+	}
+	if m.addmemory_usage_percent != nil {
+		fields = append(fields, systemmonitor.FieldMemoryUsagePercent)
+	}
+	if m.adddisk_total != nil {
+		fields = append(fields, systemmonitor.FieldDiskTotal)
+	}
+	if m.adddisk_used != nil {
+		fields = append(fields, systemmonitor.FieldDiskUsed)
+	}
+	if m.adddisk_free != nil {
+		fields = append(fields, systemmonitor.FieldDiskFree)
+	}
+	if m.adddisk_usage_percent != nil {
+		fields = append(fields, systemmonitor.FieldDiskUsagePercent)
+	}
+	if m.addnetwork_bytes_sent != nil {
+		fields = append(fields, systemmonitor.FieldNetworkBytesSent)
+	}
+	if m.addnetwork_bytes_recv != nil {
+		fields = append(fields, systemmonitor.FieldNetworkBytesRecv)
+	}
+	if m.addgoroutines_count != nil {
+		fields = append(fields, systemmonitor.FieldGoroutinesCount)
+	}
+	if m.addheap_alloc != nil {
+		fields = append(fields, systemmonitor.FieldHeapAlloc)
+	}
+	if m.addheap_sys != nil {
+		fields = append(fields, systemmonitor.FieldHeapSys)
+	}
+	if m.addgc_count != nil {
+		fields = append(fields, systemmonitor.FieldGcCount)
+	}
+	if m.addload_avg_1 != nil {
+		fields = append(fields, systemmonitor.FieldLoadAvg1)
+	}
+	if m.addload_avg_5 != nil {
+		fields = append(fields, systemmonitor.FieldLoadAvg5)
+	}
+	if m.addload_avg_15 != nil {
+		fields = append(fields, systemmonitor.FieldLoadAvg15)
+	}
+	if m.adduptime != nil {
+		fields = append(fields, systemmonitor.FieldUptime)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SystemMonitorMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case systemmonitor.FieldCreateBy:
+		return m.AddedCreateBy()
+	case systemmonitor.FieldUpdateBy:
+		return m.AddedUpdateBy()
+	case systemmonitor.FieldCPUUsagePercent:
+		return m.AddedCPUUsagePercent()
+	case systemmonitor.FieldCPUCores:
+		return m.AddedCPUCores()
+	case systemmonitor.FieldMemoryTotal:
+		return m.AddedMemoryTotal()
+	case systemmonitor.FieldMemoryUsed:
+		return m.AddedMemoryUsed()
+	case systemmonitor.FieldMemoryFree:
+		return m.AddedMemoryFree()
+	case systemmonitor.FieldMemoryUsagePercent:
+		return m.AddedMemoryUsagePercent()
+	case systemmonitor.FieldDiskTotal:
+		return m.AddedDiskTotal()
+	case systemmonitor.FieldDiskUsed:
+		return m.AddedDiskUsed()
+	case systemmonitor.FieldDiskFree:
+		return m.AddedDiskFree()
+	case systemmonitor.FieldDiskUsagePercent:
+		return m.AddedDiskUsagePercent()
+	case systemmonitor.FieldNetworkBytesSent:
+		return m.AddedNetworkBytesSent()
+	case systemmonitor.FieldNetworkBytesRecv:
+		return m.AddedNetworkBytesRecv()
+	case systemmonitor.FieldGoroutinesCount:
+		return m.AddedGoroutinesCount()
+	case systemmonitor.FieldHeapAlloc:
+		return m.AddedHeapAlloc()
+	case systemmonitor.FieldHeapSys:
+		return m.AddedHeapSys()
+	case systemmonitor.FieldGcCount:
+		return m.AddedGcCount()
+	case systemmonitor.FieldLoadAvg1:
+		return m.AddedLoadAvg1()
+	case systemmonitor.FieldLoadAvg5:
+		return m.AddedLoadAvg5()
+	case systemmonitor.FieldLoadAvg15:
+		return m.AddedLoadAvg15()
+	case systemmonitor.FieldUptime:
+		return m.AddedUptime()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SystemMonitorMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case systemmonitor.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case systemmonitor.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdateBy(v)
+		return nil
+	case systemmonitor.FieldCPUUsagePercent:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCPUUsagePercent(v)
+		return nil
+	case systemmonitor.FieldCPUCores:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCPUCores(v)
+		return nil
+	case systemmonitor.FieldMemoryTotal:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMemoryTotal(v)
+		return nil
+	case systemmonitor.FieldMemoryUsed:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMemoryUsed(v)
+		return nil
+	case systemmonitor.FieldMemoryFree:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMemoryFree(v)
+		return nil
+	case systemmonitor.FieldMemoryUsagePercent:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMemoryUsagePercent(v)
+		return nil
+	case systemmonitor.FieldDiskTotal:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDiskTotal(v)
+		return nil
+	case systemmonitor.FieldDiskUsed:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDiskUsed(v)
+		return nil
+	case systemmonitor.FieldDiskFree:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDiskFree(v)
+		return nil
+	case systemmonitor.FieldDiskUsagePercent:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDiskUsagePercent(v)
+		return nil
+	case systemmonitor.FieldNetworkBytesSent:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNetworkBytesSent(v)
+		return nil
+	case systemmonitor.FieldNetworkBytesRecv:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNetworkBytesRecv(v)
+		return nil
+	case systemmonitor.FieldGoroutinesCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddGoroutinesCount(v)
+		return nil
+	case systemmonitor.FieldHeapAlloc:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddHeapAlloc(v)
+		return nil
+	case systemmonitor.FieldHeapSys:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddHeapSys(v)
+		return nil
+	case systemmonitor.FieldGcCount:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddGcCount(v)
+		return nil
+	case systemmonitor.FieldLoadAvg1:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLoadAvg1(v)
+		return nil
+	case systemmonitor.FieldLoadAvg5:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLoadAvg5(v)
+		return nil
+	case systemmonitor.FieldLoadAvg15:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLoadAvg15(v)
+		return nil
+	case systemmonitor.FieldUptime:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUptime(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SystemMonitor numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SystemMonitorMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(systemmonitor.FieldCreateBy) {
+		fields = append(fields, systemmonitor.FieldCreateBy)
+	}
+	if m.FieldCleared(systemmonitor.FieldUpdateBy) {
+		fields = append(fields, systemmonitor.FieldUpdateBy)
+	}
+	if m.FieldCleared(systemmonitor.FieldLoadAvg1) {
+		fields = append(fields, systemmonitor.FieldLoadAvg1)
+	}
+	if m.FieldCleared(systemmonitor.FieldLoadAvg5) {
+		fields = append(fields, systemmonitor.FieldLoadAvg5)
+	}
+	if m.FieldCleared(systemmonitor.FieldLoadAvg15) {
+		fields = append(fields, systemmonitor.FieldLoadAvg15)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SystemMonitorMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SystemMonitorMutation) ClearField(name string) error {
+	switch name {
+	case systemmonitor.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case systemmonitor.FieldUpdateBy:
+		m.ClearUpdateBy()
+		return nil
+	case systemmonitor.FieldLoadAvg1:
+		m.ClearLoadAvg1()
+		return nil
+	case systemmonitor.FieldLoadAvg5:
+		m.ClearLoadAvg5()
+		return nil
+	case systemmonitor.FieldLoadAvg15:
+		m.ClearLoadAvg15()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemMonitor nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SystemMonitorMutation) ResetField(name string) error {
+	switch name {
+	case systemmonitor.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case systemmonitor.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case systemmonitor.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case systemmonitor.FieldUpdateBy:
+		m.ResetUpdateBy()
+		return nil
+	case systemmonitor.FieldCPUUsagePercent:
+		m.ResetCPUUsagePercent()
+		return nil
+	case systemmonitor.FieldCPUCores:
+		m.ResetCPUCores()
+		return nil
+	case systemmonitor.FieldMemoryTotal:
+		m.ResetMemoryTotal()
+		return nil
+	case systemmonitor.FieldMemoryUsed:
+		m.ResetMemoryUsed()
+		return nil
+	case systemmonitor.FieldMemoryFree:
+		m.ResetMemoryFree()
+		return nil
+	case systemmonitor.FieldMemoryUsagePercent:
+		m.ResetMemoryUsagePercent()
+		return nil
+	case systemmonitor.FieldDiskTotal:
+		m.ResetDiskTotal()
+		return nil
+	case systemmonitor.FieldDiskUsed:
+		m.ResetDiskUsed()
+		return nil
+	case systemmonitor.FieldDiskFree:
+		m.ResetDiskFree()
+		return nil
+	case systemmonitor.FieldDiskUsagePercent:
+		m.ResetDiskUsagePercent()
+		return nil
+	case systemmonitor.FieldNetworkBytesSent:
+		m.ResetNetworkBytesSent()
+		return nil
+	case systemmonitor.FieldNetworkBytesRecv:
+		m.ResetNetworkBytesRecv()
+		return nil
+	case systemmonitor.FieldOs:
+		m.ResetOs()
+		return nil
+	case systemmonitor.FieldPlatform:
+		m.ResetPlatform()
+		return nil
+	case systemmonitor.FieldPlatformVersion:
+		m.ResetPlatformVersion()
+		return nil
+	case systemmonitor.FieldHostname:
+		m.ResetHostname()
+		return nil
+	case systemmonitor.FieldGoroutinesCount:
+		m.ResetGoroutinesCount()
+		return nil
+	case systemmonitor.FieldHeapAlloc:
+		m.ResetHeapAlloc()
+		return nil
+	case systemmonitor.FieldHeapSys:
+		m.ResetHeapSys()
+		return nil
+	case systemmonitor.FieldGcCount:
+		m.ResetGcCount()
+		return nil
+	case systemmonitor.FieldLoadAvg1:
+		m.ResetLoadAvg1()
+		return nil
+	case systemmonitor.FieldLoadAvg5:
+		m.ResetLoadAvg5()
+		return nil
+	case systemmonitor.FieldLoadAvg15:
+		m.ResetLoadAvg15()
+		return nil
+	case systemmonitor.FieldUptime:
+		m.ResetUptime()
+		return nil
+	case systemmonitor.FieldRecordedAt:
+		m.ResetRecordedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemMonitor field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SystemMonitorMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SystemMonitorMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SystemMonitorMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SystemMonitorMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SystemMonitorMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SystemMonitorMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SystemMonitorMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown SystemMonitor unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SystemMonitorMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown SystemMonitor edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.

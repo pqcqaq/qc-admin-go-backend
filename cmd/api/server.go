@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	database "go-backend/database/ent"
+	"go-backend/internal/funcs"
 	"go-backend/pkg/configs"
 	"go-backend/pkg/logging"
 	"net/http"
@@ -90,6 +91,8 @@ func startServer(config *configs.AppConfig, engine *gin.Engine, dbClient *databa
 	// 优雅关闭服务器
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
+	funcs.Cleanup()
 
 	// 关闭HTTP服务器
 	if err := srv.Shutdown(ctx); err != nil {

@@ -140,6 +140,18 @@ func (f ScopeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ScopeMutation", m)
 }
 
+// The SystemMonitorFunc type is an adapter to allow the use of ordinary
+// function as SystemMonitor mutator.
+type SystemMonitorFunc func(context.Context, *ent.SystemMonitorMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemMonitorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemMonitorMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemMonitorMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

@@ -634,6 +634,63 @@ var (
 			},
 		},
 	}
+	// SysSystemMonitorColumns holds the columns for the "sys_system_monitor" table.
+	SysSystemMonitorColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "cpu_usage_percent", Type: field.TypeFloat64},
+		{Name: "cpu_cores", Type: field.TypeInt},
+		{Name: "memory_total", Type: field.TypeUint64},
+		{Name: "memory_used", Type: field.TypeUint64},
+		{Name: "memory_free", Type: field.TypeUint64},
+		{Name: "memory_usage_percent", Type: field.TypeFloat64},
+		{Name: "disk_total", Type: field.TypeUint64},
+		{Name: "disk_used", Type: field.TypeUint64},
+		{Name: "disk_free", Type: field.TypeUint64},
+		{Name: "disk_usage_percent", Type: field.TypeFloat64},
+		{Name: "network_bytes_sent", Type: field.TypeUint64, Default: 0},
+		{Name: "network_bytes_recv", Type: field.TypeUint64, Default: 0},
+		{Name: "os", Type: field.TypeString, Size: 50},
+		{Name: "platform", Type: field.TypeString, Size: 50},
+		{Name: "platform_version", Type: field.TypeString, Size: 100},
+		{Name: "hostname", Type: field.TypeString, Size: 255},
+		{Name: "goroutines_count", Type: field.TypeInt},
+		{Name: "heap_alloc", Type: field.TypeUint64},
+		{Name: "heap_sys", Type: field.TypeUint64},
+		{Name: "gc_count", Type: field.TypeUint32},
+		{Name: "load_avg_1", Type: field.TypeFloat64, Nullable: true},
+		{Name: "load_avg_5", Type: field.TypeFloat64, Nullable: true},
+		{Name: "load_avg_15", Type: field.TypeFloat64, Nullable: true},
+		{Name: "uptime", Type: field.TypeUint64},
+		{Name: "recorded_at", Type: field.TypeTime},
+	}
+	// SysSystemMonitorTable holds the schema information for the "sys_system_monitor" table.
+	SysSystemMonitorTable = &schema.Table{
+		Name:       "sys_system_monitor",
+		Columns:    SysSystemMonitorColumns,
+		PrimaryKey: []*schema.Column{SysSystemMonitorColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemmonitor_recorded_at",
+				Unique:  false,
+				Columns: []*schema.Column{SysSystemMonitorColumns[29]},
+				Annotation: &entsql.IndexAnnotation{
+					Desc: true,
+				},
+			},
+			{
+				Name:    "systemmonitor_create_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysSystemMonitorColumns[1]},
+				Annotation: &entsql.IndexAnnotation{
+					Desc: true,
+				},
+			},
+		},
+	}
 	// SysUsersColumns holds the columns for the "sys_users" table.
 	SysUsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -864,6 +921,7 @@ var (
 		SysRolePermissionTable,
 		ScansTable,
 		SysScopesTable,
+		SysSystemMonitorTable,
 		SysUsersTable,
 		SysUserRoleTable,
 		SysVerifyCodesTable,
@@ -907,6 +965,9 @@ func init() {
 	SysScopesTable.ForeignKeys[1].RefTable = SysScopesTable
 	SysScopesTable.Annotation = &entsql.Annotation{
 		Table: "sys_scopes",
+	}
+	SysSystemMonitorTable.Annotation = &entsql.Annotation{
+		Table: "sys_system_monitor",
 	}
 	SysUsersTable.ForeignKeys[0].RefTable = SysAttachmentsTable
 	SysUsersTable.Annotation = &entsql.Annotation{

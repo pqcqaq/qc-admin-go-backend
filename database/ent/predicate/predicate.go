@@ -39,6 +39,9 @@ type Scan func(*sql.Selector)
 // Scope is the predicate function for scope builders.
 type Scope func(*sql.Selector)
 
+// SystemMonitor is the predicate function for systemmonitor builders.
+type SystemMonitor func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
 

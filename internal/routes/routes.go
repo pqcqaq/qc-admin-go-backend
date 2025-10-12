@@ -57,5 +57,6 @@ func (r *Router) SetupRoutes(config *configs.AppConfig, engine *gin.Engine) {
 		r.setupAPIAuthRoutes(api)
 		r.setupLoggingRoutes(api)
 		r.setupClientDeviceRoutes(api)
+		r.setupSystemMonitorRoutes(api)
 	}
 }

@@ -375,6 +375,30 @@ func (f ScopeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation)
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ScopeMutation", m)
 }
 
+// The SystemMonitorQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type SystemMonitorQueryRuleFunc func(context.Context, *ent.SystemMonitorQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f SystemMonitorQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemMonitorQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemMonitorQuery", q)
+}
+
+// The SystemMonitorMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type SystemMonitorMutationRuleFunc func(context.Context, *ent.SystemMonitorMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f SystemMonitorMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SystemMonitorMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemMonitorMutation", m)
+}
+
 // The UserQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type UserQueryRuleFunc func(context.Context, *ent.UserQuery) error
@@ -504,6 +528,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.ScopeQuery:
 		return q.Filter(), nil
+	case *ent.SystemMonitorQuery:
+		return q.Filter(), nil
 	case *ent.UserQuery:
 		return q.Filter(), nil
 	case *ent.UserRoleQuery:
@@ -538,6 +564,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.ScanMutation:
 		return m.Filter(), nil
 	case *ent.ScopeMutation:
+		return m.Filter(), nil
+	case *ent.SystemMonitorMutation:
 		return m.Filter(), nil
 	case *ent.UserMutation:
 		return m.Filter(), nil

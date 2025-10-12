@@ -5,6 +5,7 @@ import (
 	basedatabase "go-backend/database"
 	database "go-backend/database/ent"
 	"go-backend/database/events"
+	"go-backend/internal/funcs"
 	"go-backend/internal/routes"
 	"go-backend/pkg/caching"
 	"go-backend/pkg/configs"
@@ -171,6 +172,8 @@ func initializeComponents(config *configs.AppConfig) (*InitResults, error) {
 			return nil, fmt.Errorf(cmp+"服务初始化失败: %w", results.errors[cmp])
 		}
 	}
+
+	funcs.Setup()
 
 	return results, nil
 }

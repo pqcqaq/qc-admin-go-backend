@@ -36,6 +36,8 @@ type Tx struct {
 	Scan *ScanClient
 	// Scope is the client for interacting with the Scope builders.
 	Scope *ScopeClient
+	// SystemMonitor is the client for interacting with the SystemMonitor builders.
+	SystemMonitor *SystemMonitorClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserRole is the client for interacting with the UserRole builders.
@@ -184,6 +186,7 @@ func (tx *Tx) init() {
 	tx.RolePermission = NewRolePermissionClient(tx.config)
 	tx.Scan = NewScanClient(tx.config)
 	tx.Scope = NewScopeClient(tx.config)
+	tx.SystemMonitor = NewSystemMonitorClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserRole = NewUserRoleClient(tx.config)
 	tx.VerifyCode = NewVerifyCodeClient(tx.config)
