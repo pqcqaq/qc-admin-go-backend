@@ -325,7 +325,9 @@ func (s *WsServer) subsTopic(client *ClientConnWrapper, topic string) {
 	s.clientSubscriptions[client][topic] = true
 	s.cSMu.Unlock()
 	logger.Info("Client %s subscribed to topic %s", client.id, topic)
-	client.SendSubsSuccess(topic)
+	if utils.StartsWithAlphanumeric(topic) && !utils.IsEndWith(topic, internalExts...) {
+		client.SendSubsSuccess(topic)
+	}
 }
 
 func (s *WsServer) GetClientFromSessionId(sessionId string) *ClientConnWrapper {
