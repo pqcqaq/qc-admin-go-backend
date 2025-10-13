@@ -155,7 +155,6 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 			return fmt.Errorf("topic is required for action 'subscribe'")
 		}
 
-		logger.Info("Client %s requests to subscribe to internal topic %s", client.id, msg.Topic)
 		// 内部的频道订阅请求, 直接订阅
 		// 规则: 以字母或者数字开头的,或者以.err/.res/.cre/.clo结尾的都是内部频道
 		// 其他的都需要后台服务进行权限验证
@@ -166,6 +165,12 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 		// 这些频道一般都是以用户ID开头的,这样就可以避免普通用户订阅到其他用户的频道
 		// 这样就可以保证只有用户12345自己可以订阅到这些频道,而其他用户无法订阅到
 		if !utils.StartsWithAlphanumeric(msg.Topic) || utils.IsEndWith(msg.Topic, internalExts...) {
+			s.subsTopic(client, msg.Topic)
+			return nil
+		}
+
+		// 如果是频道ID，则直接允许
+		if s.GetChannelById(msg.Topic) != nil {
 			s.subsTopic(client, msg.Topic)
 			return nil
 		}
@@ -203,7 +208,6 @@ func (s *WsServer) handleClientMessage(client *ClientConnWrapper, msg ClientMess
 			delete(s.clientSubscriptions[client], msg.Topic)
 		}
 		s.cSMu.Unlock()
-		logger.Info("Client %s unsubscribed from topic %s", client.id, msg.Topic)
 	case "msg":
 
 		if utils.IsEmpty(msg.Topic) {
@@ -324,7 +328,6 @@ func (s *WsServer) subsTopic(client *ClientConnWrapper, topic string) {
 	}
 	s.clientSubscriptions[client][topic] = true
 	s.cSMu.Unlock()
-	logger.Info("Client %s subscribed to topic %s", client.id, topic)
 	if utils.StartsWithAlphanumeric(topic) && !utils.IsEndWith(topic, internalExts...) {
 		client.SendSubsSuccess(topic)
 	}
@@ -516,7 +519,6 @@ func (s *WsServer) CreateSender() types.MessageSender {
 		if userId != nil {
 			userC = s.userClients[*userId]
 		} else {
-			logger.Info("Broadcasting message on topic %s", topic)
 			userC = s.connectedClients
 		}
 		if len(userC) == 0 {

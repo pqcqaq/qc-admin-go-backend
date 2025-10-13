@@ -277,6 +277,21 @@ func (s *WsServer) startChannelOpenListener() {
 			return nil
 		}
 
+		// 若不允许
+		if !socketMsg.Allowed {
+			logger.Warn("Channel creation denied for channel ID: %s, topic: %s, userID: %d, sessionId: %s, clientId: %d", socketMsg.ChannelID, socketMsg.Topic, socketMsg.UserID, socketMsg.SessionId, socketMsg.ClientId)
+			session := s.GetClientFromSessionId(socketMsg.SessionId)
+			if session != nil {
+				session.SendChannelCreatedFailed(socketMsg.Topic, ErrorCodeChannelCreateDenied, fmt.Errorf("channel creation denied"))
+			} else {
+				logger.Error("Client with session ID %s not found when denying channel %s", socketMsg.SessionId, socketMsg.ChannelID)
+			}
+			return nil
+		}
+
+		logger.Info("Channel creation approved for channel ID: %s, topic: %s, userID: %d, sessionId: %s, clientId: %d", socketMsg.ChannelID, socketMsg.Topic, socketMsg.UserID, socketMsg.SessionId, socketMsg.ClientId)
+		// 创建频道
+
 		s.createNewChannel(socketMsg.Topic, socketMsg.ChannelID, socketMsg.SessionId, socketMsg.UserID, socketMsg.ClientId)
 
 		return nil

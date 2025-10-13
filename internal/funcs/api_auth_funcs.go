@@ -91,7 +91,12 @@ func (ApiAuthFuncs) CreateAPIAuth(ctx context.Context, req *models.CreateAPIAuth
 		builder = builder.SetMetadata(req.Metadata)
 	}
 
-	return builder.Save(ctx)
+	rec, err := builder.Save(ctx)
+	// 更新缓存
+	if rec.Type == apiauth.TypeWebsocket {
+		updateCache(rec)
+	}
+	return rec, err
 }
 
 // UpdateAPIAuth 更新API认证记录
@@ -149,7 +154,12 @@ func (ApiAuthFuncs) UpdateAPIAuth(ctx context.Context, id uint64, req *models.Up
 		builder = builder.SetMetadata(req.Metadata)
 	}
 
-	return builder.Save(ctx)
+	rec, err := builder.Save(ctx)
+
+	// 更新缓存
+	updateCache(rec)
+
+	return rec, err
 }
 
 func (ApiAuthFuncs) permissionsListToIDs(permissionsList []*models.PermissionsList) []uint64 {
@@ -171,6 +181,8 @@ func (ApiAuthFuncs) DeleteAPIAuth(ctx context.Context, id uint64) error {
 	if !exists {
 		return fmt.Errorf("api auth with id %d not found", id)
 	}
+
+	deleteByKey(id)
 
 	return database.Client.APIAuth.DeleteOneID(id).Exec(ctx)
 }

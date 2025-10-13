@@ -3,6 +3,7 @@ package utils
 import "strings"
 
 // MatchTopic 检查消息topic是否匹配订阅pattern
+//  - subPattern 支持单层通配符 + 和多层通配符 #
 func MatchTopic(subPattern, msgTopic string) bool {
 	// 分割topic为层级
 	subLevels := strings.Split(subPattern, "/")

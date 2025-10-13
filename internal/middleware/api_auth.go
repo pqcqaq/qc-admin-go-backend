@@ -236,6 +236,7 @@ func QueryAPIAuthRecord(method, routePattern string) (*APIAuthRecord, error) {
 		Where(
 			apiauth.MethodEQ(method),
 			apiauth.PathEQ(routePattern), // 使用路由模式查询
+			apiauth.TypeEQ(apiauth.TypeHTTP),
 		).
 		WithPermissions().
 		Only(ctx)

@@ -3,9 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"go-backend/internal/funcs"
 	"go-backend/pkg/logging"
 	"go-backend/pkg/messaging"
 	"go-backend/pkg/utils"
+)
+
+const (
+	ChannelStartMethodStr = "ChannelStart"
+	SubscribeMethodStr    = "Subscribe"
 )
 
 func setupHandlers(ctx context.Context) {
@@ -43,6 +49,9 @@ func setupHandlers(ctx context.Context) {
 		}
 
 		logging.Info("Received channel open check for channel ID: %s, topic: %s, userID: %d, sessionId: %s, clientId: %d", socketMsg.ChannelID, socketMsg.Topic, socketMsg.UserID, socketMsg.SessionId, socketMsg.ClientId)
+
+		allowed, _ := funcs.IsTopicAllowed(socketMsg.Topic, socketMsg.UserID, ChannelStartMethodStr)
+
 		// 这里发送创建请求, 若五秒钟之后还没应答则创建失败
 		_, err = messaging.Publish(ctx, messaging.MessageStruct{
 			Type: messaging.ChannelOpenRes,
@@ -52,7 +61,7 @@ func setupHandlers(ctx context.Context) {
 				UserID:    socketMsg.UserID,
 				SessionId: socketMsg.SessionId,
 				ClientId:  socketMsg.ClientId,
-				Allowed:   true, // 初始为不允许, 需要后台服务确认
+				Allowed:   allowed,
 				Timestamp: utils.Now().Unix(),
 			},
 		})
@@ -85,7 +94,14 @@ func setupHandlers(ctx context.Context) {
 			return nil
 		}
 
-		logging.Info("Received channel open check for subscribe to topic: %s, userID: %d, sessionId: %s, clientId: %d", socketMsg.Topic, socketMsg.UserID, socketMsg.SessionId, socketMsg.ClientId)
+		logging.Info("Received subscribe check to topic: %s, userID: %d, sessionId: %s, clientId: %d", socketMsg.Topic, socketMsg.UserID, socketMsg.SessionId, socketMsg.ClientId)
+
+		allowed, _ := funcs.IsTopicAllowed(socketMsg.Topic, socketMsg.UserID, SubscribeMethodStr)
+
+		if !allowed {
+			logging.Warn("Subscription to topic %s denied for user %d", socketMsg.Topic, socketMsg.UserID)
+		}
+
 		// 这里发送创建请求, 若五秒钟之后还没应答则创建失败
 		_, err = messaging.Publish(ctx, messaging.MessageStruct{
 			Type: messaging.SubscribeRes,
@@ -94,7 +110,7 @@ func setupHandlers(ctx context.Context) {
 				UserID:    socketMsg.UserID,
 				SessionId: socketMsg.SessionId,
 				ClientId:  socketMsg.ClientId,
-				Allowed:   true, // 初始为不允许, 需要后台服务确认
+				Allowed:   allowed,
 				Timestamp: utils.Now().Unix(),
 			},
 		})

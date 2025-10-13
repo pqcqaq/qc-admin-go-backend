@@ -2,6 +2,7 @@ package funcs
 
 import (
 	"go-backend/pkg/configs"
+	"sync"
 	"time"
 )
 
@@ -15,6 +16,12 @@ func Setup() {
 		// 启动系统监控
 		InitSystemMonitor(interval, ent)
 	}
+
+	// 初始化WebSocket认证缓存
+	wsCacheLock = sync.RWMutex{}
+	wsCache = make(map[uint64]*WsCache)
+	records := queryWsList()
+	wsCache = makeCache(records)
 }
 
 func Cleanup() {
