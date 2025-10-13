@@ -2,6 +2,8 @@
 
 QC Admin 系统的高性能Go后端服务，采用现代化微服务架构设计。提供完整的企业级管理系统后端解决方案，支持Web管理端和移动端双重接入。
 
+[👉 前端项目地址（qc-admin）](https://github.com/pqcqaq/qc-admin)
+
 ## 🚀 项目概述
 
 QC Admin 是一个完整的企业级管理系统，由四个核心模块组成：
@@ -10,6 +12,15 @@ QC Admin 是一个完整的企业级管理系统，由四个核心模块组成�
 - **qc-admin-app**: uni-app 跨平台移动端应用
 - **qc-admin-go-backend**: Go + Gin 高性能后端服务（本项目）
 - **qc-admin-api-common**: TypeScript 公共API客户端库
+
+## 📸 截图
+
+![系统监控](./docs/screenshots/monitor.png)
+![用户管理](./docs/screenshots/user-management.png)
+![权限配置](./docs/screenshots/rbac.png)
+![接口认证](./docs/screenshots/apiauth.png)
+![接口认证](./docs/screenshots/syslog.png)
+![接口认证](./docs/screenshots/devices.png)
 
 ## ✨ 核心特性
 
