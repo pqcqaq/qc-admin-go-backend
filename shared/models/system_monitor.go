@@ -34,8 +34,8 @@ type SystemMonitorResponse struct {
 
 // SystemMonitorHistoryRequest 历史记录查询请求
 type SystemMonitorHistoryRequest struct {
-	Limit *int `form:"limit" json:"limit" binding:"omitempty,min=1,max=1000"` // 返回记录数，默认100
-	Hours *int `form:"hours" json:"hours" binding:"omitempty,min=1,max=168"`  // 查询最近多少小时，默认1小时，最大7天
+	Limit *int `form:"limit" json:"limit" binding:"omitempty,min=1,max=10000"` // 返回记录数，默认100
+	Hours *int `form:"hours" json:"hours" binding:"omitempty,min=1,max=168"`   // 查询最近多少小时，默认1小时，最大7天
 }
 
 // SystemMonitorRangeRequest 时间范围查询请求
