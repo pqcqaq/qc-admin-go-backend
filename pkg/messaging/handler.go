@@ -443,8 +443,6 @@ func (sc *StreamCleaner) performCleanup(ctx context.Context) {
 	config := configs.GetConfig().Server.Components.Messaging
 	streamKey := config.StreamKey
 
-	logger.Info("开始执行Stream清理操作")
-
 	for _, mType := range sc.mTypes {
 		streamName := fmt.Sprintf("%s:%s", streamKey, mType)
 		deadLetterKey := fmt.Sprintf("%s:%s:dead_letter", streamKey, mType)
@@ -455,8 +453,6 @@ func (sc *StreamCleaner) performCleanup(ctx context.Context) {
 		// 清理死信队列
 		sc.cleanupDeadLetter(ctx, deadLetterKey, config.Cleanup.DeadLetterMaxAge)
 	}
-
-	logger.Info("Stream清理操作完成")
 }
 
 // cleanupStream 清理Stream - 只清理已ACK的消息，保留pending消息
