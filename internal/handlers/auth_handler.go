@@ -273,7 +273,7 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        request body RefreshTokenRequest true "刷新Token请求"
+// @Param        request body models.RefreshTokenRequest true "刷新Token请求"
 // @Success      200 {object} object{success=bool,data=object{token=string,message=string}}
 // @Failure      400 {object} object{success=bool,message=string}
 // @Failure      401 {object} object{success=bool,message=string}

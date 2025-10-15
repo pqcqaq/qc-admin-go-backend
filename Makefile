@@ -60,7 +60,7 @@ generate: ## 生成Ent ORM代码
 .PHONY: swagger
 swagger: ## 生成Swagger API文档
 	@echo "Generating Swagger documentation..."
-	go run github.com/swaggo/swag/cmd/swag@latest init
+	go run github.com/swaggo/swag/cmd/swag@latest init -g cmd/api/main.go -o docs --parseDependency --parseInternal
 	@echo "Swagger documentation generated successfully!"
 	@echo "Swagger UI will be available at: http://localhost:8080/swagger/index.html"
 

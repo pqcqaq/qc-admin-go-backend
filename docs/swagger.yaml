@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  models.AssignRolePermissionsRequest:
+  go-backend_shared_models.AssignRolePermissionsRequest:
     properties:
       permissionIds:
         description: 权限ID列表
@@ -10,7 +10,7 @@ definitions:
     required:
     - permissionIds
     type: object
-  models.AssignUserRoleRequest:
+  go-backend_shared_models.AssignUserRoleRequest:
     properties:
       roleId:
         type: string
@@ -20,7 +20,7 @@ definitions:
     - roleId
     - userId
     type: object
-  models.AttachmentResponse:
+  go-backend_shared_models.AttachmentResponse:
     properties:
       bucket:
         type: string
@@ -58,7 +58,7 @@ definitions:
       url:
         type: string
     type: object
-  models.BatchAssignUsersToRoleRequest:
+  go-backend_shared_models.BatchAssignUsersToRoleRequest:
     properties:
       userIds:
         description: 用户ID列表
@@ -68,7 +68,7 @@ definitions:
     required:
     - userIds
     type: object
-  models.BatchRemoveUsersFromRoleRequest:
+  go-backend_shared_models.BatchRemoveUsersFromRoleRequest:
     properties:
       userIds:
         description: 用户ID列表
@@ -78,7 +78,33 @@ definitions:
     required:
     - userIds
     type: object
-  models.ConfirmUploadRequest:
+  go-backend_shared_models.CheckClientAccessRequest:
+    properties:
+      code:
+        description: 客户端code
+        type: string
+      roles:
+        description: 用户拥有的角色ID列表
+        items:
+          type: string
+        type: array
+      userId:
+        description: 用户ID
+        type: string
+    required:
+    - code
+    - userId
+    type: object
+  go-backend_shared_models.CheckClientAccessResponse:
+    properties:
+      allowed:
+        description: 是否允许访问
+        type: boolean
+      reason:
+        description: 不允许访问的原因
+        type: string
+    type: object
+  go-backend_shared_models.ConfirmUploadRequest:
     properties:
       actualSize:
         type: integer
@@ -89,7 +115,7 @@ definitions:
     required:
     - uploadSessionId
     type: object
-  models.CreateAPIAuthRequest:
+  go-backend_shared_models.CreateAPIAuthRequest:
     properties:
       description:
         description: API描述
@@ -116,16 +142,20 @@ definitions:
       permissions:
         description: 关联的权限ID列表
         items:
-          $ref: '#/definitions/models.PermissionsList'
+          $ref: '#/definitions/go-backend_shared_models.PermissionsList'
         type: array
+      type:
+        description: API类型，http或websocket
+        type: string
     required:
     - isActive
     - isPublic
     - method
     - name
     - path
+    - type
     type: object
-  models.CreateAttachmentRequest:
+  go-backend_shared_models.CreateAttachmentRequest:
     properties:
       bucket:
         type: string
@@ -164,7 +194,7 @@ definitions:
     - path
     - size
     type: object
-  models.CreateChildRoleRequest:
+  go-backend_shared_models.CreateChildRoleRequest:
     properties:
       description:
         type: string
@@ -173,7 +203,36 @@ definitions:
     required:
     - name
     type: object
-  models.CreateLoggingRequest:
+  go-backend_shared_models.CreateClientDeviceRequest:
+    properties:
+      accessTokenExpiry:
+        description: accessToken超时时间(ms)
+        type: integer
+      anonymous:
+        description: 允许所有角色登录，可选，默认true
+        type: boolean
+      description:
+        description: 是否启用，可选，默认true
+        type: string
+      enabled:
+        type: boolean
+      name:
+        description: 设备名称
+        type: string
+      refreshTokenExpiry:
+        description: refreshToken超时时间(ms)
+        type: integer
+      roleIds:
+        description: 关联的角色ID列表
+        items:
+          type: string
+        type: array
+    required:
+    - accessTokenExpiry
+    - name
+    - refreshTokenExpiry
+    type: object
+  go-backend_shared_models.CreateLoggingRequest:
     properties:
       code:
         minimum: 1
@@ -219,22 +278,22 @@ definitions:
     required:
     - message
     type: object
-  models.CreatePermissionRequest:
+  go-backend_shared_models.CreatePermissionRequest:
     properties:
       action:
         type: string
       description:
         type: string
+      isPublic:
+        description: 是否为公共权限
+        type: boolean
       name:
-        type: string
-      scopeId:
-        description: 权限域ID
         type: string
     required:
     - action
     - name
     type: object
-  models.CreateRoleRequest:
+  go-backend_shared_models.CreateRoleRequest:
     properties:
       description:
         type: string
@@ -248,7 +307,7 @@ definitions:
     required:
     - name
     type: object
-  models.CreateScanRequest:
+  go-backend_shared_models.CreateScanRequest:
     properties:
       content:
         description: 扫描内容
@@ -263,7 +322,7 @@ definitions:
     - content
     - success
     type: object
-  models.CreateScopeRequest:
+  go-backend_shared_models.CreateScopeRequest:
     properties:
       action:
         type: string
@@ -301,7 +360,7 @@ definitions:
     - name
     - type
     type: object
-  models.CreateUserRequest:
+  go-backend_shared_models.CreateUserRequest:
     properties:
       age:
         type: integer
@@ -321,7 +380,12 @@ definitions:
     required:
     - name
     type: object
-  models.HealthResponse:
+  go-backend_shared_models.DeleteSystemMonitorRangeResponse:
+    properties:
+      deleted:
+        type: integer
+    type: object
+  go-backend_shared_models.HealthResponse:
     properties:
       components:
         additionalProperties:
@@ -332,7 +396,7 @@ definitions:
       status:
         type: string
     type: object
-  models.LoginRecordResponse:
+  go-backend_shared_models.LoginRecordResponse:
     properties:
       credentialType:
         type: string
@@ -367,8 +431,10 @@ definitions:
       userId:
         type: integer
     type: object
-  models.LoginRequest:
+  go-backend_shared_models.LoginRequest:
     properties:
+      clientCode:
+        type: string
       credentialType:
         description: 认证类型
         enum:
@@ -381,6 +447,9 @@ definitions:
       identifier:
         description: 标识符
         type: string
+      rememberMe:
+        description: 记住我
+        type: boolean
       secret:
         description: 密码（密码登录时必需）
         type: string
@@ -388,20 +457,22 @@ definitions:
         description: 验证码（非密码登录时必需）
         type: string
     required:
+    - clientCode
     - credentialType
     - identifier
     type: object
-  models.LoginResponse:
+  go-backend_shared_models.LoginResponse:
     properties:
       message:
         type: string
       token:
+        allOf:
+        - $ref: '#/definitions/go-backend_shared_models.TokenInfo'
         description: JWT token (如果有的话)
-        type: string
       user:
-        $ref: '#/definitions/models.UserInfo'
+        $ref: '#/definitions/go-backend_shared_models.UserInfo'
     type: object
-  models.PermissionResponse:
+  go-backend_shared_models.PermissionResponse:
     properties:
       action:
         type: string
@@ -411,35 +482,36 @@ definitions:
         type: string
       id:
         type: string
+      isPublic:
+        description: 是否为公共权限
+        type: boolean
       name:
         type: string
-      scope:
-        allOf:
-        - $ref: '#/definitions/models.ScopeResponse'
-        description: 所属权限域
+      roles:
+        description: 拥有该权限的角色
+        items:
+          $ref: '#/definitions/go-backend_shared_models.RoleResponse'
+        type: array
       updateTime:
         type: string
     type: object
-  models.PermissionWithSource:
+  go-backend_shared_models.PermissionWithSource:
     properties:
       permission:
-        $ref: '#/definitions/models.PermissionResponse'
-      source:
-        description: '来源类型: "直接分配" | "角色继承"'
-        type: string
+        $ref: '#/definitions/go-backend_shared_models.PermissionResponse'
       sourceRole:
         allOf:
-        - $ref: '#/definitions/models.RoleResponse'
+        - $ref: '#/definitions/go-backend_shared_models.RoleResponse'
         description: 来源角色
     type: object
-  models.PermissionsList:
+  go-backend_shared_models.PermissionsList:
     properties:
       action:
         type: string
       id:
         type: string
     type: object
-  models.PrepareUploadRequest:
+  go-backend_shared_models.PrepareUploadRequest:
     properties:
       bucket:
         type: string
@@ -461,8 +533,17 @@ definitions:
     - filename
     - size
     type: object
-  models.RegisterRequest:
+  go-backend_shared_models.RefreshTokenRequest:
     properties:
+      refreshToken:
+        type: string
+    required:
+    - refreshToken
+    type: object
+  go-backend_shared_models.RegisterRequest:
+    properties:
+      clientCode:
+        type: string
       credentialType:
         description: 认证类型
         enum:
@@ -485,22 +566,26 @@ definitions:
         description: 验证码（非密码注册时必需）
         type: string
     required:
+    - clientCode
     - credentialType
     - identifier
     - username
     type: object
-  models.RegisterResponse:
+  go-backend_shared_models.RegisterResponse:
     properties:
       message:
         type: string
       token:
+        allOf:
+        - $ref: '#/definitions/go-backend_shared_models.TokenInfo'
         description: JWT token (如果有的话)
-        type: string
       user:
-        $ref: '#/definitions/models.UserInfo'
+        $ref: '#/definitions/go-backend_shared_models.UserInfo'
     type: object
-  models.ResetPasswordRequest:
+  go-backend_shared_models.ResetPasswordRequest:
     properties:
+      clientCode:
+        type: string
       credentialType:
         description: 认证类型
         enum:
@@ -523,36 +608,42 @@ definitions:
         description: 验证码（非密码重置时必需）
         type: string
     required:
+    - clientCode
     - credentialType
     - identifier
     - newPassword
     type: object
-  models.ResetPasswordResponse:
+  go-backend_shared_models.ResetPasswordResponse:
     properties:
       message:
         type: string
     type: object
-  models.RoleDetailedPermissionsResponse:
+  go-backend_shared_models.RoleDetailedPermissionsResponse:
     properties:
       allPermissions:
         description: 所有权限
         items:
-          $ref: '#/definitions/models.PermissionResponse'
+          $ref: '#/definitions/go-backend_shared_models.PermissionResponse'
         type: array
       directPermissions:
         description: 直接分配的权限
         items:
-          $ref: '#/definitions/models.PermissionWithSource'
+          $ref: '#/definitions/go-backend_shared_models.PermissionWithSource'
         type: array
       inheritedPermissions:
         description: 继承的权限
         items:
-          $ref: '#/definitions/models.PermissionWithSource'
+          $ref: '#/definitions/go-backend_shared_models.PermissionWithSource'
+        type: array
+      publicPermissions:
+        description: 公开权限
+        items:
+          $ref: '#/definitions/go-backend_shared_models.PermissionWithSource'
         type: array
       role:
-        $ref: '#/definitions/models.RoleResponse'
+        $ref: '#/definitions/go-backend_shared_models.RoleResponse'
     type: object
-  models.RoleResponse:
+  go-backend_shared_models.RoleResponse:
     properties:
       createTime:
         type: string
@@ -563,29 +654,29 @@ definitions:
       inheritedBy:
         description: 被哪些角色继承
         items:
-          $ref: '#/definitions/models.RoleResponse'
+          $ref: '#/definitions/go-backend_shared_models.RoleResponse'
         type: array
       inheritsFrom:
         description: 继承的父角色
         items:
-          $ref: '#/definitions/models.RoleResponse'
+          $ref: '#/definitions/go-backend_shared_models.RoleResponse'
         type: array
       name:
         type: string
       permissions:
         description: 角色拥有的权限
         items:
-          $ref: '#/definitions/models.PermissionResponse'
+          $ref: '#/definitions/go-backend_shared_models.PermissionResponse'
         type: array
       updateTime:
         type: string
     type: object
-  models.RoleTreeResponse:
+  go-backend_shared_models.RoleTreeResponse:
     properties:
       children:
         description: 子角色
         items:
-          $ref: '#/definitions/models.RoleTreeResponse'
+          $ref: '#/definitions/go-backend_shared_models.RoleTreeResponse'
         type: array
       createTime:
         type: string
@@ -596,7 +687,7 @@ definitions:
       inheritsFrom:
         description: 继承的父角色
         items:
-          $ref: '#/definitions/models.RoleResponse'
+          $ref: '#/definitions/go-backend_shared_models.RoleResponse'
         type: array
       name:
         type: string
@@ -606,7 +697,7 @@ definitions:
         description: 拥有该角色的用户数量
         type: integer
     type: object
-  models.RoleUserResponse:
+  go-backend_shared_models.RoleUserResponse:
     properties:
       createTime:
         type: string
@@ -619,19 +710,19 @@ definitions:
       otherRoles:
         description: 除当前角色外的其他角色
         items:
-          $ref: '#/definitions/models.RoleResponse'
+          $ref: '#/definitions/go-backend_shared_models.RoleResponse'
         type: array
       updateTime:
         type: string
     type: object
-  models.ScopeResponse:
+  go-backend_shared_models.ScopeResponse:
     properties:
       action:
         type: string
       children:
         description: 子级权限域
         items:
-          $ref: '#/definitions/models.ScopeResponse'
+          $ref: '#/definitions/go-backend_shared_models.ScopeResponse'
         type: array
       component:
         type: string
@@ -653,7 +744,7 @@ definitions:
         type: integer
       parent:
         allOf:
-        - $ref: '#/definitions/models.ScopeResponse'
+        - $ref: '#/definitions/go-backend_shared_models.ScopeResponse'
         description: 父级权限域
       parentId:
         type: string
@@ -661,7 +752,7 @@ definitions:
         type: string
       permission:
         allOf:
-        - $ref: '#/definitions/models.PermissionResponse'
+        - $ref: '#/definitions/go-backend_shared_models.PermissionResponse'
         description: 关联的权限
       redirect:
         type: string
@@ -670,8 +761,10 @@ definitions:
       updateTime:
         type: string
     type: object
-  models.SendVerifyCodeRequest:
+  go-backend_shared_models.SendVerifyCodeRequest:
     properties:
+      clientCode:
+        type: string
       identifier:
         description: 标识符
         type: string
@@ -690,12 +783,113 @@ definitions:
     - purpose
     - senderType
     type: object
-  models.SendVerifyCodeResponse:
+  go-backend_shared_models.SendVerifyCodeResponse:
     properties:
       message:
         type: string
     type: object
-  models.UpdateAPIAuthRequest:
+  go-backend_shared_models.SystemMonitorMetricsSummary:
+    properties:
+      avg:
+        type: number
+      max:
+        type: number
+      min:
+        type: number
+    type: object
+  go-backend_shared_models.SystemMonitorPeriodSummary:
+    properties:
+      end:
+        type: string
+      hours:
+        type: number
+      start:
+        type: string
+    type: object
+  go-backend_shared_models.SystemMonitorResponse:
+    properties:
+      cpuCores:
+        type: integer
+      cpuUsagePercent:
+        type: number
+      createdAt:
+        type: string
+      diskFree:
+        type: integer
+      diskTotal:
+        type: integer
+      diskUsagePercent:
+        type: number
+      diskUsed:
+        type: integer
+      gcCount:
+        type: integer
+      goroutinesCount:
+        type: integer
+      heapAlloc:
+        type: integer
+      heapSys:
+        type: integer
+      hostname:
+        type: string
+      id:
+        type: string
+      loadAvg1:
+        type: number
+      loadAvg5:
+        type: number
+      loadAvg15:
+        type: number
+      memoryFree:
+        type: integer
+      memoryTotal:
+        type: integer
+      memoryUsagePercent:
+        type: number
+      memoryUsed:
+        type: integer
+      networkBytesRecv:
+        type: integer
+      networkBytesSent:
+        type: integer
+      os:
+        type: string
+      platform:
+        type: string
+      platformVersion:
+        type: string
+      recordedAt:
+        type: string
+      updatedAt:
+        type: string
+      uptime:
+        type: integer
+    type: object
+  go-backend_shared_models.SystemMonitorSummaryResponse:
+    properties:
+      count:
+        type: integer
+      cpu:
+        $ref: '#/definitions/go-backend_shared_models.SystemMonitorMetricsSummary'
+      disk:
+        $ref: '#/definitions/go-backend_shared_models.SystemMonitorMetricsSummary'
+      memory:
+        $ref: '#/definitions/go-backend_shared_models.SystemMonitorMetricsSummary'
+      period:
+        $ref: '#/definitions/go-backend_shared_models.SystemMonitorPeriodSummary'
+    type: object
+  go-backend_shared_models.TokenInfo:
+    properties:
+      accessExpiredIn:
+        type: integer
+      accessToken:
+        type: string
+      refreshExpiredIn:
+        type: integer
+      refreshToken:
+        type: string
+    type: object
+  go-backend_shared_models.UpdateAPIAuthRequest:
     properties:
       description:
         description: API描述
@@ -722,16 +916,20 @@ definitions:
       permissions:
         description: 关联的权限ID列表
         items:
-          $ref: '#/definitions/models.PermissionsList'
+          $ref: '#/definitions/go-backend_shared_models.PermissionsList'
         type: array
+      type:
+        description: API类型，http或websocket
+        type: string
     required:
     - isActive
     - isPublic
     - method
     - name
     - path
+    - type
     type: object
-  models.UpdateAttachmentRequest:
+  go-backend_shared_models.UpdateAttachmentRequest:
     properties:
       bucket:
         type: string
@@ -763,7 +961,38 @@ definitions:
       url:
         type: string
     type: object
-  models.UpdateLoggingRequest:
+  go-backend_shared_models.UpdateClientDeviceRequest:
+    properties:
+      accessTokenExpiry:
+        description: accessToken超时时间(ms)
+        type: integer
+      anonymous:
+        description: 允许所有角色登录
+        type: boolean
+      description:
+        description: 是否启用
+        type: string
+      enabled:
+        type: boolean
+      name:
+        description: 设备名称
+        type: string
+      refreshTokenExpiry:
+        description: refreshToken超时时间(ms)
+        type: integer
+      roleIds:
+        description: 关联的角色ID列表
+        items:
+          type: string
+        type: array
+    required:
+    - accessTokenExpiry
+    - anonymous
+    - enabled
+    - name
+    - refreshTokenExpiry
+    type: object
+  go-backend_shared_models.UpdateLoggingRequest:
     properties:
       code:
         minimum: 1
@@ -809,19 +1038,19 @@ definitions:
     required:
     - message
     type: object
-  models.UpdatePermissionRequest:
+  go-backend_shared_models.UpdatePermissionRequest:
     properties:
       action:
         type: string
       description:
         type: string
+      isPublic:
+        description: 是否为公共权限
+        type: boolean
       name:
         type: string
-      scopeId:
-        description: 权限域ID
-        type: string
     type: object
-  models.UpdateRoleRequest:
+  go-backend_shared_models.UpdateRoleRequest:
     properties:
       description:
         type: string
@@ -833,7 +1062,7 @@ definitions:
       name:
         type: string
     type: object
-  models.UpdateScanRequest:
+  go-backend_shared_models.UpdateScanRequest:
     properties:
       content:
         description: 扫描内容
@@ -848,7 +1077,7 @@ definitions:
     - content
     - success
     type: object
-  models.UpdateScopeRequest:
+  go-backend_shared_models.UpdateScopeRequest:
     properties:
       action:
         type: string
@@ -879,7 +1108,7 @@ definitions:
       type:
         type: string
     type: object
-  models.UpdateUserRequest:
+  go-backend_shared_models.UpdateUserRequest:
     properties:
       age:
         type: integer
@@ -894,7 +1123,7 @@ definitions:
         description: 用户状态
         type: string
     type: object
-  models.UserInfo:
+  go-backend_shared_models.UserInfo:
     properties:
       age:
         description: 年龄
@@ -911,12 +1140,12 @@ definitions:
       permissions:
         description: 用户权限（通过角色继承）
         items:
-          $ref: '#/definitions/models.PermissionResponse'
+          $ref: '#/definitions/go-backend_shared_models.PermissionResponse'
         type: array
       roles:
         description: 用户角色
         items:
-          $ref: '#/definitions/models.RoleResponse'
+          $ref: '#/definitions/go-backend_shared_models.RoleResponse'
         type: array
       sex:
         description: 性别
@@ -926,7 +1155,7 @@ definitions:
       updateTime:
         type: string
     type: object
-  models.UserResponse:
+  go-backend_shared_models.UserResponse:
     properties:
       age:
         type: integer
@@ -954,24 +1183,24 @@ definitions:
         description: 更新时间
         type: string
     type: object
-  models.UserRoleResponse:
+  go-backend_shared_models.UserRoleResponse:
     properties:
       createTime:
         type: string
       id:
         type: string
       role:
-        $ref: '#/definitions/models.RoleResponse'
+        $ref: '#/definitions/go-backend_shared_models.RoleResponse'
       roleId:
         type: string
       updateTime:
         type: string
       user:
-        $ref: '#/definitions/models.UserResponse'
+        $ref: '#/definitions/go-backend_shared_models.UserResponse'
       userId:
         type: string
     type: object
-  models.VerifyCodeRequest:
+  go-backend_shared_models.VerifyCodeRequest:
     properties:
       code:
         description: 验证码
@@ -995,7 +1224,7 @@ definitions:
     - purpose
     - senderType
     type: object
-  models.VerifyCodeResponse:
+  go-backend_shared_models.VerifyCodeResponse:
     properties:
       message:
         type: string
@@ -1056,7 +1285,7 @@ paths:
                 properties:
                   records:
                     items:
-                      $ref: '#/definitions/models.LoginRecordResponse'
+                      $ref: '#/definitions/go-backend_shared_models.LoginRecordResponse'
                     type: array
                   total:
                     type: integer
@@ -1148,7 +1377,7 @@ paths:
         name: apiauth
         required: true
         schema:
-          $ref: '#/definitions/models.CreateAPIAuthRequest'
+          $ref: '#/definitions/go-backend_shared_models.CreateAPIAuthRequest'
       produces:
       - application/json
       responses:
@@ -1302,7 +1531,7 @@ paths:
         name: apiauth
         required: true
         schema:
-          $ref: '#/definitions/models.UpdateAPIAuthRequest'
+          $ref: '#/definitions/go-backend_shared_models.UpdateAPIAuthRequest'
       produces:
       - application/json
       responses:
@@ -1561,7 +1790,7 @@ paths:
         name: attachment
         required: true
         schema:
-          $ref: '#/definitions/models.CreateAttachmentRequest'
+          $ref: '#/definitions/go-backend_shared_models.CreateAttachmentRequest'
       produces:
       - application/json
       responses:
@@ -1663,7 +1892,7 @@ paths:
         name: attachment
         required: true
         schema:
-          $ref: '#/definitions/models.UpdateAttachmentRequest'
+          $ref: '#/definitions/go-backend_shared_models.UpdateAttachmentRequest'
       produces:
       - application/json
       responses:
@@ -1773,7 +2002,7 @@ paths:
         name: upload
         required: true
         schema:
-          $ref: '#/definitions/models.ConfirmUploadRequest'
+          $ref: '#/definitions/go-backend_shared_models.ConfirmUploadRequest'
       produces:
       - application/json
       responses:
@@ -1845,7 +2074,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.AttachmentResponse'
+                $ref: '#/definitions/go-backend_shared_models.AttachmentResponse'
               message:
                 type: string
               success:
@@ -1946,7 +2175,7 @@ paths:
         name: upload
         required: true
         schema:
-          $ref: '#/definitions/models.PrepareUploadRequest'
+          $ref: '#/definitions/go-backend_shared_models.PrepareUploadRequest'
       produces:
       - application/json
       responses:
@@ -1993,14 +2222,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.LoginRequest'
+          $ref: '#/definitions/go-backend_shared_models.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.LoginResponse'
+            $ref: '#/definitions/go-backend_shared_models.LoginResponse'
         "400":
           description: Bad Request
           schema:
@@ -2058,7 +2287,7 @@ paths:
                 properties:
                   records:
                     items:
-                      $ref: '#/definitions/models.LoginRecordResponse'
+                      $ref: '#/definitions/go-backend_shared_models.LoginRecordResponse'
                     type: array
                   total:
                     type: integer
@@ -2137,6 +2366,13 @@ paths:
       consumes:
       - application/json
       description: 刷新JWT Token
+      parameters:
+      - description: 刷新Token请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/go-backend_shared_models.RefreshTokenRequest'
       produces:
       - application/json
       responses:
@@ -2151,6 +2387,15 @@ paths:
                   token:
                     type: string
                 type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
               success:
                 type: boolean
             type: object
@@ -2172,8 +2417,6 @@ paths:
               success:
                 type: boolean
             type: object
-      security:
-      - BearerAuth: []
       summary: 刷新Token
       tags:
       - auth
@@ -2188,14 +2431,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.RegisterRequest'
+          $ref: '#/definitions/go-backend_shared_models.RegisterRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.RegisterResponse'
+            $ref: '#/definitions/go-backend_shared_models.RegisterResponse'
         "400":
           description: Bad Request
           schema:
@@ -2237,14 +2480,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.ResetPasswordRequest'
+          $ref: '#/definitions/go-backend_shared_models.ResetPasswordRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ResetPasswordResponse'
+            $ref: '#/definitions/go-backend_shared_models.ResetPasswordResponse'
         "400":
           description: Bad Request
           schema:
@@ -2295,14 +2538,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.SendVerifyCodeRequest'
+          $ref: '#/definitions/go-backend_shared_models.SendVerifyCodeRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.SendVerifyCodeResponse'
+            $ref: '#/definitions/go-backend_shared_models.SendVerifyCodeResponse'
         "400":
           description: Bad Request
           schema:
@@ -2337,7 +2580,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.UserInfo'
+                $ref: '#/definitions/go-backend_shared_models.UserInfo'
               success:
                 type: boolean
             type: object
@@ -2435,14 +2678,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.VerifyCodeRequest'
+          $ref: '#/definitions/go-backend_shared_models.VerifyCodeRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.VerifyCodeResponse'
+            $ref: '#/definitions/go-backend_shared_models.VerifyCodeResponse'
         "400":
           description: Bad Request
           schema:
@@ -2464,6 +2707,493 @@ paths:
       summary: 验证验证码
       tags:
       - auth
+  /client-devices:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统中所有客户端设备的列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  type: object
+                type: array
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取所有客户端设备
+      tags:
+      - client-devices
+    post:
+      consumes:
+      - application/json
+      description: 创建新的客户端设备
+      parameters:
+      - description: 客户端设备信息
+        in: body
+        name: device
+        required: true
+        schema:
+          $ref: '#/definitions/go-backend_shared_models.CreateClientDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 创建客户端设备
+      tags:
+      - client-devices
+  /client-devices/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除客户端设备
+      parameters:
+      - description: 客户端设备ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 删除客户端设备
+      tags:
+      - client-devices
+    get:
+      consumes:
+      - application/json
+      description: 根据客户端设备ID获取设备详细信息
+      parameters:
+      - description: 客户端设备ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 根据ID获取客户端设备
+      tags:
+      - client-devices
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新客户端设备信息
+      parameters:
+      - description: 客户端设备ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 客户端设备信息
+        in: body
+        name: device
+        required: true
+        schema:
+          $ref: '#/definitions/go-backend_shared_models.UpdateClientDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 更新客户端设备
+      tags:
+      - client-devices
+  /client-devices/check-access:
+    post:
+      consumes:
+      - application/json
+      description: 检查用户是否能使用指定客户端登录
+      parameters:
+      - description: 检查请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/go-backend_shared_models.CheckClientAccessRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/go-backend_shared_models.CheckClientAccessResponse'
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 检查客户端访问权限
+      tags:
+      - client-devices
+  /client-devices/code/{code}:
+    get:
+      consumes:
+      - application/json
+      description: 根据客户端设备code获取设备信息
+      parameters:
+      - description: 客户端设备code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 根据code获取客户端设备
+      tags:
+      - client-devices
+  /client-devices/export:
+    get:
+      consumes:
+      - application/json
+      description: 将客户端设备导出为Excel文件
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10000
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: desc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: create_time
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      - description: 按名称模糊搜索
+        in: query
+        name: name
+        type: string
+      - description: 按code精确搜索
+        in: query
+        name: code
+        type: string
+      - description: 按启用状态过滤
+        in: query
+        name: enabled
+        type: boolean
+      - description: 按匿名登录过滤
+        in: query
+        name: anonymous
+        type: boolean
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel文件
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 导出客户端设备为Excel
+      tags:
+      - client-devices
+  /client-devices/page:
+    get:
+      consumes:
+      - application/json
+      description: 根据分页参数获取客户端设备列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - default: desc
+        description: 排序方式
+        in: query
+        name: order
+        type: string
+      - default: create_time
+        description: 排序字段
+        in: query
+        name: order_by
+        type: string
+      - description: 按名称模糊搜索
+        in: query
+        name: name
+        type: string
+      - description: 按code精确搜索
+        in: query
+        name: code
+        type: string
+      - description: 按启用状态过滤
+        in: query
+        name: enabled
+        type: boolean
+      - description: 按匿名登录过滤
+        in: query
+        name: anonymous
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  type: object
+                type: array
+              pagination:
+                type: object
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 分页获取客户端设备列表
+      tags:
+      - client-devices
   /demo/error:
     get:
       consumes:
@@ -2527,7 +3257,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.HealthResponse'
+            $ref: '#/definitions/go-backend_shared_models.HealthResponse'
       summary: 健康检查
       tags:
       - health
@@ -2574,7 +3304,7 @@ paths:
         name: logging
         required: true
         schema:
-          $ref: '#/definitions/models.CreateLoggingRequest'
+          $ref: '#/definitions/go-backend_shared_models.CreateLoggingRequest'
       produces:
       - application/json
       responses:
@@ -2728,7 +3458,7 @@ paths:
         name: logging
         required: true
         schema:
-          $ref: '#/definitions/models.UpdateLoggingRequest'
+          $ref: '#/definitions/go-backend_shared_models.UpdateLoggingRequest'
       produces:
       - application/json
       responses:
@@ -3015,7 +3745,7 @@ paths:
             properties:
               data:
                 items:
-                  $ref: '#/definitions/models.PermissionResponse'
+                  $ref: '#/definitions/go-backend_shared_models.PermissionResponse'
                 type: array
               pagination:
                 type: object
@@ -3053,7 +3783,7 @@ paths:
         name: permission
         required: true
         schema:
-          $ref: '#/definitions/models.CreatePermissionRequest'
+          $ref: '#/definitions/go-backend_shared_models.CreatePermissionRequest'
       produces:
       - application/json
       responses:
@@ -3062,7 +3792,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.PermissionResponse'
+                $ref: '#/definitions/go-backend_shared_models.PermissionResponse'
               message:
                 type: string
               success:
@@ -3160,7 +3890,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.PermissionResponse'
+                $ref: '#/definitions/go-backend_shared_models.PermissionResponse'
               success:
                 type: boolean
             type: object
@@ -3209,7 +3939,7 @@ paths:
         name: permission
         required: true
         schema:
-          $ref: '#/definitions/models.UpdatePermissionRequest'
+          $ref: '#/definitions/go-backend_shared_models.UpdatePermissionRequest'
       produces:
       - application/json
       responses:
@@ -3218,7 +3948,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.PermissionResponse'
+                $ref: '#/definitions/go-backend_shared_models.PermissionResponse'
               message:
                 type: string
               success:
@@ -3270,7 +4000,7 @@ paths:
                 type: integer
               data:
                 items:
-                  $ref: '#/definitions/models.PermissionResponse'
+                  $ref: '#/definitions/go-backend_shared_models.PermissionResponse'
                 type: array
               success:
                 type: boolean
@@ -3322,7 +4052,7 @@ paths:
             properties:
               data:
                 items:
-                  $ref: '#/definitions/models.RoleResponse'
+                  $ref: '#/definitions/go-backend_shared_models.RoleResponse'
                 type: array
               pagination:
                 type: object
@@ -3360,7 +4090,7 @@ paths:
         name: role
         required: true
         schema:
-          $ref: '#/definitions/models.CreateRoleRequest'
+          $ref: '#/definitions/go-backend_shared_models.CreateRoleRequest'
       produces:
       - application/json
       responses:
@@ -3369,7 +4099,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.RoleResponse'
+                $ref: '#/definitions/go-backend_shared_models.RoleResponse'
               message:
                 type: string
               success:
@@ -3467,7 +4197,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.RoleResponse'
+                $ref: '#/definitions/go-backend_shared_models.RoleResponse'
               success:
                 type: boolean
             type: object
@@ -3516,7 +4246,7 @@ paths:
         name: role
         required: true
         schema:
-          $ref: '#/definitions/models.UpdateRoleRequest'
+          $ref: '#/definitions/go-backend_shared_models.UpdateRoleRequest'
       produces:
       - application/json
       responses:
@@ -3525,7 +4255,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.RoleResponse'
+                $ref: '#/definitions/go-backend_shared_models.RoleResponse'
               message:
                 type: string
               success:
@@ -3692,7 +4422,7 @@ paths:
         name: permissions
         required: true
         schema:
-          $ref: '#/definitions/models.AssignRolePermissionsRequest'
+          $ref: '#/definitions/go-backend_shared_models.AssignRolePermissionsRequest'
       produces:
       - application/json
       responses:
@@ -3804,7 +4534,7 @@ paths:
             properties:
               data:
                 items:
-                  $ref: '#/definitions/models.PermissionResponse'
+                  $ref: '#/definitions/go-backend_shared_models.PermissionResponse'
                 type: array
               success:
                 type: boolean
@@ -3858,7 +4588,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.RoleDetailedPermissionsResponse'
+                $ref: '#/definitions/go-backend_shared_models.RoleDetailedPermissionsResponse'
               success:
                 type: boolean
             type: object
@@ -3908,7 +4638,7 @@ paths:
         name: users
         required: true
         schema:
-          $ref: '#/definitions/models.BatchRemoveUsersFromRoleRequest'
+          $ref: '#/definitions/go-backend_shared_models.BatchRemoveUsersFromRoleRequest'
       produces:
       - application/json
       responses:
@@ -3966,7 +4696,7 @@ paths:
         name: users
         required: true
         schema:
-          $ref: '#/definitions/models.BatchAssignUsersToRoleRequest'
+          $ref: '#/definitions/go-backend_shared_models.BatchAssignUsersToRoleRequest'
       produces:
       - application/json
       responses:
@@ -4025,7 +4755,7 @@ paths:
         name: role
         required: true
         schema:
-          $ref: '#/definitions/models.CreateChildRoleRequest'
+          $ref: '#/definitions/go-backend_shared_models.CreateChildRoleRequest'
       produces:
       - application/json
       responses:
@@ -4034,7 +4764,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.RoleResponse'
+                $ref: '#/definitions/go-backend_shared_models.RoleResponse'
               message:
                 type: string
               success:
@@ -4086,7 +4816,7 @@ paths:
                 type: integer
               data:
                 items:
-                  $ref: '#/definitions/models.RoleResponse'
+                  $ref: '#/definitions/go-backend_shared_models.RoleResponse'
                 type: array
               success:
                 type: boolean
@@ -4117,7 +4847,7 @@ paths:
             properties:
               data:
                 items:
-                  $ref: '#/definitions/models.RoleTreeResponse'
+                  $ref: '#/definitions/go-backend_shared_models.RoleTreeResponse'
                 type: array
               success:
                 type: boolean
@@ -4169,7 +4899,7 @@ paths:
             properties:
               data:
                 items:
-                  $ref: '#/definitions/models.ScopeResponse'
+                  $ref: '#/definitions/go-backend_shared_models.ScopeResponse'
                 type: array
               pagination:
                 type: object
@@ -4207,7 +4937,7 @@ paths:
         name: scope
         required: true
         schema:
-          $ref: '#/definitions/models.CreateScopeRequest'
+          $ref: '#/definitions/go-backend_shared_models.CreateScopeRequest'
       produces:
       - application/json
       responses:
@@ -4216,7 +4946,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.ScopeResponse'
+                $ref: '#/definitions/go-backend_shared_models.ScopeResponse'
               message:
                 type: string
               success:
@@ -4314,7 +5044,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.ScopeResponse'
+                $ref: '#/definitions/go-backend_shared_models.ScopeResponse'
               success:
                 type: boolean
             type: object
@@ -4363,7 +5093,7 @@ paths:
         name: scope
         required: true
         schema:
-          $ref: '#/definitions/models.UpdateScopeRequest'
+          $ref: '#/definitions/go-backend_shared_models.UpdateScopeRequest'
       produces:
       - application/json
       responses:
@@ -4372,7 +5102,7 @@ paths:
           schema:
             properties:
               data:
-                $ref: '#/definitions/models.ScopeResponse'
+                $ref: '#/definitions/go-backend_shared_models.ScopeResponse'
               message:
                 type: string
               success:
@@ -4424,7 +5154,7 @@ paths:
                 type: integer
               data:
                 items:
-                  $ref: '#/definitions/models.ScopeResponse'
+                  $ref: '#/definitions/go-backend_shared_models.ScopeResponse'
                 type: array
               success:
                 type: boolean
@@ -4513,7 +5243,7 @@ paths:
             properties:
               data:
                 items:
-                  $ref: '#/definitions/models.UserRoleResponse'
+                  $ref: '#/definitions/go-backend_shared_models.UserRoleResponse'
                 type: array
               pagination:
                 type: object
@@ -4551,7 +5281,7 @@ paths:
         name: role
         required: true
         schema:
-          $ref: '#/definitions/models.AssignUserRoleRequest'
+          $ref: '#/definitions/go-backend_shared_models.AssignUserRoleRequest'
       produces:
       - application/json
       responses:
@@ -4618,7 +5348,7 @@ paths:
                 type: integer
               data:
                 items:
-                  $ref: '#/definitions/models.PermissionResponse'
+                  $ref: '#/definitions/go-backend_shared_models.PermissionResponse'
                 type: array
               success:
                 type: boolean
@@ -4726,7 +5456,7 @@ paths:
                 type: integer
               data:
                 items:
-                  $ref: '#/definitions/models.RoleResponse'
+                  $ref: '#/definitions/go-backend_shared_models.RoleResponse'
                 type: array
               success:
                 type: boolean
@@ -4853,7 +5583,7 @@ paths:
             properties:
               data:
                 items:
-                  $ref: '#/definitions/models.RoleUserResponse'
+                  $ref: '#/definitions/go-backend_shared_models.RoleUserResponse'
                 type: array
               pagination:
                 type: object
@@ -4912,7 +5642,7 @@ paths:
                 type: integer
               data:
                 items:
-                  $ref: '#/definitions/models.UserResponse'
+                  $ref: '#/definitions/go-backend_shared_models.UserResponse'
                 type: array
               success:
                 type: boolean
@@ -4990,7 +5720,7 @@ paths:
         name: scan
         required: true
         schema:
-          $ref: '#/definitions/models.CreateScanRequest'
+          $ref: '#/definitions/go-backend_shared_models.CreateScanRequest'
       produces:
       - application/json
       responses:
@@ -5092,7 +5822,7 @@ paths:
         name: scan
         required: true
         schema:
-          $ref: '#/definitions/models.UpdateScanRequest'
+          $ref: '#/definitions/go-backend_shared_models.UpdateScanRequest'
       produces:
       - application/json
       responses:
@@ -5252,6 +5982,297 @@ paths:
       summary: 分页获取扫描记录列表
       tags:
       - scans
+  /system/monitor/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除指定的系统监控记录
+      parameters:
+      - description: 监控记录ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 删除系统监控记录
+      tags:
+      - system-monitor
+  /system/monitor/history:
+    get:
+      consumes:
+      - application/json
+      description: 根据查询参数获取最近的系统监控历史数据
+      parameters:
+      - default: 100
+        description: 返回记录数量(1-1000)
+        in: query
+        name: limit
+        type: integer
+      - default: 1
+        description: 查询最近多少小时(1-168)
+        in: query
+        name: hours
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  $ref: '#/definitions/go-backend_shared_models.SystemMonitorResponse'
+                type: array
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取系统监控历史记录
+      tags:
+      - system-monitor
+  /system/monitor/latest:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统最新的监控数据，包括CPU、内存、磁盘、网络等信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/go-backend_shared_models.SystemMonitorResponse'
+              success:
+                type: boolean
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取最新系统监控状态
+      tags:
+      - system-monitor
+  /system/monitor/range:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定时间范围内的所有系统监控记录
+      parameters:
+      - description: 开始时间(ISO 8601格式)
+        in: query
+        name: start
+        required: true
+        type: string
+      - description: 结束时间(ISO 8601格式)
+        in: query
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/go-backend_shared_models.DeleteSystemMonitorRangeResponse'
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 根据时间范围删除系统监控记录
+      tags:
+      - system-monitor
+    get:
+      consumes:
+      - application/json
+      description: 根据指定的开始和结束时间获取系统监控数据
+      parameters:
+      - description: 开始时间(ISO 8601格式)
+        in: query
+        name: start
+        required: true
+        type: string
+      - description: 结束时间(ISO 8601格式)
+        in: query
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              count:
+                type: integer
+              data:
+                items:
+                  $ref: '#/definitions/go-backend_shared_models.SystemMonitorResponse'
+                type: array
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 根据时间范围获取系统监控数据
+      tags:
+      - system-monitor
+  /system/monitor/summary:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定时间范围内的系统监控统计信息，包括平均值、最大值、最小值等
+      parameters:
+      - default: 24
+        description: 查询最近多少小时(1-720)
+        in: query
+        name: hours
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/go-backend_shared_models.SystemMonitorSummaryResponse'
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              message:
+                type: string
+              success:
+                type: boolean
+            type: object
+      summary: 获取系统监控统计摘要
+      tags:
+      - system-monitor
   /users:
     get:
       consumes:
@@ -5295,7 +6316,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.CreateUserRequest'
+          $ref: '#/definitions/go-backend_shared_models.CreateUserRequest'
       produces:
       - application/json
       responses:
@@ -5449,7 +6470,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.UpdateUserRequest'
+          $ref: '#/definitions/go-backend_shared_models.UpdateUserRequest'
       produces:
       - application/json
       responses:

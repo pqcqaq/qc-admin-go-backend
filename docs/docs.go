@@ -87,7 +87,7 @@ const docTemplate = `{
                                         "records": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/models.LoginRecordResponse"
+                                                "$ref": "#/definitions/go-backend_shared_models.LoginRecordResponse"
                                             }
                                         },
                                         "total": {
@@ -229,7 +229,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateAPIAuthRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.CreateAPIAuthRequest"
                         }
                     }
                 ],
@@ -646,7 +646,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdateAPIAuthRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.UpdateAPIAuthRequest"
                         }
                     }
                 ],
@@ -859,7 +859,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateAttachmentRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.CreateAttachmentRequest"
                         }
                     }
                 ],
@@ -929,7 +929,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ConfirmUploadRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.ConfirmUploadRequest"
                         }
                     }
                 ],
@@ -1036,7 +1036,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.AttachmentResponse"
+                                    "$ref": "#/definitions/go-backend_shared_models.AttachmentResponse"
                                 },
                                 "message": {
                                     "type": "string"
@@ -1193,7 +1193,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.PrepareUploadRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.PrepareUploadRequest"
                         }
                     }
                 ],
@@ -1353,7 +1353,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdateAttachmentRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.UpdateAttachmentRequest"
                         }
                     }
                 ],
@@ -1524,7 +1524,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.LoginRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.LoginRequest"
                         }
                     }
                 ],
@@ -1532,7 +1532,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.LoginResponse"
+                            "$ref": "#/definitions/go-backend_shared_models.LoginResponse"
                         }
                     },
                     "400": {
@@ -1626,7 +1626,7 @@ const docTemplate = `{
                                         "records": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/models.LoginRecordResponse"
+                                                "$ref": "#/definitions/go-backend_shared_models.LoginRecordResponse"
                                             }
                                         },
                                         "total": {
@@ -1742,11 +1742,6 @@ const docTemplate = `{
         },
         "/auth/refresh-token": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "刷新JWT Token",
                 "consumes": [
                     "application/json"
@@ -1758,6 +1753,17 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "刷新Token",
+                "parameters": [
+                    {
+                        "description": "刷新Token请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/go-backend_shared_models.RefreshTokenRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1774,6 +1780,20 @@ const docTemplate = `{
                                             "type": "string"
                                         }
                                     }
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
                                 },
                                 "success": {
                                     "type": "boolean"
@@ -1832,7 +1852,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.RegisterRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.RegisterRequest"
                         }
                     }
                 ],
@@ -1840,7 +1860,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.RegisterResponse"
+                            "$ref": "#/definitions/go-backend_shared_models.RegisterResponse"
                         }
                     },
                     "400": {
@@ -1908,7 +1928,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ResetPasswordRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.ResetPasswordRequest"
                         }
                     }
                 ],
@@ -1916,7 +1936,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ResetPasswordResponse"
+                            "$ref": "#/definitions/go-backend_shared_models.ResetPasswordResponse"
                         }
                     },
                     "400": {
@@ -1998,7 +2018,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.SendVerifyCodeRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.SendVerifyCodeRequest"
                         }
                     }
                 ],
@@ -2006,7 +2026,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.SendVerifyCodeResponse"
+                            "$ref": "#/definitions/go-backend_shared_models.SendVerifyCodeResponse"
                         }
                     },
                     "400": {
@@ -2065,7 +2085,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.UserInfo"
+                                    "$ref": "#/definitions/go-backend_shared_models.UserInfo"
                                 },
                                 "success": {
                                     "type": "boolean"
@@ -2219,7 +2239,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.VerifyCodeRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.VerifyCodeRequest"
                         }
                     }
                 ],
@@ -2227,11 +2247,757 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.VerifyCodeResponse"
+                            "$ref": "#/definitions/go-backend_shared_models.VerifyCodeResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/client-devices": {
+            "get": {
+                "description": "获取系统中所有客户端设备的列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-devices"
+                ],
+                "summary": "获取所有客户端设备",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建新的客户端设备",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-devices"
+                ],
+                "summary": "创建客户端设备",
+                "parameters": [
+                    {
+                        "description": "客户端设备信息",
+                        "name": "device",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/go-backend_shared_models.CreateClientDeviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "object"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/client-devices/check-access": {
+            "post": {
+                "description": "检查用户是否能使用指定客户端登录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-devices"
+                ],
+                "summary": "检查客户端访问权限",
+                "parameters": [
+                    {
+                        "description": "检查请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/go-backend_shared_models.CheckClientAccessRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/go-backend_shared_models.CheckClientAccessResponse"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/client-devices/code/{code}": {
+            "get": {
+                "description": "根据客户端设备code获取设备信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-devices"
+                ],
+                "summary": "根据code获取客户端设备",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "客户端设备code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "object"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/client-devices/export": {
+            "get": {
+                "description": "将客户端设备导出为Excel文件",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ],
+                "tags": [
+                    "client-devices"
+                ],
+                "summary": "导出客户端设备为Excel",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10000,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "desc",
+                        "description": "排序方式",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "create_time",
+                        "description": "排序字段",
+                        "name": "order_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按名称模糊搜索",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按code精确搜索",
+                        "name": "code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "按启用状态过滤",
+                        "name": "enabled",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "按匿名登录过滤",
+                        "name": "anonymous",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Excel文件",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/client-devices/page": {
+            "get": {
+                "description": "根据分页参数获取客户端设备列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-devices"
+                ],
+                "summary": "分页获取客户端设备列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "desc",
+                        "description": "排序方式",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "create_time",
+                        "description": "排序字段",
+                        "name": "order_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按名称模糊搜索",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按code精确搜索",
+                        "name": "code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "按启用状态过滤",
+                        "name": "enabled",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "按匿名登录过滤",
+                        "name": "anonymous",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                },
+                                "pagination": {
+                                    "type": "object"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/client-devices/{id}": {
+            "get": {
+                "description": "根据客户端设备ID获取设备详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-devices"
+                ],
+                "summary": "根据ID获取客户端设备",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "客户端设备ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "object"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "根据ID更新客户端设备信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-devices"
+                ],
+                "summary": "更新客户端设备",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "客户端设备ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "客户端设备信息",
+                        "name": "device",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/go-backend_shared_models.UpdateClientDeviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "object"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "根据ID删除客户端设备",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-devices"
+                ],
+                "summary": "删除客户端设备",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "客户端设备ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -2355,7 +3121,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.HealthResponse"
+                            "$ref": "#/definitions/go-backend_shared_models.HealthResponse"
                         }
                     }
                 }
@@ -2430,7 +3196,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateLoggingRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.CreateLoggingRequest"
                         }
                     }
                 ],
@@ -2895,7 +3661,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdateLoggingRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.UpdateLoggingRequest"
                         }
                     }
                 ],
@@ -3091,7 +3857,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.PermissionResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.PermissionResponse"
                                     }
                                 },
                                 "pagination": {
@@ -3152,7 +3918,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreatePermissionRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.CreatePermissionRequest"
                         }
                     }
                 ],
@@ -3163,7 +3929,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.PermissionResponse"
+                                    "$ref": "#/definitions/go-backend_shared_models.PermissionResponse"
                                 },
                                 "message": {
                                     "type": "string"
@@ -3230,7 +3996,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.PermissionResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.PermissionResponse"
                                     }
                                 },
                                 "success": {
@@ -3285,7 +4051,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.PermissionResponse"
+                                    "$ref": "#/definitions/go-backend_shared_models.PermissionResponse"
                                 },
                                 "success": {
                                     "type": "boolean"
@@ -3363,7 +4129,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdatePermissionRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.UpdatePermissionRequest"
                         }
                     }
                 ],
@@ -3374,7 +4140,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.PermissionResponse"
+                                    "$ref": "#/definitions/go-backend_shared_models.PermissionResponse"
                                 },
                                 "message": {
                                     "type": "string"
@@ -3562,7 +4328,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.RoleResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                                     }
                                 },
                                 "pagination": {
@@ -3623,7 +4389,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateRoleRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.CreateRoleRequest"
                         }
                     }
                 ],
@@ -3634,7 +4400,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.RoleResponse"
+                                    "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                                 },
                                 "message": {
                                     "type": "string"
@@ -3701,7 +4467,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.RoleResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                                     }
                                 },
                                 "success": {
@@ -3749,7 +4515,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.RoleTreeResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.RoleTreeResponse"
                                     }
                                 },
                                 "success": {
@@ -3804,7 +4570,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.RoleResponse"
+                                    "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                                 },
                                 "success": {
                                     "type": "boolean"
@@ -3882,7 +4648,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdateRoleRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.UpdateRoleRequest"
                         }
                     }
                 ],
@@ -3893,7 +4659,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.RoleResponse"
+                                    "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                                 },
                                 "message": {
                                     "type": "string"
@@ -4232,7 +4998,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AssignRolePermissionsRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.AssignRolePermissionsRequest"
                         }
                     }
                 ],
@@ -4313,7 +5079,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.PermissionResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.PermissionResponse"
                                     }
                                 },
                                 "success": {
@@ -4396,7 +5162,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.RoleDetailedPermissionsResponse"
+                                    "$ref": "#/definitions/go-backend_shared_models.RoleDetailedPermissionsResponse"
                                 },
                                 "success": {
                                     "type": "boolean"
@@ -4565,7 +5331,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.BatchAssignUsersToRoleRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.BatchAssignUsersToRoleRequest"
                         }
                     }
                 ],
@@ -4654,7 +5420,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.BatchRemoveUsersFromRoleRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.BatchRemoveUsersFromRoleRequest"
                         }
                     }
                 ],
@@ -4745,7 +5511,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateChildRoleRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.CreateChildRoleRequest"
                         }
                     }
                 ],
@@ -4756,7 +5522,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.RoleResponse"
+                                    "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                                 },
                                 "message": {
                                     "type": "string"
@@ -4864,7 +5630,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.ScopeResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.ScopeResponse"
                                     }
                                 },
                                 "pagination": {
@@ -4925,7 +5691,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateScopeRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.CreateScopeRequest"
                         }
                     }
                 ],
@@ -4936,7 +5702,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.ScopeResponse"
+                                    "$ref": "#/definitions/go-backend_shared_models.ScopeResponse"
                                 },
                                 "message": {
                                     "type": "string"
@@ -5003,7 +5769,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.ScopeResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.ScopeResponse"
                                     }
                                 },
                                 "success": {
@@ -5103,7 +5869,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.ScopeResponse"
+                                    "$ref": "#/definitions/go-backend_shared_models.ScopeResponse"
                                 },
                                 "success": {
                                     "type": "boolean"
@@ -5181,7 +5947,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdateScopeRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.UpdateScopeRequest"
                         }
                     }
                 ],
@@ -5192,7 +5958,7 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/models.ScopeResponse"
+                                    "$ref": "#/definitions/go-backend_shared_models.ScopeResponse"
                                 },
                                 "message": {
                                     "type": "string"
@@ -5392,7 +6158,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.UserRoleResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.UserRoleResponse"
                                     }
                                 },
                                 "pagination": {
@@ -5453,7 +6219,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AssignUserRoleRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.AssignUserRoleRequest"
                         }
                     }
                 ],
@@ -5571,7 +6337,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.RoleUserResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.RoleUserResponse"
                                     }
                                 },
                                 "pagination": {
@@ -5662,7 +6428,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.UserResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.UserResponse"
                                     }
                                 },
                                 "success": {
@@ -5750,7 +6516,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.PermissionResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.PermissionResponse"
                                     }
                                 },
                                 "success": {
@@ -5916,7 +6682,7 @@ const docTemplate = `{
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/models.RoleResponse"
+                                        "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                                     }
                                 },
                                 "success": {
@@ -6128,7 +6894,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateScanRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.CreateScanRequest"
                         }
                     }
                 ],
@@ -6461,7 +7227,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdateScanRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.UpdateScanRequest"
                         }
                     }
                 ],
@@ -6473,6 +7239,453 @@ const docTemplate = `{
                             "properties": {
                                 "data": {
                                     "type": "object"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/system/monitor/history": {
+            "get": {
+                "description": "根据查询参数获取最近的系统监控历史数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "system-monitor"
+                ],
+                "summary": "获取系统监控历史记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 100,
+                        "description": "返回记录数量(1-1000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "查询最近多少小时(1-168)",
+                        "name": "hours",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/go-backend_shared_models.SystemMonitorResponse"
+                                    }
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/system/monitor/latest": {
+            "get": {
+                "description": "获取系统最新的监控数据，包括CPU、内存、磁盘、网络等信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "system-monitor"
+                ],
+                "summary": "获取最新系统监控状态",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/go-backend_shared_models.SystemMonitorResponse"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/system/monitor/range": {
+            "get": {
+                "description": "根据指定的开始和结束时间获取系统监控数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "system-monitor"
+                ],
+                "summary": "根据时间范围获取系统监控数据",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "开始时间(ISO 8601格式)",
+                        "name": "start",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束时间(ISO 8601格式)",
+                        "name": "end",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "count": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/go-backend_shared_models.SystemMonitorResponse"
+                                    }
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除指定时间范围内的所有系统监控记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "system-monitor"
+                ],
+                "summary": "根据时间范围删除系统监控记录",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "开始时间(ISO 8601格式)",
+                        "name": "start",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束时间(ISO 8601格式)",
+                        "name": "end",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/go-backend_shared_models.DeleteSystemMonitorRangeResponse"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/system/monitor/summary": {
+            "get": {
+                "description": "获取指定时间范围内的系统监控统计信息，包括平均值、最大值、最小值等",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "system-monitor"
+                ],
+                "summary": "获取系统监控统计摘要",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 24,
+                        "description": "查询最近多少小时(1-720)",
+                        "name": "hours",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/go-backend_shared_models.SystemMonitorSummaryResponse"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/system/monitor/{id}": {
+            "delete": {
+                "description": "根据ID删除指定的系统监控记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "system-monitor"
+                ],
+                "summary": "删除系统监控记录",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "监控记录ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
                                 },
                                 "success": {
                                     "type": "boolean"
@@ -6594,7 +7807,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateUserRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.CreateUserRequest"
                         }
                     }
                 ],
@@ -6846,7 +8059,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdateUserRequest"
+                            "$ref": "#/definitions/go-backend_shared_models.UpdateUserRequest"
                         }
                     }
                 ],
@@ -7081,7 +8294,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.AssignRolePermissionsRequest": {
+        "go-backend_shared_models.AssignRolePermissionsRequest": {
             "type": "object",
             "required": [
                 "permissionIds"
@@ -7096,7 +8309,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.AssignUserRoleRequest": {
+        "go-backend_shared_models.AssignUserRoleRequest": {
             "type": "object",
             "required": [
                 "roleId",
@@ -7111,7 +8324,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.AttachmentResponse": {
+        "go-backend_shared_models.AttachmentResponse": {
             "type": "object",
             "properties": {
                 "bucket": {
@@ -7168,7 +8381,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.BatchAssignUsersToRoleRequest": {
+        "go-backend_shared_models.BatchAssignUsersToRoleRequest": {
             "type": "object",
             "required": [
                 "userIds"
@@ -7183,7 +8396,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.BatchRemoveUsersFromRoleRequest": {
+        "go-backend_shared_models.BatchRemoveUsersFromRoleRequest": {
             "type": "object",
             "required": [
                 "userIds"
@@ -7198,7 +8411,44 @@ const docTemplate = `{
                 }
             }
         },
-        "models.ConfirmUploadRequest": {
+        "go-backend_shared_models.CheckClientAccessRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "userId"
+            ],
+            "properties": {
+                "code": {
+                    "description": "客户端code",
+                    "type": "string"
+                },
+                "roles": {
+                    "description": "用户拥有的角色ID列表",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "userId": {
+                    "description": "用户ID",
+                    "type": "string"
+                }
+            }
+        },
+        "go-backend_shared_models.CheckClientAccessResponse": {
+            "type": "object",
+            "properties": {
+                "allowed": {
+                    "description": "是否允许访问",
+                    "type": "boolean"
+                },
+                "reason": {
+                    "description": "不允许访问的原因",
+                    "type": "string"
+                }
+            }
+        },
+        "go-backend_shared_models.ConfirmUploadRequest": {
             "type": "object",
             "required": [
                 "uploadSessionId"
@@ -7215,14 +8465,15 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CreateAPIAuthRequest": {
+        "go-backend_shared_models.CreateAPIAuthRequest": {
             "type": "object",
             "required": [
                 "isActive",
                 "isPublic",
                 "method",
                 "name",
-                "path"
+                "path",
+                "type"
             ],
             "properties": {
                 "description": {
@@ -7258,12 +8509,16 @@ const docTemplate = `{
                     "description": "关联的权限ID列表",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.PermissionsList"
+                        "$ref": "#/definitions/go-backend_shared_models.PermissionsList"
                     }
+                },
+                "type": {
+                    "description": "API类型，http或websocket",
+                    "type": "string"
                 }
             }
         },
-        "models.CreateAttachmentRequest": {
+        "go-backend_shared_models.CreateAttachmentRequest": {
             "type": "object",
             "required": [
                 "bucket",
@@ -7319,7 +8574,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CreateChildRoleRequest": {
+        "go-backend_shared_models.CreateChildRoleRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -7333,7 +8588,47 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CreateLoggingRequest": {
+        "go-backend_shared_models.CreateClientDeviceRequest": {
+            "type": "object",
+            "required": [
+                "accessTokenExpiry",
+                "name",
+                "refreshTokenExpiry"
+            ],
+            "properties": {
+                "accessTokenExpiry": {
+                    "description": "accessToken超时时间(ms)",
+                    "type": "integer"
+                },
+                "anonymous": {
+                    "description": "允许所有角色登录，可选，默认true",
+                    "type": "boolean"
+                },
+                "description": {
+                    "description": "是否启用，可选，默认true",
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "设备名称",
+                    "type": "string"
+                },
+                "refreshTokenExpiry": {
+                    "description": "refreshToken超时时间(ms)",
+                    "type": "integer"
+                },
+                "roleIds": {
+                    "description": "关联的角色ID列表",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "go-backend_shared_models.CreateLoggingRequest": {
             "type": "object",
             "required": [
                 "message"
@@ -7395,7 +8690,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CreatePermissionRequest": {
+        "go-backend_shared_models.CreatePermissionRequest": {
             "type": "object",
             "required": [
                 "action",
@@ -7408,16 +8703,16 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "name": {
-                    "type": "string"
+                "isPublic": {
+                    "description": "是否为公共权限",
+                    "type": "boolean"
                 },
-                "scopeId": {
-                    "description": "权限域ID",
+                "name": {
                     "type": "string"
                 }
             }
         },
-        "models.CreateRoleRequest": {
+        "go-backend_shared_models.CreateRoleRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -7438,7 +8733,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CreateScanRequest": {
+        "go-backend_shared_models.CreateScanRequest": {
             "type": "object",
             "required": [
                 "content",
@@ -7459,7 +8754,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CreateScopeRequest": {
+        "go-backend_shared_models.CreateScopeRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -7514,7 +8809,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CreateUserRequest": {
+        "go-backend_shared_models.CreateUserRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -7543,7 +8838,15 @@ const docTemplate = `{
                 }
             }
         },
-        "models.HealthResponse": {
+        "go-backend_shared_models.DeleteSystemMonitorRangeResponse": {
+            "type": "object",
+            "properties": {
+                "deleted": {
+                    "type": "integer"
+                }
+            }
+        },
+        "go-backend_shared_models.HealthResponse": {
             "type": "object",
             "properties": {
                 "components": {
@@ -7560,7 +8863,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.LoginRecordResponse": {
+        "go-backend_shared_models.LoginRecordResponse": {
             "type": "object",
             "properties": {
                 "credentialType": {
@@ -7612,13 +8915,17 @@ const docTemplate = `{
                 }
             }
         },
-        "models.LoginRequest": {
+        "go-backend_shared_models.LoginRequest": {
             "type": "object",
             "required": [
+                "clientCode",
                 "credentialType",
                 "identifier"
             ],
             "properties": {
+                "clientCode": {
+                    "type": "string"
+                },
                 "credentialType": {
                     "description": "认证类型",
                     "type": "string",
@@ -7634,6 +8941,10 @@ const docTemplate = `{
                     "description": "标识符",
                     "type": "string"
                 },
+                "rememberMe": {
+                    "description": "记住我",
+                    "type": "boolean"
+                },
                 "secret": {
                     "description": "密码（密码登录时必需）",
                     "type": "string"
@@ -7644,7 +8955,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.LoginResponse": {
+        "go-backend_shared_models.LoginResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -7652,14 +8963,18 @@ const docTemplate = `{
                 },
                 "token": {
                     "description": "JWT token (如果有的话)",
-                    "type": "string"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/go-backend_shared_models.TokenInfo"
+                        }
+                    ]
                 },
                 "user": {
-                    "$ref": "#/definitions/models.UserInfo"
+                    "$ref": "#/definitions/go-backend_shared_models.UserInfo"
                 }
             }
         },
-        "models.PermissionResponse": {
+        "go-backend_shared_models.PermissionResponse": {
             "type": "object",
             "properties": {
                 "action": {
@@ -7674,43 +8989,42 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "isPublic": {
+                    "description": "是否为公共权限",
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },
-                "scope": {
-                    "description": "所属权限域",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.ScopeResponse"
-                        }
-                    ]
+                "roles": {
+                    "description": "拥有该权限的角色",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
+                    }
                 },
                 "updateTime": {
                     "type": "string"
                 }
             }
         },
-        "models.PermissionWithSource": {
+        "go-backend_shared_models.PermissionWithSource": {
             "type": "object",
             "properties": {
                 "permission": {
-                    "$ref": "#/definitions/models.PermissionResponse"
-                },
-                "source": {
-                    "description": "来源类型: \"直接分配\" | \"角色继承\"",
-                    "type": "string"
+                    "$ref": "#/definitions/go-backend_shared_models.PermissionResponse"
                 },
                 "sourceRole": {
                     "description": "来源角色",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/models.RoleResponse"
+                            "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                         }
                     ]
                 }
             }
         },
-        "models.PermissionsList": {
+        "go-backend_shared_models.PermissionsList": {
             "type": "object",
             "properties": {
                 "action": {
@@ -7721,7 +9035,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.PrepareUploadRequest": {
+        "go-backend_shared_models.PrepareUploadRequest": {
             "type": "object",
             "required": [
                 "contentType",
@@ -7753,14 +9067,29 @@ const docTemplate = `{
                 }
             }
         },
-        "models.RegisterRequest": {
+        "go-backend_shared_models.RefreshTokenRequest": {
             "type": "object",
             "required": [
+                "refreshToken"
+            ],
+            "properties": {
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "go-backend_shared_models.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "clientCode",
                 "credentialType",
                 "identifier",
                 "username"
             ],
             "properties": {
+                "clientCode": {
+                    "type": "string"
+                },
                 "credentialType": {
                     "description": "认证类型",
                     "type": "string",
@@ -7790,7 +9119,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.RegisterResponse": {
+        "go-backend_shared_models.RegisterResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -7798,21 +9127,29 @@ const docTemplate = `{
                 },
                 "token": {
                     "description": "JWT token (如果有的话)",
-                    "type": "string"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/go-backend_shared_models.TokenInfo"
+                        }
+                    ]
                 },
                 "user": {
-                    "$ref": "#/definitions/models.UserInfo"
+                    "$ref": "#/definitions/go-backend_shared_models.UserInfo"
                 }
             }
         },
-        "models.ResetPasswordRequest": {
+        "go-backend_shared_models.ResetPasswordRequest": {
             "type": "object",
             "required": [
+                "clientCode",
                 "credentialType",
                 "identifier",
                 "newPassword"
             ],
             "properties": {
+                "clientCode": {
+                    "type": "string"
+                },
                 "credentialType": {
                     "description": "认证类型",
                     "type": "string",
@@ -7842,7 +9179,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.ResetPasswordResponse": {
+        "go-backend_shared_models.ResetPasswordResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -7850,36 +9187,43 @@ const docTemplate = `{
                 }
             }
         },
-        "models.RoleDetailedPermissionsResponse": {
+        "go-backend_shared_models.RoleDetailedPermissionsResponse": {
             "type": "object",
             "properties": {
                 "allPermissions": {
                     "description": "所有权限",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.PermissionResponse"
+                        "$ref": "#/definitions/go-backend_shared_models.PermissionResponse"
                     }
                 },
                 "directPermissions": {
                     "description": "直接分配的权限",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.PermissionWithSource"
+                        "$ref": "#/definitions/go-backend_shared_models.PermissionWithSource"
                     }
                 },
                 "inheritedPermissions": {
                     "description": "继承的权限",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.PermissionWithSource"
+                        "$ref": "#/definitions/go-backend_shared_models.PermissionWithSource"
+                    }
+                },
+                "publicPermissions": {
+                    "description": "公开权限",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/go-backend_shared_models.PermissionWithSource"
                     }
                 },
                 "role": {
-                    "$ref": "#/definitions/models.RoleResponse"
+                    "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                 }
             }
         },
-        "models.RoleResponse": {
+        "go-backend_shared_models.RoleResponse": {
             "type": "object",
             "properties": {
                 "createTime": {
@@ -7895,14 +9239,14 @@ const docTemplate = `{
                     "description": "被哪些角色继承",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.RoleResponse"
+                        "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                     }
                 },
                 "inheritsFrom": {
                     "description": "继承的父角色",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.RoleResponse"
+                        "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                     }
                 },
                 "name": {
@@ -7912,7 +9256,7 @@ const docTemplate = `{
                     "description": "角色拥有的权限",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.PermissionResponse"
+                        "$ref": "#/definitions/go-backend_shared_models.PermissionResponse"
                     }
                 },
                 "updateTime": {
@@ -7920,14 +9264,14 @@ const docTemplate = `{
                 }
             }
         },
-        "models.RoleTreeResponse": {
+        "go-backend_shared_models.RoleTreeResponse": {
             "type": "object",
             "properties": {
                 "children": {
                     "description": "子角色",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.RoleTreeResponse"
+                        "$ref": "#/definitions/go-backend_shared_models.RoleTreeResponse"
                     }
                 },
                 "createTime": {
@@ -7943,7 +9287,7 @@ const docTemplate = `{
                     "description": "继承的父角色",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.RoleResponse"
+                        "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                     }
                 },
                 "name": {
@@ -7958,7 +9302,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.RoleUserResponse": {
+        "go-backend_shared_models.RoleUserResponse": {
             "type": "object",
             "properties": {
                 "createTime": {
@@ -7977,7 +9321,7 @@ const docTemplate = `{
                     "description": "除当前角色外的其他角色",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.RoleResponse"
+                        "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                     }
                 },
                 "updateTime": {
@@ -7985,7 +9329,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.ScopeResponse": {
+        "go-backend_shared_models.ScopeResponse": {
             "type": "object",
             "properties": {
                 "action": {
@@ -7995,7 +9339,7 @@ const docTemplate = `{
                     "description": "子级权限域",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.ScopeResponse"
+                        "$ref": "#/definitions/go-backend_shared_models.ScopeResponse"
                     }
                 },
                 "component": {
@@ -8029,7 +9373,7 @@ const docTemplate = `{
                     "description": "父级权限域",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/models.ScopeResponse"
+                            "$ref": "#/definitions/go-backend_shared_models.ScopeResponse"
                         }
                     ]
                 },
@@ -8043,7 +9387,7 @@ const docTemplate = `{
                     "description": "关联的权限",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/models.PermissionResponse"
+                            "$ref": "#/definitions/go-backend_shared_models.PermissionResponse"
                         }
                     ]
                 },
@@ -8058,7 +9402,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.SendVerifyCodeRequest": {
+        "go-backend_shared_models.SendVerifyCodeRequest": {
             "type": "object",
             "required": [
                 "identifier",
@@ -8066,6 +9410,9 @@ const docTemplate = `{
                 "senderType"
             ],
             "properties": {
+                "clientCode": {
+                    "type": "string"
+                },
                 "identifier": {
                     "description": "标识符",
                     "type": "string"
@@ -8085,7 +9432,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.SendVerifyCodeResponse": {
+        "go-backend_shared_models.SendVerifyCodeResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -8093,14 +9440,169 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UpdateAPIAuthRequest": {
+        "go-backend_shared_models.SystemMonitorMetricsSummary": {
+            "type": "object",
+            "properties": {
+                "avg": {
+                    "type": "number"
+                },
+                "max": {
+                    "type": "number"
+                },
+                "min": {
+                    "type": "number"
+                }
+            }
+        },
+        "go-backend_shared_models.SystemMonitorPeriodSummary": {
+            "type": "object",
+            "properties": {
+                "end": {
+                    "type": "string"
+                },
+                "hours": {
+                    "type": "number"
+                },
+                "start": {
+                    "type": "string"
+                }
+            }
+        },
+        "go-backend_shared_models.SystemMonitorResponse": {
+            "type": "object",
+            "properties": {
+                "cpuCores": {
+                    "type": "integer"
+                },
+                "cpuUsagePercent": {
+                    "type": "number"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "diskFree": {
+                    "type": "integer"
+                },
+                "diskTotal": {
+                    "type": "integer"
+                },
+                "diskUsagePercent": {
+                    "type": "number"
+                },
+                "diskUsed": {
+                    "type": "integer"
+                },
+                "gcCount": {
+                    "type": "integer"
+                },
+                "goroutinesCount": {
+                    "type": "integer"
+                },
+                "heapAlloc": {
+                    "type": "integer"
+                },
+                "heapSys": {
+                    "type": "integer"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "loadAvg1": {
+                    "type": "number"
+                },
+                "loadAvg15": {
+                    "type": "number"
+                },
+                "loadAvg5": {
+                    "type": "number"
+                },
+                "memoryFree": {
+                    "type": "integer"
+                },
+                "memoryTotal": {
+                    "type": "integer"
+                },
+                "memoryUsagePercent": {
+                    "type": "number"
+                },
+                "memoryUsed": {
+                    "type": "integer"
+                },
+                "networkBytesRecv": {
+                    "type": "integer"
+                },
+                "networkBytesSent": {
+                    "type": "integer"
+                },
+                "os": {
+                    "type": "string"
+                },
+                "platform": {
+                    "type": "string"
+                },
+                "platformVersion": {
+                    "type": "string"
+                },
+                "recordedAt": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "uptime": {
+                    "type": "integer"
+                }
+            }
+        },
+        "go-backend_shared_models.SystemMonitorSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "cpu": {
+                    "$ref": "#/definitions/go-backend_shared_models.SystemMonitorMetricsSummary"
+                },
+                "disk": {
+                    "$ref": "#/definitions/go-backend_shared_models.SystemMonitorMetricsSummary"
+                },
+                "memory": {
+                    "$ref": "#/definitions/go-backend_shared_models.SystemMonitorMetricsSummary"
+                },
+                "period": {
+                    "$ref": "#/definitions/go-backend_shared_models.SystemMonitorPeriodSummary"
+                }
+            }
+        },
+        "go-backend_shared_models.TokenInfo": {
+            "type": "object",
+            "properties": {
+                "accessExpiredIn": {
+                    "type": "integer"
+                },
+                "accessToken": {
+                    "type": "string"
+                },
+                "refreshExpiredIn": {
+                    "type": "integer"
+                },
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "go-backend_shared_models.UpdateAPIAuthRequest": {
             "type": "object",
             "required": [
                 "isActive",
                 "isPublic",
                 "method",
                 "name",
-                "path"
+                "path",
+                "type"
             ],
             "properties": {
                 "description": {
@@ -8136,12 +9638,16 @@ const docTemplate = `{
                     "description": "关联的权限ID列表",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.PermissionsList"
+                        "$ref": "#/definitions/go-backend_shared_models.PermissionsList"
                     }
+                },
+                "type": {
+                    "description": "API类型，http或websocket",
+                    "type": "string"
                 }
             }
         },
-        "models.UpdateAttachmentRequest": {
+        "go-backend_shared_models.UpdateAttachmentRequest": {
             "type": "object",
             "properties": {
                 "bucket": {
@@ -8189,7 +9695,49 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UpdateLoggingRequest": {
+        "go-backend_shared_models.UpdateClientDeviceRequest": {
+            "type": "object",
+            "required": [
+                "accessTokenExpiry",
+                "anonymous",
+                "enabled",
+                "name",
+                "refreshTokenExpiry"
+            ],
+            "properties": {
+                "accessTokenExpiry": {
+                    "description": "accessToken超时时间(ms)",
+                    "type": "integer"
+                },
+                "anonymous": {
+                    "description": "允许所有角色登录",
+                    "type": "boolean"
+                },
+                "description": {
+                    "description": "是否启用",
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "设备名称",
+                    "type": "string"
+                },
+                "refreshTokenExpiry": {
+                    "description": "refreshToken超时时间(ms)",
+                    "type": "integer"
+                },
+                "roleIds": {
+                    "description": "关联的角色ID列表",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "go-backend_shared_models.UpdateLoggingRequest": {
             "type": "object",
             "required": [
                 "message"
@@ -8251,7 +9799,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UpdatePermissionRequest": {
+        "go-backend_shared_models.UpdatePermissionRequest": {
             "type": "object",
             "properties": {
                 "action": {
@@ -8260,16 +9808,16 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "name": {
-                    "type": "string"
+                "isPublic": {
+                    "description": "是否为公共权限",
+                    "type": "boolean"
                 },
-                "scopeId": {
-                    "description": "权限域ID",
+                "name": {
                     "type": "string"
                 }
             }
         },
-        "models.UpdateRoleRequest": {
+        "go-backend_shared_models.UpdateRoleRequest": {
             "type": "object",
             "properties": {
                 "description": {
@@ -8287,7 +9835,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UpdateScanRequest": {
+        "go-backend_shared_models.UpdateScanRequest": {
             "type": "object",
             "required": [
                 "content",
@@ -8308,7 +9856,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UpdateScopeRequest": {
+        "go-backend_shared_models.UpdateScopeRequest": {
             "type": "object",
             "properties": {
                 "action": {
@@ -8354,7 +9902,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UpdateUserRequest": {
+        "go-backend_shared_models.UpdateUserRequest": {
             "type": "object",
             "properties": {
                 "age": {
@@ -8376,7 +9924,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UserInfo": {
+        "go-backend_shared_models.UserInfo": {
             "type": "object",
             "properties": {
                 "age": {
@@ -8400,14 +9948,14 @@ const docTemplate = `{
                     "description": "用户权限（通过角色继承）",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.PermissionResponse"
+                        "$ref": "#/definitions/go-backend_shared_models.PermissionResponse"
                     }
                 },
                 "roles": {
                     "description": "用户角色",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.RoleResponse"
+                        "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                     }
                 },
                 "sex": {
@@ -8422,7 +9970,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UserResponse": {
+        "go-backend_shared_models.UserResponse": {
             "type": "object",
             "properties": {
                 "age": {
@@ -8462,7 +10010,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UserRoleResponse": {
+        "go-backend_shared_models.UserRoleResponse": {
             "type": "object",
             "properties": {
                 "createTime": {
@@ -8472,7 +10020,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
-                    "$ref": "#/definitions/models.RoleResponse"
+                    "$ref": "#/definitions/go-backend_shared_models.RoleResponse"
                 },
                 "roleId": {
                     "type": "string"
@@ -8481,14 +10029,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/models.UserResponse"
+                    "$ref": "#/definitions/go-backend_shared_models.UserResponse"
                 },
                 "userId": {
                     "type": "string"
                 }
             }
         },
-        "models.VerifyCodeRequest": {
+        "go-backend_shared_models.VerifyCodeRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -8520,7 +10068,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.VerifyCodeResponse": {
+        "go-backend_shared_models.VerifyCodeResponse": {
             "type": "object",
             "properties": {
                 "message": {
