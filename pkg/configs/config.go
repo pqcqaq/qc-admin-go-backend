@@ -75,7 +75,7 @@ func processConfigImports(baseDir string) error {
 		logger.Info("Importing config for: %s", importPath)
 
 		// 解析配置变量引用
-		resolvedPath := resolveConfigVariables(importPath)
+		resolvedPath := ResolveConfigVariables(importPath)
 
 		// 去除file:前缀
 		resolvedPath = strings.TrimPrefix(resolvedPath, "file:")
@@ -114,38 +114,51 @@ func mergeConfigFile(configPath string) error {
 	return viper.MergeConfigMap(tempViper.AllSettings())
 }
 
-// resolveConfigVariables 解析配置变量引用
-func resolveConfigVariables(path string) string {
+// HasPlaceholder 检查字符串是否包含配置变量占位符
+func HasPlaceholder(s string) bool {
+	return strings.Contains(s, "${") && strings.Contains(s, "}")
+}
+
+// ReplaceKey 替换字符串中的第一个配置变量占位符
+func ReplaceKey(s string) string {
+	start := strings.Index(s, "${")
+	if start == -1 {
+		return s
+	}
+
+	end := strings.Index(s[start:], "}")
+	if end == -1 {
+		return s
+	}
+	end += start
+
+	// 提取配置键名
+	configKey := s[start+2 : end]
+
+	// 先尝试从当前配置中获取值
+	configValue := viper.GetString(configKey)
+
+	// 如果配置中没有，再尝试环境变量
+	if configValue == "" {
+		configValue = os.Getenv(configKey)
+	}
+
+	// 如果还是没有，记录错误
+	if configValue == "" {
+		logging.Error("Cannot find Config Key: %s", configKey)
+	}
+
+	// 替换占位符并返回
+	return s[:start] + configValue + s[end+1:]
+}
+
+// ResolveConfigVariables 解析配置变量引用
+func ResolveConfigVariables(path string) string {
 	resolved := path
 
-	// 处理 ${config.key} 格式
-	for strings.Contains(resolved, "${") {
-		start := strings.Index(resolved, "${")
-		if start == -1 {
-			break
-		}
-		end := strings.Index(resolved[start:], "}")
-		if end == -1 {
-			break
-		}
-		end += start
-
-		configKey := resolved[start+2 : end]
-
-		// 先尝试从当前配置中获取值
-		configValue := viper.GetString(configKey)
-
-		// 如果配置中没有，再尝试环境变量
-		if configValue == "" {
-			configValue = os.Getenv(configKey)
-		}
-
-		// 如果还是没有，设置默认值
-		if configValue == "" {
-			logging.Error("Cannot find Config Key: %s", configKey)
-		}
-
-		resolved = resolved[:start] + configValue + resolved[end+1:]
+	// 循环处理所有占位符，每次替换一个
+	for HasPlaceholder(resolved) {
+		resolved = ReplaceKey(resolved)
 	}
 
 	return resolved

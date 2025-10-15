@@ -73,7 +73,9 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 	go func() {
 		// 尝试从banner.txt读取并显示字符图
 		if bannerContent, err := os.ReadFile("banner.txt"); err == nil {
-			logging.Info(string(bannerContent))
+			bannerStr := string(bannerContent)
+			toShow := configs.ResolveConfigVariables(bannerStr)
+			logging.Info(toShow)
 		}
 		logging.Info("WsServer is starting on %s", config.Socket.Port)
 		if err := wsServer.Start(config.Socket.Port); err != nil {

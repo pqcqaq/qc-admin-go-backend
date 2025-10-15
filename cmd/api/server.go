@@ -74,7 +74,9 @@ func startServer(config *configs.AppConfig, engine *gin.Engine, dbClient *databa
 	go func() {
 		// 尝试从banner.txt读取并显示字符图
 		if bannerContent, err := os.ReadFile("banner.txt"); err == nil {
-			logging.Info(string(bannerContent))
+			bannerStr := string(bannerContent)
+			toShow := configs.ResolveConfigVariables(bannerStr)
+			logging.Info(toShow)
 		}
 		logging.Info("Server is starting on %s", config.Server.Port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

@@ -19,6 +19,13 @@
 // @externalDocs.url          https://swagger.io/resources/open-api/
 package main
 
+import "github.com/spf13/viper"
+
+func injectGlobalVars() {
+	viper.Set("application.name", "qc-admin-api")
+}
+
 func main() {
+	injectGlobalVars()
 	Execute()
 }
