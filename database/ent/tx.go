@@ -16,6 +16,10 @@ type Tx struct {
 	config
 	// APIAuth is the client for interacting with the APIAuth builders.
 	APIAuth *APIAuthClient
+	// Address is the client for interacting with the Address builders.
+	Address *AddressClient
+	// Area is the client for interacting with the Area builders.
+	Area *AreaClient
 	// Attachment is the client for interacting with the Attachment builders.
 	Attachment *AttachmentClient
 	// ClientDevice is the client for interacting with the ClientDevice builders.
@@ -50,6 +54,12 @@ type Tx struct {
 	Scan *ScanClient
 	// Scope is the client for interacting with the Scope builders.
 	Scope *ScopeClient
+	// Station is the client for interacting with the Station builders.
+	Station *StationClient
+	// Subway is the client for interacting with the Subway builders.
+	Subway *SubwayClient
+	// SubwayStation is the client for interacting with the SubwayStation builders.
+	SubwayStation *SubwayStationClient
 	// SystemMonitor is the client for interacting with the SystemMonitor builders.
 	SystemMonitor *SystemMonitorClient
 	// User is the client for interacting with the User builders.
@@ -190,6 +200,8 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.APIAuth = NewAPIAuthClient(tx.config)
+	tx.Address = NewAddressClient(tx.config)
+	tx.Area = NewAreaClient(tx.config)
 	tx.Attachment = NewAttachmentClient(tx.config)
 	tx.ClientDevice = NewClientDeviceClient(tx.config)
 	tx.Credential = NewCredentialClient(tx.config)
@@ -207,6 +219,9 @@ func (tx *Tx) init() {
 	tx.RolePermission = NewRolePermissionClient(tx.config)
 	tx.Scan = NewScanClient(tx.config)
 	tx.Scope = NewScopeClient(tx.config)
+	tx.Station = NewStationClient(tx.config)
+	tx.Subway = NewSubwayClient(tx.config)
+	tx.SubwayStation = NewSubwayStationClient(tx.config)
 	tx.SystemMonitor = NewSystemMonitorClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserRole = NewUserRoleClient(tx.config)

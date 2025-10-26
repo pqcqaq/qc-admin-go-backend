@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-backend/database/ent/address"
 	"go-backend/database/ent/apiauth"
+	"go-backend/database/ent/area"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/clientdevice"
 	"go-backend/database/ent/credential"
@@ -24,6 +26,9 @@ import (
 	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scan"
 	"go-backend/database/ent/scope"
+	"go-backend/database/ent/station"
+	"go-backend/database/ent/subway"
+	"go-backend/database/ent/subwaystation"
 	"go-backend/database/ent/systemmonitor"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
@@ -95,6 +100,8 @@ func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			apiauth.Table:                apiauth.ValidColumn,
+			address.Table:                address.ValidColumn,
+			area.Table:                   area.ValidColumn,
 			attachment.Table:             attachment.ValidColumn,
 			clientdevice.Table:           clientdevice.ValidColumn,
 			credential.Table:             credential.ValidColumn,
@@ -112,6 +119,9 @@ func checkColumn(t, c string) error {
 			rolepermission.Table:         rolepermission.ValidColumn,
 			scan.Table:                   scan.ValidColumn,
 			scope.Table:                  scope.ValidColumn,
+			station.Table:                station.ValidColumn,
+			subway.Table:                 subway.ValidColumn,
+			subwaystation.Table:          subwaystation.ValidColumn,
 			systemmonitor.Table:          systemmonitor.ValidColumn,
 			user.Table:                   user.ValidColumn,
 			userrole.Table:               userrole.ValidColumn,

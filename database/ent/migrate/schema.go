@@ -75,6 +75,134 @@ var (
 			},
 		},
 	}
+	// SysAddressesColumns holds the columns for the "sys_addresses" table.
+	SysAddressesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "detail", Type: field.TypeString, Size: 256},
+		{Name: "phone", Type: field.TypeString, Size: 20},
+		{Name: "name", Type: field.TypeString, Size: 32},
+		{Name: "is_default", Type: field.TypeBool, Default: false},
+		{Name: "remark", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "entity", Type: field.TypeString, Nullable: true, Size: 32},
+		{Name: "entity_id", Type: field.TypeString, Nullable: true, Size: 64},
+		{Name: "area_id", Type: field.TypeUint64},
+	}
+	// SysAddressesTable holds the schema information for the "sys_addresses" table.
+	SysAddressesTable = &schema.Table{
+		Name:       "sys_addresses",
+		Columns:    SysAddressesColumns,
+		PrimaryKey: []*schema.Column{SysAddressesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_addresses_sys_areas_area",
+				Columns:    []*schema.Column{SysAddressesColumns[14]},
+				RefColumns: []*schema.Column{SysAreasColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "address_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysAddressesColumns[5]},
+			},
+			{
+				Name:    "address_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysAddressesColumns[6]},
+			},
+			{
+				Name:    "address_entity_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{SysAddressesColumns[12], SysAddressesColumns[13]},
+			},
+			{
+				Name:    "address_is_default",
+				Unique:  false,
+				Columns: []*schema.Column{SysAddressesColumns[10]},
+			},
+			{
+				Name:    "address_area_id",
+				Unique:  false,
+				Columns: []*schema.Column{SysAddressesColumns[14]},
+			},
+		},
+	}
+	// SysAreasColumns holds the columns for the "sys_areas" table.
+	SysAreasColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "name", Type: field.TypeString, Size: 32},
+		{Name: "level", Type: field.TypeEnum, Enums: []string{"country", "province", "city", "district", "street"}},
+		{Name: "depth", Type: field.TypeInt},
+		{Name: "code", Type: field.TypeString, Size: 12},
+		{Name: "latitude", Type: field.TypeFloat64},
+		{Name: "longitude", Type: field.TypeFloat64},
+		{Name: "color", Type: field.TypeString, Nullable: true, Size: 20},
+		{Name: "parent_id", Type: field.TypeUint64, Nullable: true},
+	}
+	// SysAreasTable holds the schema information for the "sys_areas" table.
+	SysAreasTable = &schema.Table{
+		Name:       "sys_areas",
+		Columns:    SysAreasColumns,
+		PrimaryKey: []*schema.Column{SysAreasColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_areas_sys_areas_parent",
+				Columns:    []*schema.Column{SysAreasColumns[14]},
+				RefColumns: []*schema.Column{SysAreasColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "area_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysAreasColumns[5]},
+			},
+			{
+				Name:    "area_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysAreasColumns[6]},
+			},
+			{
+				Name:    "area_code_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysAreasColumns[10], SysAreasColumns[5]},
+			},
+			{
+				Name:    "area_name",
+				Unique:  false,
+				Columns: []*schema.Column{SysAreasColumns[7]},
+			},
+			{
+				Name:    "area_level",
+				Unique:  false,
+				Columns: []*schema.Column{SysAreasColumns[8]},
+			},
+			{
+				Name:    "area_depth",
+				Unique:  false,
+				Columns: []*schema.Column{SysAreasColumns[9]},
+			},
+			{
+				Name:    "area_parent_id",
+				Unique:  false,
+				Columns: []*schema.Column{SysAreasColumns[14]},
+			},
+		},
+	}
 	// SysAttachmentsColumns holds the columns for the "sys_attachments" table.
 	SysAttachmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -1090,6 +1218,172 @@ var (
 			},
 		},
 	}
+	// SysStationsColumns holds the columns for the "sys_stations" table.
+	SysStationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "name", Type: field.TypeString, Size: 32},
+		{Name: "area_id", Type: field.TypeUint64},
+	}
+	// SysStationsTable holds the schema information for the "sys_stations" table.
+	SysStationsTable = &schema.Table{
+		Name:       "sys_stations",
+		Columns:    SysStationsColumns,
+		PrimaryKey: []*schema.Column{SysStationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_stations_sys_areas_area",
+				Columns:    []*schema.Column{SysStationsColumns[8]},
+				RefColumns: []*schema.Column{SysAreasColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "station_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysStationsColumns[5]},
+			},
+			{
+				Name:    "station_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysStationsColumns[6]},
+			},
+			{
+				Name:    "station_name_area_id_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysStationsColumns[7], SysStationsColumns[8], SysStationsColumns[5]},
+			},
+			{
+				Name:    "station_area_id",
+				Unique:  false,
+				Columns: []*schema.Column{SysStationsColumns[8]},
+			},
+		},
+	}
+	// SysSubwaysColumns holds the columns for the "sys_subways" table.
+	SysSubwaysColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "name", Type: field.TypeString, Size: 32},
+		{Name: "color", Type: field.TypeString, Nullable: true, Size: 20},
+		{Name: "area_id", Type: field.TypeUint64},
+	}
+	// SysSubwaysTable holds the schema information for the "sys_subways" table.
+	SysSubwaysTable = &schema.Table{
+		Name:       "sys_subways",
+		Columns:    SysSubwaysColumns,
+		PrimaryKey: []*schema.Column{SysSubwaysColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_subways_sys_areas_area",
+				Columns:    []*schema.Column{SysSubwaysColumns[9]},
+				RefColumns: []*schema.Column{SysAreasColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "subway_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysSubwaysColumns[5]},
+			},
+			{
+				Name:    "subway_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysSubwaysColumns[6]},
+			},
+			{
+				Name:    "subway_name_area_id_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysSubwaysColumns[7], SysSubwaysColumns[9], SysSubwaysColumns[5]},
+			},
+			{
+				Name:    "subway_area_id",
+				Unique:  false,
+				Columns: []*schema.Column{SysSubwaysColumns[9]},
+			},
+		},
+	}
+	// SysSubwayStationsColumns holds the columns for the "sys_subway_stations" table.
+	SysSubwayStationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "sequence", Type: field.TypeInt, Nullable: true},
+		{Name: "station_subway_stations", Type: field.TypeUint64, Nullable: true},
+		{Name: "subway_subway_stations", Type: field.TypeUint64, Nullable: true},
+		{Name: "station_id", Type: field.TypeUint64},
+		{Name: "subway_id", Type: field.TypeUint64},
+	}
+	// SysSubwayStationsTable holds the schema information for the "sys_subway_stations" table.
+	SysSubwayStationsTable = &schema.Table{
+		Name:       "sys_subway_stations",
+		Columns:    SysSubwayStationsColumns,
+		PrimaryKey: []*schema.Column{SysSubwayStationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sys_subway_stations_sys_stations_subway_stations",
+				Columns:    []*schema.Column{SysSubwayStationsColumns[8]},
+				RefColumns: []*schema.Column{SysStationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "sys_subway_stations_sys_subways_subway_stations",
+				Columns:    []*schema.Column{SysSubwayStationsColumns[9]},
+				RefColumns: []*schema.Column{SysSubwaysColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "sys_subway_stations_sys_stations_station",
+				Columns:    []*schema.Column{SysSubwayStationsColumns[10]},
+				RefColumns: []*schema.Column{SysStationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "sys_subway_stations_sys_subways_subway",
+				Columns:    []*schema.Column{SysSubwayStationsColumns[11]},
+				RefColumns: []*schema.Column{SysSubwaysColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "subwaystation_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{SysSubwayStationsColumns[5]},
+			},
+			{
+				Name:    "subwaystation_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{SysSubwayStationsColumns[6]},
+			},
+			{
+				Name:    "subwaystation_station_id_subway_id_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{SysSubwayStationsColumns[10], SysSubwayStationsColumns[11], SysSubwayStationsColumns[5]},
+			},
+			{
+				Name:    "subwaystation_subway_id_sequence",
+				Unique:  false,
+				Columns: []*schema.Column{SysSubwayStationsColumns[11], SysSubwayStationsColumns[7]},
+			},
+		},
+	}
 	// SysSystemMonitorColumns holds the columns for the "sys_system_monitor" table.
 	SysSystemMonitorColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -1367,6 +1661,8 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		SysAPIAuthTable,
+		SysAddressesTable,
+		SysAreasTable,
 		SysAttachmentsTable,
 		SysClientsTable,
 		SysCredentialsTable,
@@ -1384,6 +1680,9 @@ var (
 		SysRolePermissionTable,
 		ScansTable,
 		SysScopesTable,
+		SysStationsTable,
+		SysSubwaysTable,
+		SysSubwayStationsTable,
 		SysSystemMonitorTable,
 		SysUsersTable,
 		SysUserRoleTable,
@@ -1397,6 +1696,14 @@ var (
 func init() {
 	SysAPIAuthTable.Annotation = &entsql.Annotation{
 		Table: "sys_api_auth",
+	}
+	SysAddressesTable.ForeignKeys[0].RefTable = SysAreasTable
+	SysAddressesTable.Annotation = &entsql.Annotation{
+		Table: "sys_addresses",
+	}
+	SysAreasTable.ForeignKeys[0].RefTable = SysAreasTable
+	SysAreasTable.Annotation = &entsql.Annotation{
+		Table: "sys_areas",
 	}
 	SysAttachmentsTable.Annotation = &entsql.Annotation{
 		Table: "sys_attachments",
@@ -1464,6 +1771,21 @@ func init() {
 	SysScopesTable.ForeignKeys[1].RefTable = SysScopesTable
 	SysScopesTable.Annotation = &entsql.Annotation{
 		Table: "sys_scopes",
+	}
+	SysStationsTable.ForeignKeys[0].RefTable = SysAreasTable
+	SysStationsTable.Annotation = &entsql.Annotation{
+		Table: "sys_stations",
+	}
+	SysSubwaysTable.ForeignKeys[0].RefTable = SysAreasTable
+	SysSubwaysTable.Annotation = &entsql.Annotation{
+		Table: "sys_subways",
+	}
+	SysSubwayStationsTable.ForeignKeys[0].RefTable = SysStationsTable
+	SysSubwayStationsTable.ForeignKeys[1].RefTable = SysSubwaysTable
+	SysSubwayStationsTable.ForeignKeys[2].RefTable = SysStationsTable
+	SysSubwayStationsTable.ForeignKeys[3].RefTable = SysSubwaysTable
+	SysSubwayStationsTable.Annotation = &entsql.Annotation{
+		Table: "sys_subway_stations",
 	}
 	SysSystemMonitorTable.Annotation = &entsql.Annotation{
 		Table: "sys_system_monitor",

@@ -20,6 +20,30 @@ func (f APIAuthFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.APIAuthMutation", m)
 }
 
+// The AddressFunc type is an adapter to allow the use of ordinary
+// function as Address mutator.
+type AddressFunc func(context.Context, *ent.AddressMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AddressFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AddressMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AddressMutation", m)
+}
+
+// The AreaFunc type is an adapter to allow the use of ordinary
+// function as Area mutator.
+type AreaFunc func(context.Context, *ent.AreaMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AreaFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AreaMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AreaMutation", m)
+}
+
 // The AttachmentFunc type is an adapter to allow the use of ordinary
 // function as Attachment mutator.
 type AttachmentFunc func(context.Context, *ent.AttachmentMutation) (ent.Value, error)
@@ -222,6 +246,42 @@ func (f ScopeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ScopeMutation", m)
+}
+
+// The StationFunc type is an adapter to allow the use of ordinary
+// function as Station mutator.
+type StationFunc func(context.Context, *ent.StationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f StationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.StationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StationMutation", m)
+}
+
+// The SubwayFunc type is an adapter to allow the use of ordinary
+// function as Subway mutator.
+type SubwayFunc func(context.Context, *ent.SubwayMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SubwayFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SubwayMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SubwayMutation", m)
+}
+
+// The SubwayStationFunc type is an adapter to allow the use of ordinary
+// function as SubwayStation mutator.
+type SubwayStationFunc func(context.Context, *ent.SubwayStationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SubwayStationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SubwayStationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SubwayStationMutation", m)
 }
 
 // The SystemMonitorFunc type is an adapter to allow the use of ordinary

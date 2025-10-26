@@ -9,6 +9,12 @@ import (
 // APIAuth is the predicate function for apiauth builders.
 type APIAuth func(*sql.Selector)
 
+// Address is the predicate function for address builders.
+type Address func(*sql.Selector)
+
+// Area is the predicate function for area builders.
+type Area func(*sql.Selector)
+
 // Attachment is the predicate function for attachment builders.
 type Attachment func(*sql.Selector)
 
@@ -59,6 +65,15 @@ type Scan func(*sql.Selector)
 
 // Scope is the predicate function for scope builders.
 type Scope func(*sql.Selector)
+
+// Station is the predicate function for station builders.
+type Station func(*sql.Selector)
+
+// Subway is the predicate function for subway builders.
+type Subway func(*sql.Selector)
+
+// SubwayStation is the predicate function for subwaystation builders.
+type SubwayStation func(*sql.Selector)
 
 // SystemMonitor is the predicate function for systemmonitor builders.
 type SystemMonitor func(*sql.Selector)

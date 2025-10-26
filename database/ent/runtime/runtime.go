@@ -3,7 +3,9 @@
 package runtime
 
 import (
+	"go-backend/database/ent/address"
 	"go-backend/database/ent/apiauth"
+	"go-backend/database/ent/area"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/clientdevice"
 	"go-backend/database/ent/credential"
@@ -21,6 +23,9 @@ import (
 	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scan"
 	"go-backend/database/ent/scope"
+	"go-backend/database/ent/station"
+	"go-backend/database/ent/subway"
+	"go-backend/database/ent/subwaystation"
 	"go-backend/database/ent/systemmonitor"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
@@ -77,6 +82,174 @@ func init() {
 	apiauthDescIsActive := apiauthFields[5].Descriptor()
 	// apiauth.DefaultIsActive holds the default value on creation for the is_active field.
 	apiauth.DefaultIsActive = apiauthDescIsActive.Default.(bool)
+	addressMixin := schema.Address{}.Mixin()
+	addressMixinHooks0 := addressMixin[0].Hooks()
+	addressMixinHooks1 := addressMixin[1].Hooks()
+	address.Hooks[0] = addressMixinHooks0[0]
+	address.Hooks[1] = addressMixinHooks0[1]
+	address.Hooks[2] = addressMixinHooks1[0]
+	addressMixinInters1 := addressMixin[1].Interceptors()
+	address.Interceptors[0] = addressMixinInters1[0]
+	addressMixinFields0 := addressMixin[0].Fields()
+	_ = addressMixinFields0
+	addressFields := schema.Address{}.Fields()
+	_ = addressFields
+	// addressDescCreateTime is the schema descriptor for create_time field.
+	addressDescCreateTime := addressMixinFields0[1].Descriptor()
+	// address.DefaultCreateTime holds the default value on creation for the create_time field.
+	address.DefaultCreateTime = addressDescCreateTime.Default.(func() time.Time)
+	// addressDescUpdateTime is the schema descriptor for update_time field.
+	addressDescUpdateTime := addressMixinFields0[3].Descriptor()
+	// address.DefaultUpdateTime holds the default value on creation for the update_time field.
+	address.DefaultUpdateTime = addressDescUpdateTime.Default.(func() time.Time)
+	// address.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	address.UpdateDefaultUpdateTime = addressDescUpdateTime.UpdateDefault.(func() time.Time)
+	// addressDescDetail is the schema descriptor for detail field.
+	addressDescDetail := addressFields[0].Descriptor()
+	// address.DetailValidator is a validator for the "detail" field. It is called by the builders before save.
+	address.DetailValidator = func() func(string) error {
+		validators := addressDescDetail.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(detail string) error {
+			for _, fn := range fns {
+				if err := fn(detail); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// addressDescPhone is the schema descriptor for phone field.
+	addressDescPhone := addressFields[2].Descriptor()
+	// address.PhoneValidator is a validator for the "phone" field. It is called by the builders before save.
+	address.PhoneValidator = func() func(string) error {
+		validators := addressDescPhone.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(phone string) error {
+			for _, fn := range fns {
+				if err := fn(phone); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// addressDescName is the schema descriptor for name field.
+	addressDescName := addressFields[3].Descriptor()
+	// address.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	address.NameValidator = func() func(string) error {
+		validators := addressDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// addressDescIsDefault is the schema descriptor for is_default field.
+	addressDescIsDefault := addressFields[4].Descriptor()
+	// address.DefaultIsDefault holds the default value on creation for the is_default field.
+	address.DefaultIsDefault = addressDescIsDefault.Default.(bool)
+	// addressDescEntity is the schema descriptor for entity field.
+	addressDescEntity := addressFields[6].Descriptor()
+	// address.EntityValidator is a validator for the "entity" field. It is called by the builders before save.
+	address.EntityValidator = addressDescEntity.Validators[0].(func(string) error)
+	// addressDescEntityID is the schema descriptor for entity_id field.
+	addressDescEntityID := addressFields[7].Descriptor()
+	// address.EntityIDValidator is a validator for the "entity_id" field. It is called by the builders before save.
+	address.EntityIDValidator = addressDescEntityID.Validators[0].(func(string) error)
+	areaMixin := schema.Area{}.Mixin()
+	areaMixinHooks0 := areaMixin[0].Hooks()
+	areaMixinHooks1 := areaMixin[1].Hooks()
+	area.Hooks[0] = areaMixinHooks0[0]
+	area.Hooks[1] = areaMixinHooks0[1]
+	area.Hooks[2] = areaMixinHooks1[0]
+	areaMixinInters1 := areaMixin[1].Interceptors()
+	area.Interceptors[0] = areaMixinInters1[0]
+	areaMixinFields0 := areaMixin[0].Fields()
+	_ = areaMixinFields0
+	areaFields := schema.Area{}.Fields()
+	_ = areaFields
+	// areaDescCreateTime is the schema descriptor for create_time field.
+	areaDescCreateTime := areaMixinFields0[1].Descriptor()
+	// area.DefaultCreateTime holds the default value on creation for the create_time field.
+	area.DefaultCreateTime = areaDescCreateTime.Default.(func() time.Time)
+	// areaDescUpdateTime is the schema descriptor for update_time field.
+	areaDescUpdateTime := areaMixinFields0[3].Descriptor()
+	// area.DefaultUpdateTime holds the default value on creation for the update_time field.
+	area.DefaultUpdateTime = areaDescUpdateTime.Default.(func() time.Time)
+	// area.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	area.UpdateDefaultUpdateTime = areaDescUpdateTime.UpdateDefault.(func() time.Time)
+	// areaDescName is the schema descriptor for name field.
+	areaDescName := areaFields[0].Descriptor()
+	// area.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	area.NameValidator = func() func(string) error {
+		validators := areaDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// areaDescDepth is the schema descriptor for depth field.
+	areaDescDepth := areaFields[2].Descriptor()
+	// area.DepthValidator is a validator for the "depth" field. It is called by the builders before save.
+	area.DepthValidator = func() func(int) error {
+		validators := areaDescDepth.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(depth int) error {
+			for _, fn := range fns {
+				if err := fn(depth); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// areaDescCode is the schema descriptor for code field.
+	areaDescCode := areaFields[3].Descriptor()
+	// area.CodeValidator is a validator for the "code" field. It is called by the builders before save.
+	area.CodeValidator = func() func(string) error {
+		validators := areaDescCode.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(code string) error {
+			for _, fn := range fns {
+				if err := fn(code); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// areaDescColor is the schema descriptor for color field.
+	areaDescColor := areaFields[7].Descriptor()
+	// area.ColorValidator is a validator for the "color" field. It is called by the builders before save.
+	area.ColorValidator = areaDescColor.Validators[0].(func(string) error)
 	attachmentMixin := schema.Attachment{}.Mixin()
 	attachmentMixinHooks0 := attachmentMixin[0].Hooks()
 	attachmentMixinHooks1 := attachmentMixin[1].Hooks()
@@ -864,6 +1037,112 @@ func init() {
 	scopeDescDisabled := scopeFields[10].Descriptor()
 	// scope.DefaultDisabled holds the default value on creation for the disabled field.
 	scope.DefaultDisabled = scopeDescDisabled.Default.(bool)
+	stationMixin := schema.Station{}.Mixin()
+	stationMixinHooks0 := stationMixin[0].Hooks()
+	stationMixinHooks1 := stationMixin[1].Hooks()
+	station.Hooks[0] = stationMixinHooks0[0]
+	station.Hooks[1] = stationMixinHooks0[1]
+	station.Hooks[2] = stationMixinHooks1[0]
+	stationMixinInters1 := stationMixin[1].Interceptors()
+	station.Interceptors[0] = stationMixinInters1[0]
+	stationMixinFields0 := stationMixin[0].Fields()
+	_ = stationMixinFields0
+	stationFields := schema.Station{}.Fields()
+	_ = stationFields
+	// stationDescCreateTime is the schema descriptor for create_time field.
+	stationDescCreateTime := stationMixinFields0[1].Descriptor()
+	// station.DefaultCreateTime holds the default value on creation for the create_time field.
+	station.DefaultCreateTime = stationDescCreateTime.Default.(func() time.Time)
+	// stationDescUpdateTime is the schema descriptor for update_time field.
+	stationDescUpdateTime := stationMixinFields0[3].Descriptor()
+	// station.DefaultUpdateTime holds the default value on creation for the update_time field.
+	station.DefaultUpdateTime = stationDescUpdateTime.Default.(func() time.Time)
+	// station.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	station.UpdateDefaultUpdateTime = stationDescUpdateTime.UpdateDefault.(func() time.Time)
+	// stationDescName is the schema descriptor for name field.
+	stationDescName := stationFields[0].Descriptor()
+	// station.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	station.NameValidator = func() func(string) error {
+		validators := stationDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	subwayMixin := schema.Subway{}.Mixin()
+	subwayMixinHooks0 := subwayMixin[0].Hooks()
+	subwayMixinHooks1 := subwayMixin[1].Hooks()
+	subway.Hooks[0] = subwayMixinHooks0[0]
+	subway.Hooks[1] = subwayMixinHooks0[1]
+	subway.Hooks[2] = subwayMixinHooks1[0]
+	subwayMixinInters1 := subwayMixin[1].Interceptors()
+	subway.Interceptors[0] = subwayMixinInters1[0]
+	subwayMixinFields0 := subwayMixin[0].Fields()
+	_ = subwayMixinFields0
+	subwayFields := schema.Subway{}.Fields()
+	_ = subwayFields
+	// subwayDescCreateTime is the schema descriptor for create_time field.
+	subwayDescCreateTime := subwayMixinFields0[1].Descriptor()
+	// subway.DefaultCreateTime holds the default value on creation for the create_time field.
+	subway.DefaultCreateTime = subwayDescCreateTime.Default.(func() time.Time)
+	// subwayDescUpdateTime is the schema descriptor for update_time field.
+	subwayDescUpdateTime := subwayMixinFields0[3].Descriptor()
+	// subway.DefaultUpdateTime holds the default value on creation for the update_time field.
+	subway.DefaultUpdateTime = subwayDescUpdateTime.Default.(func() time.Time)
+	// subway.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	subway.UpdateDefaultUpdateTime = subwayDescUpdateTime.UpdateDefault.(func() time.Time)
+	// subwayDescName is the schema descriptor for name field.
+	subwayDescName := subwayFields[0].Descriptor()
+	// subway.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	subway.NameValidator = func() func(string) error {
+		validators := subwayDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// subwayDescColor is the schema descriptor for color field.
+	subwayDescColor := subwayFields[2].Descriptor()
+	// subway.ColorValidator is a validator for the "color" field. It is called by the builders before save.
+	subway.ColorValidator = subwayDescColor.Validators[0].(func(string) error)
+	subwaystationMixin := schema.SubwayStation{}.Mixin()
+	subwaystationMixinHooks0 := subwaystationMixin[0].Hooks()
+	subwaystationMixinHooks1 := subwaystationMixin[1].Hooks()
+	subwaystation.Hooks[0] = subwaystationMixinHooks0[0]
+	subwaystation.Hooks[1] = subwaystationMixinHooks0[1]
+	subwaystation.Hooks[2] = subwaystationMixinHooks1[0]
+	subwaystationMixinInters1 := subwaystationMixin[1].Interceptors()
+	subwaystation.Interceptors[0] = subwaystationMixinInters1[0]
+	subwaystationMixinFields0 := subwaystationMixin[0].Fields()
+	_ = subwaystationMixinFields0
+	subwaystationFields := schema.SubwayStation{}.Fields()
+	_ = subwaystationFields
+	// subwaystationDescCreateTime is the schema descriptor for create_time field.
+	subwaystationDescCreateTime := subwaystationMixinFields0[1].Descriptor()
+	// subwaystation.DefaultCreateTime holds the default value on creation for the create_time field.
+	subwaystation.DefaultCreateTime = subwaystationDescCreateTime.Default.(func() time.Time)
+	// subwaystationDescUpdateTime is the schema descriptor for update_time field.
+	subwaystationDescUpdateTime := subwaystationMixinFields0[3].Descriptor()
+	// subwaystation.DefaultUpdateTime holds the default value on creation for the update_time field.
+	subwaystation.DefaultUpdateTime = subwaystationDescUpdateTime.Default.(func() time.Time)
+	// subwaystation.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	subwaystation.UpdateDefaultUpdateTime = subwaystationDescUpdateTime.UpdateDefault.(func() time.Time)
 	systemmonitorMixin := schema.SystemMonitor{}.Mixin()
 	systemmonitorMixinHooks0 := systemmonitorMixin[0].Hooks()
 	systemmonitor.Hooks[0] = systemmonitorMixinHooks0[0]

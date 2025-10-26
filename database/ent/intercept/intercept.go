@@ -7,7 +7,9 @@ import (
 	"fmt"
 
 	"go-backend/database/ent"
+	"go-backend/database/ent/address"
 	"go-backend/database/ent/apiauth"
+	"go-backend/database/ent/area"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/clientdevice"
 	"go-backend/database/ent/credential"
@@ -26,6 +28,9 @@ import (
 	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scan"
 	"go-backend/database/ent/scope"
+	"go-backend/database/ent/station"
+	"go-backend/database/ent/subway"
+	"go-backend/database/ent/subwaystation"
 	"go-backend/database/ent/systemmonitor"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
@@ -115,6 +120,60 @@ func (f TraverseAPIAuth) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.APIAuthQuery", q)
+}
+
+// The AddressFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AddressFunc func(context.Context, *ent.AddressQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AddressFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AddressQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AddressQuery", q)
+}
+
+// The TraverseAddress type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAddress func(context.Context, *ent.AddressQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAddress) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAddress) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AddressQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AddressQuery", q)
+}
+
+// The AreaFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AreaFunc func(context.Context, *ent.AreaQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AreaFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AreaQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AreaQuery", q)
+}
+
+// The TraverseArea type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseArea func(context.Context, *ent.AreaQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseArea) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseArea) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AreaQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AreaQuery", q)
 }
 
 // The AttachmentFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -576,6 +635,87 @@ func (f TraverseScope) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.ScopeQuery", q)
 }
 
+// The StationFunc type is an adapter to allow the use of ordinary function as a Querier.
+type StationFunc func(context.Context, *ent.StationQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f StationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.StationQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.StationQuery", q)
+}
+
+// The TraverseStation type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseStation func(context.Context, *ent.StationQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseStation) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseStation) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.StationQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.StationQuery", q)
+}
+
+// The SubwayFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SubwayFunc func(context.Context, *ent.SubwayQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SubwayFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SubwayQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SubwayQuery", q)
+}
+
+// The TraverseSubway type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSubway func(context.Context, *ent.SubwayQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSubway) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSubway) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SubwayQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SubwayQuery", q)
+}
+
+// The SubwayStationFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SubwayStationFunc func(context.Context, *ent.SubwayStationQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SubwayStationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SubwayStationQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SubwayStationQuery", q)
+}
+
+// The TraverseSubwayStation type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSubwayStation func(context.Context, *ent.SubwayStationQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSubwayStation) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSubwayStation) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SubwayStationQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SubwayStationQuery", q)
+}
+
 // The SystemMonitorFunc type is an adapter to allow the use of ordinary function as a Querier.
 type SystemMonitorFunc func(context.Context, *ent.SystemMonitorQuery) (ent.Value, error)
 
@@ -689,6 +829,10 @@ func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
 	case *ent.APIAuthQuery:
 		return &query[*ent.APIAuthQuery, predicate.APIAuth, apiauth.OrderOption]{typ: ent.TypeAPIAuth, tq: q}, nil
+	case *ent.AddressQuery:
+		return &query[*ent.AddressQuery, predicate.Address, address.OrderOption]{typ: ent.TypeAddress, tq: q}, nil
+	case *ent.AreaQuery:
+		return &query[*ent.AreaQuery, predicate.Area, area.OrderOption]{typ: ent.TypeArea, tq: q}, nil
 	case *ent.AttachmentQuery:
 		return &query[*ent.AttachmentQuery, predicate.Attachment, attachment.OrderOption]{typ: ent.TypeAttachment, tq: q}, nil
 	case *ent.ClientDeviceQuery:
@@ -723,6 +867,12 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.ScanQuery, predicate.Scan, scan.OrderOption]{typ: ent.TypeScan, tq: q}, nil
 	case *ent.ScopeQuery:
 		return &query[*ent.ScopeQuery, predicate.Scope, scope.OrderOption]{typ: ent.TypeScope, tq: q}, nil
+	case *ent.StationQuery:
+		return &query[*ent.StationQuery, predicate.Station, station.OrderOption]{typ: ent.TypeStation, tq: q}, nil
+	case *ent.SubwayQuery:
+		return &query[*ent.SubwayQuery, predicate.Subway, subway.OrderOption]{typ: ent.TypeSubway, tq: q}, nil
+	case *ent.SubwayStationQuery:
+		return &query[*ent.SubwayStationQuery, predicate.SubwayStation, subwaystation.OrderOption]{typ: ent.TypeSubwayStation, tq: q}, nil
 	case *ent.SystemMonitorQuery:
 		return &query[*ent.SystemMonitorQuery, predicate.SystemMonitor, systemmonitor.OrderOption]{typ: ent.TypeSystemMonitor, tq: q}, nil
 	case *ent.UserQuery:

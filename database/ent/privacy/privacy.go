@@ -135,6 +135,54 @@ func (f APIAuthMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutatio
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.APIAuthMutation", m)
 }
 
+// The AddressQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AddressQueryRuleFunc func(context.Context, *ent.AddressQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AddressQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AddressQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AddressQuery", q)
+}
+
+// The AddressMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AddressMutationRuleFunc func(context.Context, *ent.AddressMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AddressMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AddressMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AddressMutation", m)
+}
+
+// The AreaQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AreaQueryRuleFunc func(context.Context, *ent.AreaQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AreaQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AreaQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AreaQuery", q)
+}
+
+// The AreaMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AreaMutationRuleFunc func(context.Context, *ent.AreaMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AreaMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AreaMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AreaMutation", m)
+}
+
 // The AttachmentQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AttachmentQueryRuleFunc func(context.Context, *ent.AttachmentQuery) error
@@ -543,6 +591,78 @@ func (f ScopeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation)
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ScopeMutation", m)
 }
 
+// The StationQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type StationQueryRuleFunc func(context.Context, *ent.StationQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f StationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.StationQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.StationQuery", q)
+}
+
+// The StationMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type StationMutationRuleFunc func(context.Context, *ent.StationMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f StationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.StationMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.StationMutation", m)
+}
+
+// The SubwayQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type SubwayQueryRuleFunc func(context.Context, *ent.SubwayQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f SubwayQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SubwayQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SubwayQuery", q)
+}
+
+// The SubwayMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type SubwayMutationRuleFunc func(context.Context, *ent.SubwayMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f SubwayMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SubwayMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SubwayMutation", m)
+}
+
+// The SubwayStationQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type SubwayStationQueryRuleFunc func(context.Context, *ent.SubwayStationQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f SubwayStationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SubwayStationQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SubwayStationQuery", q)
+}
+
+// The SubwayStationMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type SubwayStationMutationRuleFunc func(context.Context, *ent.SubwayStationMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f SubwayStationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SubwayStationMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SubwayStationMutation", m)
+}
+
 // The SystemMonitorQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type SystemMonitorQueryRuleFunc func(context.Context, *ent.SystemMonitorQuery) error
@@ -676,6 +796,10 @@ func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
 	case *ent.APIAuthQuery:
 		return q.Filter(), nil
+	case *ent.AddressQuery:
+		return q.Filter(), nil
+	case *ent.AreaQuery:
+		return q.Filter(), nil
 	case *ent.AttachmentQuery:
 		return q.Filter(), nil
 	case *ent.ClientDeviceQuery:
@@ -710,6 +834,12 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.ScopeQuery:
 		return q.Filter(), nil
+	case *ent.StationQuery:
+		return q.Filter(), nil
+	case *ent.SubwayQuery:
+		return q.Filter(), nil
+	case *ent.SubwayStationQuery:
+		return q.Filter(), nil
 	case *ent.SystemMonitorQuery:
 		return q.Filter(), nil
 	case *ent.UserQuery:
@@ -726,6 +856,10 @@ func queryFilter(q ent.Query) (Filter, error) {
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
 	case *ent.APIAuthMutation:
+		return m.Filter(), nil
+	case *ent.AddressMutation:
+		return m.Filter(), nil
+	case *ent.AreaMutation:
 		return m.Filter(), nil
 	case *ent.AttachmentMutation:
 		return m.Filter(), nil
@@ -760,6 +894,12 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.ScanMutation:
 		return m.Filter(), nil
 	case *ent.ScopeMutation:
+		return m.Filter(), nil
+	case *ent.StationMutation:
+		return m.Filter(), nil
+	case *ent.SubwayMutation:
+		return m.Filter(), nil
+	case *ent.SubwayStationMutation:
 		return m.Filter(), nil
 	case *ent.SystemMonitorMutation:
 		return m.Filter(), nil

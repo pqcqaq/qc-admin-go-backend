@@ -11,7 +11,9 @@ import (
 
 	"go-backend/database/ent/migrate"
 
+	"go-backend/database/ent/address"
 	"go-backend/database/ent/apiauth"
+	"go-backend/database/ent/area"
 	"go-backend/database/ent/attachment"
 	"go-backend/database/ent/clientdevice"
 	"go-backend/database/ent/credential"
@@ -29,6 +31,9 @@ import (
 	"go-backend/database/ent/rolepermission"
 	"go-backend/database/ent/scan"
 	"go-backend/database/ent/scope"
+	"go-backend/database/ent/station"
+	"go-backend/database/ent/subway"
+	"go-backend/database/ent/subwaystation"
 	"go-backend/database/ent/systemmonitor"
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
@@ -49,6 +54,10 @@ type Client struct {
 	Schema *migrate.Schema
 	// APIAuth is the client for interacting with the APIAuth builders.
 	APIAuth *APIAuthClient
+	// Address is the client for interacting with the Address builders.
+	Address *AddressClient
+	// Area is the client for interacting with the Area builders.
+	Area *AreaClient
 	// Attachment is the client for interacting with the Attachment builders.
 	Attachment *AttachmentClient
 	// ClientDevice is the client for interacting with the ClientDevice builders.
@@ -83,6 +92,12 @@ type Client struct {
 	Scan *ScanClient
 	// Scope is the client for interacting with the Scope builders.
 	Scope *ScopeClient
+	// Station is the client for interacting with the Station builders.
+	Station *StationClient
+	// Subway is the client for interacting with the Subway builders.
+	Subway *SubwayClient
+	// SubwayStation is the client for interacting with the SubwayStation builders.
+	SubwayStation *SubwayStationClient
 	// SystemMonitor is the client for interacting with the SystemMonitor builders.
 	SystemMonitor *SystemMonitorClient
 	// User is the client for interacting with the User builders.
@@ -103,6 +118,8 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.APIAuth = NewAPIAuthClient(c.config)
+	c.Address = NewAddressClient(c.config)
+	c.Area = NewAreaClient(c.config)
 	c.Attachment = NewAttachmentClient(c.config)
 	c.ClientDevice = NewClientDeviceClient(c.config)
 	c.Credential = NewCredentialClient(c.config)
@@ -120,6 +137,9 @@ func (c *Client) init() {
 	c.RolePermission = NewRolePermissionClient(c.config)
 	c.Scan = NewScanClient(c.config)
 	c.Scope = NewScopeClient(c.config)
+	c.Station = NewStationClient(c.config)
+	c.Subway = NewSubwayClient(c.config)
+	c.SubwayStation = NewSubwayStationClient(c.config)
 	c.SystemMonitor = NewSystemMonitorClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.UserRole = NewUserRoleClient(c.config)
@@ -217,6 +237,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                    ctx,
 		config:                 cfg,
 		APIAuth:                NewAPIAuthClient(cfg),
+		Address:                NewAddressClient(cfg),
+		Area:                   NewAreaClient(cfg),
 		Attachment:             NewAttachmentClient(cfg),
 		ClientDevice:           NewClientDeviceClient(cfg),
 		Credential:             NewCredentialClient(cfg),
@@ -234,6 +256,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		RolePermission:         NewRolePermissionClient(cfg),
 		Scan:                   NewScanClient(cfg),
 		Scope:                  NewScopeClient(cfg),
+		Station:                NewStationClient(cfg),
+		Subway:                 NewSubwayClient(cfg),
+		SubwayStation:          NewSubwayStationClient(cfg),
 		SystemMonitor:          NewSystemMonitorClient(cfg),
 		User:                   NewUserClient(cfg),
 		UserRole:               NewUserRoleClient(cfg),
@@ -258,6 +283,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:                    ctx,
 		config:                 cfg,
 		APIAuth:                NewAPIAuthClient(cfg),
+		Address:                NewAddressClient(cfg),
+		Area:                   NewAreaClient(cfg),
 		Attachment:             NewAttachmentClient(cfg),
 		ClientDevice:           NewClientDeviceClient(cfg),
 		Credential:             NewCredentialClient(cfg),
@@ -275,6 +302,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		RolePermission:         NewRolePermissionClient(cfg),
 		Scan:                   NewScanClient(cfg),
 		Scope:                  NewScopeClient(cfg),
+		Station:                NewStationClient(cfg),
+		Subway:                 NewSubwayClient(cfg),
+		SubwayStation:          NewSubwayStationClient(cfg),
 		SystemMonitor:          NewSystemMonitorClient(cfg),
 		User:                   NewUserClient(cfg),
 		UserRole:               NewUserRoleClient(cfg),
@@ -308,11 +338,12 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.APIAuth, c.Attachment, c.ClientDevice, c.Credential, c.Logging, c.LoginRecord,
-		c.OauthApplication, c.OauthAuthorizationCode, c.OauthProvider, c.OauthState,
-		c.OauthToken, c.OauthUser, c.OauthUserAuthorization, c.Permission, c.Role,
-		c.RolePermission, c.Scan, c.Scope, c.SystemMonitor, c.User, c.UserRole,
-		c.VerifyCode,
+		c.APIAuth, c.Address, c.Area, c.Attachment, c.ClientDevice, c.Credential,
+		c.Logging, c.LoginRecord, c.OauthApplication, c.OauthAuthorizationCode,
+		c.OauthProvider, c.OauthState, c.OauthToken, c.OauthUser,
+		c.OauthUserAuthorization, c.Permission, c.Role, c.RolePermission, c.Scan,
+		c.Scope, c.Station, c.Subway, c.SubwayStation, c.SystemMonitor, c.User,
+		c.UserRole, c.VerifyCode,
 	} {
 		n.Use(hooks...)
 	}
@@ -322,11 +353,12 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.APIAuth, c.Attachment, c.ClientDevice, c.Credential, c.Logging, c.LoginRecord,
-		c.OauthApplication, c.OauthAuthorizationCode, c.OauthProvider, c.OauthState,
-		c.OauthToken, c.OauthUser, c.OauthUserAuthorization, c.Permission, c.Role,
-		c.RolePermission, c.Scan, c.Scope, c.SystemMonitor, c.User, c.UserRole,
-		c.VerifyCode,
+		c.APIAuth, c.Address, c.Area, c.Attachment, c.ClientDevice, c.Credential,
+		c.Logging, c.LoginRecord, c.OauthApplication, c.OauthAuthorizationCode,
+		c.OauthProvider, c.OauthState, c.OauthToken, c.OauthUser,
+		c.OauthUserAuthorization, c.Permission, c.Role, c.RolePermission, c.Scan,
+		c.Scope, c.Station, c.Subway, c.SubwayStation, c.SystemMonitor, c.User,
+		c.UserRole, c.VerifyCode,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -337,6 +369,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *APIAuthMutation:
 		return c.APIAuth.mutate(ctx, m)
+	case *AddressMutation:
+		return c.Address.mutate(ctx, m)
+	case *AreaMutation:
+		return c.Area.mutate(ctx, m)
 	case *AttachmentMutation:
 		return c.Attachment.mutate(ctx, m)
 	case *ClientDeviceMutation:
@@ -371,6 +407,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Scan.mutate(ctx, m)
 	case *ScopeMutation:
 		return c.Scope.mutate(ctx, m)
+	case *StationMutation:
+		return c.Station.mutate(ctx, m)
+	case *SubwayMutation:
+		return c.Subway.mutate(ctx, m)
+	case *SubwayStationMutation:
+		return c.SubwayStation.mutate(ctx, m)
 	case *SystemMonitorMutation:
 		return c.SystemMonitor.mutate(ctx, m)
 	case *UserMutation:
@@ -532,6 +574,372 @@ func (c *APIAuthClient) mutate(ctx context.Context, m *APIAuthMutation) (Value, 
 		return (&APIAuthDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown APIAuth mutation op: %q", m.Op())
+	}
+}
+
+// AddressClient is a client for the Address schema.
+type AddressClient struct {
+	config
+}
+
+// NewAddressClient returns a client for the Address from the given config.
+func NewAddressClient(c config) *AddressClient {
+	return &AddressClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `address.Hooks(f(g(h())))`.
+func (c *AddressClient) Use(hooks ...Hook) {
+	c.hooks.Address = append(c.hooks.Address, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `address.Intercept(f(g(h())))`.
+func (c *AddressClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Address = append(c.inters.Address, interceptors...)
+}
+
+// Create returns a builder for creating a Address entity.
+func (c *AddressClient) Create() *AddressCreate {
+	mutation := newAddressMutation(c.config, OpCreate)
+	return &AddressCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Address entities.
+func (c *AddressClient) CreateBulk(builders ...*AddressCreate) *AddressCreateBulk {
+	return &AddressCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AddressClient) MapCreateBulk(slice any, setFunc func(*AddressCreate, int)) *AddressCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AddressCreateBulk{err: fmt.Errorf("calling to AddressClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AddressCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AddressCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Address.
+func (c *AddressClient) Update() *AddressUpdate {
+	mutation := newAddressMutation(c.config, OpUpdate)
+	return &AddressUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AddressClient) UpdateOne(_m *Address) *AddressUpdateOne {
+	mutation := newAddressMutation(c.config, OpUpdateOne, withAddress(_m))
+	return &AddressUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AddressClient) UpdateOneID(id uint64) *AddressUpdateOne {
+	mutation := newAddressMutation(c.config, OpUpdateOne, withAddressID(id))
+	return &AddressUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Address.
+func (c *AddressClient) Delete() *AddressDelete {
+	mutation := newAddressMutation(c.config, OpDelete)
+	return &AddressDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AddressClient) DeleteOne(_m *Address) *AddressDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AddressClient) DeleteOneID(id uint64) *AddressDeleteOne {
+	builder := c.Delete().Where(address.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AddressDeleteOne{builder}
+}
+
+// Query returns a query builder for Address.
+func (c *AddressClient) Query() *AddressQuery {
+	return &AddressQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAddress},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Address entity by its id.
+func (c *AddressClient) Get(ctx context.Context, id uint64) (*Address, error) {
+	return c.Query().Where(address.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AddressClient) GetX(ctx context.Context, id uint64) *Address {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryArea queries the area edge of a Address.
+func (c *AddressClient) QueryArea(_m *Address) *AreaQuery {
+	query := (&AreaClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(address.Table, address.FieldID, id),
+			sqlgraph.To(area.Table, area.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, address.AreaTable, address.AreaColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AddressClient) Hooks() []Hook {
+	hooks := c.hooks.Address
+	return append(hooks[:len(hooks):len(hooks)], address.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *AddressClient) Interceptors() []Interceptor {
+	inters := c.inters.Address
+	return append(inters[:len(inters):len(inters)], address.Interceptors[:]...)
+}
+
+func (c *AddressClient) mutate(ctx context.Context, m *AddressMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AddressCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AddressUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AddressUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AddressDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Address mutation op: %q", m.Op())
+	}
+}
+
+// AreaClient is a client for the Area schema.
+type AreaClient struct {
+	config
+}
+
+// NewAreaClient returns a client for the Area from the given config.
+func NewAreaClient(c config) *AreaClient {
+	return &AreaClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `area.Hooks(f(g(h())))`.
+func (c *AreaClient) Use(hooks ...Hook) {
+	c.hooks.Area = append(c.hooks.Area, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `area.Intercept(f(g(h())))`.
+func (c *AreaClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Area = append(c.inters.Area, interceptors...)
+}
+
+// Create returns a builder for creating a Area entity.
+func (c *AreaClient) Create() *AreaCreate {
+	mutation := newAreaMutation(c.config, OpCreate)
+	return &AreaCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Area entities.
+func (c *AreaClient) CreateBulk(builders ...*AreaCreate) *AreaCreateBulk {
+	return &AreaCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AreaClient) MapCreateBulk(slice any, setFunc func(*AreaCreate, int)) *AreaCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AreaCreateBulk{err: fmt.Errorf("calling to AreaClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AreaCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AreaCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Area.
+func (c *AreaClient) Update() *AreaUpdate {
+	mutation := newAreaMutation(c.config, OpUpdate)
+	return &AreaUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AreaClient) UpdateOne(_m *Area) *AreaUpdateOne {
+	mutation := newAreaMutation(c.config, OpUpdateOne, withArea(_m))
+	return &AreaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AreaClient) UpdateOneID(id uint64) *AreaUpdateOne {
+	mutation := newAreaMutation(c.config, OpUpdateOne, withAreaID(id))
+	return &AreaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Area.
+func (c *AreaClient) Delete() *AreaDelete {
+	mutation := newAreaMutation(c.config, OpDelete)
+	return &AreaDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AreaClient) DeleteOne(_m *Area) *AreaDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AreaClient) DeleteOneID(id uint64) *AreaDeleteOne {
+	builder := c.Delete().Where(area.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AreaDeleteOne{builder}
+}
+
+// Query returns a query builder for Area.
+func (c *AreaClient) Query() *AreaQuery {
+	return &AreaQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeArea},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Area entity by its id.
+func (c *AreaClient) Get(ctx context.Context, id uint64) (*Area, error) {
+	return c.Query().Where(area.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AreaClient) GetX(ctx context.Context, id uint64) *Area {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryChildren queries the children edge of a Area.
+func (c *AreaClient) QueryChildren(_m *Area) *AreaQuery {
+	query := (&AreaClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(area.Table, area.FieldID, id),
+			sqlgraph.To(area.Table, area.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, area.ChildrenTable, area.ChildrenColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryParent queries the parent edge of a Area.
+func (c *AreaClient) QueryParent(_m *Area) *AreaQuery {
+	query := (&AreaClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(area.Table, area.FieldID, id),
+			sqlgraph.To(area.Table, area.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, area.ParentTable, area.ParentColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAddresses queries the addresses edge of a Area.
+func (c *AreaClient) QueryAddresses(_m *Area) *AddressQuery {
+	query := (&AddressClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(area.Table, area.FieldID, id),
+			sqlgraph.To(address.Table, address.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, area.AddressesTable, area.AddressesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStations queries the stations edge of a Area.
+func (c *AreaClient) QueryStations(_m *Area) *StationQuery {
+	query := (&StationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(area.Table, area.FieldID, id),
+			sqlgraph.To(station.Table, station.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, area.StationsTable, area.StationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySubways queries the subways edge of a Area.
+func (c *AreaClient) QuerySubways(_m *Area) *SubwayQuery {
+	query := (&SubwayClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(area.Table, area.FieldID, id),
+			sqlgraph.To(subway.Table, subway.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, area.SubwaysTable, area.SubwaysColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AreaClient) Hooks() []Hook {
+	hooks := c.hooks.Area
+	return append(hooks[:len(hooks):len(hooks)], area.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *AreaClient) Interceptors() []Interceptor {
+	inters := c.inters.Area
+	return append(inters[:len(inters):len(inters)], area.Interceptors[:]...)
+}
+
+func (c *AreaClient) mutate(ctx context.Context, m *AreaMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AreaCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AreaUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AreaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AreaDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Area mutation op: %q", m.Op())
 	}
 }
 
@@ -3469,6 +3877,507 @@ func (c *ScopeClient) mutate(ctx context.Context, m *ScopeMutation) (Value, erro
 	}
 }
 
+// StationClient is a client for the Station schema.
+type StationClient struct {
+	config
+}
+
+// NewStationClient returns a client for the Station from the given config.
+func NewStationClient(c config) *StationClient {
+	return &StationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `station.Hooks(f(g(h())))`.
+func (c *StationClient) Use(hooks ...Hook) {
+	c.hooks.Station = append(c.hooks.Station, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `station.Intercept(f(g(h())))`.
+func (c *StationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Station = append(c.inters.Station, interceptors...)
+}
+
+// Create returns a builder for creating a Station entity.
+func (c *StationClient) Create() *StationCreate {
+	mutation := newStationMutation(c.config, OpCreate)
+	return &StationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Station entities.
+func (c *StationClient) CreateBulk(builders ...*StationCreate) *StationCreateBulk {
+	return &StationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *StationClient) MapCreateBulk(slice any, setFunc func(*StationCreate, int)) *StationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &StationCreateBulk{err: fmt.Errorf("calling to StationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*StationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &StationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Station.
+func (c *StationClient) Update() *StationUpdate {
+	mutation := newStationMutation(c.config, OpUpdate)
+	return &StationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *StationClient) UpdateOne(_m *Station) *StationUpdateOne {
+	mutation := newStationMutation(c.config, OpUpdateOne, withStation(_m))
+	return &StationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *StationClient) UpdateOneID(id uint64) *StationUpdateOne {
+	mutation := newStationMutation(c.config, OpUpdateOne, withStationID(id))
+	return &StationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Station.
+func (c *StationClient) Delete() *StationDelete {
+	mutation := newStationMutation(c.config, OpDelete)
+	return &StationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *StationClient) DeleteOne(_m *Station) *StationDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *StationClient) DeleteOneID(id uint64) *StationDeleteOne {
+	builder := c.Delete().Where(station.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &StationDeleteOne{builder}
+}
+
+// Query returns a query builder for Station.
+func (c *StationClient) Query() *StationQuery {
+	return &StationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeStation},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Station entity by its id.
+func (c *StationClient) Get(ctx context.Context, id uint64) (*Station, error) {
+	return c.Query().Where(station.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *StationClient) GetX(ctx context.Context, id uint64) *Station {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryArea queries the area edge of a Station.
+func (c *StationClient) QueryArea(_m *Station) *AreaQuery {
+	query := (&AreaClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(station.Table, station.FieldID, id),
+			sqlgraph.To(area.Table, area.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, station.AreaTable, station.AreaColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySubwayStations queries the subway_stations edge of a Station.
+func (c *StationClient) QuerySubwayStations(_m *Station) *SubwayStationQuery {
+	query := (&SubwayStationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(station.Table, station.FieldID, id),
+			sqlgraph.To(subwaystation.Table, subwaystation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, station.SubwayStationsTable, station.SubwayStationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *StationClient) Hooks() []Hook {
+	hooks := c.hooks.Station
+	return append(hooks[:len(hooks):len(hooks)], station.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *StationClient) Interceptors() []Interceptor {
+	inters := c.inters.Station
+	return append(inters[:len(inters):len(inters)], station.Interceptors[:]...)
+}
+
+func (c *StationClient) mutate(ctx context.Context, m *StationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&StationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&StationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&StationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&StationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Station mutation op: %q", m.Op())
+	}
+}
+
+// SubwayClient is a client for the Subway schema.
+type SubwayClient struct {
+	config
+}
+
+// NewSubwayClient returns a client for the Subway from the given config.
+func NewSubwayClient(c config) *SubwayClient {
+	return &SubwayClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `subway.Hooks(f(g(h())))`.
+func (c *SubwayClient) Use(hooks ...Hook) {
+	c.hooks.Subway = append(c.hooks.Subway, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `subway.Intercept(f(g(h())))`.
+func (c *SubwayClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Subway = append(c.inters.Subway, interceptors...)
+}
+
+// Create returns a builder for creating a Subway entity.
+func (c *SubwayClient) Create() *SubwayCreate {
+	mutation := newSubwayMutation(c.config, OpCreate)
+	return &SubwayCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Subway entities.
+func (c *SubwayClient) CreateBulk(builders ...*SubwayCreate) *SubwayCreateBulk {
+	return &SubwayCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SubwayClient) MapCreateBulk(slice any, setFunc func(*SubwayCreate, int)) *SubwayCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SubwayCreateBulk{err: fmt.Errorf("calling to SubwayClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SubwayCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SubwayCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Subway.
+func (c *SubwayClient) Update() *SubwayUpdate {
+	mutation := newSubwayMutation(c.config, OpUpdate)
+	return &SubwayUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SubwayClient) UpdateOne(_m *Subway) *SubwayUpdateOne {
+	mutation := newSubwayMutation(c.config, OpUpdateOne, withSubway(_m))
+	return &SubwayUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SubwayClient) UpdateOneID(id uint64) *SubwayUpdateOne {
+	mutation := newSubwayMutation(c.config, OpUpdateOne, withSubwayID(id))
+	return &SubwayUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Subway.
+func (c *SubwayClient) Delete() *SubwayDelete {
+	mutation := newSubwayMutation(c.config, OpDelete)
+	return &SubwayDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SubwayClient) DeleteOne(_m *Subway) *SubwayDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SubwayClient) DeleteOneID(id uint64) *SubwayDeleteOne {
+	builder := c.Delete().Where(subway.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SubwayDeleteOne{builder}
+}
+
+// Query returns a query builder for Subway.
+func (c *SubwayClient) Query() *SubwayQuery {
+	return &SubwayQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSubway},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Subway entity by its id.
+func (c *SubwayClient) Get(ctx context.Context, id uint64) (*Subway, error) {
+	return c.Query().Where(subway.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SubwayClient) GetX(ctx context.Context, id uint64) *Subway {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryArea queries the area edge of a Subway.
+func (c *SubwayClient) QueryArea(_m *Subway) *AreaQuery {
+	query := (&AreaClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(subway.Table, subway.FieldID, id),
+			sqlgraph.To(area.Table, area.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, subway.AreaTable, subway.AreaColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySubwayStations queries the subway_stations edge of a Subway.
+func (c *SubwayClient) QuerySubwayStations(_m *Subway) *SubwayStationQuery {
+	query := (&SubwayStationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(subway.Table, subway.FieldID, id),
+			sqlgraph.To(subwaystation.Table, subwaystation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, subway.SubwayStationsTable, subway.SubwayStationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SubwayClient) Hooks() []Hook {
+	hooks := c.hooks.Subway
+	return append(hooks[:len(hooks):len(hooks)], subway.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *SubwayClient) Interceptors() []Interceptor {
+	inters := c.inters.Subway
+	return append(inters[:len(inters):len(inters)], subway.Interceptors[:]...)
+}
+
+func (c *SubwayClient) mutate(ctx context.Context, m *SubwayMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SubwayCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SubwayUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SubwayUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SubwayDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Subway mutation op: %q", m.Op())
+	}
+}
+
+// SubwayStationClient is a client for the SubwayStation schema.
+type SubwayStationClient struct {
+	config
+}
+
+// NewSubwayStationClient returns a client for the SubwayStation from the given config.
+func NewSubwayStationClient(c config) *SubwayStationClient {
+	return &SubwayStationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `subwaystation.Hooks(f(g(h())))`.
+func (c *SubwayStationClient) Use(hooks ...Hook) {
+	c.hooks.SubwayStation = append(c.hooks.SubwayStation, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `subwaystation.Intercept(f(g(h())))`.
+func (c *SubwayStationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SubwayStation = append(c.inters.SubwayStation, interceptors...)
+}
+
+// Create returns a builder for creating a SubwayStation entity.
+func (c *SubwayStationClient) Create() *SubwayStationCreate {
+	mutation := newSubwayStationMutation(c.config, OpCreate)
+	return &SubwayStationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SubwayStation entities.
+func (c *SubwayStationClient) CreateBulk(builders ...*SubwayStationCreate) *SubwayStationCreateBulk {
+	return &SubwayStationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SubwayStationClient) MapCreateBulk(slice any, setFunc func(*SubwayStationCreate, int)) *SubwayStationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SubwayStationCreateBulk{err: fmt.Errorf("calling to SubwayStationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SubwayStationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SubwayStationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SubwayStation.
+func (c *SubwayStationClient) Update() *SubwayStationUpdate {
+	mutation := newSubwayStationMutation(c.config, OpUpdate)
+	return &SubwayStationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SubwayStationClient) UpdateOne(_m *SubwayStation) *SubwayStationUpdateOne {
+	mutation := newSubwayStationMutation(c.config, OpUpdateOne, withSubwayStation(_m))
+	return &SubwayStationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SubwayStationClient) UpdateOneID(id uint64) *SubwayStationUpdateOne {
+	mutation := newSubwayStationMutation(c.config, OpUpdateOne, withSubwayStationID(id))
+	return &SubwayStationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SubwayStation.
+func (c *SubwayStationClient) Delete() *SubwayStationDelete {
+	mutation := newSubwayStationMutation(c.config, OpDelete)
+	return &SubwayStationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SubwayStationClient) DeleteOne(_m *SubwayStation) *SubwayStationDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SubwayStationClient) DeleteOneID(id uint64) *SubwayStationDeleteOne {
+	builder := c.Delete().Where(subwaystation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SubwayStationDeleteOne{builder}
+}
+
+// Query returns a query builder for SubwayStation.
+func (c *SubwayStationClient) Query() *SubwayStationQuery {
+	return &SubwayStationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSubwayStation},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SubwayStation entity by its id.
+func (c *SubwayStationClient) Get(ctx context.Context, id uint64) (*SubwayStation, error) {
+	return c.Query().Where(subwaystation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SubwayStationClient) GetX(ctx context.Context, id uint64) *SubwayStation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryStation queries the station edge of a SubwayStation.
+func (c *SubwayStationClient) QueryStation(_m *SubwayStation) *StationQuery {
+	query := (&StationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(subwaystation.Table, subwaystation.FieldID, id),
+			sqlgraph.To(station.Table, station.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, subwaystation.StationTable, subwaystation.StationColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySubway queries the subway edge of a SubwayStation.
+func (c *SubwayStationClient) QuerySubway(_m *SubwayStation) *SubwayQuery {
+	query := (&SubwayClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(subwaystation.Table, subwaystation.FieldID, id),
+			sqlgraph.To(subway.Table, subway.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, subwaystation.SubwayTable, subwaystation.SubwayColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SubwayStationClient) Hooks() []Hook {
+	hooks := c.hooks.SubwayStation
+	return append(hooks[:len(hooks):len(hooks)], subwaystation.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *SubwayStationClient) Interceptors() []Interceptor {
+	inters := c.inters.SubwayStation
+	return append(inters[:len(inters):len(inters)], subwaystation.Interceptors[:]...)
+}
+
+func (c *SubwayStationClient) mutate(ctx context.Context, m *SubwayStationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SubwayStationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SubwayStationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SubwayStationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SubwayStationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SubwayStation mutation op: %q", m.Op())
+	}
+}
+
 // SystemMonitorClient is a client for the SystemMonitor schema.
 type SystemMonitorClient struct {
 	config
@@ -4107,18 +5016,18 @@ func (c *VerifyCodeClient) mutate(ctx context.Context, m *VerifyCodeMutation) (V
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		APIAuth, Attachment, ClientDevice, Credential, Logging, LoginRecord,
-		OauthApplication, OauthAuthorizationCode, OauthProvider, OauthState,
-		OauthToken, OauthUser, OauthUserAuthorization, Permission, Role,
-		RolePermission, Scan, Scope, SystemMonitor, User, UserRole,
-		VerifyCode []ent.Hook
+		APIAuth, Address, Area, Attachment, ClientDevice, Credential, Logging,
+		LoginRecord, OauthApplication, OauthAuthorizationCode, OauthProvider,
+		OauthState, OauthToken, OauthUser, OauthUserAuthorization, Permission, Role,
+		RolePermission, Scan, Scope, Station, Subway, SubwayStation, SystemMonitor,
+		User, UserRole, VerifyCode []ent.Hook
 	}
 	inters struct {
-		APIAuth, Attachment, ClientDevice, Credential, Logging, LoginRecord,
-		OauthApplication, OauthAuthorizationCode, OauthProvider, OauthState,
-		OauthToken, OauthUser, OauthUserAuthorization, Permission, Role,
-		RolePermission, Scan, Scope, SystemMonitor, User, UserRole,
-		VerifyCode []ent.Interceptor
+		APIAuth, Address, Area, Attachment, ClientDevice, Credential, Logging,
+		LoginRecord, OauthApplication, OauthAuthorizationCode, OauthProvider,
+		OauthState, OauthToken, OauthUser, OauthUserAuthorization, Permission, Role,
+		RolePermission, Scan, Scope, Station, Subway, SubwayStation, SystemMonitor,
+		User, UserRole, VerifyCode []ent.Interceptor
 	}
 )
 
