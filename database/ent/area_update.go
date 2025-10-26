@@ -152,6 +152,20 @@ func (_u *AreaUpdate) SetNillableName(v *string) *AreaUpdate {
 	return _u
 }
 
+// SetSpell sets the "spell" field.
+func (_u *AreaUpdate) SetSpell(v string) *AreaUpdate {
+	_u.mutation.SetSpell(v)
+	return _u
+}
+
+// SetNillableSpell sets the "spell" field if the given value is not nil.
+func (_u *AreaUpdate) SetNillableSpell(v *string) *AreaUpdate {
+	if v != nil {
+		_u.SetSpell(*v)
+	}
+	return _u
+}
+
 // SetLevel sets the "level" field.
 func (_u *AreaUpdate) SetLevel(v area.Level) *AreaUpdate {
 	_u.mutation.SetLevel(v)
@@ -492,6 +506,11 @@ func (_u *AreaUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Area.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Spell(); ok {
+		if err := area.SpellValidator(v); err != nil {
+			return &ValidationError{Name: "spell", err: fmt.Errorf(`ent: validator failed for field "Area.spell": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Level(); ok {
 		if err := area.LevelValidator(v); err != nil {
 			return &ValidationError{Name: "level", err: fmt.Errorf(`ent: validator failed for field "Area.level": %w`, err)}
@@ -565,6 +584,9 @@ func (_u *AreaUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(area.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Spell(); ok {
+		_spec.SetField(area.FieldSpell, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Level(); ok {
 		_spec.SetField(area.FieldLevel, field.TypeEnum, value)
@@ -946,6 +968,20 @@ func (_u *AreaUpdateOne) SetNillableName(v *string) *AreaUpdateOne {
 	return _u
 }
 
+// SetSpell sets the "spell" field.
+func (_u *AreaUpdateOne) SetSpell(v string) *AreaUpdateOne {
+	_u.mutation.SetSpell(v)
+	return _u
+}
+
+// SetNillableSpell sets the "spell" field if the given value is not nil.
+func (_u *AreaUpdateOne) SetNillableSpell(v *string) *AreaUpdateOne {
+	if v != nil {
+		_u.SetSpell(*v)
+	}
+	return _u
+}
+
 // SetLevel sets the "level" field.
 func (_u *AreaUpdateOne) SetLevel(v area.Level) *AreaUpdateOne {
 	_u.mutation.SetLevel(v)
@@ -1299,6 +1335,11 @@ func (_u *AreaUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Area.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Spell(); ok {
+		if err := area.SpellValidator(v); err != nil {
+			return &ValidationError{Name: "spell", err: fmt.Errorf(`ent: validator failed for field "Area.spell": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Level(); ok {
 		if err := area.LevelValidator(v); err != nil {
 			return &ValidationError{Name: "level", err: fmt.Errorf(`ent: validator failed for field "Area.level": %w`, err)}
@@ -1389,6 +1430,9 @@ func (_u *AreaUpdateOne) sqlSave(ctx context.Context) (_node *Area, err error) {
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(area.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Spell(); ok {
+		_spec.SetField(area.FieldSpell, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Level(); ok {
 		_spec.SetField(area.FieldLevel, field.TypeEnum, value)

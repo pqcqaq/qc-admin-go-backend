@@ -144,6 +144,7 @@ var (
 		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
 		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
 		{Name: "name", Type: field.TypeString, Size: 32},
+		{Name: "spell", Type: field.TypeString, Size: 8},
 		{Name: "level", Type: field.TypeEnum, Enums: []string{"country", "province", "city", "district", "street"}},
 		{Name: "depth", Type: field.TypeInt},
 		{Name: "code", Type: field.TypeString, Size: 12},
@@ -160,7 +161,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "sys_areas_sys_areas_parent",
-				Columns:    []*schema.Column{SysAreasColumns[14]},
+				Columns:    []*schema.Column{SysAreasColumns[15]},
 				RefColumns: []*schema.Column{SysAreasColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -179,7 +180,7 @@ var (
 			{
 				Name:    "area_code_delete_time",
 				Unique:  true,
-				Columns: []*schema.Column{SysAreasColumns[10], SysAreasColumns[5]},
+				Columns: []*schema.Column{SysAreasColumns[11], SysAreasColumns[5]},
 			},
 			{
 				Name:    "area_name",
@@ -189,17 +190,17 @@ var (
 			{
 				Name:    "area_level",
 				Unique:  false,
-				Columns: []*schema.Column{SysAreasColumns[8]},
+				Columns: []*schema.Column{SysAreasColumns[9]},
 			},
 			{
 				Name:    "area_depth",
 				Unique:  false,
-				Columns: []*schema.Column{SysAreasColumns[9]},
+				Columns: []*schema.Column{SysAreasColumns[10]},
 			},
 			{
 				Name:    "area_parent_id",
 				Unique:  false,
-				Columns: []*schema.Column{SysAreasColumns[14]},
+				Columns: []*schema.Column{SysAreasColumns[15]},
 			},
 		},
 	}

@@ -30,6 +30,8 @@ const (
 	FieldDeleteBy = "delete_by"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldSpell holds the string denoting the spell field in the database.
+	FieldSpell = "spell"
 	// FieldLevel holds the string denoting the level field in the database.
 	FieldLevel = "level"
 	// FieldDepth holds the string denoting the depth field in the database.
@@ -97,6 +99,7 @@ var Columns = []string{
 	FieldDeleteTime,
 	FieldDeleteBy,
 	FieldName,
+	FieldSpell,
 	FieldLevel,
 	FieldDepth,
 	FieldCode,
@@ -132,6 +135,8 @@ var (
 	UpdateDefaultUpdateTime func() time.Time
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// SpellValidator is a validator for the "spell" field. It is called by the builders before save.
+	SpellValidator func(string) error
 	// DepthValidator is a validator for the "depth" field. It is called by the builders before save.
 	DepthValidator func(int) error
 	// CodeValidator is a validator for the "code" field. It is called by the builders before save.
@@ -207,6 +212,11 @@ func ByDeleteBy(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// BySpell orders the results by the spell field.
+func BySpell(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSpell, opts...).ToFunc()
 }
 
 // ByLevel orders the results by the level field.

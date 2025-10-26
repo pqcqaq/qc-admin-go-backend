@@ -51,6 +51,7 @@ func (r *Router) SetupRoutes(config *configs.AppConfig, engine *gin.Engine) {
 		r.setupUserRoutes(api)
 		r.setupAttachmentRoutes(api)
 		r.setupScanRoutes(api)
+		r.setupAreaRoutes(api)
 		r.setupDemoRoutes(api)
 		r.setupRBACRoutes(api)
 		r.setupLoginRecordRoutes(api)

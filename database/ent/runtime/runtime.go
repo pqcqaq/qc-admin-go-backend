@@ -210,8 +210,26 @@ func init() {
 			return nil
 		}
 	}()
+	// areaDescSpell is the schema descriptor for spell field.
+	areaDescSpell := areaFields[1].Descriptor()
+	// area.SpellValidator is a validator for the "spell" field. It is called by the builders before save.
+	area.SpellValidator = func() func(string) error {
+		validators := areaDescSpell.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(spell string) error {
+			for _, fn := range fns {
+				if err := fn(spell); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// areaDescDepth is the schema descriptor for depth field.
-	areaDescDepth := areaFields[2].Descriptor()
+	areaDescDepth := areaFields[3].Descriptor()
 	// area.DepthValidator is a validator for the "depth" field. It is called by the builders before save.
 	area.DepthValidator = func() func(int) error {
 		validators := areaDescDepth.Validators
@@ -229,7 +247,7 @@ func init() {
 		}
 	}()
 	// areaDescCode is the schema descriptor for code field.
-	areaDescCode := areaFields[3].Descriptor()
+	areaDescCode := areaFields[4].Descriptor()
 	// area.CodeValidator is a validator for the "code" field. It is called by the builders before save.
 	area.CodeValidator = func() func(string) error {
 		validators := areaDescCode.Validators
@@ -247,7 +265,7 @@ func init() {
 		}
 	}()
 	// areaDescColor is the schema descriptor for color field.
-	areaDescColor := areaFields[7].Descriptor()
+	areaDescColor := areaFields[8].Descriptor()
 	// area.ColorValidator is a validator for the "color" field. It is called by the builders before save.
 	area.ColorValidator = areaDescColor.Validators[0].(func(string) error)
 	attachmentMixin := schema.Attachment{}.Mixin()

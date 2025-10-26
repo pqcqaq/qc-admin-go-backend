@@ -90,6 +90,11 @@ func Name(v string) predicate.Area {
 	return predicate.Area(sql.FieldEQ(FieldName, v))
 }
 
+// Spell applies equality check predicate on the "spell" field. It's identical to SpellEQ.
+func Spell(v string) predicate.Area {
+	return predicate.Area(sql.FieldEQ(FieldSpell, v))
+}
+
 // Depth applies equality check predicate on the "depth" field. It's identical to DepthEQ.
 func Depth(v int) predicate.Area {
 	return predicate.Area(sql.FieldEQ(FieldDepth, v))
@@ -463,6 +468,71 @@ func NameEqualFold(v string) predicate.Area {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Area {
 	return predicate.Area(sql.FieldContainsFold(FieldName, v))
+}
+
+// SpellEQ applies the EQ predicate on the "spell" field.
+func SpellEQ(v string) predicate.Area {
+	return predicate.Area(sql.FieldEQ(FieldSpell, v))
+}
+
+// SpellNEQ applies the NEQ predicate on the "spell" field.
+func SpellNEQ(v string) predicate.Area {
+	return predicate.Area(sql.FieldNEQ(FieldSpell, v))
+}
+
+// SpellIn applies the In predicate on the "spell" field.
+func SpellIn(vs ...string) predicate.Area {
+	return predicate.Area(sql.FieldIn(FieldSpell, vs...))
+}
+
+// SpellNotIn applies the NotIn predicate on the "spell" field.
+func SpellNotIn(vs ...string) predicate.Area {
+	return predicate.Area(sql.FieldNotIn(FieldSpell, vs...))
+}
+
+// SpellGT applies the GT predicate on the "spell" field.
+func SpellGT(v string) predicate.Area {
+	return predicate.Area(sql.FieldGT(FieldSpell, v))
+}
+
+// SpellGTE applies the GTE predicate on the "spell" field.
+func SpellGTE(v string) predicate.Area {
+	return predicate.Area(sql.FieldGTE(FieldSpell, v))
+}
+
+// SpellLT applies the LT predicate on the "spell" field.
+func SpellLT(v string) predicate.Area {
+	return predicate.Area(sql.FieldLT(FieldSpell, v))
+}
+
+// SpellLTE applies the LTE predicate on the "spell" field.
+func SpellLTE(v string) predicate.Area {
+	return predicate.Area(sql.FieldLTE(FieldSpell, v))
+}
+
+// SpellContains applies the Contains predicate on the "spell" field.
+func SpellContains(v string) predicate.Area {
+	return predicate.Area(sql.FieldContains(FieldSpell, v))
+}
+
+// SpellHasPrefix applies the HasPrefix predicate on the "spell" field.
+func SpellHasPrefix(v string) predicate.Area {
+	return predicate.Area(sql.FieldHasPrefix(FieldSpell, v))
+}
+
+// SpellHasSuffix applies the HasSuffix predicate on the "spell" field.
+func SpellHasSuffix(v string) predicate.Area {
+	return predicate.Area(sql.FieldHasSuffix(FieldSpell, v))
+}
+
+// SpellEqualFold applies the EqualFold predicate on the "spell" field.
+func SpellEqualFold(v string) predicate.Area {
+	return predicate.Area(sql.FieldEqualFold(FieldSpell, v))
+}
+
+// SpellContainsFold applies the ContainsFold predicate on the "spell" field.
+func SpellContainsFold(v string) predicate.Area {
+	return predicate.Area(sql.FieldContainsFold(FieldSpell, v))
 }
 
 // LevelEQ applies the EQ predicate on the "level" field.

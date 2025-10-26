@@ -35,6 +35,11 @@ func (Area) Fields() []ent.Field {
 			MaxLen(32).
 			NotEmpty().
 			Comment("地区名称"),
+		// 拼音首字母
+		field.String("spell").
+			MaxLen(8).
+			NotEmpty().
+			Comment("拼音首字母"),
 		field.Enum("level").
 			Values("country", "province", "city", "district", "street").
 			Comment("层级类型"),

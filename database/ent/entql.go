@@ -113,6 +113,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			area.FieldDeleteTime: {Type: field.TypeTime, Column: area.FieldDeleteTime},
 			area.FieldDeleteBy:   {Type: field.TypeUint64, Column: area.FieldDeleteBy},
 			area.FieldName:       {Type: field.TypeString, Column: area.FieldName},
+			area.FieldSpell:      {Type: field.TypeString, Column: area.FieldSpell},
 			area.FieldLevel:      {Type: field.TypeEnum, Column: area.FieldLevel},
 			area.FieldDepth:      {Type: field.TypeInt, Column: area.FieldDepth},
 			area.FieldCode:       {Type: field.TypeString, Column: area.FieldCode},
@@ -1804,6 +1805,11 @@ func (f *AreaFilter) WhereDeleteBy(p entql.Uint64P) {
 // WhereName applies the entql string predicate on the name field.
 func (f *AreaFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(area.FieldName))
+}
+
+// WhereSpell applies the entql string predicate on the spell field.
+func (f *AreaFilter) WhereSpell(p entql.StringP) {
+	f.Where(p.Field(area.FieldSpell))
 }
 
 // WhereLevel applies the entql string predicate on the level field.

@@ -2773,6 +2773,7 @@ type AreaMutation struct {
 	delete_by        *uint64
 	adddelete_by     *int64
 	name             *string
+	spell            *string
 	level            *area.Level
 	depth            *int
 	adddepth         *int
@@ -3271,6 +3272,42 @@ func (m *AreaMutation) OldName(ctx context.Context) (v string, err error) {
 // ResetName resets all changes to the "name" field.
 func (m *AreaMutation) ResetName() {
 	m.name = nil
+}
+
+// SetSpell sets the "spell" field.
+func (m *AreaMutation) SetSpell(s string) {
+	m.spell = &s
+}
+
+// Spell returns the value of the "spell" field in the mutation.
+func (m *AreaMutation) Spell() (r string, exists bool) {
+	v := m.spell
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSpell returns the old "spell" field's value of the Area entity.
+// If the Area object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AreaMutation) OldSpell(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSpell is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSpell requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSpell: %w", err)
+	}
+	return oldValue.Spell, nil
+}
+
+// ResetSpell resets all changes to the "spell" field.
+func (m *AreaMutation) ResetSpell() {
+	m.spell = nil
 }
 
 // SetLevel sets the "level" field.
@@ -3888,7 +3925,7 @@ func (m *AreaMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AreaMutation) Fields() []string {
-	fields := make([]string, 0, 14)
+	fields := make([]string, 0, 15)
 	if m.create_time != nil {
 		fields = append(fields, area.FieldCreateTime)
 	}
@@ -3909,6 +3946,9 @@ func (m *AreaMutation) Fields() []string {
 	}
 	if m.name != nil {
 		fields = append(fields, area.FieldName)
+	}
+	if m.spell != nil {
+		fields = append(fields, area.FieldSpell)
 	}
 	if m.level != nil {
 		fields = append(fields, area.FieldLevel)
@@ -3953,6 +3993,8 @@ func (m *AreaMutation) Field(name string) (ent.Value, bool) {
 		return m.DeleteBy()
 	case area.FieldName:
 		return m.Name()
+	case area.FieldSpell:
+		return m.Spell()
 	case area.FieldLevel:
 		return m.Level()
 	case area.FieldDepth:
@@ -3990,6 +4032,8 @@ func (m *AreaMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldDeleteBy(ctx)
 	case area.FieldName:
 		return m.OldName(ctx)
+	case area.FieldSpell:
+		return m.OldSpell(ctx)
 	case area.FieldLevel:
 		return m.OldLevel(ctx)
 	case area.FieldDepth:
@@ -4061,6 +4105,13 @@ func (m *AreaMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case area.FieldSpell:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSpell(v)
 		return nil
 	case area.FieldLevel:
 		v, ok := value.(area.Level)
@@ -4294,6 +4345,9 @@ func (m *AreaMutation) ResetField(name string) error {
 		return nil
 	case area.FieldName:
 		m.ResetName()
+		return nil
+	case area.FieldSpell:
+		m.ResetSpell()
 		return nil
 	case area.FieldLevel:
 		m.ResetLevel()

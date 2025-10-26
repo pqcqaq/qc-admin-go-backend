@@ -113,6 +113,12 @@ func (_c *AreaCreate) SetName(v string) *AreaCreate {
 	return _c
 }
 
+// SetSpell sets the "spell" field.
+func (_c *AreaCreate) SetSpell(v string) *AreaCreate {
+	_c.mutation.SetSpell(v)
+	return _c
+}
+
 // SetLevel sets the "level" field.
 func (_c *AreaCreate) SetLevel(v area.Level) *AreaCreate {
 	_c.mutation.SetLevel(v)
@@ -312,6 +318,14 @@ func (_c *AreaCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Area.name": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.Spell(); !ok {
+		return &ValidationError{Name: "spell", err: errors.New(`ent: missing required field "Area.spell"`)}
+	}
+	if v, ok := _c.mutation.Spell(); ok {
+		if err := area.SpellValidator(v); err != nil {
+			return &ValidationError{Name: "spell", err: fmt.Errorf(`ent: validator failed for field "Area.spell": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Level(); !ok {
 		return &ValidationError{Name: "level", err: errors.New(`ent: missing required field "Area.level"`)}
 	}
@@ -406,6 +420,10 @@ func (_c *AreaCreate) createSpec() (*Area, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(area.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := _c.mutation.Spell(); ok {
+		_spec.SetField(area.FieldSpell, field.TypeString, value)
+		_node.Spell = value
 	}
 	if value, ok := _c.mutation.Level(); ok {
 		_spec.SetField(area.FieldLevel, field.TypeEnum, value)

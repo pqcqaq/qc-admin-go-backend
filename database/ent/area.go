@@ -32,6 +32,8 @@ type Area struct {
 	DeleteBy uint64 `json:"delete_by,omitempty"`
 	// 地区名称
 	Name string `json:"name,omitempty"`
+	// 拼音首字母
+	Spell string `json:"spell,omitempty"`
 	// 层级类型
 	Level area.Level `json:"level,omitempty"`
 	// 深度: 0=国家、1=省、2=市、3=区、4=街道
@@ -129,7 +131,7 @@ func (*Area) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case area.FieldID, area.FieldCreateBy, area.FieldUpdateBy, area.FieldDeleteBy, area.FieldDepth, area.FieldParentID:
 			values[i] = new(sql.NullInt64)
-		case area.FieldName, area.FieldLevel, area.FieldCode, area.FieldColor:
+		case area.FieldName, area.FieldSpell, area.FieldLevel, area.FieldCode, area.FieldColor:
 			values[i] = new(sql.NullString)
 		case area.FieldCreateTime, area.FieldUpdateTime, area.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
@@ -195,6 +197,12 @@ func (_m *Area) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
+			}
+		case area.FieldSpell:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field spell", values[i])
+			} else if value.Valid {
+				_m.Spell = value.String
 			}
 		case area.FieldLevel:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -319,6 +327,9 @@ func (_m *Area) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
+	builder.WriteString(", ")
+	builder.WriteString("spell=")
+	builder.WriteString(_m.Spell)
 	builder.WriteString(", ")
 	builder.WriteString("level=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Level))
