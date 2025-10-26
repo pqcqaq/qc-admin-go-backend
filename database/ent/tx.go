@@ -26,6 +26,20 @@ type Tx struct {
 	Logging *LoggingClient
 	// LoginRecord is the client for interacting with the LoginRecord builders.
 	LoginRecord *LoginRecordClient
+	// OauthApplication is the client for interacting with the OauthApplication builders.
+	OauthApplication *OauthApplicationClient
+	// OauthAuthorizationCode is the client for interacting with the OauthAuthorizationCode builders.
+	OauthAuthorizationCode *OauthAuthorizationCodeClient
+	// OauthProvider is the client for interacting with the OauthProvider builders.
+	OauthProvider *OauthProviderClient
+	// OauthState is the client for interacting with the OauthState builders.
+	OauthState *OauthStateClient
+	// OauthToken is the client for interacting with the OauthToken builders.
+	OauthToken *OauthTokenClient
+	// OauthUser is the client for interacting with the OauthUser builders.
+	OauthUser *OauthUserClient
+	// OauthUserAuthorization is the client for interacting with the OauthUserAuthorization builders.
+	OauthUserAuthorization *OauthUserAuthorizationClient
 	// Permission is the client for interacting with the Permission builders.
 	Permission *PermissionClient
 	// Role is the client for interacting with the Role builders.
@@ -181,6 +195,13 @@ func (tx *Tx) init() {
 	tx.Credential = NewCredentialClient(tx.config)
 	tx.Logging = NewLoggingClient(tx.config)
 	tx.LoginRecord = NewLoginRecordClient(tx.config)
+	tx.OauthApplication = NewOauthApplicationClient(tx.config)
+	tx.OauthAuthorizationCode = NewOauthAuthorizationCodeClient(tx.config)
+	tx.OauthProvider = NewOauthProviderClient(tx.config)
+	tx.OauthState = NewOauthStateClient(tx.config)
+	tx.OauthToken = NewOauthTokenClient(tx.config)
+	tx.OauthUser = NewOauthUserClient(tx.config)
+	tx.OauthUserAuthorization = NewOauthUserAuthorizationClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
 	tx.RolePermission = NewRolePermissionClient(tx.config)

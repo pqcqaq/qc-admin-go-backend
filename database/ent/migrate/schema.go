@@ -383,6 +383,462 @@ var (
 			},
 		},
 	}
+	// OauthApplicationsColumns holds the columns for the "oauth_applications" table.
+	OauthApplicationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "client_id", Type: field.TypeString, Unique: true, Size: 128},
+		{Name: "client_secret", Type: field.TypeString, Size: 512},
+		{Name: "name", Type: field.TypeString, Size: 64},
+		{Name: "redirect_uris", Type: field.TypeJSON},
+		{Name: "is_confidential", Type: field.TypeBool, Default: true},
+		{Name: "scopes", Type: field.TypeJSON},
+		{Name: "able_state", Type: field.TypeEnum, Enums: []string{"enabled", "disabled"}, Default: "enabled"},
+		{Name: "system_id", Type: field.TypeUint64, Nullable: true},
+	}
+	// OauthApplicationsTable holds the schema information for the "oauth_applications" table.
+	OauthApplicationsTable = &schema.Table{
+		Name:       "oauth_applications",
+		Columns:    OauthApplicationsColumns,
+		PrimaryKey: []*schema.Column{OauthApplicationsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthapplication_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{OauthApplicationsColumns[5]},
+			},
+			{
+				Name:    "oauthapplication_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{OauthApplicationsColumns[6]},
+			},
+			{
+				Name:    "oauthapplication_client_id",
+				Unique:  false,
+				Columns: []*schema.Column{OauthApplicationsColumns[7]},
+			},
+			{
+				Name:    "oauthapplication_name_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{OauthApplicationsColumns[9], OauthApplicationsColumns[5]},
+			},
+		},
+	}
+	// OauthAuthorizationCodesColumns holds the columns for the "oauth_authorization_codes" table.
+	OauthAuthorizationCodesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "code", Type: field.TypeString, Unique: true, Size: 128},
+		{Name: "redirect_uri", Type: field.TypeString, Size: 512},
+		{Name: "scope", Type: field.TypeJSON},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "code_challenge", Type: field.TypeString, Nullable: true, Size: 128},
+		{Name: "code_challenge_method", Type: field.TypeString, Nullable: true, Size: 10},
+		{Name: "application_id", Type: field.TypeUint64},
+		{Name: "user_id", Type: field.TypeUint64},
+		{Name: "oauth_user_authorization_code", Type: field.TypeUint64, Unique: true, Nullable: true},
+	}
+	// OauthAuthorizationCodesTable holds the schema information for the "oauth_authorization_codes" table.
+	OauthAuthorizationCodesTable = &schema.Table{
+		Name:       "oauth_authorization_codes",
+		Columns:    OauthAuthorizationCodesColumns,
+		PrimaryKey: []*schema.Column{OauthAuthorizationCodesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oauth_authorization_codes_oauth_applications_authorization_codes",
+				Columns:    []*schema.Column{OauthAuthorizationCodesColumns[14]},
+				RefColumns: []*schema.Column{OauthApplicationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "oauth_authorization_codes_sys_users_user",
+				Columns:    []*schema.Column{OauthAuthorizationCodesColumns[15]},
+				RefColumns: []*schema.Column{SysUsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "oauth_authorization_codes_oauth_user_authorizations_code",
+				Columns:    []*schema.Column{OauthAuthorizationCodesColumns[16]},
+				RefColumns: []*schema.Column{OauthUserAuthorizationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthauthorizationcode_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{OauthAuthorizationCodesColumns[5]},
+			},
+			{
+				Name:    "oauthauthorizationcode_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{OauthAuthorizationCodesColumns[6]},
+			},
+			{
+				Name:    "oauthauthorizationcode_code",
+				Unique:  false,
+				Columns: []*schema.Column{OauthAuthorizationCodesColumns[7]},
+			},
+			{
+				Name:    "oauthauthorizationcode_application_id_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{OauthAuthorizationCodesColumns[14], OauthAuthorizationCodesColumns[15]},
+			},
+			{
+				Name:    "oauthauthorizationcode_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{OauthAuthorizationCodesColumns[10]},
+			},
+		},
+	}
+	// OauthProvidersColumns holds the columns for the "oauth_providers" table.
+	OauthProvidersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"oak", "gitea", "github", "google", "gitlab", "microsoft", "weixin", "custom"}},
+		{Name: "name", Type: field.TypeString, Size: 64},
+		{Name: "authorization_endpoint", Type: field.TypeString, Size: 512},
+		{Name: "token_endpoint", Type: field.TypeString, Size: 512},
+		{Name: "user_info_endpoint", Type: field.TypeString, Size: 512},
+		{Name: "revoke_endpoint", Type: field.TypeString, Nullable: true, Size: 512},
+		{Name: "refresh_endpoint", Type: field.TypeString, Nullable: true, Size: 512},
+		{Name: "client_id", Type: field.TypeString, Size: 512},
+		{Name: "client_secret", Type: field.TypeString, Size: 512},
+		{Name: "redirect_uri", Type: field.TypeString, Size: 512},
+		{Name: "scopes", Type: field.TypeJSON, Nullable: true},
+		{Name: "auto_register", Type: field.TypeBool, Default: false},
+		{Name: "able_state", Type: field.TypeEnum, Enums: []string{"enabled", "disabled"}, Default: "enabled"},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true},
+	}
+	// OauthProvidersTable holds the schema information for the "oauth_providers" table.
+	OauthProvidersTable = &schema.Table{
+		Name:       "oauth_providers",
+		Columns:    OauthProvidersColumns,
+		PrimaryKey: []*schema.Column{OauthProvidersColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthprovider_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{OauthProvidersColumns[5]},
+			},
+			{
+				Name:    "oauthprovider_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{OauthProvidersColumns[6]},
+			},
+			{
+				Name:    "oauthprovider_type_name_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{OauthProvidersColumns[7], OauthProvidersColumns[8], OauthProvidersColumns[5]},
+			},
+			{
+				Name:    "oauthprovider_able_state",
+				Unique:  false,
+				Columns: []*schema.Column{OauthProvidersColumns[19]},
+			},
+		},
+	}
+	// OauthStatesColumns holds the columns for the "oauth_states" table.
+	OauthStatesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "state", Type: field.TypeString, Unique: true, Size: 32},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"login", "bind"}},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "provider_id", Type: field.TypeUint64},
+		{Name: "user_id", Type: field.TypeUint64, Nullable: true},
+	}
+	// OauthStatesTable holds the schema information for the "oauth_states" table.
+	OauthStatesTable = &schema.Table{
+		Name:       "oauth_states",
+		Columns:    OauthStatesColumns,
+		PrimaryKey: []*schema.Column{OauthStatesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oauth_states_oauth_providers_states",
+				Columns:    []*schema.Column{OauthStatesColumns[11]},
+				RefColumns: []*schema.Column{OauthProvidersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "oauth_states_sys_users_user",
+				Columns:    []*schema.Column{OauthStatesColumns[12]},
+				RefColumns: []*schema.Column{SysUsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthstate_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{OauthStatesColumns[5]},
+			},
+			{
+				Name:    "oauthstate_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{OauthStatesColumns[6]},
+			},
+			{
+				Name:    "oauthstate_state",
+				Unique:  false,
+				Columns: []*schema.Column{OauthStatesColumns[7]},
+			},
+			{
+				Name:    "oauthstate_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{OauthStatesColumns[9]},
+			},
+		},
+	}
+	// OauthTokensColumns holds the columns for the "oauth_tokens" table.
+	OauthTokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "access_token", Type: field.TypeString, Unique: true, Size: 1024},
+		{Name: "refresh_token", Type: field.TypeString, Unique: true, Size: 1024},
+		{Name: "scope", Type: field.TypeJSON},
+		{Name: "access_expires_at", Type: field.TypeTime},
+		{Name: "refresh_expires_at", Type: field.TypeTime},
+		{Name: "revoked_at", Type: field.TypeTime, Nullable: true},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "application_id", Type: field.TypeUint64},
+		{Name: "oauth_authorization_code_token", Type: field.TypeUint64, Unique: true, Nullable: true},
+		{Name: "user_id", Type: field.TypeUint64},
+		{Name: "oauth_user_authorization_token", Type: field.TypeUint64, Unique: true, Nullable: true},
+	}
+	// OauthTokensTable holds the schema information for the "oauth_tokens" table.
+	OauthTokensTable = &schema.Table{
+		Name:       "oauth_tokens",
+		Columns:    OauthTokensColumns,
+		PrimaryKey: []*schema.Column{OauthTokensColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oauth_tokens_oauth_applications_tokens",
+				Columns:    []*schema.Column{OauthTokensColumns[14]},
+				RefColumns: []*schema.Column{OauthApplicationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "oauth_tokens_oauth_authorization_codes_token",
+				Columns:    []*schema.Column{OauthTokensColumns[15]},
+				RefColumns: []*schema.Column{OauthAuthorizationCodesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "oauth_tokens_sys_users_user",
+				Columns:    []*schema.Column{OauthTokensColumns[16]},
+				RefColumns: []*schema.Column{SysUsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "oauth_tokens_oauth_user_authorizations_token",
+				Columns:    []*schema.Column{OauthTokensColumns[17]},
+				RefColumns: []*schema.Column{OauthUserAuthorizationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthtoken_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{OauthTokensColumns[5]},
+			},
+			{
+				Name:    "oauthtoken_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{OauthTokensColumns[6]},
+			},
+			{
+				Name:    "oauthtoken_access_token",
+				Unique:  false,
+				Columns: []*schema.Column{OauthTokensColumns[7]},
+			},
+			{
+				Name:    "oauthtoken_refresh_token",
+				Unique:  false,
+				Columns: []*schema.Column{OauthTokensColumns[8]},
+			},
+			{
+				Name:    "oauthtoken_application_id_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{OauthTokensColumns[14], OauthTokensColumns[16]},
+			},
+			{
+				Name:    "oauthtoken_access_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{OauthTokensColumns[10]},
+			},
+			{
+				Name:    "oauthtoken_refresh_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{OauthTokensColumns[11]},
+			},
+		},
+	}
+	// OauthUsersColumns holds the columns for the "oauth_users" table.
+	OauthUsersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "provider_user_id", Type: field.TypeString, Size: 256},
+		{Name: "raw_user_info", Type: field.TypeJSON, Nullable: true},
+		{Name: "access_token", Type: field.TypeString, Nullable: true, Size: 1024},
+		{Name: "refresh_token", Type: field.TypeString, Nullable: true, Size: 1024},
+		{Name: "access_expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "refresh_expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "load_state", Type: field.TypeEnum, Enums: []string{"unload", "loaded"}, Default: "unload"},
+		{Name: "provider_id", Type: field.TypeUint64},
+		{Name: "state_id", Type: field.TypeUint64, Nullable: true},
+		{Name: "user_id", Type: field.TypeUint64},
+	}
+	// OauthUsersTable holds the schema information for the "oauth_users" table.
+	OauthUsersTable = &schema.Table{
+		Name:       "oauth_users",
+		Columns:    OauthUsersColumns,
+		PrimaryKey: []*schema.Column{OauthUsersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oauth_users_oauth_providers_oauth_users",
+				Columns:    []*schema.Column{OauthUsersColumns[14]},
+				RefColumns: []*schema.Column{OauthProvidersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "oauth_users_oauth_states_oauth_users",
+				Columns:    []*schema.Column{OauthUsersColumns[15]},
+				RefColumns: []*schema.Column{OauthStatesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "oauth_users_sys_users_user",
+				Columns:    []*schema.Column{OauthUsersColumns[16]},
+				RefColumns: []*schema.Column{SysUsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthuser_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{OauthUsersColumns[5]},
+			},
+			{
+				Name:    "oauthuser_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{OauthUsersColumns[6]},
+			},
+			{
+				Name:    "oauthuser_provider_id_provider_user_id_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{OauthUsersColumns[14], OauthUsersColumns[7], OauthUsersColumns[5]},
+			},
+			{
+				Name:    "oauthuser_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{OauthUsersColumns[16]},
+			},
+			{
+				Name:    "oauthuser_load_state",
+				Unique:  false,
+				Columns: []*schema.Column{OauthUsersColumns[13]},
+			},
+		},
+	}
+	// OauthUserAuthorizationsColumns holds the columns for the "oauth_user_authorizations" table.
+	OauthUserAuthorizationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "authorized_at", Type: field.TypeTime},
+		{Name: "usage_state", Type: field.TypeEnum, Enums: []string{"unused", "granted", "denied", "revoked"}, Default: "unused"},
+		{Name: "scope", Type: field.TypeJSON},
+		{Name: "oauth_application_user_authorizations", Type: field.TypeUint64, Nullable: true},
+		{Name: "user_id", Type: field.TypeUint64},
+		{Name: "application_id", Type: field.TypeUint64},
+	}
+	// OauthUserAuthorizationsTable holds the schema information for the "oauth_user_authorizations" table.
+	OauthUserAuthorizationsTable = &schema.Table{
+		Name:       "oauth_user_authorizations",
+		Columns:    OauthUserAuthorizationsColumns,
+		PrimaryKey: []*schema.Column{OauthUserAuthorizationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oauth_user_authorizations_oauth_applications_user_authorizations",
+				Columns:    []*schema.Column{OauthUserAuthorizationsColumns[10]},
+				RefColumns: []*schema.Column{OauthApplicationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "oauth_user_authorizations_sys_users_user",
+				Columns:    []*schema.Column{OauthUserAuthorizationsColumns[11]},
+				RefColumns: []*schema.Column{SysUsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "oauth_user_authorizations_oauth_applications_application",
+				Columns:    []*schema.Column{OauthUserAuthorizationsColumns[12]},
+				RefColumns: []*schema.Column{OauthApplicationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthuserauthorization_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{OauthUserAuthorizationsColumns[5]},
+			},
+			{
+				Name:    "oauthuserauthorization_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{OauthUserAuthorizationsColumns[6]},
+			},
+			{
+				Name:    "oauthuserauthorization_user_id_application_id_delete_time",
+				Unique:  true,
+				Columns: []*schema.Column{OauthUserAuthorizationsColumns[11], OauthUserAuthorizationsColumns[12], OauthUserAuthorizationsColumns[5]},
+			},
+			{
+				Name:    "oauthuserauthorization_usage_state",
+				Unique:  false,
+				Columns: []*schema.Column{OauthUserAuthorizationsColumns[8]},
+			},
+		},
+	}
 	// SysPermissionsColumns holds the columns for the "sys_permissions" table.
 	SysPermissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -916,6 +1372,13 @@ var (
 		SysCredentialsTable,
 		LoggingsTable,
 		SysLoginRecordsTable,
+		OauthApplicationsTable,
+		OauthAuthorizationCodesTable,
+		OauthProvidersTable,
+		OauthStatesTable,
+		OauthTokensTable,
+		OauthUsersTable,
+		OauthUserAuthorizationsTable,
 		SysPermissionsTable,
 		SysRolesTable,
 		SysRolePermissionTable,
@@ -948,6 +1411,42 @@ func init() {
 	SysLoginRecordsTable.ForeignKeys[0].RefTable = SysUsersTable
 	SysLoginRecordsTable.Annotation = &entsql.Annotation{
 		Table: "sys_login_records",
+	}
+	OauthApplicationsTable.Annotation = &entsql.Annotation{
+		Table: "oauth_applications",
+	}
+	OauthAuthorizationCodesTable.ForeignKeys[0].RefTable = OauthApplicationsTable
+	OauthAuthorizationCodesTable.ForeignKeys[1].RefTable = SysUsersTable
+	OauthAuthorizationCodesTable.ForeignKeys[2].RefTable = OauthUserAuthorizationsTable
+	OauthAuthorizationCodesTable.Annotation = &entsql.Annotation{
+		Table: "oauth_authorization_codes",
+	}
+	OauthProvidersTable.Annotation = &entsql.Annotation{
+		Table: "oauth_providers",
+	}
+	OauthStatesTable.ForeignKeys[0].RefTable = OauthProvidersTable
+	OauthStatesTable.ForeignKeys[1].RefTable = SysUsersTable
+	OauthStatesTable.Annotation = &entsql.Annotation{
+		Table: "oauth_states",
+	}
+	OauthTokensTable.ForeignKeys[0].RefTable = OauthApplicationsTable
+	OauthTokensTable.ForeignKeys[1].RefTable = OauthAuthorizationCodesTable
+	OauthTokensTable.ForeignKeys[2].RefTable = SysUsersTable
+	OauthTokensTable.ForeignKeys[3].RefTable = OauthUserAuthorizationsTable
+	OauthTokensTable.Annotation = &entsql.Annotation{
+		Table: "oauth_tokens",
+	}
+	OauthUsersTable.ForeignKeys[0].RefTable = OauthProvidersTable
+	OauthUsersTable.ForeignKeys[1].RefTable = OauthStatesTable
+	OauthUsersTable.ForeignKeys[2].RefTable = SysUsersTable
+	OauthUsersTable.Annotation = &entsql.Annotation{
+		Table: "oauth_users",
+	}
+	OauthUserAuthorizationsTable.ForeignKeys[0].RefTable = OauthApplicationsTable
+	OauthUserAuthorizationsTable.ForeignKeys[1].RefTable = SysUsersTable
+	OauthUserAuthorizationsTable.ForeignKeys[2].RefTable = OauthApplicationsTable
+	OauthUserAuthorizationsTable.Annotation = &entsql.Annotation{
+		Table: "oauth_user_authorizations",
 	}
 	SysPermissionsTable.Annotation = &entsql.Annotation{
 		Table: "sys_permissions",

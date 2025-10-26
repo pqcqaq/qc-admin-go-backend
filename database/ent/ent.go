@@ -12,6 +12,13 @@ import (
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/loginrecord"
+	"go-backend/database/ent/oauthapplication"
+	"go-backend/database/ent/oauthauthorizationcode"
+	"go-backend/database/ent/oauthprovider"
+	"go-backend/database/ent/oauthstate"
+	"go-backend/database/ent/oauthtoken"
+	"go-backend/database/ent/oauthuser"
+	"go-backend/database/ent/oauthuserauthorization"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/role"
 	"go-backend/database/ent/rolepermission"
@@ -87,21 +94,28 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			apiauth.Table:        apiauth.ValidColumn,
-			attachment.Table:     attachment.ValidColumn,
-			clientdevice.Table:   clientdevice.ValidColumn,
-			credential.Table:     credential.ValidColumn,
-			logging.Table:        logging.ValidColumn,
-			loginrecord.Table:    loginrecord.ValidColumn,
-			permission.Table:     permission.ValidColumn,
-			role.Table:           role.ValidColumn,
-			rolepermission.Table: rolepermission.ValidColumn,
-			scan.Table:           scan.ValidColumn,
-			scope.Table:          scope.ValidColumn,
-			systemmonitor.Table:  systemmonitor.ValidColumn,
-			user.Table:           user.ValidColumn,
-			userrole.Table:       userrole.ValidColumn,
-			verifycode.Table:     verifycode.ValidColumn,
+			apiauth.Table:                apiauth.ValidColumn,
+			attachment.Table:             attachment.ValidColumn,
+			clientdevice.Table:           clientdevice.ValidColumn,
+			credential.Table:             credential.ValidColumn,
+			logging.Table:                logging.ValidColumn,
+			loginrecord.Table:            loginrecord.ValidColumn,
+			oauthapplication.Table:       oauthapplication.ValidColumn,
+			oauthauthorizationcode.Table: oauthauthorizationcode.ValidColumn,
+			oauthprovider.Table:          oauthprovider.ValidColumn,
+			oauthstate.Table:             oauthstate.ValidColumn,
+			oauthtoken.Table:             oauthtoken.ValidColumn,
+			oauthuser.Table:              oauthuser.ValidColumn,
+			oauthuserauthorization.Table: oauthuserauthorization.ValidColumn,
+			permission.Table:             permission.ValidColumn,
+			role.Table:                   role.ValidColumn,
+			rolepermission.Table:         rolepermission.ValidColumn,
+			scan.Table:                   scan.ValidColumn,
+			scope.Table:                  scope.ValidColumn,
+			systemmonitor.Table:          systemmonitor.ValidColumn,
+			user.Table:                   user.ValidColumn,
+			userrole.Table:               userrole.ValidColumn,
+			verifycode.Table:             verifycode.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

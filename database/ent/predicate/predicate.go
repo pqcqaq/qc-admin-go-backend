@@ -24,6 +24,27 @@ type Logging func(*sql.Selector)
 // LoginRecord is the predicate function for loginrecord builders.
 type LoginRecord func(*sql.Selector)
 
+// OauthApplication is the predicate function for oauthapplication builders.
+type OauthApplication func(*sql.Selector)
+
+// OauthAuthorizationCode is the predicate function for oauthauthorizationcode builders.
+type OauthAuthorizationCode func(*sql.Selector)
+
+// OauthProvider is the predicate function for oauthprovider builders.
+type OauthProvider func(*sql.Selector)
+
+// OauthState is the predicate function for oauthstate builders.
+type OauthState func(*sql.Selector)
+
+// OauthToken is the predicate function for oauthtoken builders.
+type OauthToken func(*sql.Selector)
+
+// OauthUser is the predicate function for oauthuser builders.
+type OauthUser func(*sql.Selector)
+
+// OauthUserAuthorization is the predicate function for oauthuserauthorization builders.
+type OauthUserAuthorization func(*sql.Selector)
+
 // Permission is the predicate function for permission builders.
 type Permission func(*sql.Selector)
 

@@ -255,6 +255,174 @@ func (f LoginRecordMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mut
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.LoginRecordMutation", m)
 }
 
+// The OauthApplicationQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OauthApplicationQueryRuleFunc func(context.Context, *ent.OauthApplicationQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OauthApplicationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OauthApplicationQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OauthApplicationQuery", q)
+}
+
+// The OauthApplicationMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OauthApplicationMutationRuleFunc func(context.Context, *ent.OauthApplicationMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OauthApplicationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OauthApplicationMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OauthApplicationMutation", m)
+}
+
+// The OauthAuthorizationCodeQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OauthAuthorizationCodeQueryRuleFunc func(context.Context, *ent.OauthAuthorizationCodeQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OauthAuthorizationCodeQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OauthAuthorizationCodeQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OauthAuthorizationCodeQuery", q)
+}
+
+// The OauthAuthorizationCodeMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OauthAuthorizationCodeMutationRuleFunc func(context.Context, *ent.OauthAuthorizationCodeMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OauthAuthorizationCodeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OauthAuthorizationCodeMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OauthAuthorizationCodeMutation", m)
+}
+
+// The OauthProviderQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OauthProviderQueryRuleFunc func(context.Context, *ent.OauthProviderQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OauthProviderQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OauthProviderQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OauthProviderQuery", q)
+}
+
+// The OauthProviderMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OauthProviderMutationRuleFunc func(context.Context, *ent.OauthProviderMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OauthProviderMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OauthProviderMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OauthProviderMutation", m)
+}
+
+// The OauthStateQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OauthStateQueryRuleFunc func(context.Context, *ent.OauthStateQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OauthStateQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OauthStateQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OauthStateQuery", q)
+}
+
+// The OauthStateMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OauthStateMutationRuleFunc func(context.Context, *ent.OauthStateMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OauthStateMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OauthStateMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OauthStateMutation", m)
+}
+
+// The OauthTokenQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OauthTokenQueryRuleFunc func(context.Context, *ent.OauthTokenQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OauthTokenQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OauthTokenQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OauthTokenQuery", q)
+}
+
+// The OauthTokenMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OauthTokenMutationRuleFunc func(context.Context, *ent.OauthTokenMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OauthTokenMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OauthTokenMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OauthTokenMutation", m)
+}
+
+// The OauthUserQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OauthUserQueryRuleFunc func(context.Context, *ent.OauthUserQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OauthUserQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OauthUserQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OauthUserQuery", q)
+}
+
+// The OauthUserMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OauthUserMutationRuleFunc func(context.Context, *ent.OauthUserMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OauthUserMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OauthUserMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OauthUserMutation", m)
+}
+
+// The OauthUserAuthorizationQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OauthUserAuthorizationQueryRuleFunc func(context.Context, *ent.OauthUserAuthorizationQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OauthUserAuthorizationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OauthUserAuthorizationQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OauthUserAuthorizationQuery", q)
+}
+
+// The OauthUserAuthorizationMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OauthUserAuthorizationMutationRuleFunc func(context.Context, *ent.OauthUserAuthorizationMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OauthUserAuthorizationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OauthUserAuthorizationMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OauthUserAuthorizationMutation", m)
+}
+
 // The PermissionQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type PermissionQueryRuleFunc func(context.Context, *ent.PermissionQuery) error
@@ -518,6 +686,20 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.LoginRecordQuery:
 		return q.Filter(), nil
+	case *ent.OauthApplicationQuery:
+		return q.Filter(), nil
+	case *ent.OauthAuthorizationCodeQuery:
+		return q.Filter(), nil
+	case *ent.OauthProviderQuery:
+		return q.Filter(), nil
+	case *ent.OauthStateQuery:
+		return q.Filter(), nil
+	case *ent.OauthTokenQuery:
+		return q.Filter(), nil
+	case *ent.OauthUserQuery:
+		return q.Filter(), nil
+	case *ent.OauthUserAuthorizationQuery:
+		return q.Filter(), nil
 	case *ent.PermissionQuery:
 		return q.Filter(), nil
 	case *ent.RoleQuery:
@@ -554,6 +736,20 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.LoggingMutation:
 		return m.Filter(), nil
 	case *ent.LoginRecordMutation:
+		return m.Filter(), nil
+	case *ent.OauthApplicationMutation:
+		return m.Filter(), nil
+	case *ent.OauthAuthorizationCodeMutation:
+		return m.Filter(), nil
+	case *ent.OauthProviderMutation:
+		return m.Filter(), nil
+	case *ent.OauthStateMutation:
+		return m.Filter(), nil
+	case *ent.OauthTokenMutation:
+		return m.Filter(), nil
+	case *ent.OauthUserMutation:
+		return m.Filter(), nil
+	case *ent.OauthUserAuthorizationMutation:
 		return m.Filter(), nil
 	case *ent.PermissionMutation:
 		return m.Filter(), nil

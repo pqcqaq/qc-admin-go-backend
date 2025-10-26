@@ -12,6 +12,13 @@ import (
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/loginrecord"
+	"go-backend/database/ent/oauthapplication"
+	"go-backend/database/ent/oauthauthorizationcode"
+	"go-backend/database/ent/oauthprovider"
+	"go-backend/database/ent/oauthstate"
+	"go-backend/database/ent/oauthtoken"
+	"go-backend/database/ent/oauthuser"
+	"go-backend/database/ent/oauthuserauthorization"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/predicate"
 	"go-backend/database/ent/role"
@@ -38,21 +45,28 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAPIAuth        = "APIAuth"
-	TypeAttachment     = "Attachment"
-	TypeClientDevice   = "ClientDevice"
-	TypeCredential     = "Credential"
-	TypeLogging        = "Logging"
-	TypeLoginRecord    = "LoginRecord"
-	TypePermission     = "Permission"
-	TypeRole           = "Role"
-	TypeRolePermission = "RolePermission"
-	TypeScan           = "Scan"
-	TypeScope          = "Scope"
-	TypeSystemMonitor  = "SystemMonitor"
-	TypeUser           = "User"
-	TypeUserRole       = "UserRole"
-	TypeVerifyCode     = "VerifyCode"
+	TypeAPIAuth                = "APIAuth"
+	TypeAttachment             = "Attachment"
+	TypeClientDevice           = "ClientDevice"
+	TypeCredential             = "Credential"
+	TypeLogging                = "Logging"
+	TypeLoginRecord            = "LoginRecord"
+	TypeOauthApplication       = "OauthApplication"
+	TypeOauthAuthorizationCode = "OauthAuthorizationCode"
+	TypeOauthProvider          = "OauthProvider"
+	TypeOauthState             = "OauthState"
+	TypeOauthToken             = "OauthToken"
+	TypeOauthUser              = "OauthUser"
+	TypeOauthUserAuthorization = "OauthUserAuthorization"
+	TypePermission             = "Permission"
+	TypeRole                   = "Role"
+	TypeRolePermission         = "RolePermission"
+	TypeScan                   = "Scan"
+	TypeScope                  = "Scope"
+	TypeSystemMonitor          = "SystemMonitor"
+	TypeUser                   = "User"
+	TypeUserRole               = "UserRole"
+	TypeVerifyCode             = "VerifyCode"
 )
 
 // APIAuthMutation represents an operation that mutates the APIAuth nodes in the graph.
@@ -9400,6 +9414,10695 @@ func (m *LoginRecordMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown LoginRecord edge %s", name)
+}
+
+// OauthApplicationMutation represents an operation that mutates the OauthApplication nodes in the graph.
+type OauthApplicationMutation struct {
+	config
+	op                         Op
+	typ                        string
+	id                         *uint64
+	create_time                *time.Time
+	create_by                  *uint64
+	addcreate_by               *int64
+	update_time                *time.Time
+	update_by                  *uint64
+	addupdate_by               *int64
+	delete_time                *time.Time
+	delete_by                  *uint64
+	adddelete_by               *int64
+	client_id                  *string
+	client_secret              *string
+	name                       *string
+	redirect_uris              *[]string
+	appendredirect_uris        []string
+	is_confidential            *bool
+	scopes                     *[]string
+	appendscopes               []string
+	able_state                 *oauthapplication.AbleState
+	system_id                  *uint64
+	addsystem_id               *int64
+	clearedFields              map[string]struct{}
+	authorization_codes        map[uint64]struct{}
+	removedauthorization_codes map[uint64]struct{}
+	clearedauthorization_codes bool
+	tokens                     map[uint64]struct{}
+	removedtokens              map[uint64]struct{}
+	clearedtokens              bool
+	user_authorizations        map[uint64]struct{}
+	removeduser_authorizations map[uint64]struct{}
+	cleareduser_authorizations bool
+	done                       bool
+	oldValue                   func(context.Context) (*OauthApplication, error)
+	predicates                 []predicate.OauthApplication
+}
+
+var _ ent.Mutation = (*OauthApplicationMutation)(nil)
+
+// oauthapplicationOption allows management of the mutation configuration using functional options.
+type oauthapplicationOption func(*OauthApplicationMutation)
+
+// newOauthApplicationMutation creates new mutation for the OauthApplication entity.
+func newOauthApplicationMutation(c config, op Op, opts ...oauthapplicationOption) *OauthApplicationMutation {
+	m := &OauthApplicationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOauthApplication,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOauthApplicationID sets the ID field of the mutation.
+func withOauthApplicationID(id uint64) oauthapplicationOption {
+	return func(m *OauthApplicationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OauthApplication
+		)
+		m.oldValue = func(ctx context.Context) (*OauthApplication, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OauthApplication.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOauthApplication sets the old OauthApplication of the mutation.
+func withOauthApplication(node *OauthApplication) oauthapplicationOption {
+	return func(m *OauthApplicationMutation) {
+		m.oldValue = func(context.Context) (*OauthApplication, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OauthApplicationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OauthApplicationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OauthApplication entities.
+func (m *OauthApplicationMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OauthApplicationMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OauthApplicationMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OauthApplication.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *OauthApplicationMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *OauthApplicationMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *OauthApplicationMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *OauthApplicationMutation) SetCreateBy(u uint64) {
+	m.create_by = &u
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *OauthApplicationMutation) CreateBy() (r uint64, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldCreateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds u to the "create_by" field.
+func (m *OauthApplicationMutation) AddCreateBy(u int64) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += u
+	} else {
+		m.addcreate_by = &u
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *OauthApplicationMutation) AddedCreateBy() (r int64, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *OauthApplicationMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[oauthapplication.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *OauthApplicationMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[oauthapplication.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *OauthApplicationMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, oauthapplication.FieldCreateBy)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *OauthApplicationMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *OauthApplicationMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *OauthApplicationMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (m *OauthApplicationMutation) SetUpdateBy(u uint64) {
+	m.update_by = &u
+	m.addupdate_by = nil
+}
+
+// UpdateBy returns the value of the "update_by" field in the mutation.
+func (m *OauthApplicationMutation) UpdateBy() (r uint64, exists bool) {
+	v := m.update_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateBy returns the old "update_by" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldUpdateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateBy: %w", err)
+	}
+	return oldValue.UpdateBy, nil
+}
+
+// AddUpdateBy adds u to the "update_by" field.
+func (m *OauthApplicationMutation) AddUpdateBy(u int64) {
+	if m.addupdate_by != nil {
+		*m.addupdate_by += u
+	} else {
+		m.addupdate_by = &u
+	}
+}
+
+// AddedUpdateBy returns the value that was added to the "update_by" field in this mutation.
+func (m *OauthApplicationMutation) AddedUpdateBy() (r int64, exists bool) {
+	v := m.addupdate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (m *OauthApplicationMutation) ClearUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	m.clearedFields[oauthapplication.FieldUpdateBy] = struct{}{}
+}
+
+// UpdateByCleared returns if the "update_by" field was cleared in this mutation.
+func (m *OauthApplicationMutation) UpdateByCleared() bool {
+	_, ok := m.clearedFields[oauthapplication.FieldUpdateBy]
+	return ok
+}
+
+// ResetUpdateBy resets all changes to the "update_by" field.
+func (m *OauthApplicationMutation) ResetUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	delete(m.clearedFields, oauthapplication.FieldUpdateBy)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *OauthApplicationMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *OauthApplicationMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *OauthApplicationMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[oauthapplication.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *OauthApplicationMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[oauthapplication.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *OauthApplicationMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, oauthapplication.FieldDeleteTime)
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (m *OauthApplicationMutation) SetDeleteBy(u uint64) {
+	m.delete_by = &u
+	m.adddelete_by = nil
+}
+
+// DeleteBy returns the value of the "delete_by" field in the mutation.
+func (m *OauthApplicationMutation) DeleteBy() (r uint64, exists bool) {
+	v := m.delete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteBy returns the old "delete_by" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldDeleteBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteBy: %w", err)
+	}
+	return oldValue.DeleteBy, nil
+}
+
+// AddDeleteBy adds u to the "delete_by" field.
+func (m *OauthApplicationMutation) AddDeleteBy(u int64) {
+	if m.adddelete_by != nil {
+		*m.adddelete_by += u
+	} else {
+		m.adddelete_by = &u
+	}
+}
+
+// AddedDeleteBy returns the value that was added to the "delete_by" field in this mutation.
+func (m *OauthApplicationMutation) AddedDeleteBy() (r int64, exists bool) {
+	v := m.adddelete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (m *OauthApplicationMutation) ClearDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	m.clearedFields[oauthapplication.FieldDeleteBy] = struct{}{}
+}
+
+// DeleteByCleared returns if the "delete_by" field was cleared in this mutation.
+func (m *OauthApplicationMutation) DeleteByCleared() bool {
+	_, ok := m.clearedFields[oauthapplication.FieldDeleteBy]
+	return ok
+}
+
+// ResetDeleteBy resets all changes to the "delete_by" field.
+func (m *OauthApplicationMutation) ResetDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	delete(m.clearedFields, oauthapplication.FieldDeleteBy)
+}
+
+// SetClientID sets the "client_id" field.
+func (m *OauthApplicationMutation) SetClientID(s string) {
+	m.client_id = &s
+}
+
+// ClientID returns the value of the "client_id" field in the mutation.
+func (m *OauthApplicationMutation) ClientID() (r string, exists bool) {
+	v := m.client_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClientID returns the old "client_id" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldClientID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClientID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClientID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClientID: %w", err)
+	}
+	return oldValue.ClientID, nil
+}
+
+// ResetClientID resets all changes to the "client_id" field.
+func (m *OauthApplicationMutation) ResetClientID() {
+	m.client_id = nil
+}
+
+// SetClientSecret sets the "client_secret" field.
+func (m *OauthApplicationMutation) SetClientSecret(s string) {
+	m.client_secret = &s
+}
+
+// ClientSecret returns the value of the "client_secret" field in the mutation.
+func (m *OauthApplicationMutation) ClientSecret() (r string, exists bool) {
+	v := m.client_secret
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClientSecret returns the old "client_secret" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldClientSecret(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClientSecret is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClientSecret requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClientSecret: %w", err)
+	}
+	return oldValue.ClientSecret, nil
+}
+
+// ResetClientSecret resets all changes to the "client_secret" field.
+func (m *OauthApplicationMutation) ResetClientSecret() {
+	m.client_secret = nil
+}
+
+// SetName sets the "name" field.
+func (m *OauthApplicationMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *OauthApplicationMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *OauthApplicationMutation) ResetName() {
+	m.name = nil
+}
+
+// SetRedirectUris sets the "redirect_uris" field.
+func (m *OauthApplicationMutation) SetRedirectUris(s []string) {
+	m.redirect_uris = &s
+	m.appendredirect_uris = nil
+}
+
+// RedirectUris returns the value of the "redirect_uris" field in the mutation.
+func (m *OauthApplicationMutation) RedirectUris() (r []string, exists bool) {
+	v := m.redirect_uris
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRedirectUris returns the old "redirect_uris" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldRedirectUris(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRedirectUris is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRedirectUris requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRedirectUris: %w", err)
+	}
+	return oldValue.RedirectUris, nil
+}
+
+// AppendRedirectUris adds s to the "redirect_uris" field.
+func (m *OauthApplicationMutation) AppendRedirectUris(s []string) {
+	m.appendredirect_uris = append(m.appendredirect_uris, s...)
+}
+
+// AppendedRedirectUris returns the list of values that were appended to the "redirect_uris" field in this mutation.
+func (m *OauthApplicationMutation) AppendedRedirectUris() ([]string, bool) {
+	if len(m.appendredirect_uris) == 0 {
+		return nil, false
+	}
+	return m.appendredirect_uris, true
+}
+
+// ResetRedirectUris resets all changes to the "redirect_uris" field.
+func (m *OauthApplicationMutation) ResetRedirectUris() {
+	m.redirect_uris = nil
+	m.appendredirect_uris = nil
+}
+
+// SetIsConfidential sets the "is_confidential" field.
+func (m *OauthApplicationMutation) SetIsConfidential(b bool) {
+	m.is_confidential = &b
+}
+
+// IsConfidential returns the value of the "is_confidential" field in the mutation.
+func (m *OauthApplicationMutation) IsConfidential() (r bool, exists bool) {
+	v := m.is_confidential
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsConfidential returns the old "is_confidential" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldIsConfidential(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsConfidential is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsConfidential requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsConfidential: %w", err)
+	}
+	return oldValue.IsConfidential, nil
+}
+
+// ResetIsConfidential resets all changes to the "is_confidential" field.
+func (m *OauthApplicationMutation) ResetIsConfidential() {
+	m.is_confidential = nil
+}
+
+// SetScopes sets the "scopes" field.
+func (m *OauthApplicationMutation) SetScopes(s []string) {
+	m.scopes = &s
+	m.appendscopes = nil
+}
+
+// Scopes returns the value of the "scopes" field in the mutation.
+func (m *OauthApplicationMutation) Scopes() (r []string, exists bool) {
+	v := m.scopes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScopes returns the old "scopes" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldScopes(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScopes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScopes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScopes: %w", err)
+	}
+	return oldValue.Scopes, nil
+}
+
+// AppendScopes adds s to the "scopes" field.
+func (m *OauthApplicationMutation) AppendScopes(s []string) {
+	m.appendscopes = append(m.appendscopes, s...)
+}
+
+// AppendedScopes returns the list of values that were appended to the "scopes" field in this mutation.
+func (m *OauthApplicationMutation) AppendedScopes() ([]string, bool) {
+	if len(m.appendscopes) == 0 {
+		return nil, false
+	}
+	return m.appendscopes, true
+}
+
+// ResetScopes resets all changes to the "scopes" field.
+func (m *OauthApplicationMutation) ResetScopes() {
+	m.scopes = nil
+	m.appendscopes = nil
+}
+
+// SetAbleState sets the "able_state" field.
+func (m *OauthApplicationMutation) SetAbleState(os oauthapplication.AbleState) {
+	m.able_state = &os
+}
+
+// AbleState returns the value of the "able_state" field in the mutation.
+func (m *OauthApplicationMutation) AbleState() (r oauthapplication.AbleState, exists bool) {
+	v := m.able_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAbleState returns the old "able_state" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldAbleState(ctx context.Context) (v oauthapplication.AbleState, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAbleState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAbleState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAbleState: %w", err)
+	}
+	return oldValue.AbleState, nil
+}
+
+// ResetAbleState resets all changes to the "able_state" field.
+func (m *OauthApplicationMutation) ResetAbleState() {
+	m.able_state = nil
+}
+
+// SetSystemID sets the "system_id" field.
+func (m *OauthApplicationMutation) SetSystemID(u uint64) {
+	m.system_id = &u
+	m.addsystem_id = nil
+}
+
+// SystemID returns the value of the "system_id" field in the mutation.
+func (m *OauthApplicationMutation) SystemID() (r uint64, exists bool) {
+	v := m.system_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSystemID returns the old "system_id" field's value of the OauthApplication entity.
+// If the OauthApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthApplicationMutation) OldSystemID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSystemID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSystemID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSystemID: %w", err)
+	}
+	return oldValue.SystemID, nil
+}
+
+// AddSystemID adds u to the "system_id" field.
+func (m *OauthApplicationMutation) AddSystemID(u int64) {
+	if m.addsystem_id != nil {
+		*m.addsystem_id += u
+	} else {
+		m.addsystem_id = &u
+	}
+}
+
+// AddedSystemID returns the value that was added to the "system_id" field in this mutation.
+func (m *OauthApplicationMutation) AddedSystemID() (r int64, exists bool) {
+	v := m.addsystem_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSystemID clears the value of the "system_id" field.
+func (m *OauthApplicationMutation) ClearSystemID() {
+	m.system_id = nil
+	m.addsystem_id = nil
+	m.clearedFields[oauthapplication.FieldSystemID] = struct{}{}
+}
+
+// SystemIDCleared returns if the "system_id" field was cleared in this mutation.
+func (m *OauthApplicationMutation) SystemIDCleared() bool {
+	_, ok := m.clearedFields[oauthapplication.FieldSystemID]
+	return ok
+}
+
+// ResetSystemID resets all changes to the "system_id" field.
+func (m *OauthApplicationMutation) ResetSystemID() {
+	m.system_id = nil
+	m.addsystem_id = nil
+	delete(m.clearedFields, oauthapplication.FieldSystemID)
+}
+
+// AddAuthorizationCodeIDs adds the "authorization_codes" edge to the OauthAuthorizationCode entity by ids.
+func (m *OauthApplicationMutation) AddAuthorizationCodeIDs(ids ...uint64) {
+	if m.authorization_codes == nil {
+		m.authorization_codes = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.authorization_codes[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAuthorizationCodes clears the "authorization_codes" edge to the OauthAuthorizationCode entity.
+func (m *OauthApplicationMutation) ClearAuthorizationCodes() {
+	m.clearedauthorization_codes = true
+}
+
+// AuthorizationCodesCleared reports if the "authorization_codes" edge to the OauthAuthorizationCode entity was cleared.
+func (m *OauthApplicationMutation) AuthorizationCodesCleared() bool {
+	return m.clearedauthorization_codes
+}
+
+// RemoveAuthorizationCodeIDs removes the "authorization_codes" edge to the OauthAuthorizationCode entity by IDs.
+func (m *OauthApplicationMutation) RemoveAuthorizationCodeIDs(ids ...uint64) {
+	if m.removedauthorization_codes == nil {
+		m.removedauthorization_codes = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.authorization_codes, ids[i])
+		m.removedauthorization_codes[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAuthorizationCodes returns the removed IDs of the "authorization_codes" edge to the OauthAuthorizationCode entity.
+func (m *OauthApplicationMutation) RemovedAuthorizationCodesIDs() (ids []uint64) {
+	for id := range m.removedauthorization_codes {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AuthorizationCodesIDs returns the "authorization_codes" edge IDs in the mutation.
+func (m *OauthApplicationMutation) AuthorizationCodesIDs() (ids []uint64) {
+	for id := range m.authorization_codes {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAuthorizationCodes resets all changes to the "authorization_codes" edge.
+func (m *OauthApplicationMutation) ResetAuthorizationCodes() {
+	m.authorization_codes = nil
+	m.clearedauthorization_codes = false
+	m.removedauthorization_codes = nil
+}
+
+// AddTokenIDs adds the "tokens" edge to the OauthToken entity by ids.
+func (m *OauthApplicationMutation) AddTokenIDs(ids ...uint64) {
+	if m.tokens == nil {
+		m.tokens = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.tokens[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTokens clears the "tokens" edge to the OauthToken entity.
+func (m *OauthApplicationMutation) ClearTokens() {
+	m.clearedtokens = true
+}
+
+// TokensCleared reports if the "tokens" edge to the OauthToken entity was cleared.
+func (m *OauthApplicationMutation) TokensCleared() bool {
+	return m.clearedtokens
+}
+
+// RemoveTokenIDs removes the "tokens" edge to the OauthToken entity by IDs.
+func (m *OauthApplicationMutation) RemoveTokenIDs(ids ...uint64) {
+	if m.removedtokens == nil {
+		m.removedtokens = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.tokens, ids[i])
+		m.removedtokens[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTokens returns the removed IDs of the "tokens" edge to the OauthToken entity.
+func (m *OauthApplicationMutation) RemovedTokensIDs() (ids []uint64) {
+	for id := range m.removedtokens {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TokensIDs returns the "tokens" edge IDs in the mutation.
+func (m *OauthApplicationMutation) TokensIDs() (ids []uint64) {
+	for id := range m.tokens {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTokens resets all changes to the "tokens" edge.
+func (m *OauthApplicationMutation) ResetTokens() {
+	m.tokens = nil
+	m.clearedtokens = false
+	m.removedtokens = nil
+}
+
+// AddUserAuthorizationIDs adds the "user_authorizations" edge to the OauthUserAuthorization entity by ids.
+func (m *OauthApplicationMutation) AddUserAuthorizationIDs(ids ...uint64) {
+	if m.user_authorizations == nil {
+		m.user_authorizations = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.user_authorizations[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUserAuthorizations clears the "user_authorizations" edge to the OauthUserAuthorization entity.
+func (m *OauthApplicationMutation) ClearUserAuthorizations() {
+	m.cleareduser_authorizations = true
+}
+
+// UserAuthorizationsCleared reports if the "user_authorizations" edge to the OauthUserAuthorization entity was cleared.
+func (m *OauthApplicationMutation) UserAuthorizationsCleared() bool {
+	return m.cleareduser_authorizations
+}
+
+// RemoveUserAuthorizationIDs removes the "user_authorizations" edge to the OauthUserAuthorization entity by IDs.
+func (m *OauthApplicationMutation) RemoveUserAuthorizationIDs(ids ...uint64) {
+	if m.removeduser_authorizations == nil {
+		m.removeduser_authorizations = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.user_authorizations, ids[i])
+		m.removeduser_authorizations[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUserAuthorizations returns the removed IDs of the "user_authorizations" edge to the OauthUserAuthorization entity.
+func (m *OauthApplicationMutation) RemovedUserAuthorizationsIDs() (ids []uint64) {
+	for id := range m.removeduser_authorizations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UserAuthorizationsIDs returns the "user_authorizations" edge IDs in the mutation.
+func (m *OauthApplicationMutation) UserAuthorizationsIDs() (ids []uint64) {
+	for id := range m.user_authorizations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUserAuthorizations resets all changes to the "user_authorizations" edge.
+func (m *OauthApplicationMutation) ResetUserAuthorizations() {
+	m.user_authorizations = nil
+	m.cleareduser_authorizations = false
+	m.removeduser_authorizations = nil
+}
+
+// Where appends a list predicates to the OauthApplicationMutation builder.
+func (m *OauthApplicationMutation) Where(ps ...predicate.OauthApplication) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OauthApplicationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OauthApplicationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OauthApplication, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OauthApplicationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OauthApplicationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OauthApplication).
+func (m *OauthApplicationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OauthApplicationMutation) Fields() []string {
+	fields := make([]string, 0, 14)
+	if m.create_time != nil {
+		fields = append(fields, oauthapplication.FieldCreateTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, oauthapplication.FieldCreateBy)
+	}
+	if m.update_time != nil {
+		fields = append(fields, oauthapplication.FieldUpdateTime)
+	}
+	if m.update_by != nil {
+		fields = append(fields, oauthapplication.FieldUpdateBy)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, oauthapplication.FieldDeleteTime)
+	}
+	if m.delete_by != nil {
+		fields = append(fields, oauthapplication.FieldDeleteBy)
+	}
+	if m.client_id != nil {
+		fields = append(fields, oauthapplication.FieldClientID)
+	}
+	if m.client_secret != nil {
+		fields = append(fields, oauthapplication.FieldClientSecret)
+	}
+	if m.name != nil {
+		fields = append(fields, oauthapplication.FieldName)
+	}
+	if m.redirect_uris != nil {
+		fields = append(fields, oauthapplication.FieldRedirectUris)
+	}
+	if m.is_confidential != nil {
+		fields = append(fields, oauthapplication.FieldIsConfidential)
+	}
+	if m.scopes != nil {
+		fields = append(fields, oauthapplication.FieldScopes)
+	}
+	if m.able_state != nil {
+		fields = append(fields, oauthapplication.FieldAbleState)
+	}
+	if m.system_id != nil {
+		fields = append(fields, oauthapplication.FieldSystemID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OauthApplicationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case oauthapplication.FieldCreateTime:
+		return m.CreateTime()
+	case oauthapplication.FieldCreateBy:
+		return m.CreateBy()
+	case oauthapplication.FieldUpdateTime:
+		return m.UpdateTime()
+	case oauthapplication.FieldUpdateBy:
+		return m.UpdateBy()
+	case oauthapplication.FieldDeleteTime:
+		return m.DeleteTime()
+	case oauthapplication.FieldDeleteBy:
+		return m.DeleteBy()
+	case oauthapplication.FieldClientID:
+		return m.ClientID()
+	case oauthapplication.FieldClientSecret:
+		return m.ClientSecret()
+	case oauthapplication.FieldName:
+		return m.Name()
+	case oauthapplication.FieldRedirectUris:
+		return m.RedirectUris()
+	case oauthapplication.FieldIsConfidential:
+		return m.IsConfidential()
+	case oauthapplication.FieldScopes:
+		return m.Scopes()
+	case oauthapplication.FieldAbleState:
+		return m.AbleState()
+	case oauthapplication.FieldSystemID:
+		return m.SystemID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OauthApplicationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case oauthapplication.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case oauthapplication.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case oauthapplication.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case oauthapplication.FieldUpdateBy:
+		return m.OldUpdateBy(ctx)
+	case oauthapplication.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case oauthapplication.FieldDeleteBy:
+		return m.OldDeleteBy(ctx)
+	case oauthapplication.FieldClientID:
+		return m.OldClientID(ctx)
+	case oauthapplication.FieldClientSecret:
+		return m.OldClientSecret(ctx)
+	case oauthapplication.FieldName:
+		return m.OldName(ctx)
+	case oauthapplication.FieldRedirectUris:
+		return m.OldRedirectUris(ctx)
+	case oauthapplication.FieldIsConfidential:
+		return m.OldIsConfidential(ctx)
+	case oauthapplication.FieldScopes:
+		return m.OldScopes(ctx)
+	case oauthapplication.FieldAbleState:
+		return m.OldAbleState(ctx)
+	case oauthapplication.FieldSystemID:
+		return m.OldSystemID(ctx)
+	}
+	return nil, fmt.Errorf("unknown OauthApplication field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthApplicationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case oauthapplication.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case oauthapplication.FieldCreateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case oauthapplication.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case oauthapplication.FieldUpdateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateBy(v)
+		return nil
+	case oauthapplication.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case oauthapplication.FieldDeleteBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteBy(v)
+		return nil
+	case oauthapplication.FieldClientID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClientID(v)
+		return nil
+	case oauthapplication.FieldClientSecret:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClientSecret(v)
+		return nil
+	case oauthapplication.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case oauthapplication.FieldRedirectUris:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRedirectUris(v)
+		return nil
+	case oauthapplication.FieldIsConfidential:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsConfidential(v)
+		return nil
+	case oauthapplication.FieldScopes:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScopes(v)
+		return nil
+	case oauthapplication.FieldAbleState:
+		v, ok := value.(oauthapplication.AbleState)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAbleState(v)
+		return nil
+	case oauthapplication.FieldSystemID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSystemID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthApplication field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OauthApplicationMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, oauthapplication.FieldCreateBy)
+	}
+	if m.addupdate_by != nil {
+		fields = append(fields, oauthapplication.FieldUpdateBy)
+	}
+	if m.adddelete_by != nil {
+		fields = append(fields, oauthapplication.FieldDeleteBy)
+	}
+	if m.addsystem_id != nil {
+		fields = append(fields, oauthapplication.FieldSystemID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OauthApplicationMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case oauthapplication.FieldCreateBy:
+		return m.AddedCreateBy()
+	case oauthapplication.FieldUpdateBy:
+		return m.AddedUpdateBy()
+	case oauthapplication.FieldDeleteBy:
+		return m.AddedDeleteBy()
+	case oauthapplication.FieldSystemID:
+		return m.AddedSystemID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthApplicationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case oauthapplication.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case oauthapplication.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdateBy(v)
+		return nil
+	case oauthapplication.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeleteBy(v)
+		return nil
+	case oauthapplication.FieldSystemID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSystemID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthApplication numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OauthApplicationMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(oauthapplication.FieldCreateBy) {
+		fields = append(fields, oauthapplication.FieldCreateBy)
+	}
+	if m.FieldCleared(oauthapplication.FieldUpdateBy) {
+		fields = append(fields, oauthapplication.FieldUpdateBy)
+	}
+	if m.FieldCleared(oauthapplication.FieldDeleteTime) {
+		fields = append(fields, oauthapplication.FieldDeleteTime)
+	}
+	if m.FieldCleared(oauthapplication.FieldDeleteBy) {
+		fields = append(fields, oauthapplication.FieldDeleteBy)
+	}
+	if m.FieldCleared(oauthapplication.FieldSystemID) {
+		fields = append(fields, oauthapplication.FieldSystemID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OauthApplicationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OauthApplicationMutation) ClearField(name string) error {
+	switch name {
+	case oauthapplication.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case oauthapplication.FieldUpdateBy:
+		m.ClearUpdateBy()
+		return nil
+	case oauthapplication.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case oauthapplication.FieldDeleteBy:
+		m.ClearDeleteBy()
+		return nil
+	case oauthapplication.FieldSystemID:
+		m.ClearSystemID()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthApplication nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OauthApplicationMutation) ResetField(name string) error {
+	switch name {
+	case oauthapplication.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case oauthapplication.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case oauthapplication.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case oauthapplication.FieldUpdateBy:
+		m.ResetUpdateBy()
+		return nil
+	case oauthapplication.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case oauthapplication.FieldDeleteBy:
+		m.ResetDeleteBy()
+		return nil
+	case oauthapplication.FieldClientID:
+		m.ResetClientID()
+		return nil
+	case oauthapplication.FieldClientSecret:
+		m.ResetClientSecret()
+		return nil
+	case oauthapplication.FieldName:
+		m.ResetName()
+		return nil
+	case oauthapplication.FieldRedirectUris:
+		m.ResetRedirectUris()
+		return nil
+	case oauthapplication.FieldIsConfidential:
+		m.ResetIsConfidential()
+		return nil
+	case oauthapplication.FieldScopes:
+		m.ResetScopes()
+		return nil
+	case oauthapplication.FieldAbleState:
+		m.ResetAbleState()
+		return nil
+	case oauthapplication.FieldSystemID:
+		m.ResetSystemID()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthApplication field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OauthApplicationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.authorization_codes != nil {
+		edges = append(edges, oauthapplication.EdgeAuthorizationCodes)
+	}
+	if m.tokens != nil {
+		edges = append(edges, oauthapplication.EdgeTokens)
+	}
+	if m.user_authorizations != nil {
+		edges = append(edges, oauthapplication.EdgeUserAuthorizations)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OauthApplicationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case oauthapplication.EdgeAuthorizationCodes:
+		ids := make([]ent.Value, 0, len(m.authorization_codes))
+		for id := range m.authorization_codes {
+			ids = append(ids, id)
+		}
+		return ids
+	case oauthapplication.EdgeTokens:
+		ids := make([]ent.Value, 0, len(m.tokens))
+		for id := range m.tokens {
+			ids = append(ids, id)
+		}
+		return ids
+	case oauthapplication.EdgeUserAuthorizations:
+		ids := make([]ent.Value, 0, len(m.user_authorizations))
+		for id := range m.user_authorizations {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OauthApplicationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedauthorization_codes != nil {
+		edges = append(edges, oauthapplication.EdgeAuthorizationCodes)
+	}
+	if m.removedtokens != nil {
+		edges = append(edges, oauthapplication.EdgeTokens)
+	}
+	if m.removeduser_authorizations != nil {
+		edges = append(edges, oauthapplication.EdgeUserAuthorizations)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OauthApplicationMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case oauthapplication.EdgeAuthorizationCodes:
+		ids := make([]ent.Value, 0, len(m.removedauthorization_codes))
+		for id := range m.removedauthorization_codes {
+			ids = append(ids, id)
+		}
+		return ids
+	case oauthapplication.EdgeTokens:
+		ids := make([]ent.Value, 0, len(m.removedtokens))
+		for id := range m.removedtokens {
+			ids = append(ids, id)
+		}
+		return ids
+	case oauthapplication.EdgeUserAuthorizations:
+		ids := make([]ent.Value, 0, len(m.removeduser_authorizations))
+		for id := range m.removeduser_authorizations {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OauthApplicationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedauthorization_codes {
+		edges = append(edges, oauthapplication.EdgeAuthorizationCodes)
+	}
+	if m.clearedtokens {
+		edges = append(edges, oauthapplication.EdgeTokens)
+	}
+	if m.cleareduser_authorizations {
+		edges = append(edges, oauthapplication.EdgeUserAuthorizations)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OauthApplicationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case oauthapplication.EdgeAuthorizationCodes:
+		return m.clearedauthorization_codes
+	case oauthapplication.EdgeTokens:
+		return m.clearedtokens
+	case oauthapplication.EdgeUserAuthorizations:
+		return m.cleareduser_authorizations
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OauthApplicationMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown OauthApplication unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OauthApplicationMutation) ResetEdge(name string) error {
+	switch name {
+	case oauthapplication.EdgeAuthorizationCodes:
+		m.ResetAuthorizationCodes()
+		return nil
+	case oauthapplication.EdgeTokens:
+		m.ResetTokens()
+		return nil
+	case oauthapplication.EdgeUserAuthorizations:
+		m.ResetUserAuthorizations()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthApplication edge %s", name)
+}
+
+// OauthAuthorizationCodeMutation represents an operation that mutates the OauthAuthorizationCode nodes in the graph.
+type OauthAuthorizationCodeMutation struct {
+	config
+	op                        Op
+	typ                       string
+	id                        *uint64
+	create_time               *time.Time
+	create_by                 *uint64
+	addcreate_by              *int64
+	update_time               *time.Time
+	update_by                 *uint64
+	addupdate_by              *int64
+	delete_time               *time.Time
+	delete_by                 *uint64
+	adddelete_by              *int64
+	code                      *string
+	redirect_uri              *string
+	scope                     *[]string
+	appendscope               []string
+	expires_at                *time.Time
+	used_at                   *time.Time
+	code_challenge            *string
+	code_challenge_method     *string
+	clearedFields             map[string]struct{}
+	application               *uint64
+	clearedapplication        bool
+	user                      *uint64
+	cleareduser               bool
+	token                     *uint64
+	clearedtoken              bool
+	user_authorization        *uint64
+	cleareduser_authorization bool
+	done                      bool
+	oldValue                  func(context.Context) (*OauthAuthorizationCode, error)
+	predicates                []predicate.OauthAuthorizationCode
+}
+
+var _ ent.Mutation = (*OauthAuthorizationCodeMutation)(nil)
+
+// oauthauthorizationcodeOption allows management of the mutation configuration using functional options.
+type oauthauthorizationcodeOption func(*OauthAuthorizationCodeMutation)
+
+// newOauthAuthorizationCodeMutation creates new mutation for the OauthAuthorizationCode entity.
+func newOauthAuthorizationCodeMutation(c config, op Op, opts ...oauthauthorizationcodeOption) *OauthAuthorizationCodeMutation {
+	m := &OauthAuthorizationCodeMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOauthAuthorizationCode,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOauthAuthorizationCodeID sets the ID field of the mutation.
+func withOauthAuthorizationCodeID(id uint64) oauthauthorizationcodeOption {
+	return func(m *OauthAuthorizationCodeMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OauthAuthorizationCode
+		)
+		m.oldValue = func(ctx context.Context) (*OauthAuthorizationCode, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OauthAuthorizationCode.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOauthAuthorizationCode sets the old OauthAuthorizationCode of the mutation.
+func withOauthAuthorizationCode(node *OauthAuthorizationCode) oauthauthorizationcodeOption {
+	return func(m *OauthAuthorizationCodeMutation) {
+		m.oldValue = func(context.Context) (*OauthAuthorizationCode, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OauthAuthorizationCodeMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OauthAuthorizationCodeMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OauthAuthorizationCode entities.
+func (m *OauthAuthorizationCodeMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OauthAuthorizationCodeMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OauthAuthorizationCodeMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OauthAuthorizationCode.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *OauthAuthorizationCodeMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *OauthAuthorizationCodeMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *OauthAuthorizationCodeMutation) SetCreateBy(u uint64) {
+	m.create_by = &u
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) CreateBy() (r uint64, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldCreateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds u to the "create_by" field.
+func (m *OauthAuthorizationCodeMutation) AddCreateBy(u int64) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += u
+	} else {
+		m.addcreate_by = &u
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *OauthAuthorizationCodeMutation) AddedCreateBy() (r int64, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *OauthAuthorizationCodeMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[oauthauthorizationcode.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *OauthAuthorizationCodeMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[oauthauthorizationcode.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *OauthAuthorizationCodeMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, oauthauthorizationcode.FieldCreateBy)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *OauthAuthorizationCodeMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *OauthAuthorizationCodeMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (m *OauthAuthorizationCodeMutation) SetUpdateBy(u uint64) {
+	m.update_by = &u
+	m.addupdate_by = nil
+}
+
+// UpdateBy returns the value of the "update_by" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) UpdateBy() (r uint64, exists bool) {
+	v := m.update_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateBy returns the old "update_by" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldUpdateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateBy: %w", err)
+	}
+	return oldValue.UpdateBy, nil
+}
+
+// AddUpdateBy adds u to the "update_by" field.
+func (m *OauthAuthorizationCodeMutation) AddUpdateBy(u int64) {
+	if m.addupdate_by != nil {
+		*m.addupdate_by += u
+	} else {
+		m.addupdate_by = &u
+	}
+}
+
+// AddedUpdateBy returns the value that was added to the "update_by" field in this mutation.
+func (m *OauthAuthorizationCodeMutation) AddedUpdateBy() (r int64, exists bool) {
+	v := m.addupdate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (m *OauthAuthorizationCodeMutation) ClearUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	m.clearedFields[oauthauthorizationcode.FieldUpdateBy] = struct{}{}
+}
+
+// UpdateByCleared returns if the "update_by" field was cleared in this mutation.
+func (m *OauthAuthorizationCodeMutation) UpdateByCleared() bool {
+	_, ok := m.clearedFields[oauthauthorizationcode.FieldUpdateBy]
+	return ok
+}
+
+// ResetUpdateBy resets all changes to the "update_by" field.
+func (m *OauthAuthorizationCodeMutation) ResetUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	delete(m.clearedFields, oauthauthorizationcode.FieldUpdateBy)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *OauthAuthorizationCodeMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *OauthAuthorizationCodeMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[oauthauthorizationcode.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *OauthAuthorizationCodeMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[oauthauthorizationcode.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *OauthAuthorizationCodeMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, oauthauthorizationcode.FieldDeleteTime)
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (m *OauthAuthorizationCodeMutation) SetDeleteBy(u uint64) {
+	m.delete_by = &u
+	m.adddelete_by = nil
+}
+
+// DeleteBy returns the value of the "delete_by" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) DeleteBy() (r uint64, exists bool) {
+	v := m.delete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteBy returns the old "delete_by" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldDeleteBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteBy: %w", err)
+	}
+	return oldValue.DeleteBy, nil
+}
+
+// AddDeleteBy adds u to the "delete_by" field.
+func (m *OauthAuthorizationCodeMutation) AddDeleteBy(u int64) {
+	if m.adddelete_by != nil {
+		*m.adddelete_by += u
+	} else {
+		m.adddelete_by = &u
+	}
+}
+
+// AddedDeleteBy returns the value that was added to the "delete_by" field in this mutation.
+func (m *OauthAuthorizationCodeMutation) AddedDeleteBy() (r int64, exists bool) {
+	v := m.adddelete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (m *OauthAuthorizationCodeMutation) ClearDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	m.clearedFields[oauthauthorizationcode.FieldDeleteBy] = struct{}{}
+}
+
+// DeleteByCleared returns if the "delete_by" field was cleared in this mutation.
+func (m *OauthAuthorizationCodeMutation) DeleteByCleared() bool {
+	_, ok := m.clearedFields[oauthauthorizationcode.FieldDeleteBy]
+	return ok
+}
+
+// ResetDeleteBy resets all changes to the "delete_by" field.
+func (m *OauthAuthorizationCodeMutation) ResetDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	delete(m.clearedFields, oauthauthorizationcode.FieldDeleteBy)
+}
+
+// SetCode sets the "code" field.
+func (m *OauthAuthorizationCodeMutation) SetCode(s string) {
+	m.code = &s
+}
+
+// Code returns the value of the "code" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) Code() (r string, exists bool) {
+	v := m.code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCode returns the old "code" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldCode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCode: %w", err)
+	}
+	return oldValue.Code, nil
+}
+
+// ResetCode resets all changes to the "code" field.
+func (m *OauthAuthorizationCodeMutation) ResetCode() {
+	m.code = nil
+}
+
+// SetApplicationID sets the "application_id" field.
+func (m *OauthAuthorizationCodeMutation) SetApplicationID(u uint64) {
+	m.application = &u
+}
+
+// ApplicationID returns the value of the "application_id" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) ApplicationID() (r uint64, exists bool) {
+	v := m.application
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldApplicationID returns the old "application_id" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldApplicationID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldApplicationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldApplicationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldApplicationID: %w", err)
+	}
+	return oldValue.ApplicationID, nil
+}
+
+// ResetApplicationID resets all changes to the "application_id" field.
+func (m *OauthAuthorizationCodeMutation) ResetApplicationID() {
+	m.application = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *OauthAuthorizationCodeMutation) SetUserID(u uint64) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) UserID() (r uint64, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldUserID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *OauthAuthorizationCodeMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetRedirectURI sets the "redirect_uri" field.
+func (m *OauthAuthorizationCodeMutation) SetRedirectURI(s string) {
+	m.redirect_uri = &s
+}
+
+// RedirectURI returns the value of the "redirect_uri" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) RedirectURI() (r string, exists bool) {
+	v := m.redirect_uri
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRedirectURI returns the old "redirect_uri" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldRedirectURI(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRedirectURI is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRedirectURI requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRedirectURI: %w", err)
+	}
+	return oldValue.RedirectURI, nil
+}
+
+// ResetRedirectURI resets all changes to the "redirect_uri" field.
+func (m *OauthAuthorizationCodeMutation) ResetRedirectURI() {
+	m.redirect_uri = nil
+}
+
+// SetScope sets the "scope" field.
+func (m *OauthAuthorizationCodeMutation) SetScope(s []string) {
+	m.scope = &s
+	m.appendscope = nil
+}
+
+// Scope returns the value of the "scope" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) Scope() (r []string, exists bool) {
+	v := m.scope
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScope returns the old "scope" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldScope(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScope is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScope requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScope: %w", err)
+	}
+	return oldValue.Scope, nil
+}
+
+// AppendScope adds s to the "scope" field.
+func (m *OauthAuthorizationCodeMutation) AppendScope(s []string) {
+	m.appendscope = append(m.appendscope, s...)
+}
+
+// AppendedScope returns the list of values that were appended to the "scope" field in this mutation.
+func (m *OauthAuthorizationCodeMutation) AppendedScope() ([]string, bool) {
+	if len(m.appendscope) == 0 {
+		return nil, false
+	}
+	return m.appendscope, true
+}
+
+// ResetScope resets all changes to the "scope" field.
+func (m *OauthAuthorizationCodeMutation) ResetScope() {
+	m.scope = nil
+	m.appendscope = nil
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (m *OauthAuthorizationCodeMutation) SetExpiresAt(t time.Time) {
+	m.expires_at = &t
+}
+
+// ExpiresAt returns the value of the "expires_at" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) ExpiresAt() (r time.Time, exists bool) {
+	v := m.expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiresAt returns the old "expires_at" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldExpiresAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
+	}
+	return oldValue.ExpiresAt, nil
+}
+
+// ResetExpiresAt resets all changes to the "expires_at" field.
+func (m *OauthAuthorizationCodeMutation) ResetExpiresAt() {
+	m.expires_at = nil
+}
+
+// SetUsedAt sets the "used_at" field.
+func (m *OauthAuthorizationCodeMutation) SetUsedAt(t time.Time) {
+	m.used_at = &t
+}
+
+// UsedAt returns the value of the "used_at" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) UsedAt() (r time.Time, exists bool) {
+	v := m.used_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsedAt returns the old "used_at" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldUsedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsedAt: %w", err)
+	}
+	return oldValue.UsedAt, nil
+}
+
+// ClearUsedAt clears the value of the "used_at" field.
+func (m *OauthAuthorizationCodeMutation) ClearUsedAt() {
+	m.used_at = nil
+	m.clearedFields[oauthauthorizationcode.FieldUsedAt] = struct{}{}
+}
+
+// UsedAtCleared returns if the "used_at" field was cleared in this mutation.
+func (m *OauthAuthorizationCodeMutation) UsedAtCleared() bool {
+	_, ok := m.clearedFields[oauthauthorizationcode.FieldUsedAt]
+	return ok
+}
+
+// ResetUsedAt resets all changes to the "used_at" field.
+func (m *OauthAuthorizationCodeMutation) ResetUsedAt() {
+	m.used_at = nil
+	delete(m.clearedFields, oauthauthorizationcode.FieldUsedAt)
+}
+
+// SetCodeChallenge sets the "code_challenge" field.
+func (m *OauthAuthorizationCodeMutation) SetCodeChallenge(s string) {
+	m.code_challenge = &s
+}
+
+// CodeChallenge returns the value of the "code_challenge" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) CodeChallenge() (r string, exists bool) {
+	v := m.code_challenge
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCodeChallenge returns the old "code_challenge" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldCodeChallenge(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCodeChallenge is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCodeChallenge requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCodeChallenge: %w", err)
+	}
+	return oldValue.CodeChallenge, nil
+}
+
+// ClearCodeChallenge clears the value of the "code_challenge" field.
+func (m *OauthAuthorizationCodeMutation) ClearCodeChallenge() {
+	m.code_challenge = nil
+	m.clearedFields[oauthauthorizationcode.FieldCodeChallenge] = struct{}{}
+}
+
+// CodeChallengeCleared returns if the "code_challenge" field was cleared in this mutation.
+func (m *OauthAuthorizationCodeMutation) CodeChallengeCleared() bool {
+	_, ok := m.clearedFields[oauthauthorizationcode.FieldCodeChallenge]
+	return ok
+}
+
+// ResetCodeChallenge resets all changes to the "code_challenge" field.
+func (m *OauthAuthorizationCodeMutation) ResetCodeChallenge() {
+	m.code_challenge = nil
+	delete(m.clearedFields, oauthauthorizationcode.FieldCodeChallenge)
+}
+
+// SetCodeChallengeMethod sets the "code_challenge_method" field.
+func (m *OauthAuthorizationCodeMutation) SetCodeChallengeMethod(s string) {
+	m.code_challenge_method = &s
+}
+
+// CodeChallengeMethod returns the value of the "code_challenge_method" field in the mutation.
+func (m *OauthAuthorizationCodeMutation) CodeChallengeMethod() (r string, exists bool) {
+	v := m.code_challenge_method
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCodeChallengeMethod returns the old "code_challenge_method" field's value of the OauthAuthorizationCode entity.
+// If the OauthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthAuthorizationCodeMutation) OldCodeChallengeMethod(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCodeChallengeMethod is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCodeChallengeMethod requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCodeChallengeMethod: %w", err)
+	}
+	return oldValue.CodeChallengeMethod, nil
+}
+
+// ClearCodeChallengeMethod clears the value of the "code_challenge_method" field.
+func (m *OauthAuthorizationCodeMutation) ClearCodeChallengeMethod() {
+	m.code_challenge_method = nil
+	m.clearedFields[oauthauthorizationcode.FieldCodeChallengeMethod] = struct{}{}
+}
+
+// CodeChallengeMethodCleared returns if the "code_challenge_method" field was cleared in this mutation.
+func (m *OauthAuthorizationCodeMutation) CodeChallengeMethodCleared() bool {
+	_, ok := m.clearedFields[oauthauthorizationcode.FieldCodeChallengeMethod]
+	return ok
+}
+
+// ResetCodeChallengeMethod resets all changes to the "code_challenge_method" field.
+func (m *OauthAuthorizationCodeMutation) ResetCodeChallengeMethod() {
+	m.code_challenge_method = nil
+	delete(m.clearedFields, oauthauthorizationcode.FieldCodeChallengeMethod)
+}
+
+// ClearApplication clears the "application" edge to the OauthApplication entity.
+func (m *OauthAuthorizationCodeMutation) ClearApplication() {
+	m.clearedapplication = true
+	m.clearedFields[oauthauthorizationcode.FieldApplicationID] = struct{}{}
+}
+
+// ApplicationCleared reports if the "application" edge to the OauthApplication entity was cleared.
+func (m *OauthAuthorizationCodeMutation) ApplicationCleared() bool {
+	return m.clearedapplication
+}
+
+// ApplicationIDs returns the "application" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ApplicationID instead. It exists only for internal usage by the builders.
+func (m *OauthAuthorizationCodeMutation) ApplicationIDs() (ids []uint64) {
+	if id := m.application; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetApplication resets all changes to the "application" edge.
+func (m *OauthAuthorizationCodeMutation) ResetApplication() {
+	m.application = nil
+	m.clearedapplication = false
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *OauthAuthorizationCodeMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[oauthauthorizationcode.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *OauthAuthorizationCodeMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *OauthAuthorizationCodeMutation) UserIDs() (ids []uint64) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *OauthAuthorizationCodeMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// SetTokenID sets the "token" edge to the OauthToken entity by id.
+func (m *OauthAuthorizationCodeMutation) SetTokenID(id uint64) {
+	m.token = &id
+}
+
+// ClearToken clears the "token" edge to the OauthToken entity.
+func (m *OauthAuthorizationCodeMutation) ClearToken() {
+	m.clearedtoken = true
+}
+
+// TokenCleared reports if the "token" edge to the OauthToken entity was cleared.
+func (m *OauthAuthorizationCodeMutation) TokenCleared() bool {
+	return m.clearedtoken
+}
+
+// TokenID returns the "token" edge ID in the mutation.
+func (m *OauthAuthorizationCodeMutation) TokenID() (id uint64, exists bool) {
+	if m.token != nil {
+		return *m.token, true
+	}
+	return
+}
+
+// TokenIDs returns the "token" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TokenID instead. It exists only for internal usage by the builders.
+func (m *OauthAuthorizationCodeMutation) TokenIDs() (ids []uint64) {
+	if id := m.token; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetToken resets all changes to the "token" edge.
+func (m *OauthAuthorizationCodeMutation) ResetToken() {
+	m.token = nil
+	m.clearedtoken = false
+}
+
+// SetUserAuthorizationID sets the "user_authorization" edge to the OauthUserAuthorization entity by id.
+func (m *OauthAuthorizationCodeMutation) SetUserAuthorizationID(id uint64) {
+	m.user_authorization = &id
+}
+
+// ClearUserAuthorization clears the "user_authorization" edge to the OauthUserAuthorization entity.
+func (m *OauthAuthorizationCodeMutation) ClearUserAuthorization() {
+	m.cleareduser_authorization = true
+}
+
+// UserAuthorizationCleared reports if the "user_authorization" edge to the OauthUserAuthorization entity was cleared.
+func (m *OauthAuthorizationCodeMutation) UserAuthorizationCleared() bool {
+	return m.cleareduser_authorization
+}
+
+// UserAuthorizationID returns the "user_authorization" edge ID in the mutation.
+func (m *OauthAuthorizationCodeMutation) UserAuthorizationID() (id uint64, exists bool) {
+	if m.user_authorization != nil {
+		return *m.user_authorization, true
+	}
+	return
+}
+
+// UserAuthorizationIDs returns the "user_authorization" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserAuthorizationID instead. It exists only for internal usage by the builders.
+func (m *OauthAuthorizationCodeMutation) UserAuthorizationIDs() (ids []uint64) {
+	if id := m.user_authorization; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUserAuthorization resets all changes to the "user_authorization" edge.
+func (m *OauthAuthorizationCodeMutation) ResetUserAuthorization() {
+	m.user_authorization = nil
+	m.cleareduser_authorization = false
+}
+
+// Where appends a list predicates to the OauthAuthorizationCodeMutation builder.
+func (m *OauthAuthorizationCodeMutation) Where(ps ...predicate.OauthAuthorizationCode) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OauthAuthorizationCodeMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OauthAuthorizationCodeMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OauthAuthorizationCode, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OauthAuthorizationCodeMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OauthAuthorizationCodeMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OauthAuthorizationCode).
+func (m *OauthAuthorizationCodeMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OauthAuthorizationCodeMutation) Fields() []string {
+	fields := make([]string, 0, 15)
+	if m.create_time != nil {
+		fields = append(fields, oauthauthorizationcode.FieldCreateTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, oauthauthorizationcode.FieldCreateBy)
+	}
+	if m.update_time != nil {
+		fields = append(fields, oauthauthorizationcode.FieldUpdateTime)
+	}
+	if m.update_by != nil {
+		fields = append(fields, oauthauthorizationcode.FieldUpdateBy)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, oauthauthorizationcode.FieldDeleteTime)
+	}
+	if m.delete_by != nil {
+		fields = append(fields, oauthauthorizationcode.FieldDeleteBy)
+	}
+	if m.code != nil {
+		fields = append(fields, oauthauthorizationcode.FieldCode)
+	}
+	if m.application != nil {
+		fields = append(fields, oauthauthorizationcode.FieldApplicationID)
+	}
+	if m.user != nil {
+		fields = append(fields, oauthauthorizationcode.FieldUserID)
+	}
+	if m.redirect_uri != nil {
+		fields = append(fields, oauthauthorizationcode.FieldRedirectURI)
+	}
+	if m.scope != nil {
+		fields = append(fields, oauthauthorizationcode.FieldScope)
+	}
+	if m.expires_at != nil {
+		fields = append(fields, oauthauthorizationcode.FieldExpiresAt)
+	}
+	if m.used_at != nil {
+		fields = append(fields, oauthauthorizationcode.FieldUsedAt)
+	}
+	if m.code_challenge != nil {
+		fields = append(fields, oauthauthorizationcode.FieldCodeChallenge)
+	}
+	if m.code_challenge_method != nil {
+		fields = append(fields, oauthauthorizationcode.FieldCodeChallengeMethod)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OauthAuthorizationCodeMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case oauthauthorizationcode.FieldCreateTime:
+		return m.CreateTime()
+	case oauthauthorizationcode.FieldCreateBy:
+		return m.CreateBy()
+	case oauthauthorizationcode.FieldUpdateTime:
+		return m.UpdateTime()
+	case oauthauthorizationcode.FieldUpdateBy:
+		return m.UpdateBy()
+	case oauthauthorizationcode.FieldDeleteTime:
+		return m.DeleteTime()
+	case oauthauthorizationcode.FieldDeleteBy:
+		return m.DeleteBy()
+	case oauthauthorizationcode.FieldCode:
+		return m.Code()
+	case oauthauthorizationcode.FieldApplicationID:
+		return m.ApplicationID()
+	case oauthauthorizationcode.FieldUserID:
+		return m.UserID()
+	case oauthauthorizationcode.FieldRedirectURI:
+		return m.RedirectURI()
+	case oauthauthorizationcode.FieldScope:
+		return m.Scope()
+	case oauthauthorizationcode.FieldExpiresAt:
+		return m.ExpiresAt()
+	case oauthauthorizationcode.FieldUsedAt:
+		return m.UsedAt()
+	case oauthauthorizationcode.FieldCodeChallenge:
+		return m.CodeChallenge()
+	case oauthauthorizationcode.FieldCodeChallengeMethod:
+		return m.CodeChallengeMethod()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OauthAuthorizationCodeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case oauthauthorizationcode.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case oauthauthorizationcode.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case oauthauthorizationcode.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case oauthauthorizationcode.FieldUpdateBy:
+		return m.OldUpdateBy(ctx)
+	case oauthauthorizationcode.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case oauthauthorizationcode.FieldDeleteBy:
+		return m.OldDeleteBy(ctx)
+	case oauthauthorizationcode.FieldCode:
+		return m.OldCode(ctx)
+	case oauthauthorizationcode.FieldApplicationID:
+		return m.OldApplicationID(ctx)
+	case oauthauthorizationcode.FieldUserID:
+		return m.OldUserID(ctx)
+	case oauthauthorizationcode.FieldRedirectURI:
+		return m.OldRedirectURI(ctx)
+	case oauthauthorizationcode.FieldScope:
+		return m.OldScope(ctx)
+	case oauthauthorizationcode.FieldExpiresAt:
+		return m.OldExpiresAt(ctx)
+	case oauthauthorizationcode.FieldUsedAt:
+		return m.OldUsedAt(ctx)
+	case oauthauthorizationcode.FieldCodeChallenge:
+		return m.OldCodeChallenge(ctx)
+	case oauthauthorizationcode.FieldCodeChallengeMethod:
+		return m.OldCodeChallengeMethod(ctx)
+	}
+	return nil, fmt.Errorf("unknown OauthAuthorizationCode field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthAuthorizationCodeMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case oauthauthorizationcode.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case oauthauthorizationcode.FieldCreateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case oauthauthorizationcode.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case oauthauthorizationcode.FieldUpdateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateBy(v)
+		return nil
+	case oauthauthorizationcode.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case oauthauthorizationcode.FieldDeleteBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteBy(v)
+		return nil
+	case oauthauthorizationcode.FieldCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCode(v)
+		return nil
+	case oauthauthorizationcode.FieldApplicationID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetApplicationID(v)
+		return nil
+	case oauthauthorizationcode.FieldUserID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case oauthauthorizationcode.FieldRedirectURI:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRedirectURI(v)
+		return nil
+	case oauthauthorizationcode.FieldScope:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScope(v)
+		return nil
+	case oauthauthorizationcode.FieldExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiresAt(v)
+		return nil
+	case oauthauthorizationcode.FieldUsedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsedAt(v)
+		return nil
+	case oauthauthorizationcode.FieldCodeChallenge:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCodeChallenge(v)
+		return nil
+	case oauthauthorizationcode.FieldCodeChallengeMethod:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCodeChallengeMethod(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthAuthorizationCode field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OauthAuthorizationCodeMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, oauthauthorizationcode.FieldCreateBy)
+	}
+	if m.addupdate_by != nil {
+		fields = append(fields, oauthauthorizationcode.FieldUpdateBy)
+	}
+	if m.adddelete_by != nil {
+		fields = append(fields, oauthauthorizationcode.FieldDeleteBy)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OauthAuthorizationCodeMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case oauthauthorizationcode.FieldCreateBy:
+		return m.AddedCreateBy()
+	case oauthauthorizationcode.FieldUpdateBy:
+		return m.AddedUpdateBy()
+	case oauthauthorizationcode.FieldDeleteBy:
+		return m.AddedDeleteBy()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthAuthorizationCodeMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case oauthauthorizationcode.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case oauthauthorizationcode.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdateBy(v)
+		return nil
+	case oauthauthorizationcode.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeleteBy(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthAuthorizationCode numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OauthAuthorizationCodeMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(oauthauthorizationcode.FieldCreateBy) {
+		fields = append(fields, oauthauthorizationcode.FieldCreateBy)
+	}
+	if m.FieldCleared(oauthauthorizationcode.FieldUpdateBy) {
+		fields = append(fields, oauthauthorizationcode.FieldUpdateBy)
+	}
+	if m.FieldCleared(oauthauthorizationcode.FieldDeleteTime) {
+		fields = append(fields, oauthauthorizationcode.FieldDeleteTime)
+	}
+	if m.FieldCleared(oauthauthorizationcode.FieldDeleteBy) {
+		fields = append(fields, oauthauthorizationcode.FieldDeleteBy)
+	}
+	if m.FieldCleared(oauthauthorizationcode.FieldUsedAt) {
+		fields = append(fields, oauthauthorizationcode.FieldUsedAt)
+	}
+	if m.FieldCleared(oauthauthorizationcode.FieldCodeChallenge) {
+		fields = append(fields, oauthauthorizationcode.FieldCodeChallenge)
+	}
+	if m.FieldCleared(oauthauthorizationcode.FieldCodeChallengeMethod) {
+		fields = append(fields, oauthauthorizationcode.FieldCodeChallengeMethod)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OauthAuthorizationCodeMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OauthAuthorizationCodeMutation) ClearField(name string) error {
+	switch name {
+	case oauthauthorizationcode.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case oauthauthorizationcode.FieldUpdateBy:
+		m.ClearUpdateBy()
+		return nil
+	case oauthauthorizationcode.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case oauthauthorizationcode.FieldDeleteBy:
+		m.ClearDeleteBy()
+		return nil
+	case oauthauthorizationcode.FieldUsedAt:
+		m.ClearUsedAt()
+		return nil
+	case oauthauthorizationcode.FieldCodeChallenge:
+		m.ClearCodeChallenge()
+		return nil
+	case oauthauthorizationcode.FieldCodeChallengeMethod:
+		m.ClearCodeChallengeMethod()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthAuthorizationCode nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OauthAuthorizationCodeMutation) ResetField(name string) error {
+	switch name {
+	case oauthauthorizationcode.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case oauthauthorizationcode.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case oauthauthorizationcode.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case oauthauthorizationcode.FieldUpdateBy:
+		m.ResetUpdateBy()
+		return nil
+	case oauthauthorizationcode.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case oauthauthorizationcode.FieldDeleteBy:
+		m.ResetDeleteBy()
+		return nil
+	case oauthauthorizationcode.FieldCode:
+		m.ResetCode()
+		return nil
+	case oauthauthorizationcode.FieldApplicationID:
+		m.ResetApplicationID()
+		return nil
+	case oauthauthorizationcode.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case oauthauthorizationcode.FieldRedirectURI:
+		m.ResetRedirectURI()
+		return nil
+	case oauthauthorizationcode.FieldScope:
+		m.ResetScope()
+		return nil
+	case oauthauthorizationcode.FieldExpiresAt:
+		m.ResetExpiresAt()
+		return nil
+	case oauthauthorizationcode.FieldUsedAt:
+		m.ResetUsedAt()
+		return nil
+	case oauthauthorizationcode.FieldCodeChallenge:
+		m.ResetCodeChallenge()
+		return nil
+	case oauthauthorizationcode.FieldCodeChallengeMethod:
+		m.ResetCodeChallengeMethod()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthAuthorizationCode field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OauthAuthorizationCodeMutation) AddedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.application != nil {
+		edges = append(edges, oauthauthorizationcode.EdgeApplication)
+	}
+	if m.user != nil {
+		edges = append(edges, oauthauthorizationcode.EdgeUser)
+	}
+	if m.token != nil {
+		edges = append(edges, oauthauthorizationcode.EdgeToken)
+	}
+	if m.user_authorization != nil {
+		edges = append(edges, oauthauthorizationcode.EdgeUserAuthorization)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OauthAuthorizationCodeMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case oauthauthorizationcode.EdgeApplication:
+		if id := m.application; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthauthorizationcode.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthauthorizationcode.EdgeToken:
+		if id := m.token; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthauthorizationcode.EdgeUserAuthorization:
+		if id := m.user_authorization; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OauthAuthorizationCodeMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 4)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OauthAuthorizationCodeMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OauthAuthorizationCodeMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.clearedapplication {
+		edges = append(edges, oauthauthorizationcode.EdgeApplication)
+	}
+	if m.cleareduser {
+		edges = append(edges, oauthauthorizationcode.EdgeUser)
+	}
+	if m.clearedtoken {
+		edges = append(edges, oauthauthorizationcode.EdgeToken)
+	}
+	if m.cleareduser_authorization {
+		edges = append(edges, oauthauthorizationcode.EdgeUserAuthorization)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OauthAuthorizationCodeMutation) EdgeCleared(name string) bool {
+	switch name {
+	case oauthauthorizationcode.EdgeApplication:
+		return m.clearedapplication
+	case oauthauthorizationcode.EdgeUser:
+		return m.cleareduser
+	case oauthauthorizationcode.EdgeToken:
+		return m.clearedtoken
+	case oauthauthorizationcode.EdgeUserAuthorization:
+		return m.cleareduser_authorization
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OauthAuthorizationCodeMutation) ClearEdge(name string) error {
+	switch name {
+	case oauthauthorizationcode.EdgeApplication:
+		m.ClearApplication()
+		return nil
+	case oauthauthorizationcode.EdgeUser:
+		m.ClearUser()
+		return nil
+	case oauthauthorizationcode.EdgeToken:
+		m.ClearToken()
+		return nil
+	case oauthauthorizationcode.EdgeUserAuthorization:
+		m.ClearUserAuthorization()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthAuthorizationCode unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OauthAuthorizationCodeMutation) ResetEdge(name string) error {
+	switch name {
+	case oauthauthorizationcode.EdgeApplication:
+		m.ResetApplication()
+		return nil
+	case oauthauthorizationcode.EdgeUser:
+		m.ResetUser()
+		return nil
+	case oauthauthorizationcode.EdgeToken:
+		m.ResetToken()
+		return nil
+	case oauthauthorizationcode.EdgeUserAuthorization:
+		m.ResetUserAuthorization()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthAuthorizationCode edge %s", name)
+}
+
+// OauthProviderMutation represents an operation that mutates the OauthProvider nodes in the graph.
+type OauthProviderMutation struct {
+	config
+	op                     Op
+	typ                    string
+	id                     *uint64
+	create_time            *time.Time
+	create_by              *uint64
+	addcreate_by           *int64
+	update_time            *time.Time
+	update_by              *uint64
+	addupdate_by           *int64
+	delete_time            *time.Time
+	delete_by              *uint64
+	adddelete_by           *int64
+	_type                  *oauthprovider.Type
+	name                   *string
+	authorization_endpoint *string
+	token_endpoint         *string
+	user_info_endpoint     *string
+	revoke_endpoint        *string
+	refresh_endpoint       *string
+	client_id              *string
+	client_secret          *string
+	redirect_uri           *string
+	scopes                 *[]string
+	appendscopes           []string
+	auto_register          *bool
+	able_state             *oauthprovider.AbleState
+	metadata               *map[string]interface{}
+	clearedFields          map[string]struct{}
+	states                 map[uint64]struct{}
+	removedstates          map[uint64]struct{}
+	clearedstates          bool
+	oauth_users            map[uint64]struct{}
+	removedoauth_users     map[uint64]struct{}
+	clearedoauth_users     bool
+	done                   bool
+	oldValue               func(context.Context) (*OauthProvider, error)
+	predicates             []predicate.OauthProvider
+}
+
+var _ ent.Mutation = (*OauthProviderMutation)(nil)
+
+// oauthproviderOption allows management of the mutation configuration using functional options.
+type oauthproviderOption func(*OauthProviderMutation)
+
+// newOauthProviderMutation creates new mutation for the OauthProvider entity.
+func newOauthProviderMutation(c config, op Op, opts ...oauthproviderOption) *OauthProviderMutation {
+	m := &OauthProviderMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOauthProvider,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOauthProviderID sets the ID field of the mutation.
+func withOauthProviderID(id uint64) oauthproviderOption {
+	return func(m *OauthProviderMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OauthProvider
+		)
+		m.oldValue = func(ctx context.Context) (*OauthProvider, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OauthProvider.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOauthProvider sets the old OauthProvider of the mutation.
+func withOauthProvider(node *OauthProvider) oauthproviderOption {
+	return func(m *OauthProviderMutation) {
+		m.oldValue = func(context.Context) (*OauthProvider, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OauthProviderMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OauthProviderMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OauthProvider entities.
+func (m *OauthProviderMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OauthProviderMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OauthProviderMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OauthProvider.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *OauthProviderMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *OauthProviderMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *OauthProviderMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *OauthProviderMutation) SetCreateBy(u uint64) {
+	m.create_by = &u
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *OauthProviderMutation) CreateBy() (r uint64, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldCreateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds u to the "create_by" field.
+func (m *OauthProviderMutation) AddCreateBy(u int64) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += u
+	} else {
+		m.addcreate_by = &u
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *OauthProviderMutation) AddedCreateBy() (r int64, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *OauthProviderMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[oauthprovider.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *OauthProviderMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[oauthprovider.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *OauthProviderMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, oauthprovider.FieldCreateBy)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *OauthProviderMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *OauthProviderMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *OauthProviderMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (m *OauthProviderMutation) SetUpdateBy(u uint64) {
+	m.update_by = &u
+	m.addupdate_by = nil
+}
+
+// UpdateBy returns the value of the "update_by" field in the mutation.
+func (m *OauthProviderMutation) UpdateBy() (r uint64, exists bool) {
+	v := m.update_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateBy returns the old "update_by" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldUpdateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateBy: %w", err)
+	}
+	return oldValue.UpdateBy, nil
+}
+
+// AddUpdateBy adds u to the "update_by" field.
+func (m *OauthProviderMutation) AddUpdateBy(u int64) {
+	if m.addupdate_by != nil {
+		*m.addupdate_by += u
+	} else {
+		m.addupdate_by = &u
+	}
+}
+
+// AddedUpdateBy returns the value that was added to the "update_by" field in this mutation.
+func (m *OauthProviderMutation) AddedUpdateBy() (r int64, exists bool) {
+	v := m.addupdate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (m *OauthProviderMutation) ClearUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	m.clearedFields[oauthprovider.FieldUpdateBy] = struct{}{}
+}
+
+// UpdateByCleared returns if the "update_by" field was cleared in this mutation.
+func (m *OauthProviderMutation) UpdateByCleared() bool {
+	_, ok := m.clearedFields[oauthprovider.FieldUpdateBy]
+	return ok
+}
+
+// ResetUpdateBy resets all changes to the "update_by" field.
+func (m *OauthProviderMutation) ResetUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	delete(m.clearedFields, oauthprovider.FieldUpdateBy)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *OauthProviderMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *OauthProviderMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *OauthProviderMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[oauthprovider.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *OauthProviderMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[oauthprovider.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *OauthProviderMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, oauthprovider.FieldDeleteTime)
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (m *OauthProviderMutation) SetDeleteBy(u uint64) {
+	m.delete_by = &u
+	m.adddelete_by = nil
+}
+
+// DeleteBy returns the value of the "delete_by" field in the mutation.
+func (m *OauthProviderMutation) DeleteBy() (r uint64, exists bool) {
+	v := m.delete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteBy returns the old "delete_by" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldDeleteBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteBy: %w", err)
+	}
+	return oldValue.DeleteBy, nil
+}
+
+// AddDeleteBy adds u to the "delete_by" field.
+func (m *OauthProviderMutation) AddDeleteBy(u int64) {
+	if m.adddelete_by != nil {
+		*m.adddelete_by += u
+	} else {
+		m.adddelete_by = &u
+	}
+}
+
+// AddedDeleteBy returns the value that was added to the "delete_by" field in this mutation.
+func (m *OauthProviderMutation) AddedDeleteBy() (r int64, exists bool) {
+	v := m.adddelete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (m *OauthProviderMutation) ClearDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	m.clearedFields[oauthprovider.FieldDeleteBy] = struct{}{}
+}
+
+// DeleteByCleared returns if the "delete_by" field was cleared in this mutation.
+func (m *OauthProviderMutation) DeleteByCleared() bool {
+	_, ok := m.clearedFields[oauthprovider.FieldDeleteBy]
+	return ok
+}
+
+// ResetDeleteBy resets all changes to the "delete_by" field.
+func (m *OauthProviderMutation) ResetDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	delete(m.clearedFields, oauthprovider.FieldDeleteBy)
+}
+
+// SetType sets the "type" field.
+func (m *OauthProviderMutation) SetType(o oauthprovider.Type) {
+	m._type = &o
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *OauthProviderMutation) GetType() (r oauthprovider.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldType(ctx context.Context) (v oauthprovider.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *OauthProviderMutation) ResetType() {
+	m._type = nil
+}
+
+// SetName sets the "name" field.
+func (m *OauthProviderMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *OauthProviderMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *OauthProviderMutation) ResetName() {
+	m.name = nil
+}
+
+// SetAuthorizationEndpoint sets the "authorization_endpoint" field.
+func (m *OauthProviderMutation) SetAuthorizationEndpoint(s string) {
+	m.authorization_endpoint = &s
+}
+
+// AuthorizationEndpoint returns the value of the "authorization_endpoint" field in the mutation.
+func (m *OauthProviderMutation) AuthorizationEndpoint() (r string, exists bool) {
+	v := m.authorization_endpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthorizationEndpoint returns the old "authorization_endpoint" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldAuthorizationEndpoint(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthorizationEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthorizationEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthorizationEndpoint: %w", err)
+	}
+	return oldValue.AuthorizationEndpoint, nil
+}
+
+// ResetAuthorizationEndpoint resets all changes to the "authorization_endpoint" field.
+func (m *OauthProviderMutation) ResetAuthorizationEndpoint() {
+	m.authorization_endpoint = nil
+}
+
+// SetTokenEndpoint sets the "token_endpoint" field.
+func (m *OauthProviderMutation) SetTokenEndpoint(s string) {
+	m.token_endpoint = &s
+}
+
+// TokenEndpoint returns the value of the "token_endpoint" field in the mutation.
+func (m *OauthProviderMutation) TokenEndpoint() (r string, exists bool) {
+	v := m.token_endpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTokenEndpoint returns the old "token_endpoint" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldTokenEndpoint(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTokenEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTokenEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTokenEndpoint: %w", err)
+	}
+	return oldValue.TokenEndpoint, nil
+}
+
+// ResetTokenEndpoint resets all changes to the "token_endpoint" field.
+func (m *OauthProviderMutation) ResetTokenEndpoint() {
+	m.token_endpoint = nil
+}
+
+// SetUserInfoEndpoint sets the "user_info_endpoint" field.
+func (m *OauthProviderMutation) SetUserInfoEndpoint(s string) {
+	m.user_info_endpoint = &s
+}
+
+// UserInfoEndpoint returns the value of the "user_info_endpoint" field in the mutation.
+func (m *OauthProviderMutation) UserInfoEndpoint() (r string, exists bool) {
+	v := m.user_info_endpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserInfoEndpoint returns the old "user_info_endpoint" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldUserInfoEndpoint(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserInfoEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserInfoEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserInfoEndpoint: %w", err)
+	}
+	return oldValue.UserInfoEndpoint, nil
+}
+
+// ResetUserInfoEndpoint resets all changes to the "user_info_endpoint" field.
+func (m *OauthProviderMutation) ResetUserInfoEndpoint() {
+	m.user_info_endpoint = nil
+}
+
+// SetRevokeEndpoint sets the "revoke_endpoint" field.
+func (m *OauthProviderMutation) SetRevokeEndpoint(s string) {
+	m.revoke_endpoint = &s
+}
+
+// RevokeEndpoint returns the value of the "revoke_endpoint" field in the mutation.
+func (m *OauthProviderMutation) RevokeEndpoint() (r string, exists bool) {
+	v := m.revoke_endpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRevokeEndpoint returns the old "revoke_endpoint" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldRevokeEndpoint(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRevokeEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRevokeEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRevokeEndpoint: %w", err)
+	}
+	return oldValue.RevokeEndpoint, nil
+}
+
+// ClearRevokeEndpoint clears the value of the "revoke_endpoint" field.
+func (m *OauthProviderMutation) ClearRevokeEndpoint() {
+	m.revoke_endpoint = nil
+	m.clearedFields[oauthprovider.FieldRevokeEndpoint] = struct{}{}
+}
+
+// RevokeEndpointCleared returns if the "revoke_endpoint" field was cleared in this mutation.
+func (m *OauthProviderMutation) RevokeEndpointCleared() bool {
+	_, ok := m.clearedFields[oauthprovider.FieldRevokeEndpoint]
+	return ok
+}
+
+// ResetRevokeEndpoint resets all changes to the "revoke_endpoint" field.
+func (m *OauthProviderMutation) ResetRevokeEndpoint() {
+	m.revoke_endpoint = nil
+	delete(m.clearedFields, oauthprovider.FieldRevokeEndpoint)
+}
+
+// SetRefreshEndpoint sets the "refresh_endpoint" field.
+func (m *OauthProviderMutation) SetRefreshEndpoint(s string) {
+	m.refresh_endpoint = &s
+}
+
+// RefreshEndpoint returns the value of the "refresh_endpoint" field in the mutation.
+func (m *OauthProviderMutation) RefreshEndpoint() (r string, exists bool) {
+	v := m.refresh_endpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRefreshEndpoint returns the old "refresh_endpoint" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldRefreshEndpoint(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRefreshEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRefreshEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRefreshEndpoint: %w", err)
+	}
+	return oldValue.RefreshEndpoint, nil
+}
+
+// ClearRefreshEndpoint clears the value of the "refresh_endpoint" field.
+func (m *OauthProviderMutation) ClearRefreshEndpoint() {
+	m.refresh_endpoint = nil
+	m.clearedFields[oauthprovider.FieldRefreshEndpoint] = struct{}{}
+}
+
+// RefreshEndpointCleared returns if the "refresh_endpoint" field was cleared in this mutation.
+func (m *OauthProviderMutation) RefreshEndpointCleared() bool {
+	_, ok := m.clearedFields[oauthprovider.FieldRefreshEndpoint]
+	return ok
+}
+
+// ResetRefreshEndpoint resets all changes to the "refresh_endpoint" field.
+func (m *OauthProviderMutation) ResetRefreshEndpoint() {
+	m.refresh_endpoint = nil
+	delete(m.clearedFields, oauthprovider.FieldRefreshEndpoint)
+}
+
+// SetClientID sets the "client_id" field.
+func (m *OauthProviderMutation) SetClientID(s string) {
+	m.client_id = &s
+}
+
+// ClientID returns the value of the "client_id" field in the mutation.
+func (m *OauthProviderMutation) ClientID() (r string, exists bool) {
+	v := m.client_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClientID returns the old "client_id" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldClientID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClientID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClientID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClientID: %w", err)
+	}
+	return oldValue.ClientID, nil
+}
+
+// ResetClientID resets all changes to the "client_id" field.
+func (m *OauthProviderMutation) ResetClientID() {
+	m.client_id = nil
+}
+
+// SetClientSecret sets the "client_secret" field.
+func (m *OauthProviderMutation) SetClientSecret(s string) {
+	m.client_secret = &s
+}
+
+// ClientSecret returns the value of the "client_secret" field in the mutation.
+func (m *OauthProviderMutation) ClientSecret() (r string, exists bool) {
+	v := m.client_secret
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClientSecret returns the old "client_secret" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldClientSecret(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClientSecret is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClientSecret requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClientSecret: %w", err)
+	}
+	return oldValue.ClientSecret, nil
+}
+
+// ResetClientSecret resets all changes to the "client_secret" field.
+func (m *OauthProviderMutation) ResetClientSecret() {
+	m.client_secret = nil
+}
+
+// SetRedirectURI sets the "redirect_uri" field.
+func (m *OauthProviderMutation) SetRedirectURI(s string) {
+	m.redirect_uri = &s
+}
+
+// RedirectURI returns the value of the "redirect_uri" field in the mutation.
+func (m *OauthProviderMutation) RedirectURI() (r string, exists bool) {
+	v := m.redirect_uri
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRedirectURI returns the old "redirect_uri" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldRedirectURI(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRedirectURI is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRedirectURI requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRedirectURI: %w", err)
+	}
+	return oldValue.RedirectURI, nil
+}
+
+// ResetRedirectURI resets all changes to the "redirect_uri" field.
+func (m *OauthProviderMutation) ResetRedirectURI() {
+	m.redirect_uri = nil
+}
+
+// SetScopes sets the "scopes" field.
+func (m *OauthProviderMutation) SetScopes(s []string) {
+	m.scopes = &s
+	m.appendscopes = nil
+}
+
+// Scopes returns the value of the "scopes" field in the mutation.
+func (m *OauthProviderMutation) Scopes() (r []string, exists bool) {
+	v := m.scopes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScopes returns the old "scopes" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldScopes(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScopes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScopes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScopes: %w", err)
+	}
+	return oldValue.Scopes, nil
+}
+
+// AppendScopes adds s to the "scopes" field.
+func (m *OauthProviderMutation) AppendScopes(s []string) {
+	m.appendscopes = append(m.appendscopes, s...)
+}
+
+// AppendedScopes returns the list of values that were appended to the "scopes" field in this mutation.
+func (m *OauthProviderMutation) AppendedScopes() ([]string, bool) {
+	if len(m.appendscopes) == 0 {
+		return nil, false
+	}
+	return m.appendscopes, true
+}
+
+// ClearScopes clears the value of the "scopes" field.
+func (m *OauthProviderMutation) ClearScopes() {
+	m.scopes = nil
+	m.appendscopes = nil
+	m.clearedFields[oauthprovider.FieldScopes] = struct{}{}
+}
+
+// ScopesCleared returns if the "scopes" field was cleared in this mutation.
+func (m *OauthProviderMutation) ScopesCleared() bool {
+	_, ok := m.clearedFields[oauthprovider.FieldScopes]
+	return ok
+}
+
+// ResetScopes resets all changes to the "scopes" field.
+func (m *OauthProviderMutation) ResetScopes() {
+	m.scopes = nil
+	m.appendscopes = nil
+	delete(m.clearedFields, oauthprovider.FieldScopes)
+}
+
+// SetAutoRegister sets the "auto_register" field.
+func (m *OauthProviderMutation) SetAutoRegister(b bool) {
+	m.auto_register = &b
+}
+
+// AutoRegister returns the value of the "auto_register" field in the mutation.
+func (m *OauthProviderMutation) AutoRegister() (r bool, exists bool) {
+	v := m.auto_register
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAutoRegister returns the old "auto_register" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldAutoRegister(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAutoRegister is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAutoRegister requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAutoRegister: %w", err)
+	}
+	return oldValue.AutoRegister, nil
+}
+
+// ResetAutoRegister resets all changes to the "auto_register" field.
+func (m *OauthProviderMutation) ResetAutoRegister() {
+	m.auto_register = nil
+}
+
+// SetAbleState sets the "able_state" field.
+func (m *OauthProviderMutation) SetAbleState(os oauthprovider.AbleState) {
+	m.able_state = &os
+}
+
+// AbleState returns the value of the "able_state" field in the mutation.
+func (m *OauthProviderMutation) AbleState() (r oauthprovider.AbleState, exists bool) {
+	v := m.able_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAbleState returns the old "able_state" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldAbleState(ctx context.Context) (v oauthprovider.AbleState, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAbleState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAbleState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAbleState: %w", err)
+	}
+	return oldValue.AbleState, nil
+}
+
+// ResetAbleState resets all changes to the "able_state" field.
+func (m *OauthProviderMutation) ResetAbleState() {
+	m.able_state = nil
+}
+
+// SetMetadata sets the "metadata" field.
+func (m *OauthProviderMutation) SetMetadata(value map[string]interface{}) {
+	m.metadata = &value
+}
+
+// Metadata returns the value of the "metadata" field in the mutation.
+func (m *OauthProviderMutation) Metadata() (r map[string]interface{}, exists bool) {
+	v := m.metadata
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetadata returns the old "metadata" field's value of the OauthProvider entity.
+// If the OauthProvider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthProviderMutation) OldMetadata(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetadata requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
+	}
+	return oldValue.Metadata, nil
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (m *OauthProviderMutation) ClearMetadata() {
+	m.metadata = nil
+	m.clearedFields[oauthprovider.FieldMetadata] = struct{}{}
+}
+
+// MetadataCleared returns if the "metadata" field was cleared in this mutation.
+func (m *OauthProviderMutation) MetadataCleared() bool {
+	_, ok := m.clearedFields[oauthprovider.FieldMetadata]
+	return ok
+}
+
+// ResetMetadata resets all changes to the "metadata" field.
+func (m *OauthProviderMutation) ResetMetadata() {
+	m.metadata = nil
+	delete(m.clearedFields, oauthprovider.FieldMetadata)
+}
+
+// AddStateIDs adds the "states" edge to the OauthState entity by ids.
+func (m *OauthProviderMutation) AddStateIDs(ids ...uint64) {
+	if m.states == nil {
+		m.states = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.states[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStates clears the "states" edge to the OauthState entity.
+func (m *OauthProviderMutation) ClearStates() {
+	m.clearedstates = true
+}
+
+// StatesCleared reports if the "states" edge to the OauthState entity was cleared.
+func (m *OauthProviderMutation) StatesCleared() bool {
+	return m.clearedstates
+}
+
+// RemoveStateIDs removes the "states" edge to the OauthState entity by IDs.
+func (m *OauthProviderMutation) RemoveStateIDs(ids ...uint64) {
+	if m.removedstates == nil {
+		m.removedstates = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.states, ids[i])
+		m.removedstates[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStates returns the removed IDs of the "states" edge to the OauthState entity.
+func (m *OauthProviderMutation) RemovedStatesIDs() (ids []uint64) {
+	for id := range m.removedstates {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StatesIDs returns the "states" edge IDs in the mutation.
+func (m *OauthProviderMutation) StatesIDs() (ids []uint64) {
+	for id := range m.states {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStates resets all changes to the "states" edge.
+func (m *OauthProviderMutation) ResetStates() {
+	m.states = nil
+	m.clearedstates = false
+	m.removedstates = nil
+}
+
+// AddOauthUserIDs adds the "oauth_users" edge to the OauthUser entity by ids.
+func (m *OauthProviderMutation) AddOauthUserIDs(ids ...uint64) {
+	if m.oauth_users == nil {
+		m.oauth_users = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.oauth_users[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOauthUsers clears the "oauth_users" edge to the OauthUser entity.
+func (m *OauthProviderMutation) ClearOauthUsers() {
+	m.clearedoauth_users = true
+}
+
+// OauthUsersCleared reports if the "oauth_users" edge to the OauthUser entity was cleared.
+func (m *OauthProviderMutation) OauthUsersCleared() bool {
+	return m.clearedoauth_users
+}
+
+// RemoveOauthUserIDs removes the "oauth_users" edge to the OauthUser entity by IDs.
+func (m *OauthProviderMutation) RemoveOauthUserIDs(ids ...uint64) {
+	if m.removedoauth_users == nil {
+		m.removedoauth_users = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.oauth_users, ids[i])
+		m.removedoauth_users[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOauthUsers returns the removed IDs of the "oauth_users" edge to the OauthUser entity.
+func (m *OauthProviderMutation) RemovedOauthUsersIDs() (ids []uint64) {
+	for id := range m.removedoauth_users {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OauthUsersIDs returns the "oauth_users" edge IDs in the mutation.
+func (m *OauthProviderMutation) OauthUsersIDs() (ids []uint64) {
+	for id := range m.oauth_users {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOauthUsers resets all changes to the "oauth_users" edge.
+func (m *OauthProviderMutation) ResetOauthUsers() {
+	m.oauth_users = nil
+	m.clearedoauth_users = false
+	m.removedoauth_users = nil
+}
+
+// Where appends a list predicates to the OauthProviderMutation builder.
+func (m *OauthProviderMutation) Where(ps ...predicate.OauthProvider) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OauthProviderMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OauthProviderMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OauthProvider, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OauthProviderMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OauthProviderMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OauthProvider).
+func (m *OauthProviderMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OauthProviderMutation) Fields() []string {
+	fields := make([]string, 0, 20)
+	if m.create_time != nil {
+		fields = append(fields, oauthprovider.FieldCreateTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, oauthprovider.FieldCreateBy)
+	}
+	if m.update_time != nil {
+		fields = append(fields, oauthprovider.FieldUpdateTime)
+	}
+	if m.update_by != nil {
+		fields = append(fields, oauthprovider.FieldUpdateBy)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, oauthprovider.FieldDeleteTime)
+	}
+	if m.delete_by != nil {
+		fields = append(fields, oauthprovider.FieldDeleteBy)
+	}
+	if m._type != nil {
+		fields = append(fields, oauthprovider.FieldType)
+	}
+	if m.name != nil {
+		fields = append(fields, oauthprovider.FieldName)
+	}
+	if m.authorization_endpoint != nil {
+		fields = append(fields, oauthprovider.FieldAuthorizationEndpoint)
+	}
+	if m.token_endpoint != nil {
+		fields = append(fields, oauthprovider.FieldTokenEndpoint)
+	}
+	if m.user_info_endpoint != nil {
+		fields = append(fields, oauthprovider.FieldUserInfoEndpoint)
+	}
+	if m.revoke_endpoint != nil {
+		fields = append(fields, oauthprovider.FieldRevokeEndpoint)
+	}
+	if m.refresh_endpoint != nil {
+		fields = append(fields, oauthprovider.FieldRefreshEndpoint)
+	}
+	if m.client_id != nil {
+		fields = append(fields, oauthprovider.FieldClientID)
+	}
+	if m.client_secret != nil {
+		fields = append(fields, oauthprovider.FieldClientSecret)
+	}
+	if m.redirect_uri != nil {
+		fields = append(fields, oauthprovider.FieldRedirectURI)
+	}
+	if m.scopes != nil {
+		fields = append(fields, oauthprovider.FieldScopes)
+	}
+	if m.auto_register != nil {
+		fields = append(fields, oauthprovider.FieldAutoRegister)
+	}
+	if m.able_state != nil {
+		fields = append(fields, oauthprovider.FieldAbleState)
+	}
+	if m.metadata != nil {
+		fields = append(fields, oauthprovider.FieldMetadata)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OauthProviderMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case oauthprovider.FieldCreateTime:
+		return m.CreateTime()
+	case oauthprovider.FieldCreateBy:
+		return m.CreateBy()
+	case oauthprovider.FieldUpdateTime:
+		return m.UpdateTime()
+	case oauthprovider.FieldUpdateBy:
+		return m.UpdateBy()
+	case oauthprovider.FieldDeleteTime:
+		return m.DeleteTime()
+	case oauthprovider.FieldDeleteBy:
+		return m.DeleteBy()
+	case oauthprovider.FieldType:
+		return m.GetType()
+	case oauthprovider.FieldName:
+		return m.Name()
+	case oauthprovider.FieldAuthorizationEndpoint:
+		return m.AuthorizationEndpoint()
+	case oauthprovider.FieldTokenEndpoint:
+		return m.TokenEndpoint()
+	case oauthprovider.FieldUserInfoEndpoint:
+		return m.UserInfoEndpoint()
+	case oauthprovider.FieldRevokeEndpoint:
+		return m.RevokeEndpoint()
+	case oauthprovider.FieldRefreshEndpoint:
+		return m.RefreshEndpoint()
+	case oauthprovider.FieldClientID:
+		return m.ClientID()
+	case oauthprovider.FieldClientSecret:
+		return m.ClientSecret()
+	case oauthprovider.FieldRedirectURI:
+		return m.RedirectURI()
+	case oauthprovider.FieldScopes:
+		return m.Scopes()
+	case oauthprovider.FieldAutoRegister:
+		return m.AutoRegister()
+	case oauthprovider.FieldAbleState:
+		return m.AbleState()
+	case oauthprovider.FieldMetadata:
+		return m.Metadata()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OauthProviderMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case oauthprovider.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case oauthprovider.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case oauthprovider.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case oauthprovider.FieldUpdateBy:
+		return m.OldUpdateBy(ctx)
+	case oauthprovider.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case oauthprovider.FieldDeleteBy:
+		return m.OldDeleteBy(ctx)
+	case oauthprovider.FieldType:
+		return m.OldType(ctx)
+	case oauthprovider.FieldName:
+		return m.OldName(ctx)
+	case oauthprovider.FieldAuthorizationEndpoint:
+		return m.OldAuthorizationEndpoint(ctx)
+	case oauthprovider.FieldTokenEndpoint:
+		return m.OldTokenEndpoint(ctx)
+	case oauthprovider.FieldUserInfoEndpoint:
+		return m.OldUserInfoEndpoint(ctx)
+	case oauthprovider.FieldRevokeEndpoint:
+		return m.OldRevokeEndpoint(ctx)
+	case oauthprovider.FieldRefreshEndpoint:
+		return m.OldRefreshEndpoint(ctx)
+	case oauthprovider.FieldClientID:
+		return m.OldClientID(ctx)
+	case oauthprovider.FieldClientSecret:
+		return m.OldClientSecret(ctx)
+	case oauthprovider.FieldRedirectURI:
+		return m.OldRedirectURI(ctx)
+	case oauthprovider.FieldScopes:
+		return m.OldScopes(ctx)
+	case oauthprovider.FieldAutoRegister:
+		return m.OldAutoRegister(ctx)
+	case oauthprovider.FieldAbleState:
+		return m.OldAbleState(ctx)
+	case oauthprovider.FieldMetadata:
+		return m.OldMetadata(ctx)
+	}
+	return nil, fmt.Errorf("unknown OauthProvider field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthProviderMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case oauthprovider.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case oauthprovider.FieldCreateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case oauthprovider.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case oauthprovider.FieldUpdateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateBy(v)
+		return nil
+	case oauthprovider.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case oauthprovider.FieldDeleteBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteBy(v)
+		return nil
+	case oauthprovider.FieldType:
+		v, ok := value.(oauthprovider.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case oauthprovider.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case oauthprovider.FieldAuthorizationEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthorizationEndpoint(v)
+		return nil
+	case oauthprovider.FieldTokenEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTokenEndpoint(v)
+		return nil
+	case oauthprovider.FieldUserInfoEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserInfoEndpoint(v)
+		return nil
+	case oauthprovider.FieldRevokeEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRevokeEndpoint(v)
+		return nil
+	case oauthprovider.FieldRefreshEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRefreshEndpoint(v)
+		return nil
+	case oauthprovider.FieldClientID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClientID(v)
+		return nil
+	case oauthprovider.FieldClientSecret:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClientSecret(v)
+		return nil
+	case oauthprovider.FieldRedirectURI:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRedirectURI(v)
+		return nil
+	case oauthprovider.FieldScopes:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScopes(v)
+		return nil
+	case oauthprovider.FieldAutoRegister:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAutoRegister(v)
+		return nil
+	case oauthprovider.FieldAbleState:
+		v, ok := value.(oauthprovider.AbleState)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAbleState(v)
+		return nil
+	case oauthprovider.FieldMetadata:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetadata(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthProvider field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OauthProviderMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, oauthprovider.FieldCreateBy)
+	}
+	if m.addupdate_by != nil {
+		fields = append(fields, oauthprovider.FieldUpdateBy)
+	}
+	if m.adddelete_by != nil {
+		fields = append(fields, oauthprovider.FieldDeleteBy)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OauthProviderMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case oauthprovider.FieldCreateBy:
+		return m.AddedCreateBy()
+	case oauthprovider.FieldUpdateBy:
+		return m.AddedUpdateBy()
+	case oauthprovider.FieldDeleteBy:
+		return m.AddedDeleteBy()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthProviderMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case oauthprovider.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case oauthprovider.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdateBy(v)
+		return nil
+	case oauthprovider.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeleteBy(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthProvider numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OauthProviderMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(oauthprovider.FieldCreateBy) {
+		fields = append(fields, oauthprovider.FieldCreateBy)
+	}
+	if m.FieldCleared(oauthprovider.FieldUpdateBy) {
+		fields = append(fields, oauthprovider.FieldUpdateBy)
+	}
+	if m.FieldCleared(oauthprovider.FieldDeleteTime) {
+		fields = append(fields, oauthprovider.FieldDeleteTime)
+	}
+	if m.FieldCleared(oauthprovider.FieldDeleteBy) {
+		fields = append(fields, oauthprovider.FieldDeleteBy)
+	}
+	if m.FieldCleared(oauthprovider.FieldRevokeEndpoint) {
+		fields = append(fields, oauthprovider.FieldRevokeEndpoint)
+	}
+	if m.FieldCleared(oauthprovider.FieldRefreshEndpoint) {
+		fields = append(fields, oauthprovider.FieldRefreshEndpoint)
+	}
+	if m.FieldCleared(oauthprovider.FieldScopes) {
+		fields = append(fields, oauthprovider.FieldScopes)
+	}
+	if m.FieldCleared(oauthprovider.FieldMetadata) {
+		fields = append(fields, oauthprovider.FieldMetadata)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OauthProviderMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OauthProviderMutation) ClearField(name string) error {
+	switch name {
+	case oauthprovider.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case oauthprovider.FieldUpdateBy:
+		m.ClearUpdateBy()
+		return nil
+	case oauthprovider.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case oauthprovider.FieldDeleteBy:
+		m.ClearDeleteBy()
+		return nil
+	case oauthprovider.FieldRevokeEndpoint:
+		m.ClearRevokeEndpoint()
+		return nil
+	case oauthprovider.FieldRefreshEndpoint:
+		m.ClearRefreshEndpoint()
+		return nil
+	case oauthprovider.FieldScopes:
+		m.ClearScopes()
+		return nil
+	case oauthprovider.FieldMetadata:
+		m.ClearMetadata()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthProvider nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OauthProviderMutation) ResetField(name string) error {
+	switch name {
+	case oauthprovider.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case oauthprovider.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case oauthprovider.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case oauthprovider.FieldUpdateBy:
+		m.ResetUpdateBy()
+		return nil
+	case oauthprovider.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case oauthprovider.FieldDeleteBy:
+		m.ResetDeleteBy()
+		return nil
+	case oauthprovider.FieldType:
+		m.ResetType()
+		return nil
+	case oauthprovider.FieldName:
+		m.ResetName()
+		return nil
+	case oauthprovider.FieldAuthorizationEndpoint:
+		m.ResetAuthorizationEndpoint()
+		return nil
+	case oauthprovider.FieldTokenEndpoint:
+		m.ResetTokenEndpoint()
+		return nil
+	case oauthprovider.FieldUserInfoEndpoint:
+		m.ResetUserInfoEndpoint()
+		return nil
+	case oauthprovider.FieldRevokeEndpoint:
+		m.ResetRevokeEndpoint()
+		return nil
+	case oauthprovider.FieldRefreshEndpoint:
+		m.ResetRefreshEndpoint()
+		return nil
+	case oauthprovider.FieldClientID:
+		m.ResetClientID()
+		return nil
+	case oauthprovider.FieldClientSecret:
+		m.ResetClientSecret()
+		return nil
+	case oauthprovider.FieldRedirectURI:
+		m.ResetRedirectURI()
+		return nil
+	case oauthprovider.FieldScopes:
+		m.ResetScopes()
+		return nil
+	case oauthprovider.FieldAutoRegister:
+		m.ResetAutoRegister()
+		return nil
+	case oauthprovider.FieldAbleState:
+		m.ResetAbleState()
+		return nil
+	case oauthprovider.FieldMetadata:
+		m.ResetMetadata()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthProvider field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OauthProviderMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.states != nil {
+		edges = append(edges, oauthprovider.EdgeStates)
+	}
+	if m.oauth_users != nil {
+		edges = append(edges, oauthprovider.EdgeOauthUsers)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OauthProviderMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case oauthprovider.EdgeStates:
+		ids := make([]ent.Value, 0, len(m.states))
+		for id := range m.states {
+			ids = append(ids, id)
+		}
+		return ids
+	case oauthprovider.EdgeOauthUsers:
+		ids := make([]ent.Value, 0, len(m.oauth_users))
+		for id := range m.oauth_users {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OauthProviderMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedstates != nil {
+		edges = append(edges, oauthprovider.EdgeStates)
+	}
+	if m.removedoauth_users != nil {
+		edges = append(edges, oauthprovider.EdgeOauthUsers)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OauthProviderMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case oauthprovider.EdgeStates:
+		ids := make([]ent.Value, 0, len(m.removedstates))
+		for id := range m.removedstates {
+			ids = append(ids, id)
+		}
+		return ids
+	case oauthprovider.EdgeOauthUsers:
+		ids := make([]ent.Value, 0, len(m.removedoauth_users))
+		for id := range m.removedoauth_users {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OauthProviderMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedstates {
+		edges = append(edges, oauthprovider.EdgeStates)
+	}
+	if m.clearedoauth_users {
+		edges = append(edges, oauthprovider.EdgeOauthUsers)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OauthProviderMutation) EdgeCleared(name string) bool {
+	switch name {
+	case oauthprovider.EdgeStates:
+		return m.clearedstates
+	case oauthprovider.EdgeOauthUsers:
+		return m.clearedoauth_users
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OauthProviderMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown OauthProvider unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OauthProviderMutation) ResetEdge(name string) error {
+	switch name {
+	case oauthprovider.EdgeStates:
+		m.ResetStates()
+		return nil
+	case oauthprovider.EdgeOauthUsers:
+		m.ResetOauthUsers()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthProvider edge %s", name)
+}
+
+// OauthStateMutation represents an operation that mutates the OauthState nodes in the graph.
+type OauthStateMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *uint64
+	create_time        *time.Time
+	create_by          *uint64
+	addcreate_by       *int64
+	update_time        *time.Time
+	update_by          *uint64
+	addupdate_by       *int64
+	delete_time        *time.Time
+	delete_by          *uint64
+	adddelete_by       *int64
+	state              *string
+	_type              *oauthstate.Type
+	expires_at         *time.Time
+	used_at            *time.Time
+	clearedFields      map[string]struct{}
+	provider           *uint64
+	clearedprovider    bool
+	user               *uint64
+	cleareduser        bool
+	oauth_users        map[uint64]struct{}
+	removedoauth_users map[uint64]struct{}
+	clearedoauth_users bool
+	done               bool
+	oldValue           func(context.Context) (*OauthState, error)
+	predicates         []predicate.OauthState
+}
+
+var _ ent.Mutation = (*OauthStateMutation)(nil)
+
+// oauthstateOption allows management of the mutation configuration using functional options.
+type oauthstateOption func(*OauthStateMutation)
+
+// newOauthStateMutation creates new mutation for the OauthState entity.
+func newOauthStateMutation(c config, op Op, opts ...oauthstateOption) *OauthStateMutation {
+	m := &OauthStateMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOauthState,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOauthStateID sets the ID field of the mutation.
+func withOauthStateID(id uint64) oauthstateOption {
+	return func(m *OauthStateMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OauthState
+		)
+		m.oldValue = func(ctx context.Context) (*OauthState, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OauthState.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOauthState sets the old OauthState of the mutation.
+func withOauthState(node *OauthState) oauthstateOption {
+	return func(m *OauthStateMutation) {
+		m.oldValue = func(context.Context) (*OauthState, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OauthStateMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OauthStateMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OauthState entities.
+func (m *OauthStateMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OauthStateMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OauthStateMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OauthState.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *OauthStateMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *OauthStateMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the OauthState entity.
+// If the OauthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthStateMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *OauthStateMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *OauthStateMutation) SetCreateBy(u uint64) {
+	m.create_by = &u
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *OauthStateMutation) CreateBy() (r uint64, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the OauthState entity.
+// If the OauthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthStateMutation) OldCreateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds u to the "create_by" field.
+func (m *OauthStateMutation) AddCreateBy(u int64) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += u
+	} else {
+		m.addcreate_by = &u
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *OauthStateMutation) AddedCreateBy() (r int64, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *OauthStateMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[oauthstate.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *OauthStateMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[oauthstate.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *OauthStateMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, oauthstate.FieldCreateBy)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *OauthStateMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *OauthStateMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the OauthState entity.
+// If the OauthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthStateMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *OauthStateMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (m *OauthStateMutation) SetUpdateBy(u uint64) {
+	m.update_by = &u
+	m.addupdate_by = nil
+}
+
+// UpdateBy returns the value of the "update_by" field in the mutation.
+func (m *OauthStateMutation) UpdateBy() (r uint64, exists bool) {
+	v := m.update_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateBy returns the old "update_by" field's value of the OauthState entity.
+// If the OauthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthStateMutation) OldUpdateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateBy: %w", err)
+	}
+	return oldValue.UpdateBy, nil
+}
+
+// AddUpdateBy adds u to the "update_by" field.
+func (m *OauthStateMutation) AddUpdateBy(u int64) {
+	if m.addupdate_by != nil {
+		*m.addupdate_by += u
+	} else {
+		m.addupdate_by = &u
+	}
+}
+
+// AddedUpdateBy returns the value that was added to the "update_by" field in this mutation.
+func (m *OauthStateMutation) AddedUpdateBy() (r int64, exists bool) {
+	v := m.addupdate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (m *OauthStateMutation) ClearUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	m.clearedFields[oauthstate.FieldUpdateBy] = struct{}{}
+}
+
+// UpdateByCleared returns if the "update_by" field was cleared in this mutation.
+func (m *OauthStateMutation) UpdateByCleared() bool {
+	_, ok := m.clearedFields[oauthstate.FieldUpdateBy]
+	return ok
+}
+
+// ResetUpdateBy resets all changes to the "update_by" field.
+func (m *OauthStateMutation) ResetUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	delete(m.clearedFields, oauthstate.FieldUpdateBy)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *OauthStateMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *OauthStateMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the OauthState entity.
+// If the OauthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthStateMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *OauthStateMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[oauthstate.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *OauthStateMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[oauthstate.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *OauthStateMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, oauthstate.FieldDeleteTime)
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (m *OauthStateMutation) SetDeleteBy(u uint64) {
+	m.delete_by = &u
+	m.adddelete_by = nil
+}
+
+// DeleteBy returns the value of the "delete_by" field in the mutation.
+func (m *OauthStateMutation) DeleteBy() (r uint64, exists bool) {
+	v := m.delete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteBy returns the old "delete_by" field's value of the OauthState entity.
+// If the OauthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthStateMutation) OldDeleteBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteBy: %w", err)
+	}
+	return oldValue.DeleteBy, nil
+}
+
+// AddDeleteBy adds u to the "delete_by" field.
+func (m *OauthStateMutation) AddDeleteBy(u int64) {
+	if m.adddelete_by != nil {
+		*m.adddelete_by += u
+	} else {
+		m.adddelete_by = &u
+	}
+}
+
+// AddedDeleteBy returns the value that was added to the "delete_by" field in this mutation.
+func (m *OauthStateMutation) AddedDeleteBy() (r int64, exists bool) {
+	v := m.adddelete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (m *OauthStateMutation) ClearDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	m.clearedFields[oauthstate.FieldDeleteBy] = struct{}{}
+}
+
+// DeleteByCleared returns if the "delete_by" field was cleared in this mutation.
+func (m *OauthStateMutation) DeleteByCleared() bool {
+	_, ok := m.clearedFields[oauthstate.FieldDeleteBy]
+	return ok
+}
+
+// ResetDeleteBy resets all changes to the "delete_by" field.
+func (m *OauthStateMutation) ResetDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	delete(m.clearedFields, oauthstate.FieldDeleteBy)
+}
+
+// SetState sets the "state" field.
+func (m *OauthStateMutation) SetState(s string) {
+	m.state = &s
+}
+
+// State returns the value of the "state" field in the mutation.
+func (m *OauthStateMutation) State() (r string, exists bool) {
+	v := m.state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldState returns the old "state" field's value of the OauthState entity.
+// If the OauthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthStateMutation) OldState(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldState: %w", err)
+	}
+	return oldValue.State, nil
+}
+
+// ResetState resets all changes to the "state" field.
+func (m *OauthStateMutation) ResetState() {
+	m.state = nil
+}
+
+// SetType sets the "type" field.
+func (m *OauthStateMutation) SetType(o oauthstate.Type) {
+	m._type = &o
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *OauthStateMutation) GetType() (r oauthstate.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the OauthState entity.
+// If the OauthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthStateMutation) OldType(ctx context.Context) (v oauthstate.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *OauthStateMutation) ResetType() {
+	m._type = nil
+}
+
+// SetProviderID sets the "provider_id" field.
+func (m *OauthStateMutation) SetProviderID(u uint64) {
+	m.provider = &u
+}
+
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *OauthStateMutation) ProviderID() (r uint64, exists bool) {
+	v := m.provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderID returns the old "provider_id" field's value of the OauthState entity.
+// If the OauthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthStateMutation) OldProviderID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+	}
+	return oldValue.ProviderID, nil
+}
+
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *OauthStateMutation) ResetProviderID() {
+	m.provider = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *OauthStateMutation) SetUserID(u uint64) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *OauthStateMutation) UserID() (r uint64, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the OauthState entity.
+// If the OauthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthStateMutation) OldUserID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (m *OauthStateMutation) ClearUserID() {
+	m.user = nil
+	m.clearedFields[oauthstate.FieldUserID] = struct{}{}
+}
+
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *OauthStateMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[oauthstate.FieldUserID]
+	return ok
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *OauthStateMutation) ResetUserID() {
+	m.user = nil
+	delete(m.clearedFields, oauthstate.FieldUserID)
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (m *OauthStateMutation) SetExpiresAt(t time.Time) {
+	m.expires_at = &t
+}
+
+// ExpiresAt returns the value of the "expires_at" field in the mutation.
+func (m *OauthStateMutation) ExpiresAt() (r time.Time, exists bool) {
+	v := m.expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiresAt returns the old "expires_at" field's value of the OauthState entity.
+// If the OauthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthStateMutation) OldExpiresAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
+	}
+	return oldValue.ExpiresAt, nil
+}
+
+// ResetExpiresAt resets all changes to the "expires_at" field.
+func (m *OauthStateMutation) ResetExpiresAt() {
+	m.expires_at = nil
+}
+
+// SetUsedAt sets the "used_at" field.
+func (m *OauthStateMutation) SetUsedAt(t time.Time) {
+	m.used_at = &t
+}
+
+// UsedAt returns the value of the "used_at" field in the mutation.
+func (m *OauthStateMutation) UsedAt() (r time.Time, exists bool) {
+	v := m.used_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsedAt returns the old "used_at" field's value of the OauthState entity.
+// If the OauthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthStateMutation) OldUsedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsedAt: %w", err)
+	}
+	return oldValue.UsedAt, nil
+}
+
+// ClearUsedAt clears the value of the "used_at" field.
+func (m *OauthStateMutation) ClearUsedAt() {
+	m.used_at = nil
+	m.clearedFields[oauthstate.FieldUsedAt] = struct{}{}
+}
+
+// UsedAtCleared returns if the "used_at" field was cleared in this mutation.
+func (m *OauthStateMutation) UsedAtCleared() bool {
+	_, ok := m.clearedFields[oauthstate.FieldUsedAt]
+	return ok
+}
+
+// ResetUsedAt resets all changes to the "used_at" field.
+func (m *OauthStateMutation) ResetUsedAt() {
+	m.used_at = nil
+	delete(m.clearedFields, oauthstate.FieldUsedAt)
+}
+
+// ClearProvider clears the "provider" edge to the OauthProvider entity.
+func (m *OauthStateMutation) ClearProvider() {
+	m.clearedprovider = true
+	m.clearedFields[oauthstate.FieldProviderID] = struct{}{}
+}
+
+// ProviderCleared reports if the "provider" edge to the OauthProvider entity was cleared.
+func (m *OauthStateMutation) ProviderCleared() bool {
+	return m.clearedprovider
+}
+
+// ProviderIDs returns the "provider" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProviderID instead. It exists only for internal usage by the builders.
+func (m *OauthStateMutation) ProviderIDs() (ids []uint64) {
+	if id := m.provider; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProvider resets all changes to the "provider" edge.
+func (m *OauthStateMutation) ResetProvider() {
+	m.provider = nil
+	m.clearedprovider = false
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *OauthStateMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[oauthstate.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *OauthStateMutation) UserCleared() bool {
+	return m.UserIDCleared() || m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *OauthStateMutation) UserIDs() (ids []uint64) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *OauthStateMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// AddOauthUserIDs adds the "oauth_users" edge to the OauthUser entity by ids.
+func (m *OauthStateMutation) AddOauthUserIDs(ids ...uint64) {
+	if m.oauth_users == nil {
+		m.oauth_users = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.oauth_users[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOauthUsers clears the "oauth_users" edge to the OauthUser entity.
+func (m *OauthStateMutation) ClearOauthUsers() {
+	m.clearedoauth_users = true
+}
+
+// OauthUsersCleared reports if the "oauth_users" edge to the OauthUser entity was cleared.
+func (m *OauthStateMutation) OauthUsersCleared() bool {
+	return m.clearedoauth_users
+}
+
+// RemoveOauthUserIDs removes the "oauth_users" edge to the OauthUser entity by IDs.
+func (m *OauthStateMutation) RemoveOauthUserIDs(ids ...uint64) {
+	if m.removedoauth_users == nil {
+		m.removedoauth_users = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.oauth_users, ids[i])
+		m.removedoauth_users[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOauthUsers returns the removed IDs of the "oauth_users" edge to the OauthUser entity.
+func (m *OauthStateMutation) RemovedOauthUsersIDs() (ids []uint64) {
+	for id := range m.removedoauth_users {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OauthUsersIDs returns the "oauth_users" edge IDs in the mutation.
+func (m *OauthStateMutation) OauthUsersIDs() (ids []uint64) {
+	for id := range m.oauth_users {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOauthUsers resets all changes to the "oauth_users" edge.
+func (m *OauthStateMutation) ResetOauthUsers() {
+	m.oauth_users = nil
+	m.clearedoauth_users = false
+	m.removedoauth_users = nil
+}
+
+// Where appends a list predicates to the OauthStateMutation builder.
+func (m *OauthStateMutation) Where(ps ...predicate.OauthState) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OauthStateMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OauthStateMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OauthState, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OauthStateMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OauthStateMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OauthState).
+func (m *OauthStateMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OauthStateMutation) Fields() []string {
+	fields := make([]string, 0, 12)
+	if m.create_time != nil {
+		fields = append(fields, oauthstate.FieldCreateTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, oauthstate.FieldCreateBy)
+	}
+	if m.update_time != nil {
+		fields = append(fields, oauthstate.FieldUpdateTime)
+	}
+	if m.update_by != nil {
+		fields = append(fields, oauthstate.FieldUpdateBy)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, oauthstate.FieldDeleteTime)
+	}
+	if m.delete_by != nil {
+		fields = append(fields, oauthstate.FieldDeleteBy)
+	}
+	if m.state != nil {
+		fields = append(fields, oauthstate.FieldState)
+	}
+	if m._type != nil {
+		fields = append(fields, oauthstate.FieldType)
+	}
+	if m.provider != nil {
+		fields = append(fields, oauthstate.FieldProviderID)
+	}
+	if m.user != nil {
+		fields = append(fields, oauthstate.FieldUserID)
+	}
+	if m.expires_at != nil {
+		fields = append(fields, oauthstate.FieldExpiresAt)
+	}
+	if m.used_at != nil {
+		fields = append(fields, oauthstate.FieldUsedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OauthStateMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case oauthstate.FieldCreateTime:
+		return m.CreateTime()
+	case oauthstate.FieldCreateBy:
+		return m.CreateBy()
+	case oauthstate.FieldUpdateTime:
+		return m.UpdateTime()
+	case oauthstate.FieldUpdateBy:
+		return m.UpdateBy()
+	case oauthstate.FieldDeleteTime:
+		return m.DeleteTime()
+	case oauthstate.FieldDeleteBy:
+		return m.DeleteBy()
+	case oauthstate.FieldState:
+		return m.State()
+	case oauthstate.FieldType:
+		return m.GetType()
+	case oauthstate.FieldProviderID:
+		return m.ProviderID()
+	case oauthstate.FieldUserID:
+		return m.UserID()
+	case oauthstate.FieldExpiresAt:
+		return m.ExpiresAt()
+	case oauthstate.FieldUsedAt:
+		return m.UsedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OauthStateMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case oauthstate.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case oauthstate.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case oauthstate.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case oauthstate.FieldUpdateBy:
+		return m.OldUpdateBy(ctx)
+	case oauthstate.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case oauthstate.FieldDeleteBy:
+		return m.OldDeleteBy(ctx)
+	case oauthstate.FieldState:
+		return m.OldState(ctx)
+	case oauthstate.FieldType:
+		return m.OldType(ctx)
+	case oauthstate.FieldProviderID:
+		return m.OldProviderID(ctx)
+	case oauthstate.FieldUserID:
+		return m.OldUserID(ctx)
+	case oauthstate.FieldExpiresAt:
+		return m.OldExpiresAt(ctx)
+	case oauthstate.FieldUsedAt:
+		return m.OldUsedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown OauthState field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthStateMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case oauthstate.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case oauthstate.FieldCreateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case oauthstate.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case oauthstate.FieldUpdateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateBy(v)
+		return nil
+	case oauthstate.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case oauthstate.FieldDeleteBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteBy(v)
+		return nil
+	case oauthstate.FieldState:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetState(v)
+		return nil
+	case oauthstate.FieldType:
+		v, ok := value.(oauthstate.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case oauthstate.FieldProviderID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderID(v)
+		return nil
+	case oauthstate.FieldUserID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case oauthstate.FieldExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiresAt(v)
+		return nil
+	case oauthstate.FieldUsedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthState field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OauthStateMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, oauthstate.FieldCreateBy)
+	}
+	if m.addupdate_by != nil {
+		fields = append(fields, oauthstate.FieldUpdateBy)
+	}
+	if m.adddelete_by != nil {
+		fields = append(fields, oauthstate.FieldDeleteBy)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OauthStateMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case oauthstate.FieldCreateBy:
+		return m.AddedCreateBy()
+	case oauthstate.FieldUpdateBy:
+		return m.AddedUpdateBy()
+	case oauthstate.FieldDeleteBy:
+		return m.AddedDeleteBy()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthStateMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case oauthstate.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case oauthstate.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdateBy(v)
+		return nil
+	case oauthstate.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeleteBy(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthState numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OauthStateMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(oauthstate.FieldCreateBy) {
+		fields = append(fields, oauthstate.FieldCreateBy)
+	}
+	if m.FieldCleared(oauthstate.FieldUpdateBy) {
+		fields = append(fields, oauthstate.FieldUpdateBy)
+	}
+	if m.FieldCleared(oauthstate.FieldDeleteTime) {
+		fields = append(fields, oauthstate.FieldDeleteTime)
+	}
+	if m.FieldCleared(oauthstate.FieldDeleteBy) {
+		fields = append(fields, oauthstate.FieldDeleteBy)
+	}
+	if m.FieldCleared(oauthstate.FieldUserID) {
+		fields = append(fields, oauthstate.FieldUserID)
+	}
+	if m.FieldCleared(oauthstate.FieldUsedAt) {
+		fields = append(fields, oauthstate.FieldUsedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OauthStateMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OauthStateMutation) ClearField(name string) error {
+	switch name {
+	case oauthstate.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case oauthstate.FieldUpdateBy:
+		m.ClearUpdateBy()
+		return nil
+	case oauthstate.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case oauthstate.FieldDeleteBy:
+		m.ClearDeleteBy()
+		return nil
+	case oauthstate.FieldUserID:
+		m.ClearUserID()
+		return nil
+	case oauthstate.FieldUsedAt:
+		m.ClearUsedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthState nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OauthStateMutation) ResetField(name string) error {
+	switch name {
+	case oauthstate.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case oauthstate.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case oauthstate.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case oauthstate.FieldUpdateBy:
+		m.ResetUpdateBy()
+		return nil
+	case oauthstate.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case oauthstate.FieldDeleteBy:
+		m.ResetDeleteBy()
+		return nil
+	case oauthstate.FieldState:
+		m.ResetState()
+		return nil
+	case oauthstate.FieldType:
+		m.ResetType()
+		return nil
+	case oauthstate.FieldProviderID:
+		m.ResetProviderID()
+		return nil
+	case oauthstate.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case oauthstate.FieldExpiresAt:
+		m.ResetExpiresAt()
+		return nil
+	case oauthstate.FieldUsedAt:
+		m.ResetUsedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthState field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OauthStateMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.provider != nil {
+		edges = append(edges, oauthstate.EdgeProvider)
+	}
+	if m.user != nil {
+		edges = append(edges, oauthstate.EdgeUser)
+	}
+	if m.oauth_users != nil {
+		edges = append(edges, oauthstate.EdgeOauthUsers)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OauthStateMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case oauthstate.EdgeProvider:
+		if id := m.provider; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthstate.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthstate.EdgeOauthUsers:
+		ids := make([]ent.Value, 0, len(m.oauth_users))
+		for id := range m.oauth_users {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OauthStateMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedoauth_users != nil {
+		edges = append(edges, oauthstate.EdgeOauthUsers)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OauthStateMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case oauthstate.EdgeOauthUsers:
+		ids := make([]ent.Value, 0, len(m.removedoauth_users))
+		for id := range m.removedoauth_users {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OauthStateMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedprovider {
+		edges = append(edges, oauthstate.EdgeProvider)
+	}
+	if m.cleareduser {
+		edges = append(edges, oauthstate.EdgeUser)
+	}
+	if m.clearedoauth_users {
+		edges = append(edges, oauthstate.EdgeOauthUsers)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OauthStateMutation) EdgeCleared(name string) bool {
+	switch name {
+	case oauthstate.EdgeProvider:
+		return m.clearedprovider
+	case oauthstate.EdgeUser:
+		return m.cleareduser
+	case oauthstate.EdgeOauthUsers:
+		return m.clearedoauth_users
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OauthStateMutation) ClearEdge(name string) error {
+	switch name {
+	case oauthstate.EdgeProvider:
+		m.ClearProvider()
+		return nil
+	case oauthstate.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthState unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OauthStateMutation) ResetEdge(name string) error {
+	switch name {
+	case oauthstate.EdgeProvider:
+		m.ResetProvider()
+		return nil
+	case oauthstate.EdgeUser:
+		m.ResetUser()
+		return nil
+	case oauthstate.EdgeOauthUsers:
+		m.ResetOauthUsers()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthState edge %s", name)
+}
+
+// OauthTokenMutation represents an operation that mutates the OauthToken nodes in the graph.
+type OauthTokenMutation struct {
+	config
+	op                        Op
+	typ                       string
+	id                        *uint64
+	create_time               *time.Time
+	create_by                 *uint64
+	addcreate_by              *int64
+	update_time               *time.Time
+	update_by                 *uint64
+	addupdate_by              *int64
+	delete_time               *time.Time
+	delete_by                 *uint64
+	adddelete_by              *int64
+	access_token              *string
+	refresh_token             *string
+	scope                     *[]string
+	appendscope               []string
+	access_expires_at         *time.Time
+	refresh_expires_at        *time.Time
+	revoked_at                *time.Time
+	last_used_at              *time.Time
+	clearedFields             map[string]struct{}
+	application               *uint64
+	clearedapplication        bool
+	user                      *uint64
+	cleareduser               bool
+	authorization_code        *uint64
+	clearedauthorization_code bool
+	user_authorization        *uint64
+	cleareduser_authorization bool
+	done                      bool
+	oldValue                  func(context.Context) (*OauthToken, error)
+	predicates                []predicate.OauthToken
+}
+
+var _ ent.Mutation = (*OauthTokenMutation)(nil)
+
+// oauthtokenOption allows management of the mutation configuration using functional options.
+type oauthtokenOption func(*OauthTokenMutation)
+
+// newOauthTokenMutation creates new mutation for the OauthToken entity.
+func newOauthTokenMutation(c config, op Op, opts ...oauthtokenOption) *OauthTokenMutation {
+	m := &OauthTokenMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOauthToken,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOauthTokenID sets the ID field of the mutation.
+func withOauthTokenID(id uint64) oauthtokenOption {
+	return func(m *OauthTokenMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OauthToken
+		)
+		m.oldValue = func(ctx context.Context) (*OauthToken, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OauthToken.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOauthToken sets the old OauthToken of the mutation.
+func withOauthToken(node *OauthToken) oauthtokenOption {
+	return func(m *OauthTokenMutation) {
+		m.oldValue = func(context.Context) (*OauthToken, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OauthTokenMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OauthTokenMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OauthToken entities.
+func (m *OauthTokenMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OauthTokenMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OauthTokenMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OauthToken.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *OauthTokenMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *OauthTokenMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *OauthTokenMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *OauthTokenMutation) SetCreateBy(u uint64) {
+	m.create_by = &u
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *OauthTokenMutation) CreateBy() (r uint64, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldCreateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds u to the "create_by" field.
+func (m *OauthTokenMutation) AddCreateBy(u int64) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += u
+	} else {
+		m.addcreate_by = &u
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *OauthTokenMutation) AddedCreateBy() (r int64, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *OauthTokenMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[oauthtoken.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *OauthTokenMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[oauthtoken.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *OauthTokenMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, oauthtoken.FieldCreateBy)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *OauthTokenMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *OauthTokenMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *OauthTokenMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (m *OauthTokenMutation) SetUpdateBy(u uint64) {
+	m.update_by = &u
+	m.addupdate_by = nil
+}
+
+// UpdateBy returns the value of the "update_by" field in the mutation.
+func (m *OauthTokenMutation) UpdateBy() (r uint64, exists bool) {
+	v := m.update_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateBy returns the old "update_by" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldUpdateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateBy: %w", err)
+	}
+	return oldValue.UpdateBy, nil
+}
+
+// AddUpdateBy adds u to the "update_by" field.
+func (m *OauthTokenMutation) AddUpdateBy(u int64) {
+	if m.addupdate_by != nil {
+		*m.addupdate_by += u
+	} else {
+		m.addupdate_by = &u
+	}
+}
+
+// AddedUpdateBy returns the value that was added to the "update_by" field in this mutation.
+func (m *OauthTokenMutation) AddedUpdateBy() (r int64, exists bool) {
+	v := m.addupdate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (m *OauthTokenMutation) ClearUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	m.clearedFields[oauthtoken.FieldUpdateBy] = struct{}{}
+}
+
+// UpdateByCleared returns if the "update_by" field was cleared in this mutation.
+func (m *OauthTokenMutation) UpdateByCleared() bool {
+	_, ok := m.clearedFields[oauthtoken.FieldUpdateBy]
+	return ok
+}
+
+// ResetUpdateBy resets all changes to the "update_by" field.
+func (m *OauthTokenMutation) ResetUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	delete(m.clearedFields, oauthtoken.FieldUpdateBy)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *OauthTokenMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *OauthTokenMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *OauthTokenMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[oauthtoken.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *OauthTokenMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[oauthtoken.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *OauthTokenMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, oauthtoken.FieldDeleteTime)
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (m *OauthTokenMutation) SetDeleteBy(u uint64) {
+	m.delete_by = &u
+	m.adddelete_by = nil
+}
+
+// DeleteBy returns the value of the "delete_by" field in the mutation.
+func (m *OauthTokenMutation) DeleteBy() (r uint64, exists bool) {
+	v := m.delete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteBy returns the old "delete_by" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldDeleteBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteBy: %w", err)
+	}
+	return oldValue.DeleteBy, nil
+}
+
+// AddDeleteBy adds u to the "delete_by" field.
+func (m *OauthTokenMutation) AddDeleteBy(u int64) {
+	if m.adddelete_by != nil {
+		*m.adddelete_by += u
+	} else {
+		m.adddelete_by = &u
+	}
+}
+
+// AddedDeleteBy returns the value that was added to the "delete_by" field in this mutation.
+func (m *OauthTokenMutation) AddedDeleteBy() (r int64, exists bool) {
+	v := m.adddelete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (m *OauthTokenMutation) ClearDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	m.clearedFields[oauthtoken.FieldDeleteBy] = struct{}{}
+}
+
+// DeleteByCleared returns if the "delete_by" field was cleared in this mutation.
+func (m *OauthTokenMutation) DeleteByCleared() bool {
+	_, ok := m.clearedFields[oauthtoken.FieldDeleteBy]
+	return ok
+}
+
+// ResetDeleteBy resets all changes to the "delete_by" field.
+func (m *OauthTokenMutation) ResetDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	delete(m.clearedFields, oauthtoken.FieldDeleteBy)
+}
+
+// SetAccessToken sets the "access_token" field.
+func (m *OauthTokenMutation) SetAccessToken(s string) {
+	m.access_token = &s
+}
+
+// AccessToken returns the value of the "access_token" field in the mutation.
+func (m *OauthTokenMutation) AccessToken() (r string, exists bool) {
+	v := m.access_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccessToken returns the old "access_token" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldAccessToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccessToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccessToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccessToken: %w", err)
+	}
+	return oldValue.AccessToken, nil
+}
+
+// ResetAccessToken resets all changes to the "access_token" field.
+func (m *OauthTokenMutation) ResetAccessToken() {
+	m.access_token = nil
+}
+
+// SetRefreshToken sets the "refresh_token" field.
+func (m *OauthTokenMutation) SetRefreshToken(s string) {
+	m.refresh_token = &s
+}
+
+// RefreshToken returns the value of the "refresh_token" field in the mutation.
+func (m *OauthTokenMutation) RefreshToken() (r string, exists bool) {
+	v := m.refresh_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRefreshToken returns the old "refresh_token" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldRefreshToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRefreshToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRefreshToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRefreshToken: %w", err)
+	}
+	return oldValue.RefreshToken, nil
+}
+
+// ResetRefreshToken resets all changes to the "refresh_token" field.
+func (m *OauthTokenMutation) ResetRefreshToken() {
+	m.refresh_token = nil
+}
+
+// SetApplicationID sets the "application_id" field.
+func (m *OauthTokenMutation) SetApplicationID(u uint64) {
+	m.application = &u
+}
+
+// ApplicationID returns the value of the "application_id" field in the mutation.
+func (m *OauthTokenMutation) ApplicationID() (r uint64, exists bool) {
+	v := m.application
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldApplicationID returns the old "application_id" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldApplicationID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldApplicationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldApplicationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldApplicationID: %w", err)
+	}
+	return oldValue.ApplicationID, nil
+}
+
+// ResetApplicationID resets all changes to the "application_id" field.
+func (m *OauthTokenMutation) ResetApplicationID() {
+	m.application = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *OauthTokenMutation) SetUserID(u uint64) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *OauthTokenMutation) UserID() (r uint64, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldUserID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *OauthTokenMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetScope sets the "scope" field.
+func (m *OauthTokenMutation) SetScope(s []string) {
+	m.scope = &s
+	m.appendscope = nil
+}
+
+// Scope returns the value of the "scope" field in the mutation.
+func (m *OauthTokenMutation) Scope() (r []string, exists bool) {
+	v := m.scope
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScope returns the old "scope" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldScope(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScope is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScope requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScope: %w", err)
+	}
+	return oldValue.Scope, nil
+}
+
+// AppendScope adds s to the "scope" field.
+func (m *OauthTokenMutation) AppendScope(s []string) {
+	m.appendscope = append(m.appendscope, s...)
+}
+
+// AppendedScope returns the list of values that were appended to the "scope" field in this mutation.
+func (m *OauthTokenMutation) AppendedScope() ([]string, bool) {
+	if len(m.appendscope) == 0 {
+		return nil, false
+	}
+	return m.appendscope, true
+}
+
+// ResetScope resets all changes to the "scope" field.
+func (m *OauthTokenMutation) ResetScope() {
+	m.scope = nil
+	m.appendscope = nil
+}
+
+// SetAccessExpiresAt sets the "access_expires_at" field.
+func (m *OauthTokenMutation) SetAccessExpiresAt(t time.Time) {
+	m.access_expires_at = &t
+}
+
+// AccessExpiresAt returns the value of the "access_expires_at" field in the mutation.
+func (m *OauthTokenMutation) AccessExpiresAt() (r time.Time, exists bool) {
+	v := m.access_expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccessExpiresAt returns the old "access_expires_at" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldAccessExpiresAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccessExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccessExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccessExpiresAt: %w", err)
+	}
+	return oldValue.AccessExpiresAt, nil
+}
+
+// ResetAccessExpiresAt resets all changes to the "access_expires_at" field.
+func (m *OauthTokenMutation) ResetAccessExpiresAt() {
+	m.access_expires_at = nil
+}
+
+// SetRefreshExpiresAt sets the "refresh_expires_at" field.
+func (m *OauthTokenMutation) SetRefreshExpiresAt(t time.Time) {
+	m.refresh_expires_at = &t
+}
+
+// RefreshExpiresAt returns the value of the "refresh_expires_at" field in the mutation.
+func (m *OauthTokenMutation) RefreshExpiresAt() (r time.Time, exists bool) {
+	v := m.refresh_expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRefreshExpiresAt returns the old "refresh_expires_at" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldRefreshExpiresAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRefreshExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRefreshExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRefreshExpiresAt: %w", err)
+	}
+	return oldValue.RefreshExpiresAt, nil
+}
+
+// ResetRefreshExpiresAt resets all changes to the "refresh_expires_at" field.
+func (m *OauthTokenMutation) ResetRefreshExpiresAt() {
+	m.refresh_expires_at = nil
+}
+
+// SetRevokedAt sets the "revoked_at" field.
+func (m *OauthTokenMutation) SetRevokedAt(t time.Time) {
+	m.revoked_at = &t
+}
+
+// RevokedAt returns the value of the "revoked_at" field in the mutation.
+func (m *OauthTokenMutation) RevokedAt() (r time.Time, exists bool) {
+	v := m.revoked_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRevokedAt returns the old "revoked_at" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldRevokedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRevokedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRevokedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRevokedAt: %w", err)
+	}
+	return oldValue.RevokedAt, nil
+}
+
+// ClearRevokedAt clears the value of the "revoked_at" field.
+func (m *OauthTokenMutation) ClearRevokedAt() {
+	m.revoked_at = nil
+	m.clearedFields[oauthtoken.FieldRevokedAt] = struct{}{}
+}
+
+// RevokedAtCleared returns if the "revoked_at" field was cleared in this mutation.
+func (m *OauthTokenMutation) RevokedAtCleared() bool {
+	_, ok := m.clearedFields[oauthtoken.FieldRevokedAt]
+	return ok
+}
+
+// ResetRevokedAt resets all changes to the "revoked_at" field.
+func (m *OauthTokenMutation) ResetRevokedAt() {
+	m.revoked_at = nil
+	delete(m.clearedFields, oauthtoken.FieldRevokedAt)
+}
+
+// SetLastUsedAt sets the "last_used_at" field.
+func (m *OauthTokenMutation) SetLastUsedAt(t time.Time) {
+	m.last_used_at = &t
+}
+
+// LastUsedAt returns the value of the "last_used_at" field in the mutation.
+func (m *OauthTokenMutation) LastUsedAt() (r time.Time, exists bool) {
+	v := m.last_used_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastUsedAt returns the old "last_used_at" field's value of the OauthToken entity.
+// If the OauthToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthTokenMutation) OldLastUsedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastUsedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastUsedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastUsedAt: %w", err)
+	}
+	return oldValue.LastUsedAt, nil
+}
+
+// ClearLastUsedAt clears the value of the "last_used_at" field.
+func (m *OauthTokenMutation) ClearLastUsedAt() {
+	m.last_used_at = nil
+	m.clearedFields[oauthtoken.FieldLastUsedAt] = struct{}{}
+}
+
+// LastUsedAtCleared returns if the "last_used_at" field was cleared in this mutation.
+func (m *OauthTokenMutation) LastUsedAtCleared() bool {
+	_, ok := m.clearedFields[oauthtoken.FieldLastUsedAt]
+	return ok
+}
+
+// ResetLastUsedAt resets all changes to the "last_used_at" field.
+func (m *OauthTokenMutation) ResetLastUsedAt() {
+	m.last_used_at = nil
+	delete(m.clearedFields, oauthtoken.FieldLastUsedAt)
+}
+
+// ClearApplication clears the "application" edge to the OauthApplication entity.
+func (m *OauthTokenMutation) ClearApplication() {
+	m.clearedapplication = true
+	m.clearedFields[oauthtoken.FieldApplicationID] = struct{}{}
+}
+
+// ApplicationCleared reports if the "application" edge to the OauthApplication entity was cleared.
+func (m *OauthTokenMutation) ApplicationCleared() bool {
+	return m.clearedapplication
+}
+
+// ApplicationIDs returns the "application" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ApplicationID instead. It exists only for internal usage by the builders.
+func (m *OauthTokenMutation) ApplicationIDs() (ids []uint64) {
+	if id := m.application; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetApplication resets all changes to the "application" edge.
+func (m *OauthTokenMutation) ResetApplication() {
+	m.application = nil
+	m.clearedapplication = false
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *OauthTokenMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[oauthtoken.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *OauthTokenMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *OauthTokenMutation) UserIDs() (ids []uint64) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *OauthTokenMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// SetAuthorizationCodeID sets the "authorization_code" edge to the OauthAuthorizationCode entity by id.
+func (m *OauthTokenMutation) SetAuthorizationCodeID(id uint64) {
+	m.authorization_code = &id
+}
+
+// ClearAuthorizationCode clears the "authorization_code" edge to the OauthAuthorizationCode entity.
+func (m *OauthTokenMutation) ClearAuthorizationCode() {
+	m.clearedauthorization_code = true
+}
+
+// AuthorizationCodeCleared reports if the "authorization_code" edge to the OauthAuthorizationCode entity was cleared.
+func (m *OauthTokenMutation) AuthorizationCodeCleared() bool {
+	return m.clearedauthorization_code
+}
+
+// AuthorizationCodeID returns the "authorization_code" edge ID in the mutation.
+func (m *OauthTokenMutation) AuthorizationCodeID() (id uint64, exists bool) {
+	if m.authorization_code != nil {
+		return *m.authorization_code, true
+	}
+	return
+}
+
+// AuthorizationCodeIDs returns the "authorization_code" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AuthorizationCodeID instead. It exists only for internal usage by the builders.
+func (m *OauthTokenMutation) AuthorizationCodeIDs() (ids []uint64) {
+	if id := m.authorization_code; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAuthorizationCode resets all changes to the "authorization_code" edge.
+func (m *OauthTokenMutation) ResetAuthorizationCode() {
+	m.authorization_code = nil
+	m.clearedauthorization_code = false
+}
+
+// SetUserAuthorizationID sets the "user_authorization" edge to the OauthUserAuthorization entity by id.
+func (m *OauthTokenMutation) SetUserAuthorizationID(id uint64) {
+	m.user_authorization = &id
+}
+
+// ClearUserAuthorization clears the "user_authorization" edge to the OauthUserAuthorization entity.
+func (m *OauthTokenMutation) ClearUserAuthorization() {
+	m.cleareduser_authorization = true
+}
+
+// UserAuthorizationCleared reports if the "user_authorization" edge to the OauthUserAuthorization entity was cleared.
+func (m *OauthTokenMutation) UserAuthorizationCleared() bool {
+	return m.cleareduser_authorization
+}
+
+// UserAuthorizationID returns the "user_authorization" edge ID in the mutation.
+func (m *OauthTokenMutation) UserAuthorizationID() (id uint64, exists bool) {
+	if m.user_authorization != nil {
+		return *m.user_authorization, true
+	}
+	return
+}
+
+// UserAuthorizationIDs returns the "user_authorization" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserAuthorizationID instead. It exists only for internal usage by the builders.
+func (m *OauthTokenMutation) UserAuthorizationIDs() (ids []uint64) {
+	if id := m.user_authorization; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUserAuthorization resets all changes to the "user_authorization" edge.
+func (m *OauthTokenMutation) ResetUserAuthorization() {
+	m.user_authorization = nil
+	m.cleareduser_authorization = false
+}
+
+// Where appends a list predicates to the OauthTokenMutation builder.
+func (m *OauthTokenMutation) Where(ps ...predicate.OauthToken) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OauthTokenMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OauthTokenMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OauthToken, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OauthTokenMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OauthTokenMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OauthToken).
+func (m *OauthTokenMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OauthTokenMutation) Fields() []string {
+	fields := make([]string, 0, 15)
+	if m.create_time != nil {
+		fields = append(fields, oauthtoken.FieldCreateTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, oauthtoken.FieldCreateBy)
+	}
+	if m.update_time != nil {
+		fields = append(fields, oauthtoken.FieldUpdateTime)
+	}
+	if m.update_by != nil {
+		fields = append(fields, oauthtoken.FieldUpdateBy)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, oauthtoken.FieldDeleteTime)
+	}
+	if m.delete_by != nil {
+		fields = append(fields, oauthtoken.FieldDeleteBy)
+	}
+	if m.access_token != nil {
+		fields = append(fields, oauthtoken.FieldAccessToken)
+	}
+	if m.refresh_token != nil {
+		fields = append(fields, oauthtoken.FieldRefreshToken)
+	}
+	if m.application != nil {
+		fields = append(fields, oauthtoken.FieldApplicationID)
+	}
+	if m.user != nil {
+		fields = append(fields, oauthtoken.FieldUserID)
+	}
+	if m.scope != nil {
+		fields = append(fields, oauthtoken.FieldScope)
+	}
+	if m.access_expires_at != nil {
+		fields = append(fields, oauthtoken.FieldAccessExpiresAt)
+	}
+	if m.refresh_expires_at != nil {
+		fields = append(fields, oauthtoken.FieldRefreshExpiresAt)
+	}
+	if m.revoked_at != nil {
+		fields = append(fields, oauthtoken.FieldRevokedAt)
+	}
+	if m.last_used_at != nil {
+		fields = append(fields, oauthtoken.FieldLastUsedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OauthTokenMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case oauthtoken.FieldCreateTime:
+		return m.CreateTime()
+	case oauthtoken.FieldCreateBy:
+		return m.CreateBy()
+	case oauthtoken.FieldUpdateTime:
+		return m.UpdateTime()
+	case oauthtoken.FieldUpdateBy:
+		return m.UpdateBy()
+	case oauthtoken.FieldDeleteTime:
+		return m.DeleteTime()
+	case oauthtoken.FieldDeleteBy:
+		return m.DeleteBy()
+	case oauthtoken.FieldAccessToken:
+		return m.AccessToken()
+	case oauthtoken.FieldRefreshToken:
+		return m.RefreshToken()
+	case oauthtoken.FieldApplicationID:
+		return m.ApplicationID()
+	case oauthtoken.FieldUserID:
+		return m.UserID()
+	case oauthtoken.FieldScope:
+		return m.Scope()
+	case oauthtoken.FieldAccessExpiresAt:
+		return m.AccessExpiresAt()
+	case oauthtoken.FieldRefreshExpiresAt:
+		return m.RefreshExpiresAt()
+	case oauthtoken.FieldRevokedAt:
+		return m.RevokedAt()
+	case oauthtoken.FieldLastUsedAt:
+		return m.LastUsedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OauthTokenMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case oauthtoken.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case oauthtoken.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case oauthtoken.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case oauthtoken.FieldUpdateBy:
+		return m.OldUpdateBy(ctx)
+	case oauthtoken.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case oauthtoken.FieldDeleteBy:
+		return m.OldDeleteBy(ctx)
+	case oauthtoken.FieldAccessToken:
+		return m.OldAccessToken(ctx)
+	case oauthtoken.FieldRefreshToken:
+		return m.OldRefreshToken(ctx)
+	case oauthtoken.FieldApplicationID:
+		return m.OldApplicationID(ctx)
+	case oauthtoken.FieldUserID:
+		return m.OldUserID(ctx)
+	case oauthtoken.FieldScope:
+		return m.OldScope(ctx)
+	case oauthtoken.FieldAccessExpiresAt:
+		return m.OldAccessExpiresAt(ctx)
+	case oauthtoken.FieldRefreshExpiresAt:
+		return m.OldRefreshExpiresAt(ctx)
+	case oauthtoken.FieldRevokedAt:
+		return m.OldRevokedAt(ctx)
+	case oauthtoken.FieldLastUsedAt:
+		return m.OldLastUsedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown OauthToken field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthTokenMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case oauthtoken.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case oauthtoken.FieldCreateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case oauthtoken.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case oauthtoken.FieldUpdateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateBy(v)
+		return nil
+	case oauthtoken.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case oauthtoken.FieldDeleteBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteBy(v)
+		return nil
+	case oauthtoken.FieldAccessToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccessToken(v)
+		return nil
+	case oauthtoken.FieldRefreshToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRefreshToken(v)
+		return nil
+	case oauthtoken.FieldApplicationID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetApplicationID(v)
+		return nil
+	case oauthtoken.FieldUserID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case oauthtoken.FieldScope:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScope(v)
+		return nil
+	case oauthtoken.FieldAccessExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccessExpiresAt(v)
+		return nil
+	case oauthtoken.FieldRefreshExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRefreshExpiresAt(v)
+		return nil
+	case oauthtoken.FieldRevokedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRevokedAt(v)
+		return nil
+	case oauthtoken.FieldLastUsedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastUsedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthToken field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OauthTokenMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, oauthtoken.FieldCreateBy)
+	}
+	if m.addupdate_by != nil {
+		fields = append(fields, oauthtoken.FieldUpdateBy)
+	}
+	if m.adddelete_by != nil {
+		fields = append(fields, oauthtoken.FieldDeleteBy)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OauthTokenMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case oauthtoken.FieldCreateBy:
+		return m.AddedCreateBy()
+	case oauthtoken.FieldUpdateBy:
+		return m.AddedUpdateBy()
+	case oauthtoken.FieldDeleteBy:
+		return m.AddedDeleteBy()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthTokenMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case oauthtoken.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case oauthtoken.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdateBy(v)
+		return nil
+	case oauthtoken.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeleteBy(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthToken numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OauthTokenMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(oauthtoken.FieldCreateBy) {
+		fields = append(fields, oauthtoken.FieldCreateBy)
+	}
+	if m.FieldCleared(oauthtoken.FieldUpdateBy) {
+		fields = append(fields, oauthtoken.FieldUpdateBy)
+	}
+	if m.FieldCleared(oauthtoken.FieldDeleteTime) {
+		fields = append(fields, oauthtoken.FieldDeleteTime)
+	}
+	if m.FieldCleared(oauthtoken.FieldDeleteBy) {
+		fields = append(fields, oauthtoken.FieldDeleteBy)
+	}
+	if m.FieldCleared(oauthtoken.FieldRevokedAt) {
+		fields = append(fields, oauthtoken.FieldRevokedAt)
+	}
+	if m.FieldCleared(oauthtoken.FieldLastUsedAt) {
+		fields = append(fields, oauthtoken.FieldLastUsedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OauthTokenMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OauthTokenMutation) ClearField(name string) error {
+	switch name {
+	case oauthtoken.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case oauthtoken.FieldUpdateBy:
+		m.ClearUpdateBy()
+		return nil
+	case oauthtoken.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case oauthtoken.FieldDeleteBy:
+		m.ClearDeleteBy()
+		return nil
+	case oauthtoken.FieldRevokedAt:
+		m.ClearRevokedAt()
+		return nil
+	case oauthtoken.FieldLastUsedAt:
+		m.ClearLastUsedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthToken nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OauthTokenMutation) ResetField(name string) error {
+	switch name {
+	case oauthtoken.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case oauthtoken.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case oauthtoken.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case oauthtoken.FieldUpdateBy:
+		m.ResetUpdateBy()
+		return nil
+	case oauthtoken.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case oauthtoken.FieldDeleteBy:
+		m.ResetDeleteBy()
+		return nil
+	case oauthtoken.FieldAccessToken:
+		m.ResetAccessToken()
+		return nil
+	case oauthtoken.FieldRefreshToken:
+		m.ResetRefreshToken()
+		return nil
+	case oauthtoken.FieldApplicationID:
+		m.ResetApplicationID()
+		return nil
+	case oauthtoken.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case oauthtoken.FieldScope:
+		m.ResetScope()
+		return nil
+	case oauthtoken.FieldAccessExpiresAt:
+		m.ResetAccessExpiresAt()
+		return nil
+	case oauthtoken.FieldRefreshExpiresAt:
+		m.ResetRefreshExpiresAt()
+		return nil
+	case oauthtoken.FieldRevokedAt:
+		m.ResetRevokedAt()
+		return nil
+	case oauthtoken.FieldLastUsedAt:
+		m.ResetLastUsedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthToken field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OauthTokenMutation) AddedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.application != nil {
+		edges = append(edges, oauthtoken.EdgeApplication)
+	}
+	if m.user != nil {
+		edges = append(edges, oauthtoken.EdgeUser)
+	}
+	if m.authorization_code != nil {
+		edges = append(edges, oauthtoken.EdgeAuthorizationCode)
+	}
+	if m.user_authorization != nil {
+		edges = append(edges, oauthtoken.EdgeUserAuthorization)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OauthTokenMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case oauthtoken.EdgeApplication:
+		if id := m.application; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthtoken.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthtoken.EdgeAuthorizationCode:
+		if id := m.authorization_code; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthtoken.EdgeUserAuthorization:
+		if id := m.user_authorization; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OauthTokenMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 4)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OauthTokenMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OauthTokenMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.clearedapplication {
+		edges = append(edges, oauthtoken.EdgeApplication)
+	}
+	if m.cleareduser {
+		edges = append(edges, oauthtoken.EdgeUser)
+	}
+	if m.clearedauthorization_code {
+		edges = append(edges, oauthtoken.EdgeAuthorizationCode)
+	}
+	if m.cleareduser_authorization {
+		edges = append(edges, oauthtoken.EdgeUserAuthorization)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OauthTokenMutation) EdgeCleared(name string) bool {
+	switch name {
+	case oauthtoken.EdgeApplication:
+		return m.clearedapplication
+	case oauthtoken.EdgeUser:
+		return m.cleareduser
+	case oauthtoken.EdgeAuthorizationCode:
+		return m.clearedauthorization_code
+	case oauthtoken.EdgeUserAuthorization:
+		return m.cleareduser_authorization
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OauthTokenMutation) ClearEdge(name string) error {
+	switch name {
+	case oauthtoken.EdgeApplication:
+		m.ClearApplication()
+		return nil
+	case oauthtoken.EdgeUser:
+		m.ClearUser()
+		return nil
+	case oauthtoken.EdgeAuthorizationCode:
+		m.ClearAuthorizationCode()
+		return nil
+	case oauthtoken.EdgeUserAuthorization:
+		m.ClearUserAuthorization()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthToken unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OauthTokenMutation) ResetEdge(name string) error {
+	switch name {
+	case oauthtoken.EdgeApplication:
+		m.ResetApplication()
+		return nil
+	case oauthtoken.EdgeUser:
+		m.ResetUser()
+		return nil
+	case oauthtoken.EdgeAuthorizationCode:
+		m.ResetAuthorizationCode()
+		return nil
+	case oauthtoken.EdgeUserAuthorization:
+		m.ResetUserAuthorization()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthToken edge %s", name)
+}
+
+// OauthUserMutation represents an operation that mutates the OauthUser nodes in the graph.
+type OauthUserMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *uint64
+	create_time        *time.Time
+	create_by          *uint64
+	addcreate_by       *int64
+	update_time        *time.Time
+	update_by          *uint64
+	addupdate_by       *int64
+	delete_time        *time.Time
+	delete_by          *uint64
+	adddelete_by       *int64
+	provider_user_id   *string
+	raw_user_info      *map[string]interface{}
+	access_token       *string
+	refresh_token      *string
+	access_expires_at  *time.Time
+	refresh_expires_at *time.Time
+	load_state         *oauthuser.LoadState
+	clearedFields      map[string]struct{}
+	provider           *uint64
+	clearedprovider    bool
+	user               *uint64
+	cleareduser        bool
+	state              *uint64
+	clearedstate       bool
+	done               bool
+	oldValue           func(context.Context) (*OauthUser, error)
+	predicates         []predicate.OauthUser
+}
+
+var _ ent.Mutation = (*OauthUserMutation)(nil)
+
+// oauthuserOption allows management of the mutation configuration using functional options.
+type oauthuserOption func(*OauthUserMutation)
+
+// newOauthUserMutation creates new mutation for the OauthUser entity.
+func newOauthUserMutation(c config, op Op, opts ...oauthuserOption) *OauthUserMutation {
+	m := &OauthUserMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOauthUser,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOauthUserID sets the ID field of the mutation.
+func withOauthUserID(id uint64) oauthuserOption {
+	return func(m *OauthUserMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OauthUser
+		)
+		m.oldValue = func(ctx context.Context) (*OauthUser, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OauthUser.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOauthUser sets the old OauthUser of the mutation.
+func withOauthUser(node *OauthUser) oauthuserOption {
+	return func(m *OauthUserMutation) {
+		m.oldValue = func(context.Context) (*OauthUser, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OauthUserMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OauthUserMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OauthUser entities.
+func (m *OauthUserMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OauthUserMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OauthUserMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OauthUser.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *OauthUserMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *OauthUserMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *OauthUserMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *OauthUserMutation) SetCreateBy(u uint64) {
+	m.create_by = &u
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *OauthUserMutation) CreateBy() (r uint64, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldCreateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds u to the "create_by" field.
+func (m *OauthUserMutation) AddCreateBy(u int64) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += u
+	} else {
+		m.addcreate_by = &u
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *OauthUserMutation) AddedCreateBy() (r int64, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *OauthUserMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[oauthuser.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *OauthUserMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[oauthuser.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *OauthUserMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, oauthuser.FieldCreateBy)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *OauthUserMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *OauthUserMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *OauthUserMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (m *OauthUserMutation) SetUpdateBy(u uint64) {
+	m.update_by = &u
+	m.addupdate_by = nil
+}
+
+// UpdateBy returns the value of the "update_by" field in the mutation.
+func (m *OauthUserMutation) UpdateBy() (r uint64, exists bool) {
+	v := m.update_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateBy returns the old "update_by" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldUpdateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateBy: %w", err)
+	}
+	return oldValue.UpdateBy, nil
+}
+
+// AddUpdateBy adds u to the "update_by" field.
+func (m *OauthUserMutation) AddUpdateBy(u int64) {
+	if m.addupdate_by != nil {
+		*m.addupdate_by += u
+	} else {
+		m.addupdate_by = &u
+	}
+}
+
+// AddedUpdateBy returns the value that was added to the "update_by" field in this mutation.
+func (m *OauthUserMutation) AddedUpdateBy() (r int64, exists bool) {
+	v := m.addupdate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (m *OauthUserMutation) ClearUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	m.clearedFields[oauthuser.FieldUpdateBy] = struct{}{}
+}
+
+// UpdateByCleared returns if the "update_by" field was cleared in this mutation.
+func (m *OauthUserMutation) UpdateByCleared() bool {
+	_, ok := m.clearedFields[oauthuser.FieldUpdateBy]
+	return ok
+}
+
+// ResetUpdateBy resets all changes to the "update_by" field.
+func (m *OauthUserMutation) ResetUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	delete(m.clearedFields, oauthuser.FieldUpdateBy)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *OauthUserMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *OauthUserMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *OauthUserMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[oauthuser.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *OauthUserMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[oauthuser.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *OauthUserMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, oauthuser.FieldDeleteTime)
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (m *OauthUserMutation) SetDeleteBy(u uint64) {
+	m.delete_by = &u
+	m.adddelete_by = nil
+}
+
+// DeleteBy returns the value of the "delete_by" field in the mutation.
+func (m *OauthUserMutation) DeleteBy() (r uint64, exists bool) {
+	v := m.delete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteBy returns the old "delete_by" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldDeleteBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteBy: %w", err)
+	}
+	return oldValue.DeleteBy, nil
+}
+
+// AddDeleteBy adds u to the "delete_by" field.
+func (m *OauthUserMutation) AddDeleteBy(u int64) {
+	if m.adddelete_by != nil {
+		*m.adddelete_by += u
+	} else {
+		m.adddelete_by = &u
+	}
+}
+
+// AddedDeleteBy returns the value that was added to the "delete_by" field in this mutation.
+func (m *OauthUserMutation) AddedDeleteBy() (r int64, exists bool) {
+	v := m.adddelete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (m *OauthUserMutation) ClearDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	m.clearedFields[oauthuser.FieldDeleteBy] = struct{}{}
+}
+
+// DeleteByCleared returns if the "delete_by" field was cleared in this mutation.
+func (m *OauthUserMutation) DeleteByCleared() bool {
+	_, ok := m.clearedFields[oauthuser.FieldDeleteBy]
+	return ok
+}
+
+// ResetDeleteBy resets all changes to the "delete_by" field.
+func (m *OauthUserMutation) ResetDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	delete(m.clearedFields, oauthuser.FieldDeleteBy)
+}
+
+// SetProviderID sets the "provider_id" field.
+func (m *OauthUserMutation) SetProviderID(u uint64) {
+	m.provider = &u
+}
+
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *OauthUserMutation) ProviderID() (r uint64, exists bool) {
+	v := m.provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderID returns the old "provider_id" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldProviderID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+	}
+	return oldValue.ProviderID, nil
+}
+
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *OauthUserMutation) ResetProviderID() {
+	m.provider = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *OauthUserMutation) SetUserID(u uint64) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *OauthUserMutation) UserID() (r uint64, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldUserID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *OauthUserMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetStateID sets the "state_id" field.
+func (m *OauthUserMutation) SetStateID(u uint64) {
+	m.state = &u
+}
+
+// StateID returns the value of the "state_id" field in the mutation.
+func (m *OauthUserMutation) StateID() (r uint64, exists bool) {
+	v := m.state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStateID returns the old "state_id" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldStateID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStateID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStateID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStateID: %w", err)
+	}
+	return oldValue.StateID, nil
+}
+
+// ClearStateID clears the value of the "state_id" field.
+func (m *OauthUserMutation) ClearStateID() {
+	m.state = nil
+	m.clearedFields[oauthuser.FieldStateID] = struct{}{}
+}
+
+// StateIDCleared returns if the "state_id" field was cleared in this mutation.
+func (m *OauthUserMutation) StateIDCleared() bool {
+	_, ok := m.clearedFields[oauthuser.FieldStateID]
+	return ok
+}
+
+// ResetStateID resets all changes to the "state_id" field.
+func (m *OauthUserMutation) ResetStateID() {
+	m.state = nil
+	delete(m.clearedFields, oauthuser.FieldStateID)
+}
+
+// SetProviderUserID sets the "provider_user_id" field.
+func (m *OauthUserMutation) SetProviderUserID(s string) {
+	m.provider_user_id = &s
+}
+
+// ProviderUserID returns the value of the "provider_user_id" field in the mutation.
+func (m *OauthUserMutation) ProviderUserID() (r string, exists bool) {
+	v := m.provider_user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderUserID returns the old "provider_user_id" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldProviderUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderUserID: %w", err)
+	}
+	return oldValue.ProviderUserID, nil
+}
+
+// ResetProviderUserID resets all changes to the "provider_user_id" field.
+func (m *OauthUserMutation) ResetProviderUserID() {
+	m.provider_user_id = nil
+}
+
+// SetRawUserInfo sets the "raw_user_info" field.
+func (m *OauthUserMutation) SetRawUserInfo(value map[string]interface{}) {
+	m.raw_user_info = &value
+}
+
+// RawUserInfo returns the value of the "raw_user_info" field in the mutation.
+func (m *OauthUserMutation) RawUserInfo() (r map[string]interface{}, exists bool) {
+	v := m.raw_user_info
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRawUserInfo returns the old "raw_user_info" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldRawUserInfo(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRawUserInfo is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRawUserInfo requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRawUserInfo: %w", err)
+	}
+	return oldValue.RawUserInfo, nil
+}
+
+// ClearRawUserInfo clears the value of the "raw_user_info" field.
+func (m *OauthUserMutation) ClearRawUserInfo() {
+	m.raw_user_info = nil
+	m.clearedFields[oauthuser.FieldRawUserInfo] = struct{}{}
+}
+
+// RawUserInfoCleared returns if the "raw_user_info" field was cleared in this mutation.
+func (m *OauthUserMutation) RawUserInfoCleared() bool {
+	_, ok := m.clearedFields[oauthuser.FieldRawUserInfo]
+	return ok
+}
+
+// ResetRawUserInfo resets all changes to the "raw_user_info" field.
+func (m *OauthUserMutation) ResetRawUserInfo() {
+	m.raw_user_info = nil
+	delete(m.clearedFields, oauthuser.FieldRawUserInfo)
+}
+
+// SetAccessToken sets the "access_token" field.
+func (m *OauthUserMutation) SetAccessToken(s string) {
+	m.access_token = &s
+}
+
+// AccessToken returns the value of the "access_token" field in the mutation.
+func (m *OauthUserMutation) AccessToken() (r string, exists bool) {
+	v := m.access_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccessToken returns the old "access_token" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldAccessToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccessToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccessToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccessToken: %w", err)
+	}
+	return oldValue.AccessToken, nil
+}
+
+// ClearAccessToken clears the value of the "access_token" field.
+func (m *OauthUserMutation) ClearAccessToken() {
+	m.access_token = nil
+	m.clearedFields[oauthuser.FieldAccessToken] = struct{}{}
+}
+
+// AccessTokenCleared returns if the "access_token" field was cleared in this mutation.
+func (m *OauthUserMutation) AccessTokenCleared() bool {
+	_, ok := m.clearedFields[oauthuser.FieldAccessToken]
+	return ok
+}
+
+// ResetAccessToken resets all changes to the "access_token" field.
+func (m *OauthUserMutation) ResetAccessToken() {
+	m.access_token = nil
+	delete(m.clearedFields, oauthuser.FieldAccessToken)
+}
+
+// SetRefreshToken sets the "refresh_token" field.
+func (m *OauthUserMutation) SetRefreshToken(s string) {
+	m.refresh_token = &s
+}
+
+// RefreshToken returns the value of the "refresh_token" field in the mutation.
+func (m *OauthUserMutation) RefreshToken() (r string, exists bool) {
+	v := m.refresh_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRefreshToken returns the old "refresh_token" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldRefreshToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRefreshToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRefreshToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRefreshToken: %w", err)
+	}
+	return oldValue.RefreshToken, nil
+}
+
+// ClearRefreshToken clears the value of the "refresh_token" field.
+func (m *OauthUserMutation) ClearRefreshToken() {
+	m.refresh_token = nil
+	m.clearedFields[oauthuser.FieldRefreshToken] = struct{}{}
+}
+
+// RefreshTokenCleared returns if the "refresh_token" field was cleared in this mutation.
+func (m *OauthUserMutation) RefreshTokenCleared() bool {
+	_, ok := m.clearedFields[oauthuser.FieldRefreshToken]
+	return ok
+}
+
+// ResetRefreshToken resets all changes to the "refresh_token" field.
+func (m *OauthUserMutation) ResetRefreshToken() {
+	m.refresh_token = nil
+	delete(m.clearedFields, oauthuser.FieldRefreshToken)
+}
+
+// SetAccessExpiresAt sets the "access_expires_at" field.
+func (m *OauthUserMutation) SetAccessExpiresAt(t time.Time) {
+	m.access_expires_at = &t
+}
+
+// AccessExpiresAt returns the value of the "access_expires_at" field in the mutation.
+func (m *OauthUserMutation) AccessExpiresAt() (r time.Time, exists bool) {
+	v := m.access_expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccessExpiresAt returns the old "access_expires_at" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldAccessExpiresAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccessExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccessExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccessExpiresAt: %w", err)
+	}
+	return oldValue.AccessExpiresAt, nil
+}
+
+// ClearAccessExpiresAt clears the value of the "access_expires_at" field.
+func (m *OauthUserMutation) ClearAccessExpiresAt() {
+	m.access_expires_at = nil
+	m.clearedFields[oauthuser.FieldAccessExpiresAt] = struct{}{}
+}
+
+// AccessExpiresAtCleared returns if the "access_expires_at" field was cleared in this mutation.
+func (m *OauthUserMutation) AccessExpiresAtCleared() bool {
+	_, ok := m.clearedFields[oauthuser.FieldAccessExpiresAt]
+	return ok
+}
+
+// ResetAccessExpiresAt resets all changes to the "access_expires_at" field.
+func (m *OauthUserMutation) ResetAccessExpiresAt() {
+	m.access_expires_at = nil
+	delete(m.clearedFields, oauthuser.FieldAccessExpiresAt)
+}
+
+// SetRefreshExpiresAt sets the "refresh_expires_at" field.
+func (m *OauthUserMutation) SetRefreshExpiresAt(t time.Time) {
+	m.refresh_expires_at = &t
+}
+
+// RefreshExpiresAt returns the value of the "refresh_expires_at" field in the mutation.
+func (m *OauthUserMutation) RefreshExpiresAt() (r time.Time, exists bool) {
+	v := m.refresh_expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRefreshExpiresAt returns the old "refresh_expires_at" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldRefreshExpiresAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRefreshExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRefreshExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRefreshExpiresAt: %w", err)
+	}
+	return oldValue.RefreshExpiresAt, nil
+}
+
+// ClearRefreshExpiresAt clears the value of the "refresh_expires_at" field.
+func (m *OauthUserMutation) ClearRefreshExpiresAt() {
+	m.refresh_expires_at = nil
+	m.clearedFields[oauthuser.FieldRefreshExpiresAt] = struct{}{}
+}
+
+// RefreshExpiresAtCleared returns if the "refresh_expires_at" field was cleared in this mutation.
+func (m *OauthUserMutation) RefreshExpiresAtCleared() bool {
+	_, ok := m.clearedFields[oauthuser.FieldRefreshExpiresAt]
+	return ok
+}
+
+// ResetRefreshExpiresAt resets all changes to the "refresh_expires_at" field.
+func (m *OauthUserMutation) ResetRefreshExpiresAt() {
+	m.refresh_expires_at = nil
+	delete(m.clearedFields, oauthuser.FieldRefreshExpiresAt)
+}
+
+// SetLoadState sets the "load_state" field.
+func (m *OauthUserMutation) SetLoadState(os oauthuser.LoadState) {
+	m.load_state = &os
+}
+
+// LoadState returns the value of the "load_state" field in the mutation.
+func (m *OauthUserMutation) LoadState() (r oauthuser.LoadState, exists bool) {
+	v := m.load_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLoadState returns the old "load_state" field's value of the OauthUser entity.
+// If the OauthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserMutation) OldLoadState(ctx context.Context) (v oauthuser.LoadState, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLoadState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLoadState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLoadState: %w", err)
+	}
+	return oldValue.LoadState, nil
+}
+
+// ResetLoadState resets all changes to the "load_state" field.
+func (m *OauthUserMutation) ResetLoadState() {
+	m.load_state = nil
+}
+
+// ClearProvider clears the "provider" edge to the OauthProvider entity.
+func (m *OauthUserMutation) ClearProvider() {
+	m.clearedprovider = true
+	m.clearedFields[oauthuser.FieldProviderID] = struct{}{}
+}
+
+// ProviderCleared reports if the "provider" edge to the OauthProvider entity was cleared.
+func (m *OauthUserMutation) ProviderCleared() bool {
+	return m.clearedprovider
+}
+
+// ProviderIDs returns the "provider" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProviderID instead. It exists only for internal usage by the builders.
+func (m *OauthUserMutation) ProviderIDs() (ids []uint64) {
+	if id := m.provider; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProvider resets all changes to the "provider" edge.
+func (m *OauthUserMutation) ResetProvider() {
+	m.provider = nil
+	m.clearedprovider = false
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *OauthUserMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[oauthuser.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *OauthUserMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *OauthUserMutation) UserIDs() (ids []uint64) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *OauthUserMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// ClearState clears the "state" edge to the OauthState entity.
+func (m *OauthUserMutation) ClearState() {
+	m.clearedstate = true
+	m.clearedFields[oauthuser.FieldStateID] = struct{}{}
+}
+
+// StateCleared reports if the "state" edge to the OauthState entity was cleared.
+func (m *OauthUserMutation) StateCleared() bool {
+	return m.StateIDCleared() || m.clearedstate
+}
+
+// StateIDs returns the "state" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StateID instead. It exists only for internal usage by the builders.
+func (m *OauthUserMutation) StateIDs() (ids []uint64) {
+	if id := m.state; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetState resets all changes to the "state" edge.
+func (m *OauthUserMutation) ResetState() {
+	m.state = nil
+	m.clearedstate = false
+}
+
+// Where appends a list predicates to the OauthUserMutation builder.
+func (m *OauthUserMutation) Where(ps ...predicate.OauthUser) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OauthUserMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OauthUserMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OauthUser, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OauthUserMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OauthUserMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OauthUser).
+func (m *OauthUserMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OauthUserMutation) Fields() []string {
+	fields := make([]string, 0, 16)
+	if m.create_time != nil {
+		fields = append(fields, oauthuser.FieldCreateTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, oauthuser.FieldCreateBy)
+	}
+	if m.update_time != nil {
+		fields = append(fields, oauthuser.FieldUpdateTime)
+	}
+	if m.update_by != nil {
+		fields = append(fields, oauthuser.FieldUpdateBy)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, oauthuser.FieldDeleteTime)
+	}
+	if m.delete_by != nil {
+		fields = append(fields, oauthuser.FieldDeleteBy)
+	}
+	if m.provider != nil {
+		fields = append(fields, oauthuser.FieldProviderID)
+	}
+	if m.user != nil {
+		fields = append(fields, oauthuser.FieldUserID)
+	}
+	if m.state != nil {
+		fields = append(fields, oauthuser.FieldStateID)
+	}
+	if m.provider_user_id != nil {
+		fields = append(fields, oauthuser.FieldProviderUserID)
+	}
+	if m.raw_user_info != nil {
+		fields = append(fields, oauthuser.FieldRawUserInfo)
+	}
+	if m.access_token != nil {
+		fields = append(fields, oauthuser.FieldAccessToken)
+	}
+	if m.refresh_token != nil {
+		fields = append(fields, oauthuser.FieldRefreshToken)
+	}
+	if m.access_expires_at != nil {
+		fields = append(fields, oauthuser.FieldAccessExpiresAt)
+	}
+	if m.refresh_expires_at != nil {
+		fields = append(fields, oauthuser.FieldRefreshExpiresAt)
+	}
+	if m.load_state != nil {
+		fields = append(fields, oauthuser.FieldLoadState)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OauthUserMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case oauthuser.FieldCreateTime:
+		return m.CreateTime()
+	case oauthuser.FieldCreateBy:
+		return m.CreateBy()
+	case oauthuser.FieldUpdateTime:
+		return m.UpdateTime()
+	case oauthuser.FieldUpdateBy:
+		return m.UpdateBy()
+	case oauthuser.FieldDeleteTime:
+		return m.DeleteTime()
+	case oauthuser.FieldDeleteBy:
+		return m.DeleteBy()
+	case oauthuser.FieldProviderID:
+		return m.ProviderID()
+	case oauthuser.FieldUserID:
+		return m.UserID()
+	case oauthuser.FieldStateID:
+		return m.StateID()
+	case oauthuser.FieldProviderUserID:
+		return m.ProviderUserID()
+	case oauthuser.FieldRawUserInfo:
+		return m.RawUserInfo()
+	case oauthuser.FieldAccessToken:
+		return m.AccessToken()
+	case oauthuser.FieldRefreshToken:
+		return m.RefreshToken()
+	case oauthuser.FieldAccessExpiresAt:
+		return m.AccessExpiresAt()
+	case oauthuser.FieldRefreshExpiresAt:
+		return m.RefreshExpiresAt()
+	case oauthuser.FieldLoadState:
+		return m.LoadState()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OauthUserMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case oauthuser.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case oauthuser.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case oauthuser.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case oauthuser.FieldUpdateBy:
+		return m.OldUpdateBy(ctx)
+	case oauthuser.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case oauthuser.FieldDeleteBy:
+		return m.OldDeleteBy(ctx)
+	case oauthuser.FieldProviderID:
+		return m.OldProviderID(ctx)
+	case oauthuser.FieldUserID:
+		return m.OldUserID(ctx)
+	case oauthuser.FieldStateID:
+		return m.OldStateID(ctx)
+	case oauthuser.FieldProviderUserID:
+		return m.OldProviderUserID(ctx)
+	case oauthuser.FieldRawUserInfo:
+		return m.OldRawUserInfo(ctx)
+	case oauthuser.FieldAccessToken:
+		return m.OldAccessToken(ctx)
+	case oauthuser.FieldRefreshToken:
+		return m.OldRefreshToken(ctx)
+	case oauthuser.FieldAccessExpiresAt:
+		return m.OldAccessExpiresAt(ctx)
+	case oauthuser.FieldRefreshExpiresAt:
+		return m.OldRefreshExpiresAt(ctx)
+	case oauthuser.FieldLoadState:
+		return m.OldLoadState(ctx)
+	}
+	return nil, fmt.Errorf("unknown OauthUser field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthUserMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case oauthuser.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case oauthuser.FieldCreateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case oauthuser.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case oauthuser.FieldUpdateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateBy(v)
+		return nil
+	case oauthuser.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case oauthuser.FieldDeleteBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteBy(v)
+		return nil
+	case oauthuser.FieldProviderID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderID(v)
+		return nil
+	case oauthuser.FieldUserID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case oauthuser.FieldStateID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStateID(v)
+		return nil
+	case oauthuser.FieldProviderUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderUserID(v)
+		return nil
+	case oauthuser.FieldRawUserInfo:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRawUserInfo(v)
+		return nil
+	case oauthuser.FieldAccessToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccessToken(v)
+		return nil
+	case oauthuser.FieldRefreshToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRefreshToken(v)
+		return nil
+	case oauthuser.FieldAccessExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccessExpiresAt(v)
+		return nil
+	case oauthuser.FieldRefreshExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRefreshExpiresAt(v)
+		return nil
+	case oauthuser.FieldLoadState:
+		v, ok := value.(oauthuser.LoadState)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLoadState(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthUser field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OauthUserMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, oauthuser.FieldCreateBy)
+	}
+	if m.addupdate_by != nil {
+		fields = append(fields, oauthuser.FieldUpdateBy)
+	}
+	if m.adddelete_by != nil {
+		fields = append(fields, oauthuser.FieldDeleteBy)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OauthUserMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case oauthuser.FieldCreateBy:
+		return m.AddedCreateBy()
+	case oauthuser.FieldUpdateBy:
+		return m.AddedUpdateBy()
+	case oauthuser.FieldDeleteBy:
+		return m.AddedDeleteBy()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthUserMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case oauthuser.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case oauthuser.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdateBy(v)
+		return nil
+	case oauthuser.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeleteBy(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthUser numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OauthUserMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(oauthuser.FieldCreateBy) {
+		fields = append(fields, oauthuser.FieldCreateBy)
+	}
+	if m.FieldCleared(oauthuser.FieldUpdateBy) {
+		fields = append(fields, oauthuser.FieldUpdateBy)
+	}
+	if m.FieldCleared(oauthuser.FieldDeleteTime) {
+		fields = append(fields, oauthuser.FieldDeleteTime)
+	}
+	if m.FieldCleared(oauthuser.FieldDeleteBy) {
+		fields = append(fields, oauthuser.FieldDeleteBy)
+	}
+	if m.FieldCleared(oauthuser.FieldStateID) {
+		fields = append(fields, oauthuser.FieldStateID)
+	}
+	if m.FieldCleared(oauthuser.FieldRawUserInfo) {
+		fields = append(fields, oauthuser.FieldRawUserInfo)
+	}
+	if m.FieldCleared(oauthuser.FieldAccessToken) {
+		fields = append(fields, oauthuser.FieldAccessToken)
+	}
+	if m.FieldCleared(oauthuser.FieldRefreshToken) {
+		fields = append(fields, oauthuser.FieldRefreshToken)
+	}
+	if m.FieldCleared(oauthuser.FieldAccessExpiresAt) {
+		fields = append(fields, oauthuser.FieldAccessExpiresAt)
+	}
+	if m.FieldCleared(oauthuser.FieldRefreshExpiresAt) {
+		fields = append(fields, oauthuser.FieldRefreshExpiresAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OauthUserMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OauthUserMutation) ClearField(name string) error {
+	switch name {
+	case oauthuser.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case oauthuser.FieldUpdateBy:
+		m.ClearUpdateBy()
+		return nil
+	case oauthuser.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case oauthuser.FieldDeleteBy:
+		m.ClearDeleteBy()
+		return nil
+	case oauthuser.FieldStateID:
+		m.ClearStateID()
+		return nil
+	case oauthuser.FieldRawUserInfo:
+		m.ClearRawUserInfo()
+		return nil
+	case oauthuser.FieldAccessToken:
+		m.ClearAccessToken()
+		return nil
+	case oauthuser.FieldRefreshToken:
+		m.ClearRefreshToken()
+		return nil
+	case oauthuser.FieldAccessExpiresAt:
+		m.ClearAccessExpiresAt()
+		return nil
+	case oauthuser.FieldRefreshExpiresAt:
+		m.ClearRefreshExpiresAt()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthUser nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OauthUserMutation) ResetField(name string) error {
+	switch name {
+	case oauthuser.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case oauthuser.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case oauthuser.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case oauthuser.FieldUpdateBy:
+		m.ResetUpdateBy()
+		return nil
+	case oauthuser.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case oauthuser.FieldDeleteBy:
+		m.ResetDeleteBy()
+		return nil
+	case oauthuser.FieldProviderID:
+		m.ResetProviderID()
+		return nil
+	case oauthuser.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case oauthuser.FieldStateID:
+		m.ResetStateID()
+		return nil
+	case oauthuser.FieldProviderUserID:
+		m.ResetProviderUserID()
+		return nil
+	case oauthuser.FieldRawUserInfo:
+		m.ResetRawUserInfo()
+		return nil
+	case oauthuser.FieldAccessToken:
+		m.ResetAccessToken()
+		return nil
+	case oauthuser.FieldRefreshToken:
+		m.ResetRefreshToken()
+		return nil
+	case oauthuser.FieldAccessExpiresAt:
+		m.ResetAccessExpiresAt()
+		return nil
+	case oauthuser.FieldRefreshExpiresAt:
+		m.ResetRefreshExpiresAt()
+		return nil
+	case oauthuser.FieldLoadState:
+		m.ResetLoadState()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthUser field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OauthUserMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.provider != nil {
+		edges = append(edges, oauthuser.EdgeProvider)
+	}
+	if m.user != nil {
+		edges = append(edges, oauthuser.EdgeUser)
+	}
+	if m.state != nil {
+		edges = append(edges, oauthuser.EdgeState)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OauthUserMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case oauthuser.EdgeProvider:
+		if id := m.provider; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthuser.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthuser.EdgeState:
+		if id := m.state; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OauthUserMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OauthUserMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OauthUserMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedprovider {
+		edges = append(edges, oauthuser.EdgeProvider)
+	}
+	if m.cleareduser {
+		edges = append(edges, oauthuser.EdgeUser)
+	}
+	if m.clearedstate {
+		edges = append(edges, oauthuser.EdgeState)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OauthUserMutation) EdgeCleared(name string) bool {
+	switch name {
+	case oauthuser.EdgeProvider:
+		return m.clearedprovider
+	case oauthuser.EdgeUser:
+		return m.cleareduser
+	case oauthuser.EdgeState:
+		return m.clearedstate
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OauthUserMutation) ClearEdge(name string) error {
+	switch name {
+	case oauthuser.EdgeProvider:
+		m.ClearProvider()
+		return nil
+	case oauthuser.EdgeUser:
+		m.ClearUser()
+		return nil
+	case oauthuser.EdgeState:
+		m.ClearState()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthUser unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OauthUserMutation) ResetEdge(name string) error {
+	switch name {
+	case oauthuser.EdgeProvider:
+		m.ResetProvider()
+		return nil
+	case oauthuser.EdgeUser:
+		m.ResetUser()
+		return nil
+	case oauthuser.EdgeState:
+		m.ResetState()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthUser edge %s", name)
+}
+
+// OauthUserAuthorizationMutation represents an operation that mutates the OauthUserAuthorization nodes in the graph.
+type OauthUserAuthorizationMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *uint64
+	create_time        *time.Time
+	create_by          *uint64
+	addcreate_by       *int64
+	update_time        *time.Time
+	update_by          *uint64
+	addupdate_by       *int64
+	delete_time        *time.Time
+	delete_by          *uint64
+	adddelete_by       *int64
+	authorized_at      *time.Time
+	usage_state        *oauthuserauthorization.UsageState
+	scope              *[]string
+	appendscope        []string
+	clearedFields      map[string]struct{}
+	user               *uint64
+	cleareduser        bool
+	application        *uint64
+	clearedapplication bool
+	code               *uint64
+	clearedcode        bool
+	token              *uint64
+	clearedtoken       bool
+	done               bool
+	oldValue           func(context.Context) (*OauthUserAuthorization, error)
+	predicates         []predicate.OauthUserAuthorization
+}
+
+var _ ent.Mutation = (*OauthUserAuthorizationMutation)(nil)
+
+// oauthuserauthorizationOption allows management of the mutation configuration using functional options.
+type oauthuserauthorizationOption func(*OauthUserAuthorizationMutation)
+
+// newOauthUserAuthorizationMutation creates new mutation for the OauthUserAuthorization entity.
+func newOauthUserAuthorizationMutation(c config, op Op, opts ...oauthuserauthorizationOption) *OauthUserAuthorizationMutation {
+	m := &OauthUserAuthorizationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOauthUserAuthorization,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOauthUserAuthorizationID sets the ID field of the mutation.
+func withOauthUserAuthorizationID(id uint64) oauthuserauthorizationOption {
+	return func(m *OauthUserAuthorizationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OauthUserAuthorization
+		)
+		m.oldValue = func(ctx context.Context) (*OauthUserAuthorization, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OauthUserAuthorization.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOauthUserAuthorization sets the old OauthUserAuthorization of the mutation.
+func withOauthUserAuthorization(node *OauthUserAuthorization) oauthuserauthorizationOption {
+	return func(m *OauthUserAuthorizationMutation) {
+		m.oldValue = func(context.Context) (*OauthUserAuthorization, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OauthUserAuthorizationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OauthUserAuthorizationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OauthUserAuthorization entities.
+func (m *OauthUserAuthorizationMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OauthUserAuthorizationMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OauthUserAuthorizationMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OauthUserAuthorization.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *OauthUserAuthorizationMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *OauthUserAuthorizationMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the OauthUserAuthorization entity.
+// If the OauthUserAuthorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserAuthorizationMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *OauthUserAuthorizationMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetCreateBy sets the "create_by" field.
+func (m *OauthUserAuthorizationMutation) SetCreateBy(u uint64) {
+	m.create_by = &u
+	m.addcreate_by = nil
+}
+
+// CreateBy returns the value of the "create_by" field in the mutation.
+func (m *OauthUserAuthorizationMutation) CreateBy() (r uint64, exists bool) {
+	v := m.create_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateBy returns the old "create_by" field's value of the OauthUserAuthorization entity.
+// If the OauthUserAuthorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserAuthorizationMutation) OldCreateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateBy: %w", err)
+	}
+	return oldValue.CreateBy, nil
+}
+
+// AddCreateBy adds u to the "create_by" field.
+func (m *OauthUserAuthorizationMutation) AddCreateBy(u int64) {
+	if m.addcreate_by != nil {
+		*m.addcreate_by += u
+	} else {
+		m.addcreate_by = &u
+	}
+}
+
+// AddedCreateBy returns the value that was added to the "create_by" field in this mutation.
+func (m *OauthUserAuthorizationMutation) AddedCreateBy() (r int64, exists bool) {
+	v := m.addcreate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreateBy clears the value of the "create_by" field.
+func (m *OauthUserAuthorizationMutation) ClearCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	m.clearedFields[oauthuserauthorization.FieldCreateBy] = struct{}{}
+}
+
+// CreateByCleared returns if the "create_by" field was cleared in this mutation.
+func (m *OauthUserAuthorizationMutation) CreateByCleared() bool {
+	_, ok := m.clearedFields[oauthuserauthorization.FieldCreateBy]
+	return ok
+}
+
+// ResetCreateBy resets all changes to the "create_by" field.
+func (m *OauthUserAuthorizationMutation) ResetCreateBy() {
+	m.create_by = nil
+	m.addcreate_by = nil
+	delete(m.clearedFields, oauthuserauthorization.FieldCreateBy)
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *OauthUserAuthorizationMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *OauthUserAuthorizationMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the OauthUserAuthorization entity.
+// If the OauthUserAuthorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserAuthorizationMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *OauthUserAuthorizationMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUpdateBy sets the "update_by" field.
+func (m *OauthUserAuthorizationMutation) SetUpdateBy(u uint64) {
+	m.update_by = &u
+	m.addupdate_by = nil
+}
+
+// UpdateBy returns the value of the "update_by" field in the mutation.
+func (m *OauthUserAuthorizationMutation) UpdateBy() (r uint64, exists bool) {
+	v := m.update_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateBy returns the old "update_by" field's value of the OauthUserAuthorization entity.
+// If the OauthUserAuthorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserAuthorizationMutation) OldUpdateBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateBy: %w", err)
+	}
+	return oldValue.UpdateBy, nil
+}
+
+// AddUpdateBy adds u to the "update_by" field.
+func (m *OauthUserAuthorizationMutation) AddUpdateBy(u int64) {
+	if m.addupdate_by != nil {
+		*m.addupdate_by += u
+	} else {
+		m.addupdate_by = &u
+	}
+}
+
+// AddedUpdateBy returns the value that was added to the "update_by" field in this mutation.
+func (m *OauthUserAuthorizationMutation) AddedUpdateBy() (r int64, exists bool) {
+	v := m.addupdate_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdateBy clears the value of the "update_by" field.
+func (m *OauthUserAuthorizationMutation) ClearUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	m.clearedFields[oauthuserauthorization.FieldUpdateBy] = struct{}{}
+}
+
+// UpdateByCleared returns if the "update_by" field was cleared in this mutation.
+func (m *OauthUserAuthorizationMutation) UpdateByCleared() bool {
+	_, ok := m.clearedFields[oauthuserauthorization.FieldUpdateBy]
+	return ok
+}
+
+// ResetUpdateBy resets all changes to the "update_by" field.
+func (m *OauthUserAuthorizationMutation) ResetUpdateBy() {
+	m.update_by = nil
+	m.addupdate_by = nil
+	delete(m.clearedFields, oauthuserauthorization.FieldUpdateBy)
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *OauthUserAuthorizationMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *OauthUserAuthorizationMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the OauthUserAuthorization entity.
+// If the OauthUserAuthorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserAuthorizationMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *OauthUserAuthorizationMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[oauthuserauthorization.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *OauthUserAuthorizationMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[oauthuserauthorization.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *OauthUserAuthorizationMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, oauthuserauthorization.FieldDeleteTime)
+}
+
+// SetDeleteBy sets the "delete_by" field.
+func (m *OauthUserAuthorizationMutation) SetDeleteBy(u uint64) {
+	m.delete_by = &u
+	m.adddelete_by = nil
+}
+
+// DeleteBy returns the value of the "delete_by" field in the mutation.
+func (m *OauthUserAuthorizationMutation) DeleteBy() (r uint64, exists bool) {
+	v := m.delete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteBy returns the old "delete_by" field's value of the OauthUserAuthorization entity.
+// If the OauthUserAuthorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserAuthorizationMutation) OldDeleteBy(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteBy: %w", err)
+	}
+	return oldValue.DeleteBy, nil
+}
+
+// AddDeleteBy adds u to the "delete_by" field.
+func (m *OauthUserAuthorizationMutation) AddDeleteBy(u int64) {
+	if m.adddelete_by != nil {
+		*m.adddelete_by += u
+	} else {
+		m.adddelete_by = &u
+	}
+}
+
+// AddedDeleteBy returns the value that was added to the "delete_by" field in this mutation.
+func (m *OauthUserAuthorizationMutation) AddedDeleteBy() (r int64, exists bool) {
+	v := m.adddelete_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeleteBy clears the value of the "delete_by" field.
+func (m *OauthUserAuthorizationMutation) ClearDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	m.clearedFields[oauthuserauthorization.FieldDeleteBy] = struct{}{}
+}
+
+// DeleteByCleared returns if the "delete_by" field was cleared in this mutation.
+func (m *OauthUserAuthorizationMutation) DeleteByCleared() bool {
+	_, ok := m.clearedFields[oauthuserauthorization.FieldDeleteBy]
+	return ok
+}
+
+// ResetDeleteBy resets all changes to the "delete_by" field.
+func (m *OauthUserAuthorizationMutation) ResetDeleteBy() {
+	m.delete_by = nil
+	m.adddelete_by = nil
+	delete(m.clearedFields, oauthuserauthorization.FieldDeleteBy)
+}
+
+// SetUserID sets the "user_id" field.
+func (m *OauthUserAuthorizationMutation) SetUserID(u uint64) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *OauthUserAuthorizationMutation) UserID() (r uint64, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the OauthUserAuthorization entity.
+// If the OauthUserAuthorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserAuthorizationMutation) OldUserID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *OauthUserAuthorizationMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetApplicationID sets the "application_id" field.
+func (m *OauthUserAuthorizationMutation) SetApplicationID(u uint64) {
+	m.application = &u
+}
+
+// ApplicationID returns the value of the "application_id" field in the mutation.
+func (m *OauthUserAuthorizationMutation) ApplicationID() (r uint64, exists bool) {
+	v := m.application
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldApplicationID returns the old "application_id" field's value of the OauthUserAuthorization entity.
+// If the OauthUserAuthorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserAuthorizationMutation) OldApplicationID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldApplicationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldApplicationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldApplicationID: %w", err)
+	}
+	return oldValue.ApplicationID, nil
+}
+
+// ResetApplicationID resets all changes to the "application_id" field.
+func (m *OauthUserAuthorizationMutation) ResetApplicationID() {
+	m.application = nil
+}
+
+// SetAuthorizedAt sets the "authorized_at" field.
+func (m *OauthUserAuthorizationMutation) SetAuthorizedAt(t time.Time) {
+	m.authorized_at = &t
+}
+
+// AuthorizedAt returns the value of the "authorized_at" field in the mutation.
+func (m *OauthUserAuthorizationMutation) AuthorizedAt() (r time.Time, exists bool) {
+	v := m.authorized_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthorizedAt returns the old "authorized_at" field's value of the OauthUserAuthorization entity.
+// If the OauthUserAuthorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserAuthorizationMutation) OldAuthorizedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthorizedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthorizedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthorizedAt: %w", err)
+	}
+	return oldValue.AuthorizedAt, nil
+}
+
+// ResetAuthorizedAt resets all changes to the "authorized_at" field.
+func (m *OauthUserAuthorizationMutation) ResetAuthorizedAt() {
+	m.authorized_at = nil
+}
+
+// SetUsageState sets the "usage_state" field.
+func (m *OauthUserAuthorizationMutation) SetUsageState(os oauthuserauthorization.UsageState) {
+	m.usage_state = &os
+}
+
+// UsageState returns the value of the "usage_state" field in the mutation.
+func (m *OauthUserAuthorizationMutation) UsageState() (r oauthuserauthorization.UsageState, exists bool) {
+	v := m.usage_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsageState returns the old "usage_state" field's value of the OauthUserAuthorization entity.
+// If the OauthUserAuthorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserAuthorizationMutation) OldUsageState(ctx context.Context) (v oauthuserauthorization.UsageState, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsageState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsageState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsageState: %w", err)
+	}
+	return oldValue.UsageState, nil
+}
+
+// ResetUsageState resets all changes to the "usage_state" field.
+func (m *OauthUserAuthorizationMutation) ResetUsageState() {
+	m.usage_state = nil
+}
+
+// SetScope sets the "scope" field.
+func (m *OauthUserAuthorizationMutation) SetScope(s []string) {
+	m.scope = &s
+	m.appendscope = nil
+}
+
+// Scope returns the value of the "scope" field in the mutation.
+func (m *OauthUserAuthorizationMutation) Scope() (r []string, exists bool) {
+	v := m.scope
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScope returns the old "scope" field's value of the OauthUserAuthorization entity.
+// If the OauthUserAuthorization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OauthUserAuthorizationMutation) OldScope(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScope is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScope requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScope: %w", err)
+	}
+	return oldValue.Scope, nil
+}
+
+// AppendScope adds s to the "scope" field.
+func (m *OauthUserAuthorizationMutation) AppendScope(s []string) {
+	m.appendscope = append(m.appendscope, s...)
+}
+
+// AppendedScope returns the list of values that were appended to the "scope" field in this mutation.
+func (m *OauthUserAuthorizationMutation) AppendedScope() ([]string, bool) {
+	if len(m.appendscope) == 0 {
+		return nil, false
+	}
+	return m.appendscope, true
+}
+
+// ResetScope resets all changes to the "scope" field.
+func (m *OauthUserAuthorizationMutation) ResetScope() {
+	m.scope = nil
+	m.appendscope = nil
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *OauthUserAuthorizationMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[oauthuserauthorization.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *OauthUserAuthorizationMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *OauthUserAuthorizationMutation) UserIDs() (ids []uint64) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *OauthUserAuthorizationMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// ClearApplication clears the "application" edge to the OauthApplication entity.
+func (m *OauthUserAuthorizationMutation) ClearApplication() {
+	m.clearedapplication = true
+	m.clearedFields[oauthuserauthorization.FieldApplicationID] = struct{}{}
+}
+
+// ApplicationCleared reports if the "application" edge to the OauthApplication entity was cleared.
+func (m *OauthUserAuthorizationMutation) ApplicationCleared() bool {
+	return m.clearedapplication
+}
+
+// ApplicationIDs returns the "application" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ApplicationID instead. It exists only for internal usage by the builders.
+func (m *OauthUserAuthorizationMutation) ApplicationIDs() (ids []uint64) {
+	if id := m.application; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetApplication resets all changes to the "application" edge.
+func (m *OauthUserAuthorizationMutation) ResetApplication() {
+	m.application = nil
+	m.clearedapplication = false
+}
+
+// SetCodeID sets the "code" edge to the OauthAuthorizationCode entity by id.
+func (m *OauthUserAuthorizationMutation) SetCodeID(id uint64) {
+	m.code = &id
+}
+
+// ClearCode clears the "code" edge to the OauthAuthorizationCode entity.
+func (m *OauthUserAuthorizationMutation) ClearCode() {
+	m.clearedcode = true
+}
+
+// CodeCleared reports if the "code" edge to the OauthAuthorizationCode entity was cleared.
+func (m *OauthUserAuthorizationMutation) CodeCleared() bool {
+	return m.clearedcode
+}
+
+// CodeID returns the "code" edge ID in the mutation.
+func (m *OauthUserAuthorizationMutation) CodeID() (id uint64, exists bool) {
+	if m.code != nil {
+		return *m.code, true
+	}
+	return
+}
+
+// CodeIDs returns the "code" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CodeID instead. It exists only for internal usage by the builders.
+func (m *OauthUserAuthorizationMutation) CodeIDs() (ids []uint64) {
+	if id := m.code; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCode resets all changes to the "code" edge.
+func (m *OauthUserAuthorizationMutation) ResetCode() {
+	m.code = nil
+	m.clearedcode = false
+}
+
+// SetTokenID sets the "token" edge to the OauthToken entity by id.
+func (m *OauthUserAuthorizationMutation) SetTokenID(id uint64) {
+	m.token = &id
+}
+
+// ClearToken clears the "token" edge to the OauthToken entity.
+func (m *OauthUserAuthorizationMutation) ClearToken() {
+	m.clearedtoken = true
+}
+
+// TokenCleared reports if the "token" edge to the OauthToken entity was cleared.
+func (m *OauthUserAuthorizationMutation) TokenCleared() bool {
+	return m.clearedtoken
+}
+
+// TokenID returns the "token" edge ID in the mutation.
+func (m *OauthUserAuthorizationMutation) TokenID() (id uint64, exists bool) {
+	if m.token != nil {
+		return *m.token, true
+	}
+	return
+}
+
+// TokenIDs returns the "token" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TokenID instead. It exists only for internal usage by the builders.
+func (m *OauthUserAuthorizationMutation) TokenIDs() (ids []uint64) {
+	if id := m.token; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetToken resets all changes to the "token" edge.
+func (m *OauthUserAuthorizationMutation) ResetToken() {
+	m.token = nil
+	m.clearedtoken = false
+}
+
+// Where appends a list predicates to the OauthUserAuthorizationMutation builder.
+func (m *OauthUserAuthorizationMutation) Where(ps ...predicate.OauthUserAuthorization) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OauthUserAuthorizationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OauthUserAuthorizationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OauthUserAuthorization, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OauthUserAuthorizationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OauthUserAuthorizationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OauthUserAuthorization).
+func (m *OauthUserAuthorizationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OauthUserAuthorizationMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.create_time != nil {
+		fields = append(fields, oauthuserauthorization.FieldCreateTime)
+	}
+	if m.create_by != nil {
+		fields = append(fields, oauthuserauthorization.FieldCreateBy)
+	}
+	if m.update_time != nil {
+		fields = append(fields, oauthuserauthorization.FieldUpdateTime)
+	}
+	if m.update_by != nil {
+		fields = append(fields, oauthuserauthorization.FieldUpdateBy)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, oauthuserauthorization.FieldDeleteTime)
+	}
+	if m.delete_by != nil {
+		fields = append(fields, oauthuserauthorization.FieldDeleteBy)
+	}
+	if m.user != nil {
+		fields = append(fields, oauthuserauthorization.FieldUserID)
+	}
+	if m.application != nil {
+		fields = append(fields, oauthuserauthorization.FieldApplicationID)
+	}
+	if m.authorized_at != nil {
+		fields = append(fields, oauthuserauthorization.FieldAuthorizedAt)
+	}
+	if m.usage_state != nil {
+		fields = append(fields, oauthuserauthorization.FieldUsageState)
+	}
+	if m.scope != nil {
+		fields = append(fields, oauthuserauthorization.FieldScope)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OauthUserAuthorizationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case oauthuserauthorization.FieldCreateTime:
+		return m.CreateTime()
+	case oauthuserauthorization.FieldCreateBy:
+		return m.CreateBy()
+	case oauthuserauthorization.FieldUpdateTime:
+		return m.UpdateTime()
+	case oauthuserauthorization.FieldUpdateBy:
+		return m.UpdateBy()
+	case oauthuserauthorization.FieldDeleteTime:
+		return m.DeleteTime()
+	case oauthuserauthorization.FieldDeleteBy:
+		return m.DeleteBy()
+	case oauthuserauthorization.FieldUserID:
+		return m.UserID()
+	case oauthuserauthorization.FieldApplicationID:
+		return m.ApplicationID()
+	case oauthuserauthorization.FieldAuthorizedAt:
+		return m.AuthorizedAt()
+	case oauthuserauthorization.FieldUsageState:
+		return m.UsageState()
+	case oauthuserauthorization.FieldScope:
+		return m.Scope()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OauthUserAuthorizationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case oauthuserauthorization.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case oauthuserauthorization.FieldCreateBy:
+		return m.OldCreateBy(ctx)
+	case oauthuserauthorization.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case oauthuserauthorization.FieldUpdateBy:
+		return m.OldUpdateBy(ctx)
+	case oauthuserauthorization.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
+	case oauthuserauthorization.FieldDeleteBy:
+		return m.OldDeleteBy(ctx)
+	case oauthuserauthorization.FieldUserID:
+		return m.OldUserID(ctx)
+	case oauthuserauthorization.FieldApplicationID:
+		return m.OldApplicationID(ctx)
+	case oauthuserauthorization.FieldAuthorizedAt:
+		return m.OldAuthorizedAt(ctx)
+	case oauthuserauthorization.FieldUsageState:
+		return m.OldUsageState(ctx)
+	case oauthuserauthorization.FieldScope:
+		return m.OldScope(ctx)
+	}
+	return nil, fmt.Errorf("unknown OauthUserAuthorization field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthUserAuthorizationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case oauthuserauthorization.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case oauthuserauthorization.FieldCreateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateBy(v)
+		return nil
+	case oauthuserauthorization.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case oauthuserauthorization.FieldUpdateBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateBy(v)
+		return nil
+	case oauthuserauthorization.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
+	case oauthuserauthorization.FieldDeleteBy:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteBy(v)
+		return nil
+	case oauthuserauthorization.FieldUserID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case oauthuserauthorization.FieldApplicationID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetApplicationID(v)
+		return nil
+	case oauthuserauthorization.FieldAuthorizedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthorizedAt(v)
+		return nil
+	case oauthuserauthorization.FieldUsageState:
+		v, ok := value.(oauthuserauthorization.UsageState)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsageState(v)
+		return nil
+	case oauthuserauthorization.FieldScope:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScope(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthUserAuthorization field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OauthUserAuthorizationMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreate_by != nil {
+		fields = append(fields, oauthuserauthorization.FieldCreateBy)
+	}
+	if m.addupdate_by != nil {
+		fields = append(fields, oauthuserauthorization.FieldUpdateBy)
+	}
+	if m.adddelete_by != nil {
+		fields = append(fields, oauthuserauthorization.FieldDeleteBy)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OauthUserAuthorizationMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case oauthuserauthorization.FieldCreateBy:
+		return m.AddedCreateBy()
+	case oauthuserauthorization.FieldUpdateBy:
+		return m.AddedUpdateBy()
+	case oauthuserauthorization.FieldDeleteBy:
+		return m.AddedDeleteBy()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OauthUserAuthorizationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case oauthuserauthorization.FieldCreateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreateBy(v)
+		return nil
+	case oauthuserauthorization.FieldUpdateBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdateBy(v)
+		return nil
+	case oauthuserauthorization.FieldDeleteBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeleteBy(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OauthUserAuthorization numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OauthUserAuthorizationMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(oauthuserauthorization.FieldCreateBy) {
+		fields = append(fields, oauthuserauthorization.FieldCreateBy)
+	}
+	if m.FieldCleared(oauthuserauthorization.FieldUpdateBy) {
+		fields = append(fields, oauthuserauthorization.FieldUpdateBy)
+	}
+	if m.FieldCleared(oauthuserauthorization.FieldDeleteTime) {
+		fields = append(fields, oauthuserauthorization.FieldDeleteTime)
+	}
+	if m.FieldCleared(oauthuserauthorization.FieldDeleteBy) {
+		fields = append(fields, oauthuserauthorization.FieldDeleteBy)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OauthUserAuthorizationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OauthUserAuthorizationMutation) ClearField(name string) error {
+	switch name {
+	case oauthuserauthorization.FieldCreateBy:
+		m.ClearCreateBy()
+		return nil
+	case oauthuserauthorization.FieldUpdateBy:
+		m.ClearUpdateBy()
+		return nil
+	case oauthuserauthorization.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	case oauthuserauthorization.FieldDeleteBy:
+		m.ClearDeleteBy()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthUserAuthorization nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OauthUserAuthorizationMutation) ResetField(name string) error {
+	switch name {
+	case oauthuserauthorization.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case oauthuserauthorization.FieldCreateBy:
+		m.ResetCreateBy()
+		return nil
+	case oauthuserauthorization.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case oauthuserauthorization.FieldUpdateBy:
+		m.ResetUpdateBy()
+		return nil
+	case oauthuserauthorization.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
+	case oauthuserauthorization.FieldDeleteBy:
+		m.ResetDeleteBy()
+		return nil
+	case oauthuserauthorization.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case oauthuserauthorization.FieldApplicationID:
+		m.ResetApplicationID()
+		return nil
+	case oauthuserauthorization.FieldAuthorizedAt:
+		m.ResetAuthorizedAt()
+		return nil
+	case oauthuserauthorization.FieldUsageState:
+		m.ResetUsageState()
+		return nil
+	case oauthuserauthorization.FieldScope:
+		m.ResetScope()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthUserAuthorization field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OauthUserAuthorizationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.user != nil {
+		edges = append(edges, oauthuserauthorization.EdgeUser)
+	}
+	if m.application != nil {
+		edges = append(edges, oauthuserauthorization.EdgeApplication)
+	}
+	if m.code != nil {
+		edges = append(edges, oauthuserauthorization.EdgeCode)
+	}
+	if m.token != nil {
+		edges = append(edges, oauthuserauthorization.EdgeToken)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OauthUserAuthorizationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case oauthuserauthorization.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthuserauthorization.EdgeApplication:
+		if id := m.application; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthuserauthorization.EdgeCode:
+		if id := m.code; id != nil {
+			return []ent.Value{*id}
+		}
+	case oauthuserauthorization.EdgeToken:
+		if id := m.token; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OauthUserAuthorizationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 4)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OauthUserAuthorizationMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OauthUserAuthorizationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.cleareduser {
+		edges = append(edges, oauthuserauthorization.EdgeUser)
+	}
+	if m.clearedapplication {
+		edges = append(edges, oauthuserauthorization.EdgeApplication)
+	}
+	if m.clearedcode {
+		edges = append(edges, oauthuserauthorization.EdgeCode)
+	}
+	if m.clearedtoken {
+		edges = append(edges, oauthuserauthorization.EdgeToken)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OauthUserAuthorizationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case oauthuserauthorization.EdgeUser:
+		return m.cleareduser
+	case oauthuserauthorization.EdgeApplication:
+		return m.clearedapplication
+	case oauthuserauthorization.EdgeCode:
+		return m.clearedcode
+	case oauthuserauthorization.EdgeToken:
+		return m.clearedtoken
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OauthUserAuthorizationMutation) ClearEdge(name string) error {
+	switch name {
+	case oauthuserauthorization.EdgeUser:
+		m.ClearUser()
+		return nil
+	case oauthuserauthorization.EdgeApplication:
+		m.ClearApplication()
+		return nil
+	case oauthuserauthorization.EdgeCode:
+		m.ClearCode()
+		return nil
+	case oauthuserauthorization.EdgeToken:
+		m.ClearToken()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthUserAuthorization unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OauthUserAuthorizationMutation) ResetEdge(name string) error {
+	switch name {
+	case oauthuserauthorization.EdgeUser:
+		m.ResetUser()
+		return nil
+	case oauthuserauthorization.EdgeApplication:
+		m.ResetApplication()
+		return nil
+	case oauthuserauthorization.EdgeCode:
+		m.ResetCode()
+		return nil
+	case oauthuserauthorization.EdgeToken:
+		m.ResetToken()
+		return nil
+	}
+	return fmt.Errorf("unknown OauthUserAuthorization edge %s", name)
 }
 
 // PermissionMutation represents an operation that mutates the Permission nodes in the graph.

@@ -80,6 +80,90 @@ func (f LoginRecordFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LoginRecordMutation", m)
 }
 
+// The OauthApplicationFunc type is an adapter to allow the use of ordinary
+// function as OauthApplication mutator.
+type OauthApplicationFunc func(context.Context, *ent.OauthApplicationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OauthApplicationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OauthApplicationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OauthApplicationMutation", m)
+}
+
+// The OauthAuthorizationCodeFunc type is an adapter to allow the use of ordinary
+// function as OauthAuthorizationCode mutator.
+type OauthAuthorizationCodeFunc func(context.Context, *ent.OauthAuthorizationCodeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OauthAuthorizationCodeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OauthAuthorizationCodeMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OauthAuthorizationCodeMutation", m)
+}
+
+// The OauthProviderFunc type is an adapter to allow the use of ordinary
+// function as OauthProvider mutator.
+type OauthProviderFunc func(context.Context, *ent.OauthProviderMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OauthProviderFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OauthProviderMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OauthProviderMutation", m)
+}
+
+// The OauthStateFunc type is an adapter to allow the use of ordinary
+// function as OauthState mutator.
+type OauthStateFunc func(context.Context, *ent.OauthStateMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OauthStateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OauthStateMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OauthStateMutation", m)
+}
+
+// The OauthTokenFunc type is an adapter to allow the use of ordinary
+// function as OauthToken mutator.
+type OauthTokenFunc func(context.Context, *ent.OauthTokenMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OauthTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OauthTokenMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OauthTokenMutation", m)
+}
+
+// The OauthUserFunc type is an adapter to allow the use of ordinary
+// function as OauthUser mutator.
+type OauthUserFunc func(context.Context, *ent.OauthUserMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OauthUserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OauthUserMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OauthUserMutation", m)
+}
+
+// The OauthUserAuthorizationFunc type is an adapter to allow the use of ordinary
+// function as OauthUserAuthorization mutator.
+type OauthUserAuthorizationFunc func(context.Context, *ent.OauthUserAuthorizationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OauthUserAuthorizationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OauthUserAuthorizationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OauthUserAuthorizationMutation", m)
+}
+
 // The PermissionFunc type is an adapter to allow the use of ordinary
 // function as Permission mutator.
 type PermissionFunc func(context.Context, *ent.PermissionMutation) (ent.Value, error)

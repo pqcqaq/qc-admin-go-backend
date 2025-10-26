@@ -9,6 +9,13 @@ import (
 	"go-backend/database/ent/credential"
 	"go-backend/database/ent/logging"
 	"go-backend/database/ent/loginrecord"
+	"go-backend/database/ent/oauthapplication"
+	"go-backend/database/ent/oauthauthorizationcode"
+	"go-backend/database/ent/oauthprovider"
+	"go-backend/database/ent/oauthstate"
+	"go-backend/database/ent/oauthtoken"
+	"go-backend/database/ent/oauthuser"
+	"go-backend/database/ent/oauthuserauthorization"
 	"go-backend/database/ent/permission"
 	"go-backend/database/ent/predicate"
 	"go-backend/database/ent/role"
@@ -28,7 +35,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 15)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 22)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   apiauth.Table,
@@ -210,6 +217,200 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   oauthapplication.Table,
+			Columns: oauthapplication.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: oauthapplication.FieldID,
+			},
+		},
+		Type: "OauthApplication",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			oauthapplication.FieldCreateTime:     {Type: field.TypeTime, Column: oauthapplication.FieldCreateTime},
+			oauthapplication.FieldCreateBy:       {Type: field.TypeUint64, Column: oauthapplication.FieldCreateBy},
+			oauthapplication.FieldUpdateTime:     {Type: field.TypeTime, Column: oauthapplication.FieldUpdateTime},
+			oauthapplication.FieldUpdateBy:       {Type: field.TypeUint64, Column: oauthapplication.FieldUpdateBy},
+			oauthapplication.FieldDeleteTime:     {Type: field.TypeTime, Column: oauthapplication.FieldDeleteTime},
+			oauthapplication.FieldDeleteBy:       {Type: field.TypeUint64, Column: oauthapplication.FieldDeleteBy},
+			oauthapplication.FieldClientID:       {Type: field.TypeString, Column: oauthapplication.FieldClientID},
+			oauthapplication.FieldClientSecret:   {Type: field.TypeString, Column: oauthapplication.FieldClientSecret},
+			oauthapplication.FieldName:           {Type: field.TypeString, Column: oauthapplication.FieldName},
+			oauthapplication.FieldRedirectUris:   {Type: field.TypeJSON, Column: oauthapplication.FieldRedirectUris},
+			oauthapplication.FieldIsConfidential: {Type: field.TypeBool, Column: oauthapplication.FieldIsConfidential},
+			oauthapplication.FieldScopes:         {Type: field.TypeJSON, Column: oauthapplication.FieldScopes},
+			oauthapplication.FieldAbleState:      {Type: field.TypeEnum, Column: oauthapplication.FieldAbleState},
+			oauthapplication.FieldSystemID:       {Type: field.TypeUint64, Column: oauthapplication.FieldSystemID},
+		},
+	}
+	graph.Nodes[7] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   oauthauthorizationcode.Table,
+			Columns: oauthauthorizationcode.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: oauthauthorizationcode.FieldID,
+			},
+		},
+		Type: "OauthAuthorizationCode",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			oauthauthorizationcode.FieldCreateTime:          {Type: field.TypeTime, Column: oauthauthorizationcode.FieldCreateTime},
+			oauthauthorizationcode.FieldCreateBy:            {Type: field.TypeUint64, Column: oauthauthorizationcode.FieldCreateBy},
+			oauthauthorizationcode.FieldUpdateTime:          {Type: field.TypeTime, Column: oauthauthorizationcode.FieldUpdateTime},
+			oauthauthorizationcode.FieldUpdateBy:            {Type: field.TypeUint64, Column: oauthauthorizationcode.FieldUpdateBy},
+			oauthauthorizationcode.FieldDeleteTime:          {Type: field.TypeTime, Column: oauthauthorizationcode.FieldDeleteTime},
+			oauthauthorizationcode.FieldDeleteBy:            {Type: field.TypeUint64, Column: oauthauthorizationcode.FieldDeleteBy},
+			oauthauthorizationcode.FieldCode:                {Type: field.TypeString, Column: oauthauthorizationcode.FieldCode},
+			oauthauthorizationcode.FieldApplicationID:       {Type: field.TypeUint64, Column: oauthauthorizationcode.FieldApplicationID},
+			oauthauthorizationcode.FieldUserID:              {Type: field.TypeUint64, Column: oauthauthorizationcode.FieldUserID},
+			oauthauthorizationcode.FieldRedirectURI:         {Type: field.TypeString, Column: oauthauthorizationcode.FieldRedirectURI},
+			oauthauthorizationcode.FieldScope:               {Type: field.TypeJSON, Column: oauthauthorizationcode.FieldScope},
+			oauthauthorizationcode.FieldExpiresAt:           {Type: field.TypeTime, Column: oauthauthorizationcode.FieldExpiresAt},
+			oauthauthorizationcode.FieldUsedAt:              {Type: field.TypeTime, Column: oauthauthorizationcode.FieldUsedAt},
+			oauthauthorizationcode.FieldCodeChallenge:       {Type: field.TypeString, Column: oauthauthorizationcode.FieldCodeChallenge},
+			oauthauthorizationcode.FieldCodeChallengeMethod: {Type: field.TypeString, Column: oauthauthorizationcode.FieldCodeChallengeMethod},
+		},
+	}
+	graph.Nodes[8] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   oauthprovider.Table,
+			Columns: oauthprovider.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: oauthprovider.FieldID,
+			},
+		},
+		Type: "OauthProvider",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			oauthprovider.FieldCreateTime:            {Type: field.TypeTime, Column: oauthprovider.FieldCreateTime},
+			oauthprovider.FieldCreateBy:              {Type: field.TypeUint64, Column: oauthprovider.FieldCreateBy},
+			oauthprovider.FieldUpdateTime:            {Type: field.TypeTime, Column: oauthprovider.FieldUpdateTime},
+			oauthprovider.FieldUpdateBy:              {Type: field.TypeUint64, Column: oauthprovider.FieldUpdateBy},
+			oauthprovider.FieldDeleteTime:            {Type: field.TypeTime, Column: oauthprovider.FieldDeleteTime},
+			oauthprovider.FieldDeleteBy:              {Type: field.TypeUint64, Column: oauthprovider.FieldDeleteBy},
+			oauthprovider.FieldType:                  {Type: field.TypeEnum, Column: oauthprovider.FieldType},
+			oauthprovider.FieldName:                  {Type: field.TypeString, Column: oauthprovider.FieldName},
+			oauthprovider.FieldAuthorizationEndpoint: {Type: field.TypeString, Column: oauthprovider.FieldAuthorizationEndpoint},
+			oauthprovider.FieldTokenEndpoint:         {Type: field.TypeString, Column: oauthprovider.FieldTokenEndpoint},
+			oauthprovider.FieldUserInfoEndpoint:      {Type: field.TypeString, Column: oauthprovider.FieldUserInfoEndpoint},
+			oauthprovider.FieldRevokeEndpoint:        {Type: field.TypeString, Column: oauthprovider.FieldRevokeEndpoint},
+			oauthprovider.FieldRefreshEndpoint:       {Type: field.TypeString, Column: oauthprovider.FieldRefreshEndpoint},
+			oauthprovider.FieldClientID:              {Type: field.TypeString, Column: oauthprovider.FieldClientID},
+			oauthprovider.FieldClientSecret:          {Type: field.TypeString, Column: oauthprovider.FieldClientSecret},
+			oauthprovider.FieldRedirectURI:           {Type: field.TypeString, Column: oauthprovider.FieldRedirectURI},
+			oauthprovider.FieldScopes:                {Type: field.TypeJSON, Column: oauthprovider.FieldScopes},
+			oauthprovider.FieldAutoRegister:          {Type: field.TypeBool, Column: oauthprovider.FieldAutoRegister},
+			oauthprovider.FieldAbleState:             {Type: field.TypeEnum, Column: oauthprovider.FieldAbleState},
+			oauthprovider.FieldMetadata:              {Type: field.TypeJSON, Column: oauthprovider.FieldMetadata},
+		},
+	}
+	graph.Nodes[9] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   oauthstate.Table,
+			Columns: oauthstate.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: oauthstate.FieldID,
+			},
+		},
+		Type: "OauthState",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			oauthstate.FieldCreateTime: {Type: field.TypeTime, Column: oauthstate.FieldCreateTime},
+			oauthstate.FieldCreateBy:   {Type: field.TypeUint64, Column: oauthstate.FieldCreateBy},
+			oauthstate.FieldUpdateTime: {Type: field.TypeTime, Column: oauthstate.FieldUpdateTime},
+			oauthstate.FieldUpdateBy:   {Type: field.TypeUint64, Column: oauthstate.FieldUpdateBy},
+			oauthstate.FieldDeleteTime: {Type: field.TypeTime, Column: oauthstate.FieldDeleteTime},
+			oauthstate.FieldDeleteBy:   {Type: field.TypeUint64, Column: oauthstate.FieldDeleteBy},
+			oauthstate.FieldState:      {Type: field.TypeString, Column: oauthstate.FieldState},
+			oauthstate.FieldType:       {Type: field.TypeEnum, Column: oauthstate.FieldType},
+			oauthstate.FieldProviderID: {Type: field.TypeUint64, Column: oauthstate.FieldProviderID},
+			oauthstate.FieldUserID:     {Type: field.TypeUint64, Column: oauthstate.FieldUserID},
+			oauthstate.FieldExpiresAt:  {Type: field.TypeTime, Column: oauthstate.FieldExpiresAt},
+			oauthstate.FieldUsedAt:     {Type: field.TypeTime, Column: oauthstate.FieldUsedAt},
+		},
+	}
+	graph.Nodes[10] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   oauthtoken.Table,
+			Columns: oauthtoken.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: oauthtoken.FieldID,
+			},
+		},
+		Type: "OauthToken",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			oauthtoken.FieldCreateTime:       {Type: field.TypeTime, Column: oauthtoken.FieldCreateTime},
+			oauthtoken.FieldCreateBy:         {Type: field.TypeUint64, Column: oauthtoken.FieldCreateBy},
+			oauthtoken.FieldUpdateTime:       {Type: field.TypeTime, Column: oauthtoken.FieldUpdateTime},
+			oauthtoken.FieldUpdateBy:         {Type: field.TypeUint64, Column: oauthtoken.FieldUpdateBy},
+			oauthtoken.FieldDeleteTime:       {Type: field.TypeTime, Column: oauthtoken.FieldDeleteTime},
+			oauthtoken.FieldDeleteBy:         {Type: field.TypeUint64, Column: oauthtoken.FieldDeleteBy},
+			oauthtoken.FieldAccessToken:      {Type: field.TypeString, Column: oauthtoken.FieldAccessToken},
+			oauthtoken.FieldRefreshToken:     {Type: field.TypeString, Column: oauthtoken.FieldRefreshToken},
+			oauthtoken.FieldApplicationID:    {Type: field.TypeUint64, Column: oauthtoken.FieldApplicationID},
+			oauthtoken.FieldUserID:           {Type: field.TypeUint64, Column: oauthtoken.FieldUserID},
+			oauthtoken.FieldScope:            {Type: field.TypeJSON, Column: oauthtoken.FieldScope},
+			oauthtoken.FieldAccessExpiresAt:  {Type: field.TypeTime, Column: oauthtoken.FieldAccessExpiresAt},
+			oauthtoken.FieldRefreshExpiresAt: {Type: field.TypeTime, Column: oauthtoken.FieldRefreshExpiresAt},
+			oauthtoken.FieldRevokedAt:        {Type: field.TypeTime, Column: oauthtoken.FieldRevokedAt},
+			oauthtoken.FieldLastUsedAt:       {Type: field.TypeTime, Column: oauthtoken.FieldLastUsedAt},
+		},
+	}
+	graph.Nodes[11] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   oauthuser.Table,
+			Columns: oauthuser.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: oauthuser.FieldID,
+			},
+		},
+		Type: "OauthUser",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			oauthuser.FieldCreateTime:       {Type: field.TypeTime, Column: oauthuser.FieldCreateTime},
+			oauthuser.FieldCreateBy:         {Type: field.TypeUint64, Column: oauthuser.FieldCreateBy},
+			oauthuser.FieldUpdateTime:       {Type: field.TypeTime, Column: oauthuser.FieldUpdateTime},
+			oauthuser.FieldUpdateBy:         {Type: field.TypeUint64, Column: oauthuser.FieldUpdateBy},
+			oauthuser.FieldDeleteTime:       {Type: field.TypeTime, Column: oauthuser.FieldDeleteTime},
+			oauthuser.FieldDeleteBy:         {Type: field.TypeUint64, Column: oauthuser.FieldDeleteBy},
+			oauthuser.FieldProviderID:       {Type: field.TypeUint64, Column: oauthuser.FieldProviderID},
+			oauthuser.FieldUserID:           {Type: field.TypeUint64, Column: oauthuser.FieldUserID},
+			oauthuser.FieldStateID:          {Type: field.TypeUint64, Column: oauthuser.FieldStateID},
+			oauthuser.FieldProviderUserID:   {Type: field.TypeString, Column: oauthuser.FieldProviderUserID},
+			oauthuser.FieldRawUserInfo:      {Type: field.TypeJSON, Column: oauthuser.FieldRawUserInfo},
+			oauthuser.FieldAccessToken:      {Type: field.TypeString, Column: oauthuser.FieldAccessToken},
+			oauthuser.FieldRefreshToken:     {Type: field.TypeString, Column: oauthuser.FieldRefreshToken},
+			oauthuser.FieldAccessExpiresAt:  {Type: field.TypeTime, Column: oauthuser.FieldAccessExpiresAt},
+			oauthuser.FieldRefreshExpiresAt: {Type: field.TypeTime, Column: oauthuser.FieldRefreshExpiresAt},
+			oauthuser.FieldLoadState:        {Type: field.TypeEnum, Column: oauthuser.FieldLoadState},
+		},
+	}
+	graph.Nodes[12] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   oauthuserauthorization.Table,
+			Columns: oauthuserauthorization.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: oauthuserauthorization.FieldID,
+			},
+		},
+		Type: "OauthUserAuthorization",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			oauthuserauthorization.FieldCreateTime:    {Type: field.TypeTime, Column: oauthuserauthorization.FieldCreateTime},
+			oauthuserauthorization.FieldCreateBy:      {Type: field.TypeUint64, Column: oauthuserauthorization.FieldCreateBy},
+			oauthuserauthorization.FieldUpdateTime:    {Type: field.TypeTime, Column: oauthuserauthorization.FieldUpdateTime},
+			oauthuserauthorization.FieldUpdateBy:      {Type: field.TypeUint64, Column: oauthuserauthorization.FieldUpdateBy},
+			oauthuserauthorization.FieldDeleteTime:    {Type: field.TypeTime, Column: oauthuserauthorization.FieldDeleteTime},
+			oauthuserauthorization.FieldDeleteBy:      {Type: field.TypeUint64, Column: oauthuserauthorization.FieldDeleteBy},
+			oauthuserauthorization.FieldUserID:        {Type: field.TypeUint64, Column: oauthuserauthorization.FieldUserID},
+			oauthuserauthorization.FieldApplicationID: {Type: field.TypeUint64, Column: oauthuserauthorization.FieldApplicationID},
+			oauthuserauthorization.FieldAuthorizedAt:  {Type: field.TypeTime, Column: oauthuserauthorization.FieldAuthorizedAt},
+			oauthuserauthorization.FieldUsageState:    {Type: field.TypeEnum, Column: oauthuserauthorization.FieldUsageState},
+			oauthuserauthorization.FieldScope:         {Type: field.TypeJSON, Column: oauthuserauthorization.FieldScope},
+		},
+	}
+	graph.Nodes[13] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   permission.Table,
 			Columns: permission.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -231,7 +432,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			permission.FieldIsPublic:    {Type: field.TypeBool, Column: permission.FieldIsPublic},
 		},
 	}
-	graph.Nodes[7] = &sqlgraph.Node{
+	graph.Nodes[14] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   role.Table,
 			Columns: role.Columns,
@@ -252,7 +453,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			role.FieldDescription: {Type: field.TypeString, Column: role.FieldDescription},
 		},
 	}
-	graph.Nodes[8] = &sqlgraph.Node{
+	graph.Nodes[15] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   rolepermission.Table,
 			Columns: rolepermission.Columns,
@@ -273,7 +474,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			rolepermission.FieldPermissionID: {Type: field.TypeUint64, Column: rolepermission.FieldPermissionID},
 		},
 	}
-	graph.Nodes[9] = &sqlgraph.Node{
+	graph.Nodes[16] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   scan.Table,
 			Columns: scan.Columns,
@@ -295,7 +496,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			scan.FieldSuccess:    {Type: field.TypeBool, Column: scan.FieldSuccess},
 		},
 	}
-	graph.Nodes[10] = &sqlgraph.Node{
+	graph.Nodes[17] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   scope.Table,
 			Columns: scope.Columns,
@@ -326,7 +527,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			scope.FieldParentID:    {Type: field.TypeUint64, Column: scope.FieldParentID},
 		},
 	}
-	graph.Nodes[11] = &sqlgraph.Node{
+	graph.Nodes[18] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemmonitor.Table,
 			Columns: systemmonitor.Columns,
@@ -368,7 +569,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemmonitor.FieldRecordedAt:         {Type: field.TypeTime, Column: systemmonitor.FieldRecordedAt},
 		},
 	}
-	graph.Nodes[12] = &sqlgraph.Node{
+	graph.Nodes[19] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -392,7 +593,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldAvatarID:   {Type: field.TypeUint64, Column: user.FieldAvatarID},
 		},
 	}
-	graph.Nodes[13] = &sqlgraph.Node{
+	graph.Nodes[20] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   userrole.Table,
 			Columns: userrole.Columns,
@@ -413,7 +614,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			userrole.FieldRoleID:     {Type: field.TypeUint64, Column: userrole.FieldRoleID},
 		},
 	}
-	graph.Nodes[14] = &sqlgraph.Node{
+	graph.Nodes[21] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   verifycode.Table,
 			Columns: verifycode.Columns,
@@ -488,6 +689,282 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"LoginRecord",
 		"User",
+	)
+	graph.MustAddE(
+		"authorization_codes",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   oauthapplication.AuthorizationCodesTable,
+			Columns: []string{oauthapplication.AuthorizationCodesColumn},
+			Bidi:    false,
+		},
+		"OauthApplication",
+		"OauthAuthorizationCode",
+	)
+	graph.MustAddE(
+		"tokens",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   oauthapplication.TokensTable,
+			Columns: []string{oauthapplication.TokensColumn},
+			Bidi:    false,
+		},
+		"OauthApplication",
+		"OauthToken",
+	)
+	graph.MustAddE(
+		"user_authorizations",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   oauthapplication.UserAuthorizationsTable,
+			Columns: []string{oauthapplication.UserAuthorizationsColumn},
+			Bidi:    false,
+		},
+		"OauthApplication",
+		"OauthUserAuthorization",
+	)
+	graph.MustAddE(
+		"application",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   oauthauthorizationcode.ApplicationTable,
+			Columns: []string{oauthauthorizationcode.ApplicationColumn},
+			Bidi:    false,
+		},
+		"OauthAuthorizationCode",
+		"OauthApplication",
+	)
+	graph.MustAddE(
+		"user",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oauthauthorizationcode.UserTable,
+			Columns: []string{oauthauthorizationcode.UserColumn},
+			Bidi:    false,
+		},
+		"OauthAuthorizationCode",
+		"User",
+	)
+	graph.MustAddE(
+		"token",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   oauthauthorizationcode.TokenTable,
+			Columns: []string{oauthauthorizationcode.TokenColumn},
+			Bidi:    false,
+		},
+		"OauthAuthorizationCode",
+		"OauthToken",
+	)
+	graph.MustAddE(
+		"user_authorization",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   oauthauthorizationcode.UserAuthorizationTable,
+			Columns: []string{oauthauthorizationcode.UserAuthorizationColumn},
+			Bidi:    false,
+		},
+		"OauthAuthorizationCode",
+		"OauthUserAuthorization",
+	)
+	graph.MustAddE(
+		"states",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   oauthprovider.StatesTable,
+			Columns: []string{oauthprovider.StatesColumn},
+			Bidi:    false,
+		},
+		"OauthProvider",
+		"OauthState",
+	)
+	graph.MustAddE(
+		"oauth_users",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   oauthprovider.OauthUsersTable,
+			Columns: []string{oauthprovider.OauthUsersColumn},
+			Bidi:    false,
+		},
+		"OauthProvider",
+		"OauthUser",
+	)
+	graph.MustAddE(
+		"provider",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   oauthstate.ProviderTable,
+			Columns: []string{oauthstate.ProviderColumn},
+			Bidi:    false,
+		},
+		"OauthState",
+		"OauthProvider",
+	)
+	graph.MustAddE(
+		"user",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oauthstate.UserTable,
+			Columns: []string{oauthstate.UserColumn},
+			Bidi:    false,
+		},
+		"OauthState",
+		"User",
+	)
+	graph.MustAddE(
+		"oauth_users",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   oauthstate.OauthUsersTable,
+			Columns: []string{oauthstate.OauthUsersColumn},
+			Bidi:    false,
+		},
+		"OauthState",
+		"OauthUser",
+	)
+	graph.MustAddE(
+		"application",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   oauthtoken.ApplicationTable,
+			Columns: []string{oauthtoken.ApplicationColumn},
+			Bidi:    false,
+		},
+		"OauthToken",
+		"OauthApplication",
+	)
+	graph.MustAddE(
+		"user",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oauthtoken.UserTable,
+			Columns: []string{oauthtoken.UserColumn},
+			Bidi:    false,
+		},
+		"OauthToken",
+		"User",
+	)
+	graph.MustAddE(
+		"authorization_code",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   oauthtoken.AuthorizationCodeTable,
+			Columns: []string{oauthtoken.AuthorizationCodeColumn},
+			Bidi:    false,
+		},
+		"OauthToken",
+		"OauthAuthorizationCode",
+	)
+	graph.MustAddE(
+		"user_authorization",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   oauthtoken.UserAuthorizationTable,
+			Columns: []string{oauthtoken.UserAuthorizationColumn},
+			Bidi:    false,
+		},
+		"OauthToken",
+		"OauthUserAuthorization",
+	)
+	graph.MustAddE(
+		"provider",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   oauthuser.ProviderTable,
+			Columns: []string{oauthuser.ProviderColumn},
+			Bidi:    false,
+		},
+		"OauthUser",
+		"OauthProvider",
+	)
+	graph.MustAddE(
+		"user",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oauthuser.UserTable,
+			Columns: []string{oauthuser.UserColumn},
+			Bidi:    false,
+		},
+		"OauthUser",
+		"User",
+	)
+	graph.MustAddE(
+		"state",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   oauthuser.StateTable,
+			Columns: []string{oauthuser.StateColumn},
+			Bidi:    false,
+		},
+		"OauthUser",
+		"OauthState",
+	)
+	graph.MustAddE(
+		"user",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oauthuserauthorization.UserTable,
+			Columns: []string{oauthuserauthorization.UserColumn},
+			Bidi:    false,
+		},
+		"OauthUserAuthorization",
+		"User",
+	)
+	graph.MustAddE(
+		"application",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oauthuserauthorization.ApplicationTable,
+			Columns: []string{oauthuserauthorization.ApplicationColumn},
+			Bidi:    false,
+		},
+		"OauthUserAuthorization",
+		"OauthApplication",
+	)
+	graph.MustAddE(
+		"code",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   oauthuserauthorization.CodeTable,
+			Columns: []string{oauthuserauthorization.CodeColumn},
+			Bidi:    false,
+		},
+		"OauthUserAuthorization",
+		"OauthAuthorizationCode",
+	)
+	graph.MustAddE(
+		"token",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   oauthuserauthorization.TokenTable,
+			Columns: []string{oauthuserauthorization.TokenColumn},
+			Bidi:    false,
+		},
+		"OauthUserAuthorization",
+		"OauthToken",
 	)
 	graph.MustAddE(
 		"role_permissions",
@@ -1540,6 +2017,1123 @@ func (f *LoginRecordFilter) WhereHasUserWith(preds ...predicate.User) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *OauthApplicationQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the OauthApplicationQuery builder.
+func (_q *OauthApplicationQuery) Filter() *OauthApplicationFilter {
+	return &OauthApplicationFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *OauthApplicationMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the OauthApplicationMutation builder.
+func (m *OauthApplicationMutation) Filter() *OauthApplicationFilter {
+	return &OauthApplicationFilter{config: m.config, predicateAdder: m}
+}
+
+// OauthApplicationFilter provides a generic filtering capability at runtime for OauthApplicationQuery.
+type OauthApplicationFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *OauthApplicationFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *OauthApplicationFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(oauthapplication.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *OauthApplicationFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthapplication.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *OauthApplicationFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthapplication.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *OauthApplicationFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthapplication.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *OauthApplicationFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthapplication.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *OauthApplicationFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(oauthapplication.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *OauthApplicationFilter) WhereDeleteBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthapplication.FieldDeleteBy))
+}
+
+// WhereClientID applies the entql string predicate on the client_id field.
+func (f *OauthApplicationFilter) WhereClientID(p entql.StringP) {
+	f.Where(p.Field(oauthapplication.FieldClientID))
+}
+
+// WhereClientSecret applies the entql string predicate on the client_secret field.
+func (f *OauthApplicationFilter) WhereClientSecret(p entql.StringP) {
+	f.Where(p.Field(oauthapplication.FieldClientSecret))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *OauthApplicationFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(oauthapplication.FieldName))
+}
+
+// WhereRedirectUris applies the entql json.RawMessage predicate on the redirect_uris field.
+func (f *OauthApplicationFilter) WhereRedirectUris(p entql.BytesP) {
+	f.Where(p.Field(oauthapplication.FieldRedirectUris))
+}
+
+// WhereIsConfidential applies the entql bool predicate on the is_confidential field.
+func (f *OauthApplicationFilter) WhereIsConfidential(p entql.BoolP) {
+	f.Where(p.Field(oauthapplication.FieldIsConfidential))
+}
+
+// WhereScopes applies the entql json.RawMessage predicate on the scopes field.
+func (f *OauthApplicationFilter) WhereScopes(p entql.BytesP) {
+	f.Where(p.Field(oauthapplication.FieldScopes))
+}
+
+// WhereAbleState applies the entql string predicate on the able_state field.
+func (f *OauthApplicationFilter) WhereAbleState(p entql.StringP) {
+	f.Where(p.Field(oauthapplication.FieldAbleState))
+}
+
+// WhereSystemID applies the entql uint64 predicate on the system_id field.
+func (f *OauthApplicationFilter) WhereSystemID(p entql.Uint64P) {
+	f.Where(p.Field(oauthapplication.FieldSystemID))
+}
+
+// WhereHasAuthorizationCodes applies a predicate to check if query has an edge authorization_codes.
+func (f *OauthApplicationFilter) WhereHasAuthorizationCodes() {
+	f.Where(entql.HasEdge("authorization_codes"))
+}
+
+// WhereHasAuthorizationCodesWith applies a predicate to check if query has an edge authorization_codes with a given conditions (other predicates).
+func (f *OauthApplicationFilter) WhereHasAuthorizationCodesWith(preds ...predicate.OauthAuthorizationCode) {
+	f.Where(entql.HasEdgeWith("authorization_codes", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasTokens applies a predicate to check if query has an edge tokens.
+func (f *OauthApplicationFilter) WhereHasTokens() {
+	f.Where(entql.HasEdge("tokens"))
+}
+
+// WhereHasTokensWith applies a predicate to check if query has an edge tokens with a given conditions (other predicates).
+func (f *OauthApplicationFilter) WhereHasTokensWith(preds ...predicate.OauthToken) {
+	f.Where(entql.HasEdgeWith("tokens", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUserAuthorizations applies a predicate to check if query has an edge user_authorizations.
+func (f *OauthApplicationFilter) WhereHasUserAuthorizations() {
+	f.Where(entql.HasEdge("user_authorizations"))
+}
+
+// WhereHasUserAuthorizationsWith applies a predicate to check if query has an edge user_authorizations with a given conditions (other predicates).
+func (f *OauthApplicationFilter) WhereHasUserAuthorizationsWith(preds ...predicate.OauthUserAuthorization) {
+	f.Where(entql.HasEdgeWith("user_authorizations", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *OauthAuthorizationCodeQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the OauthAuthorizationCodeQuery builder.
+func (_q *OauthAuthorizationCodeQuery) Filter() *OauthAuthorizationCodeFilter {
+	return &OauthAuthorizationCodeFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *OauthAuthorizationCodeMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the OauthAuthorizationCodeMutation builder.
+func (m *OauthAuthorizationCodeMutation) Filter() *OauthAuthorizationCodeFilter {
+	return &OauthAuthorizationCodeFilter{config: m.config, predicateAdder: m}
+}
+
+// OauthAuthorizationCodeFilter provides a generic filtering capability at runtime for OauthAuthorizationCodeQuery.
+type OauthAuthorizationCodeFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *OauthAuthorizationCodeFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *OauthAuthorizationCodeFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(oauthauthorizationcode.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *OauthAuthorizationCodeFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthauthorizationcode.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *OauthAuthorizationCodeFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthauthorizationcode.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *OauthAuthorizationCodeFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthauthorizationcode.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *OauthAuthorizationCodeFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthauthorizationcode.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *OauthAuthorizationCodeFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(oauthauthorizationcode.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *OauthAuthorizationCodeFilter) WhereDeleteBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthauthorizationcode.FieldDeleteBy))
+}
+
+// WhereCode applies the entql string predicate on the code field.
+func (f *OauthAuthorizationCodeFilter) WhereCode(p entql.StringP) {
+	f.Where(p.Field(oauthauthorizationcode.FieldCode))
+}
+
+// WhereApplicationID applies the entql uint64 predicate on the application_id field.
+func (f *OauthAuthorizationCodeFilter) WhereApplicationID(p entql.Uint64P) {
+	f.Where(p.Field(oauthauthorizationcode.FieldApplicationID))
+}
+
+// WhereUserID applies the entql uint64 predicate on the user_id field.
+func (f *OauthAuthorizationCodeFilter) WhereUserID(p entql.Uint64P) {
+	f.Where(p.Field(oauthauthorizationcode.FieldUserID))
+}
+
+// WhereRedirectURI applies the entql string predicate on the redirect_uri field.
+func (f *OauthAuthorizationCodeFilter) WhereRedirectURI(p entql.StringP) {
+	f.Where(p.Field(oauthauthorizationcode.FieldRedirectURI))
+}
+
+// WhereScope applies the entql json.RawMessage predicate on the scope field.
+func (f *OauthAuthorizationCodeFilter) WhereScope(p entql.BytesP) {
+	f.Where(p.Field(oauthauthorizationcode.FieldScope))
+}
+
+// WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
+func (f *OauthAuthorizationCodeFilter) WhereExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(oauthauthorizationcode.FieldExpiresAt))
+}
+
+// WhereUsedAt applies the entql time.Time predicate on the used_at field.
+func (f *OauthAuthorizationCodeFilter) WhereUsedAt(p entql.TimeP) {
+	f.Where(p.Field(oauthauthorizationcode.FieldUsedAt))
+}
+
+// WhereCodeChallenge applies the entql string predicate on the code_challenge field.
+func (f *OauthAuthorizationCodeFilter) WhereCodeChallenge(p entql.StringP) {
+	f.Where(p.Field(oauthauthorizationcode.FieldCodeChallenge))
+}
+
+// WhereCodeChallengeMethod applies the entql string predicate on the code_challenge_method field.
+func (f *OauthAuthorizationCodeFilter) WhereCodeChallengeMethod(p entql.StringP) {
+	f.Where(p.Field(oauthauthorizationcode.FieldCodeChallengeMethod))
+}
+
+// WhereHasApplication applies a predicate to check if query has an edge application.
+func (f *OauthAuthorizationCodeFilter) WhereHasApplication() {
+	f.Where(entql.HasEdge("application"))
+}
+
+// WhereHasApplicationWith applies a predicate to check if query has an edge application with a given conditions (other predicates).
+func (f *OauthAuthorizationCodeFilter) WhereHasApplicationWith(preds ...predicate.OauthApplication) {
+	f.Where(entql.HasEdgeWith("application", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *OauthAuthorizationCodeFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
+}
+
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *OauthAuthorizationCodeFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasToken applies a predicate to check if query has an edge token.
+func (f *OauthAuthorizationCodeFilter) WhereHasToken() {
+	f.Where(entql.HasEdge("token"))
+}
+
+// WhereHasTokenWith applies a predicate to check if query has an edge token with a given conditions (other predicates).
+func (f *OauthAuthorizationCodeFilter) WhereHasTokenWith(preds ...predicate.OauthToken) {
+	f.Where(entql.HasEdgeWith("token", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUserAuthorization applies a predicate to check if query has an edge user_authorization.
+func (f *OauthAuthorizationCodeFilter) WhereHasUserAuthorization() {
+	f.Where(entql.HasEdge("user_authorization"))
+}
+
+// WhereHasUserAuthorizationWith applies a predicate to check if query has an edge user_authorization with a given conditions (other predicates).
+func (f *OauthAuthorizationCodeFilter) WhereHasUserAuthorizationWith(preds ...predicate.OauthUserAuthorization) {
+	f.Where(entql.HasEdgeWith("user_authorization", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *OauthProviderQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the OauthProviderQuery builder.
+func (_q *OauthProviderQuery) Filter() *OauthProviderFilter {
+	return &OauthProviderFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *OauthProviderMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the OauthProviderMutation builder.
+func (m *OauthProviderMutation) Filter() *OauthProviderFilter {
+	return &OauthProviderFilter{config: m.config, predicateAdder: m}
+}
+
+// OauthProviderFilter provides a generic filtering capability at runtime for OauthProviderQuery.
+type OauthProviderFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *OauthProviderFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *OauthProviderFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(oauthprovider.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *OauthProviderFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthprovider.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *OauthProviderFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthprovider.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *OauthProviderFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthprovider.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *OauthProviderFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthprovider.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *OauthProviderFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(oauthprovider.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *OauthProviderFilter) WhereDeleteBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthprovider.FieldDeleteBy))
+}
+
+// WhereType applies the entql string predicate on the type field.
+func (f *OauthProviderFilter) WhereType(p entql.StringP) {
+	f.Where(p.Field(oauthprovider.FieldType))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *OauthProviderFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(oauthprovider.FieldName))
+}
+
+// WhereAuthorizationEndpoint applies the entql string predicate on the authorization_endpoint field.
+func (f *OauthProviderFilter) WhereAuthorizationEndpoint(p entql.StringP) {
+	f.Where(p.Field(oauthprovider.FieldAuthorizationEndpoint))
+}
+
+// WhereTokenEndpoint applies the entql string predicate on the token_endpoint field.
+func (f *OauthProviderFilter) WhereTokenEndpoint(p entql.StringP) {
+	f.Where(p.Field(oauthprovider.FieldTokenEndpoint))
+}
+
+// WhereUserInfoEndpoint applies the entql string predicate on the user_info_endpoint field.
+func (f *OauthProviderFilter) WhereUserInfoEndpoint(p entql.StringP) {
+	f.Where(p.Field(oauthprovider.FieldUserInfoEndpoint))
+}
+
+// WhereRevokeEndpoint applies the entql string predicate on the revoke_endpoint field.
+func (f *OauthProviderFilter) WhereRevokeEndpoint(p entql.StringP) {
+	f.Where(p.Field(oauthprovider.FieldRevokeEndpoint))
+}
+
+// WhereRefreshEndpoint applies the entql string predicate on the refresh_endpoint field.
+func (f *OauthProviderFilter) WhereRefreshEndpoint(p entql.StringP) {
+	f.Where(p.Field(oauthprovider.FieldRefreshEndpoint))
+}
+
+// WhereClientID applies the entql string predicate on the client_id field.
+func (f *OauthProviderFilter) WhereClientID(p entql.StringP) {
+	f.Where(p.Field(oauthprovider.FieldClientID))
+}
+
+// WhereClientSecret applies the entql string predicate on the client_secret field.
+func (f *OauthProviderFilter) WhereClientSecret(p entql.StringP) {
+	f.Where(p.Field(oauthprovider.FieldClientSecret))
+}
+
+// WhereRedirectURI applies the entql string predicate on the redirect_uri field.
+func (f *OauthProviderFilter) WhereRedirectURI(p entql.StringP) {
+	f.Where(p.Field(oauthprovider.FieldRedirectURI))
+}
+
+// WhereScopes applies the entql json.RawMessage predicate on the scopes field.
+func (f *OauthProviderFilter) WhereScopes(p entql.BytesP) {
+	f.Where(p.Field(oauthprovider.FieldScopes))
+}
+
+// WhereAutoRegister applies the entql bool predicate on the auto_register field.
+func (f *OauthProviderFilter) WhereAutoRegister(p entql.BoolP) {
+	f.Where(p.Field(oauthprovider.FieldAutoRegister))
+}
+
+// WhereAbleState applies the entql string predicate on the able_state field.
+func (f *OauthProviderFilter) WhereAbleState(p entql.StringP) {
+	f.Where(p.Field(oauthprovider.FieldAbleState))
+}
+
+// WhereMetadata applies the entql json.RawMessage predicate on the metadata field.
+func (f *OauthProviderFilter) WhereMetadata(p entql.BytesP) {
+	f.Where(p.Field(oauthprovider.FieldMetadata))
+}
+
+// WhereHasStates applies a predicate to check if query has an edge states.
+func (f *OauthProviderFilter) WhereHasStates() {
+	f.Where(entql.HasEdge("states"))
+}
+
+// WhereHasStatesWith applies a predicate to check if query has an edge states with a given conditions (other predicates).
+func (f *OauthProviderFilter) WhereHasStatesWith(preds ...predicate.OauthState) {
+	f.Where(entql.HasEdgeWith("states", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasOauthUsers applies a predicate to check if query has an edge oauth_users.
+func (f *OauthProviderFilter) WhereHasOauthUsers() {
+	f.Where(entql.HasEdge("oauth_users"))
+}
+
+// WhereHasOauthUsersWith applies a predicate to check if query has an edge oauth_users with a given conditions (other predicates).
+func (f *OauthProviderFilter) WhereHasOauthUsersWith(preds ...predicate.OauthUser) {
+	f.Where(entql.HasEdgeWith("oauth_users", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *OauthStateQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the OauthStateQuery builder.
+func (_q *OauthStateQuery) Filter() *OauthStateFilter {
+	return &OauthStateFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *OauthStateMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the OauthStateMutation builder.
+func (m *OauthStateMutation) Filter() *OauthStateFilter {
+	return &OauthStateFilter{config: m.config, predicateAdder: m}
+}
+
+// OauthStateFilter provides a generic filtering capability at runtime for OauthStateQuery.
+type OauthStateFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *OauthStateFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *OauthStateFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(oauthstate.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *OauthStateFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthstate.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *OauthStateFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthstate.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *OauthStateFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthstate.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *OauthStateFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthstate.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *OauthStateFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(oauthstate.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *OauthStateFilter) WhereDeleteBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthstate.FieldDeleteBy))
+}
+
+// WhereState applies the entql string predicate on the state field.
+func (f *OauthStateFilter) WhereState(p entql.StringP) {
+	f.Where(p.Field(oauthstate.FieldState))
+}
+
+// WhereType applies the entql string predicate on the type field.
+func (f *OauthStateFilter) WhereType(p entql.StringP) {
+	f.Where(p.Field(oauthstate.FieldType))
+}
+
+// WhereProviderID applies the entql uint64 predicate on the provider_id field.
+func (f *OauthStateFilter) WhereProviderID(p entql.Uint64P) {
+	f.Where(p.Field(oauthstate.FieldProviderID))
+}
+
+// WhereUserID applies the entql uint64 predicate on the user_id field.
+func (f *OauthStateFilter) WhereUserID(p entql.Uint64P) {
+	f.Where(p.Field(oauthstate.FieldUserID))
+}
+
+// WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
+func (f *OauthStateFilter) WhereExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(oauthstate.FieldExpiresAt))
+}
+
+// WhereUsedAt applies the entql time.Time predicate on the used_at field.
+func (f *OauthStateFilter) WhereUsedAt(p entql.TimeP) {
+	f.Where(p.Field(oauthstate.FieldUsedAt))
+}
+
+// WhereHasProvider applies a predicate to check if query has an edge provider.
+func (f *OauthStateFilter) WhereHasProvider() {
+	f.Where(entql.HasEdge("provider"))
+}
+
+// WhereHasProviderWith applies a predicate to check if query has an edge provider with a given conditions (other predicates).
+func (f *OauthStateFilter) WhereHasProviderWith(preds ...predicate.OauthProvider) {
+	f.Where(entql.HasEdgeWith("provider", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *OauthStateFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
+}
+
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *OauthStateFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasOauthUsers applies a predicate to check if query has an edge oauth_users.
+func (f *OauthStateFilter) WhereHasOauthUsers() {
+	f.Where(entql.HasEdge("oauth_users"))
+}
+
+// WhereHasOauthUsersWith applies a predicate to check if query has an edge oauth_users with a given conditions (other predicates).
+func (f *OauthStateFilter) WhereHasOauthUsersWith(preds ...predicate.OauthUser) {
+	f.Where(entql.HasEdgeWith("oauth_users", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *OauthTokenQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the OauthTokenQuery builder.
+func (_q *OauthTokenQuery) Filter() *OauthTokenFilter {
+	return &OauthTokenFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *OauthTokenMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the OauthTokenMutation builder.
+func (m *OauthTokenMutation) Filter() *OauthTokenFilter {
+	return &OauthTokenFilter{config: m.config, predicateAdder: m}
+}
+
+// OauthTokenFilter provides a generic filtering capability at runtime for OauthTokenQuery.
+type OauthTokenFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *OauthTokenFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *OauthTokenFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(oauthtoken.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *OauthTokenFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthtoken.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *OauthTokenFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthtoken.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *OauthTokenFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthtoken.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *OauthTokenFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthtoken.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *OauthTokenFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(oauthtoken.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *OauthTokenFilter) WhereDeleteBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthtoken.FieldDeleteBy))
+}
+
+// WhereAccessToken applies the entql string predicate on the access_token field.
+func (f *OauthTokenFilter) WhereAccessToken(p entql.StringP) {
+	f.Where(p.Field(oauthtoken.FieldAccessToken))
+}
+
+// WhereRefreshToken applies the entql string predicate on the refresh_token field.
+func (f *OauthTokenFilter) WhereRefreshToken(p entql.StringP) {
+	f.Where(p.Field(oauthtoken.FieldRefreshToken))
+}
+
+// WhereApplicationID applies the entql uint64 predicate on the application_id field.
+func (f *OauthTokenFilter) WhereApplicationID(p entql.Uint64P) {
+	f.Where(p.Field(oauthtoken.FieldApplicationID))
+}
+
+// WhereUserID applies the entql uint64 predicate on the user_id field.
+func (f *OauthTokenFilter) WhereUserID(p entql.Uint64P) {
+	f.Where(p.Field(oauthtoken.FieldUserID))
+}
+
+// WhereScope applies the entql json.RawMessage predicate on the scope field.
+func (f *OauthTokenFilter) WhereScope(p entql.BytesP) {
+	f.Where(p.Field(oauthtoken.FieldScope))
+}
+
+// WhereAccessExpiresAt applies the entql time.Time predicate on the access_expires_at field.
+func (f *OauthTokenFilter) WhereAccessExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(oauthtoken.FieldAccessExpiresAt))
+}
+
+// WhereRefreshExpiresAt applies the entql time.Time predicate on the refresh_expires_at field.
+func (f *OauthTokenFilter) WhereRefreshExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(oauthtoken.FieldRefreshExpiresAt))
+}
+
+// WhereRevokedAt applies the entql time.Time predicate on the revoked_at field.
+func (f *OauthTokenFilter) WhereRevokedAt(p entql.TimeP) {
+	f.Where(p.Field(oauthtoken.FieldRevokedAt))
+}
+
+// WhereLastUsedAt applies the entql time.Time predicate on the last_used_at field.
+func (f *OauthTokenFilter) WhereLastUsedAt(p entql.TimeP) {
+	f.Where(p.Field(oauthtoken.FieldLastUsedAt))
+}
+
+// WhereHasApplication applies a predicate to check if query has an edge application.
+func (f *OauthTokenFilter) WhereHasApplication() {
+	f.Where(entql.HasEdge("application"))
+}
+
+// WhereHasApplicationWith applies a predicate to check if query has an edge application with a given conditions (other predicates).
+func (f *OauthTokenFilter) WhereHasApplicationWith(preds ...predicate.OauthApplication) {
+	f.Where(entql.HasEdgeWith("application", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *OauthTokenFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
+}
+
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *OauthTokenFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasAuthorizationCode applies a predicate to check if query has an edge authorization_code.
+func (f *OauthTokenFilter) WhereHasAuthorizationCode() {
+	f.Where(entql.HasEdge("authorization_code"))
+}
+
+// WhereHasAuthorizationCodeWith applies a predicate to check if query has an edge authorization_code with a given conditions (other predicates).
+func (f *OauthTokenFilter) WhereHasAuthorizationCodeWith(preds ...predicate.OauthAuthorizationCode) {
+	f.Where(entql.HasEdgeWith("authorization_code", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUserAuthorization applies a predicate to check if query has an edge user_authorization.
+func (f *OauthTokenFilter) WhereHasUserAuthorization() {
+	f.Where(entql.HasEdge("user_authorization"))
+}
+
+// WhereHasUserAuthorizationWith applies a predicate to check if query has an edge user_authorization with a given conditions (other predicates).
+func (f *OauthTokenFilter) WhereHasUserAuthorizationWith(preds ...predicate.OauthUserAuthorization) {
+	f.Where(entql.HasEdgeWith("user_authorization", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *OauthUserQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the OauthUserQuery builder.
+func (_q *OauthUserQuery) Filter() *OauthUserFilter {
+	return &OauthUserFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *OauthUserMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the OauthUserMutation builder.
+func (m *OauthUserMutation) Filter() *OauthUserFilter {
+	return &OauthUserFilter{config: m.config, predicateAdder: m}
+}
+
+// OauthUserFilter provides a generic filtering capability at runtime for OauthUserQuery.
+type OauthUserFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *OauthUserFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *OauthUserFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(oauthuser.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *OauthUserFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthuser.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *OauthUserFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthuser.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *OauthUserFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthuser.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *OauthUserFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthuser.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *OauthUserFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(oauthuser.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *OauthUserFilter) WhereDeleteBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthuser.FieldDeleteBy))
+}
+
+// WhereProviderID applies the entql uint64 predicate on the provider_id field.
+func (f *OauthUserFilter) WhereProviderID(p entql.Uint64P) {
+	f.Where(p.Field(oauthuser.FieldProviderID))
+}
+
+// WhereUserID applies the entql uint64 predicate on the user_id field.
+func (f *OauthUserFilter) WhereUserID(p entql.Uint64P) {
+	f.Where(p.Field(oauthuser.FieldUserID))
+}
+
+// WhereStateID applies the entql uint64 predicate on the state_id field.
+func (f *OauthUserFilter) WhereStateID(p entql.Uint64P) {
+	f.Where(p.Field(oauthuser.FieldStateID))
+}
+
+// WhereProviderUserID applies the entql string predicate on the provider_user_id field.
+func (f *OauthUserFilter) WhereProviderUserID(p entql.StringP) {
+	f.Where(p.Field(oauthuser.FieldProviderUserID))
+}
+
+// WhereRawUserInfo applies the entql json.RawMessage predicate on the raw_user_info field.
+func (f *OauthUserFilter) WhereRawUserInfo(p entql.BytesP) {
+	f.Where(p.Field(oauthuser.FieldRawUserInfo))
+}
+
+// WhereAccessToken applies the entql string predicate on the access_token field.
+func (f *OauthUserFilter) WhereAccessToken(p entql.StringP) {
+	f.Where(p.Field(oauthuser.FieldAccessToken))
+}
+
+// WhereRefreshToken applies the entql string predicate on the refresh_token field.
+func (f *OauthUserFilter) WhereRefreshToken(p entql.StringP) {
+	f.Where(p.Field(oauthuser.FieldRefreshToken))
+}
+
+// WhereAccessExpiresAt applies the entql time.Time predicate on the access_expires_at field.
+func (f *OauthUserFilter) WhereAccessExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(oauthuser.FieldAccessExpiresAt))
+}
+
+// WhereRefreshExpiresAt applies the entql time.Time predicate on the refresh_expires_at field.
+func (f *OauthUserFilter) WhereRefreshExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(oauthuser.FieldRefreshExpiresAt))
+}
+
+// WhereLoadState applies the entql string predicate on the load_state field.
+func (f *OauthUserFilter) WhereLoadState(p entql.StringP) {
+	f.Where(p.Field(oauthuser.FieldLoadState))
+}
+
+// WhereHasProvider applies a predicate to check if query has an edge provider.
+func (f *OauthUserFilter) WhereHasProvider() {
+	f.Where(entql.HasEdge("provider"))
+}
+
+// WhereHasProviderWith applies a predicate to check if query has an edge provider with a given conditions (other predicates).
+func (f *OauthUserFilter) WhereHasProviderWith(preds ...predicate.OauthProvider) {
+	f.Where(entql.HasEdgeWith("provider", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *OauthUserFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
+}
+
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *OauthUserFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasState applies a predicate to check if query has an edge state.
+func (f *OauthUserFilter) WhereHasState() {
+	f.Where(entql.HasEdge("state"))
+}
+
+// WhereHasStateWith applies a predicate to check if query has an edge state with a given conditions (other predicates).
+func (f *OauthUserFilter) WhereHasStateWith(preds ...predicate.OauthState) {
+	f.Where(entql.HasEdgeWith("state", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *OauthUserAuthorizationQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the OauthUserAuthorizationQuery builder.
+func (_q *OauthUserAuthorizationQuery) Filter() *OauthUserAuthorizationFilter {
+	return &OauthUserAuthorizationFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *OauthUserAuthorizationMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the OauthUserAuthorizationMutation builder.
+func (m *OauthUserAuthorizationMutation) Filter() *OauthUserAuthorizationFilter {
+	return &OauthUserAuthorizationFilter{config: m.config, predicateAdder: m}
+}
+
+// OauthUserAuthorizationFilter provides a generic filtering capability at runtime for OauthUserAuthorizationQuery.
+type OauthUserAuthorizationFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *OauthUserAuthorizationFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[12].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *OauthUserAuthorizationFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(oauthuserauthorization.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *OauthUserAuthorizationFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthuserauthorization.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *OauthUserAuthorizationFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthuserauthorization.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *OauthUserAuthorizationFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(oauthuserauthorization.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *OauthUserAuthorizationFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthuserauthorization.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *OauthUserAuthorizationFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(oauthuserauthorization.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *OauthUserAuthorizationFilter) WhereDeleteBy(p entql.Uint64P) {
+	f.Where(p.Field(oauthuserauthorization.FieldDeleteBy))
+}
+
+// WhereUserID applies the entql uint64 predicate on the user_id field.
+func (f *OauthUserAuthorizationFilter) WhereUserID(p entql.Uint64P) {
+	f.Where(p.Field(oauthuserauthorization.FieldUserID))
+}
+
+// WhereApplicationID applies the entql uint64 predicate on the application_id field.
+func (f *OauthUserAuthorizationFilter) WhereApplicationID(p entql.Uint64P) {
+	f.Where(p.Field(oauthuserauthorization.FieldApplicationID))
+}
+
+// WhereAuthorizedAt applies the entql time.Time predicate on the authorized_at field.
+func (f *OauthUserAuthorizationFilter) WhereAuthorizedAt(p entql.TimeP) {
+	f.Where(p.Field(oauthuserauthorization.FieldAuthorizedAt))
+}
+
+// WhereUsageState applies the entql string predicate on the usage_state field.
+func (f *OauthUserAuthorizationFilter) WhereUsageState(p entql.StringP) {
+	f.Where(p.Field(oauthuserauthorization.FieldUsageState))
+}
+
+// WhereScope applies the entql json.RawMessage predicate on the scope field.
+func (f *OauthUserAuthorizationFilter) WhereScope(p entql.BytesP) {
+	f.Where(p.Field(oauthuserauthorization.FieldScope))
+}
+
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *OauthUserAuthorizationFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
+}
+
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *OauthUserAuthorizationFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasApplication applies a predicate to check if query has an edge application.
+func (f *OauthUserAuthorizationFilter) WhereHasApplication() {
+	f.Where(entql.HasEdge("application"))
+}
+
+// WhereHasApplicationWith applies a predicate to check if query has an edge application with a given conditions (other predicates).
+func (f *OauthUserAuthorizationFilter) WhereHasApplicationWith(preds ...predicate.OauthApplication) {
+	f.Where(entql.HasEdgeWith("application", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasCode applies a predicate to check if query has an edge code.
+func (f *OauthUserAuthorizationFilter) WhereHasCode() {
+	f.Where(entql.HasEdge("code"))
+}
+
+// WhereHasCodeWith applies a predicate to check if query has an edge code with a given conditions (other predicates).
+func (f *OauthUserAuthorizationFilter) WhereHasCodeWith(preds ...predicate.OauthAuthorizationCode) {
+	f.Where(entql.HasEdgeWith("code", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasToken applies a predicate to check if query has an edge token.
+func (f *OauthUserAuthorizationFilter) WhereHasToken() {
+	f.Where(entql.HasEdge("token"))
+}
+
+// WhereHasTokenWith applies a predicate to check if query has an edge token with a given conditions (other predicates).
+func (f *OauthUserAuthorizationFilter) WhereHasTokenWith(preds ...predicate.OauthToken) {
+	f.Where(entql.HasEdgeWith("token", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *PermissionQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -1568,7 +3162,7 @@ type PermissionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *PermissionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[13].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1700,7 +3294,7 @@ type RoleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[14].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1850,7 +3444,7 @@ type RolePermissionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RolePermissionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[15].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1958,7 +3552,7 @@ type ScanFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ScanFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[16].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2057,7 +3651,7 @@ type ScopeFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ScopeFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[17].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2229,7 +3823,7 @@ type SystemMonitorFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemMonitorFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[18].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2414,7 +4008,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[12].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[19].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2565,7 +4159,7 @@ type UserRoleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserRoleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[13].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[20].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2673,7 +4267,7 @@ type VerifyCodeFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *VerifyCodeFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[14].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[21].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
