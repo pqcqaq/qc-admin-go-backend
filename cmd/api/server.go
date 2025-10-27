@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -53,8 +52,6 @@ func runServer(cmd *cobra.Command, args []string) error {
 
 	// 初始化事件系统
 	initializeEventSystem()
-	sendCtx := context.Background()
-	setupHandlers(sendCtx)
 
 	// 设置路由
 	engine := setupRoutes(config, results.engine)
@@ -84,15 +81,18 @@ func startServer(config *configs.AppConfig, engine *gin.Engine, dbClient *databa
 		}
 	}()
 
+	// 优雅关闭服务器
+	ctx, cancel := context.WithCancel(context.Background())
+
+	setupHandlers(ctx)
+
 	// 等待中断信号
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	logging.Info("Received shutdown signal, shutting down gracefully...")
 
-	// 优雅关闭服务器
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	cancel()
 
 	funcs.Cleanup()
 

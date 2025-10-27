@@ -154,6 +154,10 @@ func (c *MessageCunsumer) Consume(ctx context.Context) {
 			default:
 				// 读取新消息
 				if err := c.readNewMessages(ctx, messageDispatcher); err != nil {
+					// 如果是context canceled就不管了
+					if err == context.Canceled {
+						return
+					}
 					logger.Error("[%s] 读取新消息错误: %v", c.consumerName, err)
 				}
 			}
@@ -168,6 +172,11 @@ func (c *MessageCunsumer) Consume(ctx context.Context) {
 			default:
 				// 处理待处理消息（pending messages）
 				if err := c.processPendingMessages(ctx, messageDispatcher); err != nil {
+					// 如果是context canceled就不管了
+					if err == context.Canceled {
+						return
+					}
+
 					logger.Error("[%s] 处理待处理消息错误: %v", c.consumerName, err)
 				}
 			}

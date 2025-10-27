@@ -12,7 +12,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/cobra"
@@ -53,7 +52,9 @@ func runServer(cmd *cobra.Command, args []string) error {
 
 // startServer 启动HTTP服务器并处理优雅关闭
 func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
-	ctx := context.Background()
+
+	// 优雅关闭服务器
+	ctx, cancel := context.WithCancel(context.Background())
 
 	// 创建WebSocket服务器实例
 	wsServer := websocket.NewWsServer(websocket.WsServerOptions{
@@ -84,41 +85,36 @@ func startServer(config *configs.AppConfig, redisClient *redis.Client) error {
 		}
 	}()
 
-	go func() {
-		logging.Info("Started messaging consumer")
-		consumer := messaging.NewMessageConsumer(
-			"qc-admin_socket",
-			messaging.ServerToUserSocket,
-			messaging.UserToServerSocket,
-			messaging.ChannelToUser,
-			messaging.ChannelToServer,
-			messaging.ChannelOpenRes,
-			messaging.SubscribeRes,
-		)
-		consumer.CreateGroup(ctx)
+	logging.Info("Started messaging consumer")
+	consumer := messaging.NewMessageConsumer(
+		"qc-admin_socket",
+		messaging.ServerToUserSocket,
+		messaging.UserToServerSocket,
+		messaging.ChannelToUser,
+		messaging.ChannelToServer,
+		messaging.ChannelOpenRes,
+		messaging.SubscribeRes,
+	)
+	consumer.CreateGroup(ctx)
 
-		// 启动Stream清理器
-		cleaner := messaging.NewStreamCleaner(
-			messaging.ServerToUserSocket,
-			messaging.UserToServerSocket,
-			messaging.ChannelToUser,
-			messaging.ChannelToServer,
-			messaging.ChannelOpenRes,
-		)
-		cleaner.StartCleanup(ctx)
+	// 启动Stream清理器
+	cleaner := messaging.NewStreamCleaner(
+		messaging.ServerToUserSocket,
+		messaging.UserToServerSocket,
+		messaging.ChannelToUser,
+		messaging.ChannelToServer,
+		messaging.ChannelOpenRes,
+	)
+	cleaner.StartCleanup(ctx)
 
-		consumer.Consume(ctx)
-	}()
+	consumer.Consume(ctx)
 
 	// 等待中断信号
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	logging.Info("Received shutdown signal, shutting down gracefully...")
-
-	// 优雅关闭服务器
-	_, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
+	cancel()
 
 	wsServer.Shutdown()
 
