@@ -3,10 +3,15 @@ logging:
   prefix: "DEV"    # 开发环境前缀
   file: 
     enabled: true
-    path: ./logs/dev
+    path: ./logs/dev-${application.name}
     filenames:
       all: ${application.name}_all.log
-    split_by_level: false
+      debug: ${application.name}_debug.log
+      info: ${application.name}_info.log
+      warn: ${application.name}_warn.log
+      error: ${application.name}_error.log
+      fatal: ${application.name}_fatal.log
+    split_by_level: true
     max_size: 100      # 单个日志文件最大尺寸，单位MB
     max_backups: 7    # 最大备份数量
     max_age: 30       # 最大保存天数
