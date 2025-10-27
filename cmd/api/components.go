@@ -35,10 +35,16 @@ type InitResults struct {
 
 // setupLogging 设置日志系统
 func setupLogging(config *configs.AppConfig) {
+	logging.PreHandle(&config.Logging)
+	logger := logging.NewLogger(&config.Logging)
+	if logger == nil {
+		panic("Failed to create logger")
+	}
 	logging.SetLevel(logging.ParseLogLevel(config.Logging.Level))
 	logging.SetPrefix(config.Logging.Prefix)
 
 	// 设置各个包的logger
+	configs.SetLogger(logging.WithName("ConfigResolver"))
 	events.SetLogger(logging.WithName("EventBus"))
 	pkgdatabase.SetLogger(logging.WithName("Database"))
 	caching.SetLogger(logging.WithName("Caching"))

@@ -1,0 +1,13 @@
+logging:
+  level: "debug"   # 开发环境使用debug级别
+  prefix: "DEV"    # 开发环境前缀
+  file: 
+    enabled: true
+    path: ./logs/dev
+    filenames:
+      all: ${application.name}_all.log
+    split_by_level: false
+    max_size: 100      # 单个日志文件最大尺寸，单位MB
+    max_backups: 7    # 最大备份数量
+    max_age: 30       # 最大保存天数
+    compress: true    # 是否压缩备份日志文件

@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"go-backend/pkg/logging"
-
 	"github.com/spf13/viper"
 )
 
@@ -42,7 +40,7 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 
 	// 读取配置文件
 	if err := viper.ReadInConfig(); err != nil {
-		logging.Warn("Warning: Config file not found, using defaults: %v", err)
+		logger.Warn("Warning: Config file not found, using defaults: %v", err)
 	}
 
 	// 处理配置导入
@@ -69,10 +67,7 @@ func processConfigImports(baseDir string) error {
 		return nil
 	}
 
-	logger := logging.WithName("Config Resolver")
 	for _, importPath := range imports {
-
-		logger.Info("Importing config for: %s", importPath)
 
 		// 解析配置变量引用
 		resolvedPath := ResolveConfigVariables(importPath)
@@ -89,7 +84,6 @@ func processConfigImports(baseDir string) error {
 			logger.Error("导入配置文件失败 %s", resolvedPath)
 			return fmt.Errorf("导入配置文件失败 %s: %w", resolvedPath, err)
 		}
-		logger.Info("Successfully import config from: %s", resolvedPath)
 	}
 
 	return nil
@@ -145,7 +139,7 @@ func ReplaceKey(s string) string {
 
 	// 如果还是没有，记录错误
 	if configValue == "" {
-		logging.Error("Cannot find Config Key: %s", configKey)
+		logger.Error("Cannot find Config Key: %s", configKey)
 	}
 
 	// 替换占位符并返回
@@ -167,7 +161,7 @@ func ResolveConfigVariables(path string) string {
 // GetConfig 获取当前配置
 func GetConfig() *AppConfig {
 	if config == nil {
-		logging.Fatal("Config not loaded. Call LoadConfig first.")
+		logger.Fatal("Config not loaded. Call LoadConfig first.")
 	}
 	return config
 }

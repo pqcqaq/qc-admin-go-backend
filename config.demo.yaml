@@ -13,6 +13,7 @@ config:
     - file:configs/${env.name}/sms.yaml
     - file:configs/${env.name}/messaging.yaml
     - file:configs/${env.name}/monitor.yaml
+    - file:configs/${env.name}/logging.yaml
 
 # =======================
 # SQLite 配置
@@ -85,8 +86,4 @@ server:
       enabled: false   # 是否启用延迟中间件
       min: 0s          # 最小延迟时间
       max: 1s          # 最大延迟时间
-
-logging:
-  level: "debug"   # 开发环境使用debug级别
-  prefix: "DEV"    # 开发环境前缀
 
