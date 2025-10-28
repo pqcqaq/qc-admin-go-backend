@@ -74,6 +74,36 @@ func (WorkflowNode) Mixin() []ent.Mixin {
 	}
 }
 
+/*
+graph TD
+
+	Start[用户输入节点] --> Process[数据处理节点]
+
+	Process --> Parallel{并行执行节点}
+
+	Parallel -.并行.-> API1[API调用1<br/>async]
+	Parallel -.并行.-> API2[API调用2<br/>async]
+	Parallel -.并行.-> Todo[待办生成<br/>async]
+
+	API1 --> Merge[汇聚点]
+	API2 --> Merge
+	Todo --> Merge
+
+	Merge --> Condition{条件检查}
+
+	Condition -->|满足| Loop[循环节点]
+	Condition -->|不满足| End[结束节点]
+
+	Loop --> API3[API调用节点]
+	Loop --> Condition
+	API3 --> Loop
+
+	style Start fill:#a8e6cf
+	style Parallel fill:#dda0dd
+	style Condition fill:#ffd3b6
+	style Loop fill:#ffaaa5
+	style End fill:#ff8b94
+*/
 func (WorkflowNode) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").NotEmpty().Comment("节点名称"),
