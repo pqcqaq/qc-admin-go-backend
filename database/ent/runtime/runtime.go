@@ -30,6 +30,12 @@ import (
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
+	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowexecution"
+	"go-backend/database/ent/workflowexecutionlog"
+	"go-backend/database/ent/workflownode"
+	"go-backend/database/ent/workflownodeexecution"
+	"go-backend/database/ent/workflowversion"
 	"go-backend/database/schema"
 	"time"
 )
@@ -1369,6 +1375,206 @@ func init() {
 	verifycodeDescSendSuccess := verifycodeFields[6].Descriptor()
 	// verifycode.DefaultSendSuccess holds the default value on creation for the send_success field.
 	verifycode.DefaultSendSuccess = verifycodeDescSendSuccess.Default.(bool)
+	workflowapplicationMixin := schema.WorkflowApplication{}.Mixin()
+	workflowapplicationMixinHooks0 := workflowapplicationMixin[0].Hooks()
+	workflowapplicationMixinHooks1 := workflowapplicationMixin[1].Hooks()
+	workflowapplication.Hooks[0] = workflowapplicationMixinHooks0[0]
+	workflowapplication.Hooks[1] = workflowapplicationMixinHooks0[1]
+	workflowapplication.Hooks[2] = workflowapplicationMixinHooks1[0]
+	workflowapplicationMixinInters1 := workflowapplicationMixin[1].Interceptors()
+	workflowapplication.Interceptors[0] = workflowapplicationMixinInters1[0]
+	workflowapplicationMixinFields0 := workflowapplicationMixin[0].Fields()
+	_ = workflowapplicationMixinFields0
+	workflowapplicationFields := schema.WorkflowApplication{}.Fields()
+	_ = workflowapplicationFields
+	// workflowapplicationDescCreateTime is the schema descriptor for create_time field.
+	workflowapplicationDescCreateTime := workflowapplicationMixinFields0[1].Descriptor()
+	// workflowapplication.DefaultCreateTime holds the default value on creation for the create_time field.
+	workflowapplication.DefaultCreateTime = workflowapplicationDescCreateTime.Default.(func() time.Time)
+	// workflowapplicationDescUpdateTime is the schema descriptor for update_time field.
+	workflowapplicationDescUpdateTime := workflowapplicationMixinFields0[3].Descriptor()
+	// workflowapplication.DefaultUpdateTime holds the default value on creation for the update_time field.
+	workflowapplication.DefaultUpdateTime = workflowapplicationDescUpdateTime.Default.(func() time.Time)
+	// workflowapplication.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	workflowapplication.UpdateDefaultUpdateTime = workflowapplicationDescUpdateTime.UpdateDefault.(func() time.Time)
+	// workflowapplicationDescName is the schema descriptor for name field.
+	workflowapplicationDescName := workflowapplicationFields[0].Descriptor()
+	// workflowapplication.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	workflowapplication.NameValidator = workflowapplicationDescName.Validators[0].(func(string) error)
+	// workflowapplicationDescVersion is the schema descriptor for version field.
+	workflowapplicationDescVersion := workflowapplicationFields[5].Descriptor()
+	// workflowapplication.DefaultVersion holds the default value on creation for the version field.
+	workflowapplication.DefaultVersion = workflowapplicationDescVersion.Default.(uint)
+	workflowexecutionMixin := schema.WorkflowExecution{}.Mixin()
+	workflowexecutionMixinHooks0 := workflowexecutionMixin[0].Hooks()
+	workflowexecution.Hooks[0] = workflowexecutionMixinHooks0[0]
+	workflowexecution.Hooks[1] = workflowexecutionMixinHooks0[1]
+	workflowexecutionMixinFields0 := workflowexecutionMixin[0].Fields()
+	_ = workflowexecutionMixinFields0
+	workflowexecutionFields := schema.WorkflowExecution{}.Fields()
+	_ = workflowexecutionFields
+	// workflowexecutionDescCreateTime is the schema descriptor for create_time field.
+	workflowexecutionDescCreateTime := workflowexecutionMixinFields0[1].Descriptor()
+	// workflowexecution.DefaultCreateTime holds the default value on creation for the create_time field.
+	workflowexecution.DefaultCreateTime = workflowexecutionDescCreateTime.Default.(func() time.Time)
+	// workflowexecutionDescUpdateTime is the schema descriptor for update_time field.
+	workflowexecutionDescUpdateTime := workflowexecutionMixinFields0[3].Descriptor()
+	// workflowexecution.DefaultUpdateTime holds the default value on creation for the update_time field.
+	workflowexecution.DefaultUpdateTime = workflowexecutionDescUpdateTime.Default.(func() time.Time)
+	// workflowexecution.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	workflowexecution.UpdateDefaultUpdateTime = workflowexecutionDescUpdateTime.UpdateDefault.(func() time.Time)
+	// workflowexecutionDescExecutionID is the schema descriptor for execution_id field.
+	workflowexecutionDescExecutionID := workflowexecutionFields[0].Descriptor()
+	// workflowexecution.ExecutionIDValidator is a validator for the "execution_id" field. It is called by the builders before save.
+	workflowexecution.ExecutionIDValidator = workflowexecutionDescExecutionID.Validators[0].(func(string) error)
+	// workflowexecutionDescDurationMs is the schema descriptor for duration_ms field.
+	workflowexecutionDescDurationMs := workflowexecutionFields[8].Descriptor()
+	// workflowexecution.DefaultDurationMs holds the default value on creation for the duration_ms field.
+	workflowexecution.DefaultDurationMs = workflowexecutionDescDurationMs.Default.(int)
+	// workflowexecutionDescTotalTokens is the schema descriptor for total_tokens field.
+	workflowexecutionDescTotalTokens := workflowexecutionFields[9].Descriptor()
+	// workflowexecution.DefaultTotalTokens holds the default value on creation for the total_tokens field.
+	workflowexecution.DefaultTotalTokens = workflowexecutionDescTotalTokens.Default.(int)
+	// workflowexecutionDescTotalCost is the schema descriptor for total_cost field.
+	workflowexecutionDescTotalCost := workflowexecutionFields[10].Descriptor()
+	// workflowexecution.DefaultTotalCost holds the default value on creation for the total_cost field.
+	workflowexecution.DefaultTotalCost = workflowexecutionDescTotalCost.Default.(float64)
+	workflowexecutionlogMixin := schema.WorkflowExecutionLog{}.Mixin()
+	workflowexecutionlogMixinHooks0 := workflowexecutionlogMixin[0].Hooks()
+	workflowexecutionlog.Hooks[0] = workflowexecutionlogMixinHooks0[0]
+	workflowexecutionlog.Hooks[1] = workflowexecutionlogMixinHooks0[1]
+	workflowexecutionlogMixinFields0 := workflowexecutionlogMixin[0].Fields()
+	_ = workflowexecutionlogMixinFields0
+	workflowexecutionlogFields := schema.WorkflowExecutionLog{}.Fields()
+	_ = workflowexecutionlogFields
+	// workflowexecutionlogDescCreateTime is the schema descriptor for create_time field.
+	workflowexecutionlogDescCreateTime := workflowexecutionlogMixinFields0[1].Descriptor()
+	// workflowexecutionlog.DefaultCreateTime holds the default value on creation for the create_time field.
+	workflowexecutionlog.DefaultCreateTime = workflowexecutionlogDescCreateTime.Default.(func() time.Time)
+	// workflowexecutionlogDescUpdateTime is the schema descriptor for update_time field.
+	workflowexecutionlogDescUpdateTime := workflowexecutionlogMixinFields0[3].Descriptor()
+	// workflowexecutionlog.DefaultUpdateTime holds the default value on creation for the update_time field.
+	workflowexecutionlog.DefaultUpdateTime = workflowexecutionlogDescUpdateTime.Default.(func() time.Time)
+	// workflowexecutionlog.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	workflowexecutionlog.UpdateDefaultUpdateTime = workflowexecutionlogDescUpdateTime.UpdateDefault.(func() time.Time)
+	// workflowexecutionlogDescLoggedAt is the schema descriptor for logged_at field.
+	workflowexecutionlogDescLoggedAt := workflowexecutionlogFields[5].Descriptor()
+	// workflowexecutionlog.DefaultLoggedAt holds the default value on creation for the logged_at field.
+	workflowexecutionlog.DefaultLoggedAt = workflowexecutionlogDescLoggedAt.Default.(func() time.Time)
+	workflownodeMixin := schema.WorkflowNode{}.Mixin()
+	workflownodeMixinHooks0 := workflownodeMixin[0].Hooks()
+	workflownodeMixinHooks1 := workflownodeMixin[1].Hooks()
+	workflownode.Hooks[0] = workflownodeMixinHooks0[0]
+	workflownode.Hooks[1] = workflownodeMixinHooks0[1]
+	workflownode.Hooks[2] = workflownodeMixinHooks1[0]
+	workflownodeMixinInters1 := workflownodeMixin[1].Interceptors()
+	workflownode.Interceptors[0] = workflownodeMixinInters1[0]
+	workflownodeMixinFields0 := workflownodeMixin[0].Fields()
+	_ = workflownodeMixinFields0
+	workflownodeFields := schema.WorkflowNode{}.Fields()
+	_ = workflownodeFields
+	// workflownodeDescCreateTime is the schema descriptor for create_time field.
+	workflownodeDescCreateTime := workflownodeMixinFields0[1].Descriptor()
+	// workflownode.DefaultCreateTime holds the default value on creation for the create_time field.
+	workflownode.DefaultCreateTime = workflownodeDescCreateTime.Default.(func() time.Time)
+	// workflownodeDescUpdateTime is the schema descriptor for update_time field.
+	workflownodeDescUpdateTime := workflownodeMixinFields0[3].Descriptor()
+	// workflownode.DefaultUpdateTime holds the default value on creation for the update_time field.
+	workflownode.DefaultUpdateTime = workflownodeDescUpdateTime.Default.(func() time.Time)
+	// workflownode.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	workflownode.UpdateDefaultUpdateTime = workflownodeDescUpdateTime.UpdateDefault.(func() time.Time)
+	// workflownodeDescName is the schema descriptor for name field.
+	workflownodeDescName := workflownodeFields[0].Descriptor()
+	// workflownode.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	workflownode.NameValidator = workflownodeDescName.Validators[0].(func(string) error)
+	// workflownodeDescNodeKey is the schema descriptor for node_key field.
+	workflownodeDescNodeKey := workflownodeFields[1].Descriptor()
+	// workflownode.NodeKeyValidator is a validator for the "node_key" field. It is called by the builders before save.
+	workflownode.NodeKeyValidator = workflownodeDescNodeKey.Validators[0].(func(string) error)
+	// workflownodeDescAsync is the schema descriptor for async field.
+	workflownodeDescAsync := workflownodeFields[14].Descriptor()
+	// workflownode.DefaultAsync holds the default value on creation for the async field.
+	workflownode.DefaultAsync = workflownodeDescAsync.Default.(bool)
+	// workflownodeDescTimeout is the schema descriptor for timeout field.
+	workflownodeDescTimeout := workflownodeFields[15].Descriptor()
+	// workflownode.DefaultTimeout holds the default value on creation for the timeout field.
+	workflownode.DefaultTimeout = workflownodeDescTimeout.Default.(int)
+	// workflownodeDescRetryCount is the schema descriptor for retry_count field.
+	workflownodeDescRetryCount := workflownodeFields[16].Descriptor()
+	// workflownode.DefaultRetryCount holds the default value on creation for the retry_count field.
+	workflownode.DefaultRetryCount = workflownodeDescRetryCount.Default.(int)
+	// workflownodeDescPositionX is the schema descriptor for position_x field.
+	workflownodeDescPositionX := workflownodeFields[17].Descriptor()
+	// workflownode.DefaultPositionX holds the default value on creation for the position_x field.
+	workflownode.DefaultPositionX = workflownodeDescPositionX.Default.(int)
+	// workflownodeDescPositionY is the schema descriptor for position_y field.
+	workflownodeDescPositionY := workflownodeFields[18].Descriptor()
+	// workflownode.DefaultPositionY holds the default value on creation for the position_y field.
+	workflownode.DefaultPositionY = workflownodeDescPositionY.Default.(int)
+	workflownodeexecutionMixin := schema.WorkflowNodeExecution{}.Mixin()
+	workflownodeexecutionMixinHooks0 := workflownodeexecutionMixin[0].Hooks()
+	workflownodeexecution.Hooks[0] = workflownodeexecutionMixinHooks0[0]
+	workflownodeexecution.Hooks[1] = workflownodeexecutionMixinHooks0[1]
+	workflownodeexecutionMixinFields0 := workflownodeexecutionMixin[0].Fields()
+	_ = workflownodeexecutionMixinFields0
+	workflownodeexecutionFields := schema.WorkflowNodeExecution{}.Fields()
+	_ = workflownodeexecutionFields
+	// workflownodeexecutionDescCreateTime is the schema descriptor for create_time field.
+	workflownodeexecutionDescCreateTime := workflownodeexecutionMixinFields0[1].Descriptor()
+	// workflownodeexecution.DefaultCreateTime holds the default value on creation for the create_time field.
+	workflownodeexecution.DefaultCreateTime = workflownodeexecutionDescCreateTime.Default.(func() time.Time)
+	// workflownodeexecutionDescUpdateTime is the schema descriptor for update_time field.
+	workflownodeexecutionDescUpdateTime := workflownodeexecutionMixinFields0[3].Descriptor()
+	// workflownodeexecution.DefaultUpdateTime holds the default value on creation for the update_time field.
+	workflownodeexecution.DefaultUpdateTime = workflownodeexecutionDescUpdateTime.Default.(func() time.Time)
+	// workflownodeexecution.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	workflownodeexecution.UpdateDefaultUpdateTime = workflownodeexecutionDescUpdateTime.UpdateDefault.(func() time.Time)
+	// workflownodeexecutionDescDurationMs is the schema descriptor for duration_ms field.
+	workflownodeexecutionDescDurationMs := workflownodeexecutionFields[10].Descriptor()
+	// workflownodeexecution.DefaultDurationMs holds the default value on creation for the duration_ms field.
+	workflownodeexecution.DefaultDurationMs = workflownodeexecutionDescDurationMs.Default.(int)
+	// workflownodeexecutionDescPromptTokens is the schema descriptor for prompt_tokens field.
+	workflownodeexecutionDescPromptTokens := workflownodeexecutionFields[11].Descriptor()
+	// workflownodeexecution.DefaultPromptTokens holds the default value on creation for the prompt_tokens field.
+	workflownodeexecution.DefaultPromptTokens = workflownodeexecutionDescPromptTokens.Default.(int)
+	// workflownodeexecutionDescCompletionTokens is the schema descriptor for completion_tokens field.
+	workflownodeexecutionDescCompletionTokens := workflownodeexecutionFields[12].Descriptor()
+	// workflownodeexecution.DefaultCompletionTokens holds the default value on creation for the completion_tokens field.
+	workflownodeexecution.DefaultCompletionTokens = workflownodeexecutionDescCompletionTokens.Default.(int)
+	// workflownodeexecutionDescTotalTokens is the schema descriptor for total_tokens field.
+	workflownodeexecutionDescTotalTokens := workflownodeexecutionFields[13].Descriptor()
+	// workflownodeexecution.DefaultTotalTokens holds the default value on creation for the total_tokens field.
+	workflownodeexecution.DefaultTotalTokens = workflownodeexecutionDescTotalTokens.Default.(int)
+	// workflownodeexecutionDescCost is the schema descriptor for cost field.
+	workflownodeexecutionDescCost := workflownodeexecutionFields[14].Descriptor()
+	// workflownodeexecution.DefaultCost holds the default value on creation for the cost field.
+	workflownodeexecution.DefaultCost = workflownodeexecutionDescCost.Default.(float64)
+	// workflownodeexecutionDescRetryCount is the schema descriptor for retry_count field.
+	workflownodeexecutionDescRetryCount := workflownodeexecutionFields[18].Descriptor()
+	// workflownodeexecution.DefaultRetryCount holds the default value on creation for the retry_count field.
+	workflownodeexecution.DefaultRetryCount = workflownodeexecutionDescRetryCount.Default.(int)
+	// workflownodeexecutionDescIsAsync is the schema descriptor for is_async field.
+	workflownodeexecutionDescIsAsync := workflownodeexecutionFields[19].Descriptor()
+	// workflownodeexecution.DefaultIsAsync holds the default value on creation for the is_async field.
+	workflownodeexecution.DefaultIsAsync = workflownodeexecutionDescIsAsync.Default.(bool)
+	workflowversionMixin := schema.WorkflowVersion{}.Mixin()
+	workflowversionMixinHooks0 := workflowversionMixin[0].Hooks()
+	workflowversion.Hooks[0] = workflowversionMixinHooks0[0]
+	workflowversion.Hooks[1] = workflowversionMixinHooks0[1]
+	workflowversionMixinFields0 := workflowversionMixin[0].Fields()
+	_ = workflowversionMixinFields0
+	workflowversionFields := schema.WorkflowVersion{}.Fields()
+	_ = workflowversionFields
+	// workflowversionDescCreateTime is the schema descriptor for create_time field.
+	workflowversionDescCreateTime := workflowversionMixinFields0[1].Descriptor()
+	// workflowversion.DefaultCreateTime holds the default value on creation for the create_time field.
+	workflowversion.DefaultCreateTime = workflowversionDescCreateTime.Default.(func() time.Time)
+	// workflowversionDescUpdateTime is the schema descriptor for update_time field.
+	workflowversionDescUpdateTime := workflowversionMixinFields0[3].Descriptor()
+	// workflowversion.DefaultUpdateTime holds the default value on creation for the update_time field.
+	workflowversion.DefaultUpdateTime = workflowversionDescUpdateTime.Default.(func() time.Time)
+	// workflowversion.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	workflowversion.UpdateDefaultUpdateTime = workflowversionDescUpdateTime.UpdateDefault.(func() time.Time)
 }
 
 const (

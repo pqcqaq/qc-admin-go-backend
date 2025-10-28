@@ -1584,6 +1584,319 @@ var (
 			},
 		},
 	}
+	// WorkflowApplicationsColumns holds the columns for the "workflow_applications" table.
+	WorkflowApplicationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "start_node_id", Type: field.TypeUint64},
+		{Name: "client_secret", Type: field.TypeString},
+		{Name: "variables", Type: field.TypeJSON, Nullable: true},
+		{Name: "version", Type: field.TypeUint, Default: 1},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "published", "archived"}, Default: "draft"},
+	}
+	// WorkflowApplicationsTable holds the schema information for the "workflow_applications" table.
+	WorkflowApplicationsTable = &schema.Table{
+		Name:       "workflow_applications",
+		Columns:    WorkflowApplicationsColumns,
+		PrimaryKey: []*schema.Column{WorkflowApplicationsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workflowapplication_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowApplicationsColumns[5]},
+			},
+			{
+				Name:    "workflowapplication_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowApplicationsColumns[6]},
+			},
+			{
+				Name:    "workflowapplication_client_secret",
+				Unique:  true,
+				Columns: []*schema.Column{WorkflowApplicationsColumns[10]},
+			},
+			{
+				Name:    "workflowapplication_status",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowApplicationsColumns[13]},
+			},
+		},
+	}
+	// WorkflowExecutionsColumns holds the columns for the "workflow_executions" table.
+	WorkflowExecutionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "execution_id", Type: field.TypeString, Unique: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "running", "completed", "failed", "cancelled", "timeout"}, Default: "pending"},
+		{Name: "input", Type: field.TypeJSON, Nullable: true},
+		{Name: "output", Type: field.TypeJSON, Nullable: true},
+		{Name: "context", Type: field.TypeJSON, Nullable: true},
+		{Name: "started_at", Type: field.TypeTime, Nullable: true},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+		{Name: "duration_ms", Type: field.TypeInt, Default: 0},
+		{Name: "total_tokens", Type: field.TypeInt, Default: 0},
+		{Name: "total_cost", Type: field.TypeFloat64, Default: 0},
+		{Name: "error_message", Type: field.TypeString, Nullable: true},
+		{Name: "error_stack", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "triggered_by", Type: field.TypeString, Nullable: true},
+		{Name: "trigger_source", Type: field.TypeString, Nullable: true},
+		{Name: "application_id", Type: field.TypeUint64},
+	}
+	// WorkflowExecutionsTable holds the schema information for the "workflow_executions" table.
+	WorkflowExecutionsTable = &schema.Table{
+		Name:       "workflow_executions",
+		Columns:    WorkflowExecutionsColumns,
+		PrimaryKey: []*schema.Column{WorkflowExecutionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "workflow_executions_workflow_applications_executions",
+				Columns:    []*schema.Column{WorkflowExecutionsColumns[19]},
+				RefColumns: []*schema.Column{WorkflowApplicationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workflowexecution_execution_id",
+				Unique:  true,
+				Columns: []*schema.Column{WorkflowExecutionsColumns[5]},
+			},
+			{
+				Name:    "workflowexecution_application_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowExecutionsColumns[19], WorkflowExecutionsColumns[6]},
+			},
+			{
+				Name:    "workflowexecution_started_at",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowExecutionsColumns[10]},
+			},
+			{
+				Name:    "workflowexecution_triggered_by",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowExecutionsColumns[17]},
+			},
+		},
+	}
+	// WorkflowExecutionLogsColumns holds the columns for the "workflow_execution_logs" table.
+	WorkflowExecutionLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "execution_id", Type: field.TypeUint64},
+		{Name: "node_execution_id", Type: field.TypeUint64, Nullable: true},
+		{Name: "level", Type: field.TypeEnum, Enums: []string{"debug", "info", "warn", "error"}, Default: "info"},
+		{Name: "message", Type: field.TypeString, Size: 2147483647},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true},
+		{Name: "logged_at", Type: field.TypeTime},
+	}
+	// WorkflowExecutionLogsTable holds the schema information for the "workflow_execution_logs" table.
+	WorkflowExecutionLogsTable = &schema.Table{
+		Name:       "workflow_execution_logs",
+		Columns:    WorkflowExecutionLogsColumns,
+		PrimaryKey: []*schema.Column{WorkflowExecutionLogsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workflowexecutionlog_execution_id_logged_at",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowExecutionLogsColumns[5], WorkflowExecutionLogsColumns[10]},
+			},
+			{
+				Name:    "workflowexecutionlog_node_execution_id",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowExecutionLogsColumns[6]},
+			},
+			{
+				Name:    "workflowexecutionlog_level",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowExecutionLogsColumns[7]},
+			},
+		},
+	}
+	// WorkflowNodesColumns holds the columns for the "workflow_nodes" table.
+	WorkflowNodesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "node_key", Type: field.TypeString},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"user_input", "todo_task_generator", "condition_checker", "api_caller", "data_processor", "while_loop", "end_node", "parallel_executor", "llm_caller"}},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "prompt", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "config", Type: field.TypeJSON},
+		{Name: "processor_language", Type: field.TypeString, Nullable: true},
+		{Name: "processor_code", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "next_node_id", Type: field.TypeUint64, Nullable: true},
+		{Name: "parent_node_id", Type: field.TypeUint64, Nullable: true},
+		{Name: "branch_nodes", Type: field.TypeJSON, Nullable: true},
+		{Name: "parallel_config", Type: field.TypeJSON, Nullable: true},
+		{Name: "api_config", Type: field.TypeJSON, Nullable: true},
+		{Name: "async", Type: field.TypeBool, Default: false},
+		{Name: "timeout", Type: field.TypeInt, Default: 30},
+		{Name: "retry_count", Type: field.TypeInt, Default: 0},
+		{Name: "position_x", Type: field.TypeInt, Default: 0},
+		{Name: "position_y", Type: field.TypeInt, Default: 0},
+		{Name: "application_id", Type: field.TypeUint64},
+	}
+	// WorkflowNodesTable holds the schema information for the "workflow_nodes" table.
+	WorkflowNodesTable = &schema.Table{
+		Name:       "workflow_nodes",
+		Columns:    WorkflowNodesColumns,
+		PrimaryKey: []*schema.Column{WorkflowNodesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "workflow_nodes_workflow_applications_nodes",
+				Columns:    []*schema.Column{WorkflowNodesColumns[25]},
+				RefColumns: []*schema.Column{WorkflowApplicationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workflownode_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowNodesColumns[5]},
+			},
+			{
+				Name:    "workflownode_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowNodesColumns[6]},
+			},
+			{
+				Name:    "workflownode_application_id_node_key",
+				Unique:  true,
+				Columns: []*schema.Column{WorkflowNodesColumns[25], WorkflowNodesColumns[8]},
+			},
+			{
+				Name:    "workflownode_next_node_id",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowNodesColumns[15]},
+			},
+			{
+				Name:    "workflownode_parent_node_id",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowNodesColumns[16]},
+			},
+			{
+				Name:    "workflownode_type",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowNodesColumns[9]},
+			},
+		},
+	}
+	// WorkflowNodeExecutionsColumns holds the columns for the "workflow_node_executions" table.
+	WorkflowNodeExecutionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "node_name", Type: field.TypeString},
+		{Name: "node_type", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "running", "completed", "failed", "skipped", "timeout"}, Default: "pending"},
+		{Name: "input", Type: field.TypeJSON, Nullable: true},
+		{Name: "output", Type: field.TypeJSON, Nullable: true},
+		{Name: "extra", Type: field.TypeJSON, Nullable: true},
+		{Name: "started_at", Type: field.TypeTime, Nullable: true},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+		{Name: "duration_ms", Type: field.TypeInt, Default: 0},
+		{Name: "prompt_tokens", Type: field.TypeInt, Default: 0},
+		{Name: "completion_tokens", Type: field.TypeInt, Default: 0},
+		{Name: "total_tokens", Type: field.TypeInt, Default: 0},
+		{Name: "cost", Type: field.TypeFloat64, Default: 0},
+		{Name: "model", Type: field.TypeString, Nullable: true},
+		{Name: "error_message", Type: field.TypeString, Nullable: true},
+		{Name: "error_stack", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "retry_count", Type: field.TypeInt, Default: 0},
+		{Name: "is_async", Type: field.TypeBool, Default: false},
+		{Name: "parent_execution_id", Type: field.TypeUint64, Nullable: true},
+		{Name: "execution_id", Type: field.TypeUint64},
+		{Name: "node_id", Type: field.TypeUint64},
+	}
+	// WorkflowNodeExecutionsTable holds the schema information for the "workflow_node_executions" table.
+	WorkflowNodeExecutionsTable = &schema.Table{
+		Name:       "workflow_node_executions",
+		Columns:    WorkflowNodeExecutionsColumns,
+		PrimaryKey: []*schema.Column{WorkflowNodeExecutionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "workflow_node_executions_workflow_executions_node_executions",
+				Columns:    []*schema.Column{WorkflowNodeExecutionsColumns[24]},
+				RefColumns: []*schema.Column{WorkflowExecutionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "workflow_node_executions_workflow_nodes_executions",
+				Columns:    []*schema.Column{WorkflowNodeExecutionsColumns[25]},
+				RefColumns: []*schema.Column{WorkflowNodesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workflownodeexecution_execution_id_node_id",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowNodeExecutionsColumns[24], WorkflowNodeExecutionsColumns[25]},
+			},
+			{
+				Name:    "workflownodeexecution_execution_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowNodeExecutionsColumns[24], WorkflowNodeExecutionsColumns[7]},
+			},
+			{
+				Name:    "workflownodeexecution_started_at",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowNodeExecutionsColumns[11]},
+			},
+			{
+				Name:    "workflownodeexecution_parent_execution_id",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowNodeExecutionsColumns[23]},
+			},
+		},
+	}
+	// WorkflowVersionsColumns holds the columns for the "workflow_versions" table.
+	WorkflowVersionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "application_id", Type: field.TypeUint64},
+		{Name: "version", Type: field.TypeUint},
+		{Name: "snapshot", Type: field.TypeJSON},
+		{Name: "change_log", Type: field.TypeString, Nullable: true},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+	}
+	// WorkflowVersionsTable holds the schema information for the "workflow_versions" table.
+	WorkflowVersionsTable = &schema.Table{
+		Name:       "workflow_versions",
+		Columns:    WorkflowVersionsColumns,
+		PrimaryKey: []*schema.Column{WorkflowVersionsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workflowversion_application_id_version",
+				Unique:  true,
+				Columns: []*schema.Column{WorkflowVersionsColumns[5], WorkflowVersionsColumns[6]},
+			},
+		},
+	}
 	// APIAuthPermissionsColumns holds the columns for the "api_auth_permissions" table.
 	APIAuthPermissionsColumns = []*schema.Column{
 		{Name: "api_auth_id", Type: field.TypeUint64},
@@ -1688,6 +2001,12 @@ var (
 		SysUsersTable,
 		SysUserRoleTable,
 		SysVerifyCodesTable,
+		WorkflowApplicationsTable,
+		WorkflowExecutionsTable,
+		WorkflowExecutionLogsTable,
+		WorkflowNodesTable,
+		WorkflowNodeExecutionsTable,
+		WorkflowVersionsTable,
 		APIAuthPermissionsTable,
 		ClientDeviceRolesTable,
 		RoleInheritsFromTable,
@@ -1802,6 +2121,28 @@ func init() {
 	}
 	SysVerifyCodesTable.Annotation = &entsql.Annotation{
 		Table: "sys_verify_codes",
+	}
+	WorkflowApplicationsTable.Annotation = &entsql.Annotation{
+		Table: "workflow_applications",
+	}
+	WorkflowExecutionsTable.ForeignKeys[0].RefTable = WorkflowApplicationsTable
+	WorkflowExecutionsTable.Annotation = &entsql.Annotation{
+		Table: "workflow_executions",
+	}
+	WorkflowExecutionLogsTable.Annotation = &entsql.Annotation{
+		Table: "workflow_execution_logs",
+	}
+	WorkflowNodesTable.ForeignKeys[0].RefTable = WorkflowApplicationsTable
+	WorkflowNodesTable.Annotation = &entsql.Annotation{
+		Table: "workflow_nodes",
+	}
+	WorkflowNodeExecutionsTable.ForeignKeys[0].RefTable = WorkflowExecutionsTable
+	WorkflowNodeExecutionsTable.ForeignKeys[1].RefTable = WorkflowNodesTable
+	WorkflowNodeExecutionsTable.Annotation = &entsql.Annotation{
+		Table: "workflow_node_executions",
+	}
+	WorkflowVersionsTable.Annotation = &entsql.Annotation{
+		Table: "workflow_versions",
 	}
 	APIAuthPermissionsTable.ForeignKeys[0].RefTable = SysAPIAuthTable
 	APIAuthPermissionsTable.ForeignKeys[1].RefTable = SysPermissionsTable

@@ -68,6 +68,18 @@ type Tx struct {
 	UserRole *UserRoleClient
 	// VerifyCode is the client for interacting with the VerifyCode builders.
 	VerifyCode *VerifyCodeClient
+	// WorkflowApplication is the client for interacting with the WorkflowApplication builders.
+	WorkflowApplication *WorkflowApplicationClient
+	// WorkflowExecution is the client for interacting with the WorkflowExecution builders.
+	WorkflowExecution *WorkflowExecutionClient
+	// WorkflowExecutionLog is the client for interacting with the WorkflowExecutionLog builders.
+	WorkflowExecutionLog *WorkflowExecutionLogClient
+	// WorkflowNode is the client for interacting with the WorkflowNode builders.
+	WorkflowNode *WorkflowNodeClient
+	// WorkflowNodeExecution is the client for interacting with the WorkflowNodeExecution builders.
+	WorkflowNodeExecution *WorkflowNodeExecutionClient
+	// WorkflowVersion is the client for interacting with the WorkflowVersion builders.
+	WorkflowVersion *WorkflowVersionClient
 
 	// lazily loaded.
 	client     *Client
@@ -226,6 +238,12 @@ func (tx *Tx) init() {
 	tx.User = NewUserClient(tx.config)
 	tx.UserRole = NewUserRoleClient(tx.config)
 	tx.VerifyCode = NewVerifyCodeClient(tx.config)
+	tx.WorkflowApplication = NewWorkflowApplicationClient(tx.config)
+	tx.WorkflowExecution = NewWorkflowExecutionClient(tx.config)
+	tx.WorkflowExecutionLog = NewWorkflowExecutionLogClient(tx.config)
+	tx.WorkflowNode = NewWorkflowNodeClient(tx.config)
+	tx.WorkflowNodeExecution = NewWorkflowNodeExecutionClient(tx.config)
+	tx.WorkflowVersion = NewWorkflowVersionClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

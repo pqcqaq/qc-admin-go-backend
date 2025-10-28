@@ -86,3 +86,21 @@ type UserRole func(*sql.Selector)
 
 // VerifyCode is the predicate function for verifycode builders.
 type VerifyCode func(*sql.Selector)
+
+// WorkflowApplication is the predicate function for workflowapplication builders.
+type WorkflowApplication func(*sql.Selector)
+
+// WorkflowExecution is the predicate function for workflowexecution builders.
+type WorkflowExecution func(*sql.Selector)
+
+// WorkflowExecutionLog is the predicate function for workflowexecutionlog builders.
+type WorkflowExecutionLog func(*sql.Selector)
+
+// WorkflowNode is the predicate function for workflownode builders.
+type WorkflowNode func(*sql.Selector)
+
+// WorkflowNodeExecution is the predicate function for workflownodeexecution builders.
+type WorkflowNodeExecution func(*sql.Selector)
+
+// WorkflowVersion is the predicate function for workflowversion builders.
+type WorkflowVersion func(*sql.Selector)

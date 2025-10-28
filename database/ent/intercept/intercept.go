@@ -35,6 +35,12 @@ import (
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
+	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowexecution"
+	"go-backend/database/ent/workflowexecutionlog"
+	"go-backend/database/ent/workflownode"
+	"go-backend/database/ent/workflownodeexecution"
+	"go-backend/database/ent/workflowversion"
 
 	"entgo.io/ent/dialect/sql"
 )
@@ -824,6 +830,168 @@ func (f TraverseVerifyCode) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.VerifyCodeQuery", q)
 }
 
+// The WorkflowApplicationFunc type is an adapter to allow the use of ordinary function as a Querier.
+type WorkflowApplicationFunc func(context.Context, *ent.WorkflowApplicationQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f WorkflowApplicationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.WorkflowApplicationQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.WorkflowApplicationQuery", q)
+}
+
+// The TraverseWorkflowApplication type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseWorkflowApplication func(context.Context, *ent.WorkflowApplicationQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseWorkflowApplication) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseWorkflowApplication) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowApplicationQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.WorkflowApplicationQuery", q)
+}
+
+// The WorkflowExecutionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type WorkflowExecutionFunc func(context.Context, *ent.WorkflowExecutionQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f WorkflowExecutionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.WorkflowExecutionQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.WorkflowExecutionQuery", q)
+}
+
+// The TraverseWorkflowExecution type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseWorkflowExecution func(context.Context, *ent.WorkflowExecutionQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseWorkflowExecution) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseWorkflowExecution) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowExecutionQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.WorkflowExecutionQuery", q)
+}
+
+// The WorkflowExecutionLogFunc type is an adapter to allow the use of ordinary function as a Querier.
+type WorkflowExecutionLogFunc func(context.Context, *ent.WorkflowExecutionLogQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f WorkflowExecutionLogFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.WorkflowExecutionLogQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.WorkflowExecutionLogQuery", q)
+}
+
+// The TraverseWorkflowExecutionLog type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseWorkflowExecutionLog func(context.Context, *ent.WorkflowExecutionLogQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseWorkflowExecutionLog) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseWorkflowExecutionLog) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowExecutionLogQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.WorkflowExecutionLogQuery", q)
+}
+
+// The WorkflowNodeFunc type is an adapter to allow the use of ordinary function as a Querier.
+type WorkflowNodeFunc func(context.Context, *ent.WorkflowNodeQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f WorkflowNodeFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.WorkflowNodeQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.WorkflowNodeQuery", q)
+}
+
+// The TraverseWorkflowNode type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseWorkflowNode func(context.Context, *ent.WorkflowNodeQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseWorkflowNode) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseWorkflowNode) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowNodeQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.WorkflowNodeQuery", q)
+}
+
+// The WorkflowNodeExecutionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type WorkflowNodeExecutionFunc func(context.Context, *ent.WorkflowNodeExecutionQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f WorkflowNodeExecutionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.WorkflowNodeExecutionQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.WorkflowNodeExecutionQuery", q)
+}
+
+// The TraverseWorkflowNodeExecution type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseWorkflowNodeExecution func(context.Context, *ent.WorkflowNodeExecutionQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseWorkflowNodeExecution) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseWorkflowNodeExecution) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowNodeExecutionQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.WorkflowNodeExecutionQuery", q)
+}
+
+// The WorkflowVersionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type WorkflowVersionFunc func(context.Context, *ent.WorkflowVersionQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f WorkflowVersionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.WorkflowVersionQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.WorkflowVersionQuery", q)
+}
+
+// The TraverseWorkflowVersion type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseWorkflowVersion func(context.Context, *ent.WorkflowVersionQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseWorkflowVersion) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseWorkflowVersion) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowVersionQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.WorkflowVersionQuery", q)
+}
+
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
@@ -881,6 +1049,18 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.UserRoleQuery, predicate.UserRole, userrole.OrderOption]{typ: ent.TypeUserRole, tq: q}, nil
 	case *ent.VerifyCodeQuery:
 		return &query[*ent.VerifyCodeQuery, predicate.VerifyCode, verifycode.OrderOption]{typ: ent.TypeVerifyCode, tq: q}, nil
+	case *ent.WorkflowApplicationQuery:
+		return &query[*ent.WorkflowApplicationQuery, predicate.WorkflowApplication, workflowapplication.OrderOption]{typ: ent.TypeWorkflowApplication, tq: q}, nil
+	case *ent.WorkflowExecutionQuery:
+		return &query[*ent.WorkflowExecutionQuery, predicate.WorkflowExecution, workflowexecution.OrderOption]{typ: ent.TypeWorkflowExecution, tq: q}, nil
+	case *ent.WorkflowExecutionLogQuery:
+		return &query[*ent.WorkflowExecutionLogQuery, predicate.WorkflowExecutionLog, workflowexecutionlog.OrderOption]{typ: ent.TypeWorkflowExecutionLog, tq: q}, nil
+	case *ent.WorkflowNodeQuery:
+		return &query[*ent.WorkflowNodeQuery, predicate.WorkflowNode, workflownode.OrderOption]{typ: ent.TypeWorkflowNode, tq: q}, nil
+	case *ent.WorkflowNodeExecutionQuery:
+		return &query[*ent.WorkflowNodeExecutionQuery, predicate.WorkflowNodeExecution, workflownodeexecution.OrderOption]{typ: ent.TypeWorkflowNodeExecution, tq: q}, nil
+	case *ent.WorkflowVersionQuery:
+		return &query[*ent.WorkflowVersionQuery, predicate.WorkflowVersion, workflowversion.OrderOption]{typ: ent.TypeWorkflowVersion, tq: q}, nil
 	default:
 		return nil, fmt.Errorf("unknown query type %T", q)
 	}

@@ -31,6 +31,12 @@ import (
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
+	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowexecution"
+	"go-backend/database/ent/workflowexecutionlog"
+	"go-backend/database/ent/workflownode"
+	"go-backend/database/ent/workflownodeexecution"
+	"go-backend/database/ent/workflowversion"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -40,7 +46,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 27)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 33)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   apiauth.Table,
@@ -767,6 +773,185 @@ var schemaGraph = func() *sqlgraph.Schema {
 			verifycode.FieldClientID:    {Type: field.TypeUint64, Column: verifycode.FieldClientID},
 		},
 	}
+	graph.Nodes[27] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   workflowapplication.Table,
+			Columns: workflowapplication.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: workflowapplication.FieldID,
+			},
+		},
+		Type: "WorkflowApplication",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			workflowapplication.FieldCreateTime:   {Type: field.TypeTime, Column: workflowapplication.FieldCreateTime},
+			workflowapplication.FieldCreateBy:     {Type: field.TypeUint64, Column: workflowapplication.FieldCreateBy},
+			workflowapplication.FieldUpdateTime:   {Type: field.TypeTime, Column: workflowapplication.FieldUpdateTime},
+			workflowapplication.FieldUpdateBy:     {Type: field.TypeUint64, Column: workflowapplication.FieldUpdateBy},
+			workflowapplication.FieldDeleteTime:   {Type: field.TypeTime, Column: workflowapplication.FieldDeleteTime},
+			workflowapplication.FieldDeleteBy:     {Type: field.TypeUint64, Column: workflowapplication.FieldDeleteBy},
+			workflowapplication.FieldName:         {Type: field.TypeString, Column: workflowapplication.FieldName},
+			workflowapplication.FieldDescription:  {Type: field.TypeString, Column: workflowapplication.FieldDescription},
+			workflowapplication.FieldStartNodeID:  {Type: field.TypeUint64, Column: workflowapplication.FieldStartNodeID},
+			workflowapplication.FieldClientSecret: {Type: field.TypeString, Column: workflowapplication.FieldClientSecret},
+			workflowapplication.FieldVariables:    {Type: field.TypeJSON, Column: workflowapplication.FieldVariables},
+			workflowapplication.FieldVersion:      {Type: field.TypeUint, Column: workflowapplication.FieldVersion},
+			workflowapplication.FieldStatus:       {Type: field.TypeEnum, Column: workflowapplication.FieldStatus},
+		},
+	}
+	graph.Nodes[28] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   workflowexecution.Table,
+			Columns: workflowexecution.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: workflowexecution.FieldID,
+			},
+		},
+		Type: "WorkflowExecution",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			workflowexecution.FieldCreateTime:    {Type: field.TypeTime, Column: workflowexecution.FieldCreateTime},
+			workflowexecution.FieldCreateBy:      {Type: field.TypeUint64, Column: workflowexecution.FieldCreateBy},
+			workflowexecution.FieldUpdateTime:    {Type: field.TypeTime, Column: workflowexecution.FieldUpdateTime},
+			workflowexecution.FieldUpdateBy:      {Type: field.TypeUint64, Column: workflowexecution.FieldUpdateBy},
+			workflowexecution.FieldExecutionID:   {Type: field.TypeString, Column: workflowexecution.FieldExecutionID},
+			workflowexecution.FieldApplicationID: {Type: field.TypeUint64, Column: workflowexecution.FieldApplicationID},
+			workflowexecution.FieldStatus:        {Type: field.TypeEnum, Column: workflowexecution.FieldStatus},
+			workflowexecution.FieldInput:         {Type: field.TypeJSON, Column: workflowexecution.FieldInput},
+			workflowexecution.FieldOutput:        {Type: field.TypeJSON, Column: workflowexecution.FieldOutput},
+			workflowexecution.FieldContext:       {Type: field.TypeJSON, Column: workflowexecution.FieldContext},
+			workflowexecution.FieldStartedAt:     {Type: field.TypeTime, Column: workflowexecution.FieldStartedAt},
+			workflowexecution.FieldFinishedAt:    {Type: field.TypeTime, Column: workflowexecution.FieldFinishedAt},
+			workflowexecution.FieldDurationMs:    {Type: field.TypeInt, Column: workflowexecution.FieldDurationMs},
+			workflowexecution.FieldTotalTokens:   {Type: field.TypeInt, Column: workflowexecution.FieldTotalTokens},
+			workflowexecution.FieldTotalCost:     {Type: field.TypeFloat64, Column: workflowexecution.FieldTotalCost},
+			workflowexecution.FieldErrorMessage:  {Type: field.TypeString, Column: workflowexecution.FieldErrorMessage},
+			workflowexecution.FieldErrorStack:    {Type: field.TypeString, Column: workflowexecution.FieldErrorStack},
+			workflowexecution.FieldTriggeredBy:   {Type: field.TypeString, Column: workflowexecution.FieldTriggeredBy},
+			workflowexecution.FieldTriggerSource: {Type: field.TypeString, Column: workflowexecution.FieldTriggerSource},
+		},
+	}
+	graph.Nodes[29] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   workflowexecutionlog.Table,
+			Columns: workflowexecutionlog.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: workflowexecutionlog.FieldID,
+			},
+		},
+		Type: "WorkflowExecutionLog",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			workflowexecutionlog.FieldCreateTime:      {Type: field.TypeTime, Column: workflowexecutionlog.FieldCreateTime},
+			workflowexecutionlog.FieldCreateBy:        {Type: field.TypeUint64, Column: workflowexecutionlog.FieldCreateBy},
+			workflowexecutionlog.FieldUpdateTime:      {Type: field.TypeTime, Column: workflowexecutionlog.FieldUpdateTime},
+			workflowexecutionlog.FieldUpdateBy:        {Type: field.TypeUint64, Column: workflowexecutionlog.FieldUpdateBy},
+			workflowexecutionlog.FieldExecutionID:     {Type: field.TypeUint64, Column: workflowexecutionlog.FieldExecutionID},
+			workflowexecutionlog.FieldNodeExecutionID: {Type: field.TypeUint64, Column: workflowexecutionlog.FieldNodeExecutionID},
+			workflowexecutionlog.FieldLevel:           {Type: field.TypeEnum, Column: workflowexecutionlog.FieldLevel},
+			workflowexecutionlog.FieldMessage:         {Type: field.TypeString, Column: workflowexecutionlog.FieldMessage},
+			workflowexecutionlog.FieldMetadata:        {Type: field.TypeJSON, Column: workflowexecutionlog.FieldMetadata},
+			workflowexecutionlog.FieldLoggedAt:        {Type: field.TypeTime, Column: workflowexecutionlog.FieldLoggedAt},
+		},
+	}
+	graph.Nodes[30] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   workflownode.Table,
+			Columns: workflownode.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: workflownode.FieldID,
+			},
+		},
+		Type: "WorkflowNode",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			workflownode.FieldCreateTime:        {Type: field.TypeTime, Column: workflownode.FieldCreateTime},
+			workflownode.FieldCreateBy:          {Type: field.TypeUint64, Column: workflownode.FieldCreateBy},
+			workflownode.FieldUpdateTime:        {Type: field.TypeTime, Column: workflownode.FieldUpdateTime},
+			workflownode.FieldUpdateBy:          {Type: field.TypeUint64, Column: workflownode.FieldUpdateBy},
+			workflownode.FieldDeleteTime:        {Type: field.TypeTime, Column: workflownode.FieldDeleteTime},
+			workflownode.FieldDeleteBy:          {Type: field.TypeUint64, Column: workflownode.FieldDeleteBy},
+			workflownode.FieldName:              {Type: field.TypeString, Column: workflownode.FieldName},
+			workflownode.FieldNodeKey:           {Type: field.TypeString, Column: workflownode.FieldNodeKey},
+			workflownode.FieldType:              {Type: field.TypeEnum, Column: workflownode.FieldType},
+			workflownode.FieldDescription:       {Type: field.TypeString, Column: workflownode.FieldDescription},
+			workflownode.FieldPrompt:            {Type: field.TypeString, Column: workflownode.FieldPrompt},
+			workflownode.FieldConfig:            {Type: field.TypeJSON, Column: workflownode.FieldConfig},
+			workflownode.FieldApplicationID:     {Type: field.TypeUint64, Column: workflownode.FieldApplicationID},
+			workflownode.FieldProcessorLanguage: {Type: field.TypeString, Column: workflownode.FieldProcessorLanguage},
+			workflownode.FieldProcessorCode:     {Type: field.TypeString, Column: workflownode.FieldProcessorCode},
+			workflownode.FieldNextNodeID:        {Type: field.TypeUint64, Column: workflownode.FieldNextNodeID},
+			workflownode.FieldParentNodeID:      {Type: field.TypeUint64, Column: workflownode.FieldParentNodeID},
+			workflownode.FieldBranchNodes:       {Type: field.TypeJSON, Column: workflownode.FieldBranchNodes},
+			workflownode.FieldParallelConfig:    {Type: field.TypeJSON, Column: workflownode.FieldParallelConfig},
+			workflownode.FieldAPIConfig:         {Type: field.TypeJSON, Column: workflownode.FieldAPIConfig},
+			workflownode.FieldAsync:             {Type: field.TypeBool, Column: workflownode.FieldAsync},
+			workflownode.FieldTimeout:           {Type: field.TypeInt, Column: workflownode.FieldTimeout},
+			workflownode.FieldRetryCount:        {Type: field.TypeInt, Column: workflownode.FieldRetryCount},
+			workflownode.FieldPositionX:         {Type: field.TypeInt, Column: workflownode.FieldPositionX},
+			workflownode.FieldPositionY:         {Type: field.TypeInt, Column: workflownode.FieldPositionY},
+		},
+	}
+	graph.Nodes[31] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   workflownodeexecution.Table,
+			Columns: workflownodeexecution.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: workflownodeexecution.FieldID,
+			},
+		},
+		Type: "WorkflowNodeExecution",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			workflownodeexecution.FieldCreateTime:        {Type: field.TypeTime, Column: workflownodeexecution.FieldCreateTime},
+			workflownodeexecution.FieldCreateBy:          {Type: field.TypeUint64, Column: workflownodeexecution.FieldCreateBy},
+			workflownodeexecution.FieldUpdateTime:        {Type: field.TypeTime, Column: workflownodeexecution.FieldUpdateTime},
+			workflownodeexecution.FieldUpdateBy:          {Type: field.TypeUint64, Column: workflownodeexecution.FieldUpdateBy},
+			workflownodeexecution.FieldExecutionID:       {Type: field.TypeUint64, Column: workflownodeexecution.FieldExecutionID},
+			workflownodeexecution.FieldNodeID:            {Type: field.TypeUint64, Column: workflownodeexecution.FieldNodeID},
+			workflownodeexecution.FieldNodeName:          {Type: field.TypeString, Column: workflownodeexecution.FieldNodeName},
+			workflownodeexecution.FieldNodeType:          {Type: field.TypeString, Column: workflownodeexecution.FieldNodeType},
+			workflownodeexecution.FieldStatus:            {Type: field.TypeEnum, Column: workflownodeexecution.FieldStatus},
+			workflownodeexecution.FieldInput:             {Type: field.TypeJSON, Column: workflownodeexecution.FieldInput},
+			workflownodeexecution.FieldOutput:            {Type: field.TypeJSON, Column: workflownodeexecution.FieldOutput},
+			workflownodeexecution.FieldExtra:             {Type: field.TypeJSON, Column: workflownodeexecution.FieldExtra},
+			workflownodeexecution.FieldStartedAt:         {Type: field.TypeTime, Column: workflownodeexecution.FieldStartedAt},
+			workflownodeexecution.FieldFinishedAt:        {Type: field.TypeTime, Column: workflownodeexecution.FieldFinishedAt},
+			workflownodeexecution.FieldDurationMs:        {Type: field.TypeInt, Column: workflownodeexecution.FieldDurationMs},
+			workflownodeexecution.FieldPromptTokens:      {Type: field.TypeInt, Column: workflownodeexecution.FieldPromptTokens},
+			workflownodeexecution.FieldCompletionTokens:  {Type: field.TypeInt, Column: workflownodeexecution.FieldCompletionTokens},
+			workflownodeexecution.FieldTotalTokens:       {Type: field.TypeInt, Column: workflownodeexecution.FieldTotalTokens},
+			workflownodeexecution.FieldCost:              {Type: field.TypeFloat64, Column: workflownodeexecution.FieldCost},
+			workflownodeexecution.FieldModel:             {Type: field.TypeString, Column: workflownodeexecution.FieldModel},
+			workflownodeexecution.FieldErrorMessage:      {Type: field.TypeString, Column: workflownodeexecution.FieldErrorMessage},
+			workflownodeexecution.FieldErrorStack:        {Type: field.TypeString, Column: workflownodeexecution.FieldErrorStack},
+			workflownodeexecution.FieldRetryCount:        {Type: field.TypeInt, Column: workflownodeexecution.FieldRetryCount},
+			workflownodeexecution.FieldIsAsync:           {Type: field.TypeBool, Column: workflownodeexecution.FieldIsAsync},
+			workflownodeexecution.FieldParentExecutionID: {Type: field.TypeUint64, Column: workflownodeexecution.FieldParentExecutionID},
+		},
+	}
+	graph.Nodes[32] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   workflowversion.Table,
+			Columns: workflowversion.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: workflowversion.FieldID,
+			},
+		},
+		Type: "WorkflowVersion",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			workflowversion.FieldCreateTime:    {Type: field.TypeTime, Column: workflowversion.FieldCreateTime},
+			workflowversion.FieldCreateBy:      {Type: field.TypeUint64, Column: workflowversion.FieldCreateBy},
+			workflowversion.FieldUpdateTime:    {Type: field.TypeTime, Column: workflowversion.FieldUpdateTime},
+			workflowversion.FieldUpdateBy:      {Type: field.TypeUint64, Column: workflowversion.FieldUpdateBy},
+			workflowversion.FieldApplicationID: {Type: field.TypeUint64, Column: workflowversion.FieldApplicationID},
+			workflowversion.FieldVersion:       {Type: field.TypeUint, Column: workflowversion.FieldVersion},
+			workflowversion.FieldSnapshot:      {Type: field.TypeJSON, Column: workflowversion.FieldSnapshot},
+			workflowversion.FieldChangeLog:     {Type: field.TypeString, Column: workflowversion.FieldChangeLog},
+			workflowversion.FieldCreatedBy:     {Type: field.TypeString, Column: workflowversion.FieldCreatedBy},
+		},
+	}
 	graph.MustAddE(
 		"permissions",
 		&sqlgraph.EdgeSpec{
@@ -1474,6 +1659,102 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"UserRole",
 		"Role",
+	)
+	graph.MustAddE(
+		"nodes",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowapplication.NodesTable,
+			Columns: []string{workflowapplication.NodesColumn},
+			Bidi:    false,
+		},
+		"WorkflowApplication",
+		"WorkflowNode",
+	)
+	graph.MustAddE(
+		"executions",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowapplication.ExecutionsTable,
+			Columns: []string{workflowapplication.ExecutionsColumn},
+			Bidi:    false,
+		},
+		"WorkflowApplication",
+		"WorkflowExecution",
+	)
+	graph.MustAddE(
+		"application",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workflowexecution.ApplicationTable,
+			Columns: []string{workflowexecution.ApplicationColumn},
+			Bidi:    false,
+		},
+		"WorkflowExecution",
+		"WorkflowApplication",
+	)
+	graph.MustAddE(
+		"node_executions",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowexecution.NodeExecutionsTable,
+			Columns: []string{workflowexecution.NodeExecutionsColumn},
+			Bidi:    false,
+		},
+		"WorkflowExecution",
+		"WorkflowNodeExecution",
+	)
+	graph.MustAddE(
+		"application",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workflownode.ApplicationTable,
+			Columns: []string{workflownode.ApplicationColumn},
+			Bidi:    false,
+		},
+		"WorkflowNode",
+		"WorkflowApplication",
+	)
+	graph.MustAddE(
+		"executions",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflownode.ExecutionsTable,
+			Columns: []string{workflownode.ExecutionsColumn},
+			Bidi:    false,
+		},
+		"WorkflowNode",
+		"WorkflowNodeExecution",
+	)
+	graph.MustAddE(
+		"workflow_execution",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workflownodeexecution.WorkflowExecutionTable,
+			Columns: []string{workflownodeexecution.WorkflowExecutionColumn},
+			Bidi:    false,
+		},
+		"WorkflowNodeExecution",
+		"WorkflowExecution",
+	)
+	graph.MustAddE(
+		"node",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workflownodeexecution.NodeTable,
+			Columns: []string{workflownodeexecution.NodeColumn},
+			Bidi:    false,
+		},
+		"WorkflowNodeExecution",
+		"WorkflowNode",
 	)
 	return graph
 }()
@@ -5263,4 +5544,861 @@ func (f *VerifyCodeFilter) WhereSendAt(p entql.TimeP) {
 // WhereClientID applies the entql uint64 predicate on the client_id field.
 func (f *VerifyCodeFilter) WhereClientID(p entql.Uint64P) {
 	f.Where(p.Field(verifycode.FieldClientID))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *WorkflowApplicationQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the WorkflowApplicationQuery builder.
+func (_q *WorkflowApplicationQuery) Filter() *WorkflowApplicationFilter {
+	return &WorkflowApplicationFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *WorkflowApplicationMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the WorkflowApplicationMutation builder.
+func (m *WorkflowApplicationMutation) Filter() *WorkflowApplicationFilter {
+	return &WorkflowApplicationFilter{config: m.config, predicateAdder: m}
+}
+
+// WorkflowApplicationFilter provides a generic filtering capability at runtime for WorkflowApplicationQuery.
+type WorkflowApplicationFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *WorkflowApplicationFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[27].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *WorkflowApplicationFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(workflowapplication.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *WorkflowApplicationFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(workflowapplication.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *WorkflowApplicationFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflowapplication.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *WorkflowApplicationFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(workflowapplication.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *WorkflowApplicationFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflowapplication.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *WorkflowApplicationFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(workflowapplication.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *WorkflowApplicationFilter) WhereDeleteBy(p entql.Uint64P) {
+	f.Where(p.Field(workflowapplication.FieldDeleteBy))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *WorkflowApplicationFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(workflowapplication.FieldName))
+}
+
+// WhereDescription applies the entql string predicate on the description field.
+func (f *WorkflowApplicationFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(workflowapplication.FieldDescription))
+}
+
+// WhereStartNodeID applies the entql uint64 predicate on the start_node_id field.
+func (f *WorkflowApplicationFilter) WhereStartNodeID(p entql.Uint64P) {
+	f.Where(p.Field(workflowapplication.FieldStartNodeID))
+}
+
+// WhereClientSecret applies the entql string predicate on the client_secret field.
+func (f *WorkflowApplicationFilter) WhereClientSecret(p entql.StringP) {
+	f.Where(p.Field(workflowapplication.FieldClientSecret))
+}
+
+// WhereVariables applies the entql json.RawMessage predicate on the variables field.
+func (f *WorkflowApplicationFilter) WhereVariables(p entql.BytesP) {
+	f.Where(p.Field(workflowapplication.FieldVariables))
+}
+
+// WhereVersion applies the entql uint predicate on the version field.
+func (f *WorkflowApplicationFilter) WhereVersion(p entql.UintP) {
+	f.Where(p.Field(workflowapplication.FieldVersion))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *WorkflowApplicationFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(workflowapplication.FieldStatus))
+}
+
+// WhereHasNodes applies a predicate to check if query has an edge nodes.
+func (f *WorkflowApplicationFilter) WhereHasNodes() {
+	f.Where(entql.HasEdge("nodes"))
+}
+
+// WhereHasNodesWith applies a predicate to check if query has an edge nodes with a given conditions (other predicates).
+func (f *WorkflowApplicationFilter) WhereHasNodesWith(preds ...predicate.WorkflowNode) {
+	f.Where(entql.HasEdgeWith("nodes", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasExecutions applies a predicate to check if query has an edge executions.
+func (f *WorkflowApplicationFilter) WhereHasExecutions() {
+	f.Where(entql.HasEdge("executions"))
+}
+
+// WhereHasExecutionsWith applies a predicate to check if query has an edge executions with a given conditions (other predicates).
+func (f *WorkflowApplicationFilter) WhereHasExecutionsWith(preds ...predicate.WorkflowExecution) {
+	f.Where(entql.HasEdgeWith("executions", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *WorkflowExecutionQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the WorkflowExecutionQuery builder.
+func (_q *WorkflowExecutionQuery) Filter() *WorkflowExecutionFilter {
+	return &WorkflowExecutionFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *WorkflowExecutionMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the WorkflowExecutionMutation builder.
+func (m *WorkflowExecutionMutation) Filter() *WorkflowExecutionFilter {
+	return &WorkflowExecutionFilter{config: m.config, predicateAdder: m}
+}
+
+// WorkflowExecutionFilter provides a generic filtering capability at runtime for WorkflowExecutionQuery.
+type WorkflowExecutionFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *WorkflowExecutionFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[28].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *WorkflowExecutionFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(workflowexecution.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *WorkflowExecutionFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(workflowexecution.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *WorkflowExecutionFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflowexecution.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *WorkflowExecutionFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(workflowexecution.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *WorkflowExecutionFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflowexecution.FieldUpdateBy))
+}
+
+// WhereExecutionID applies the entql string predicate on the execution_id field.
+func (f *WorkflowExecutionFilter) WhereExecutionID(p entql.StringP) {
+	f.Where(p.Field(workflowexecution.FieldExecutionID))
+}
+
+// WhereApplicationID applies the entql uint64 predicate on the application_id field.
+func (f *WorkflowExecutionFilter) WhereApplicationID(p entql.Uint64P) {
+	f.Where(p.Field(workflowexecution.FieldApplicationID))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *WorkflowExecutionFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(workflowexecution.FieldStatus))
+}
+
+// WhereInput applies the entql json.RawMessage predicate on the input field.
+func (f *WorkflowExecutionFilter) WhereInput(p entql.BytesP) {
+	f.Where(p.Field(workflowexecution.FieldInput))
+}
+
+// WhereOutput applies the entql json.RawMessage predicate on the output field.
+func (f *WorkflowExecutionFilter) WhereOutput(p entql.BytesP) {
+	f.Where(p.Field(workflowexecution.FieldOutput))
+}
+
+// WhereContext applies the entql json.RawMessage predicate on the context field.
+func (f *WorkflowExecutionFilter) WhereContext(p entql.BytesP) {
+	f.Where(p.Field(workflowexecution.FieldContext))
+}
+
+// WhereStartedAt applies the entql time.Time predicate on the started_at field.
+func (f *WorkflowExecutionFilter) WhereStartedAt(p entql.TimeP) {
+	f.Where(p.Field(workflowexecution.FieldStartedAt))
+}
+
+// WhereFinishedAt applies the entql time.Time predicate on the finished_at field.
+func (f *WorkflowExecutionFilter) WhereFinishedAt(p entql.TimeP) {
+	f.Where(p.Field(workflowexecution.FieldFinishedAt))
+}
+
+// WhereDurationMs applies the entql int predicate on the duration_ms field.
+func (f *WorkflowExecutionFilter) WhereDurationMs(p entql.IntP) {
+	f.Where(p.Field(workflowexecution.FieldDurationMs))
+}
+
+// WhereTotalTokens applies the entql int predicate on the total_tokens field.
+func (f *WorkflowExecutionFilter) WhereTotalTokens(p entql.IntP) {
+	f.Where(p.Field(workflowexecution.FieldTotalTokens))
+}
+
+// WhereTotalCost applies the entql float64 predicate on the total_cost field.
+func (f *WorkflowExecutionFilter) WhereTotalCost(p entql.Float64P) {
+	f.Where(p.Field(workflowexecution.FieldTotalCost))
+}
+
+// WhereErrorMessage applies the entql string predicate on the error_message field.
+func (f *WorkflowExecutionFilter) WhereErrorMessage(p entql.StringP) {
+	f.Where(p.Field(workflowexecution.FieldErrorMessage))
+}
+
+// WhereErrorStack applies the entql string predicate on the error_stack field.
+func (f *WorkflowExecutionFilter) WhereErrorStack(p entql.StringP) {
+	f.Where(p.Field(workflowexecution.FieldErrorStack))
+}
+
+// WhereTriggeredBy applies the entql string predicate on the triggered_by field.
+func (f *WorkflowExecutionFilter) WhereTriggeredBy(p entql.StringP) {
+	f.Where(p.Field(workflowexecution.FieldTriggeredBy))
+}
+
+// WhereTriggerSource applies the entql string predicate on the trigger_source field.
+func (f *WorkflowExecutionFilter) WhereTriggerSource(p entql.StringP) {
+	f.Where(p.Field(workflowexecution.FieldTriggerSource))
+}
+
+// WhereHasApplication applies a predicate to check if query has an edge application.
+func (f *WorkflowExecutionFilter) WhereHasApplication() {
+	f.Where(entql.HasEdge("application"))
+}
+
+// WhereHasApplicationWith applies a predicate to check if query has an edge application with a given conditions (other predicates).
+func (f *WorkflowExecutionFilter) WhereHasApplicationWith(preds ...predicate.WorkflowApplication) {
+	f.Where(entql.HasEdgeWith("application", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasNodeExecutions applies a predicate to check if query has an edge node_executions.
+func (f *WorkflowExecutionFilter) WhereHasNodeExecutions() {
+	f.Where(entql.HasEdge("node_executions"))
+}
+
+// WhereHasNodeExecutionsWith applies a predicate to check if query has an edge node_executions with a given conditions (other predicates).
+func (f *WorkflowExecutionFilter) WhereHasNodeExecutionsWith(preds ...predicate.WorkflowNodeExecution) {
+	f.Where(entql.HasEdgeWith("node_executions", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *WorkflowExecutionLogQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the WorkflowExecutionLogQuery builder.
+func (_q *WorkflowExecutionLogQuery) Filter() *WorkflowExecutionLogFilter {
+	return &WorkflowExecutionLogFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *WorkflowExecutionLogMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the WorkflowExecutionLogMutation builder.
+func (m *WorkflowExecutionLogMutation) Filter() *WorkflowExecutionLogFilter {
+	return &WorkflowExecutionLogFilter{config: m.config, predicateAdder: m}
+}
+
+// WorkflowExecutionLogFilter provides a generic filtering capability at runtime for WorkflowExecutionLogQuery.
+type WorkflowExecutionLogFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *WorkflowExecutionLogFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[29].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *WorkflowExecutionLogFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(workflowexecutionlog.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *WorkflowExecutionLogFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(workflowexecutionlog.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *WorkflowExecutionLogFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflowexecutionlog.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *WorkflowExecutionLogFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(workflowexecutionlog.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *WorkflowExecutionLogFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflowexecutionlog.FieldUpdateBy))
+}
+
+// WhereExecutionID applies the entql uint64 predicate on the execution_id field.
+func (f *WorkflowExecutionLogFilter) WhereExecutionID(p entql.Uint64P) {
+	f.Where(p.Field(workflowexecutionlog.FieldExecutionID))
+}
+
+// WhereNodeExecutionID applies the entql uint64 predicate on the node_execution_id field.
+func (f *WorkflowExecutionLogFilter) WhereNodeExecutionID(p entql.Uint64P) {
+	f.Where(p.Field(workflowexecutionlog.FieldNodeExecutionID))
+}
+
+// WhereLevel applies the entql string predicate on the level field.
+func (f *WorkflowExecutionLogFilter) WhereLevel(p entql.StringP) {
+	f.Where(p.Field(workflowexecutionlog.FieldLevel))
+}
+
+// WhereMessage applies the entql string predicate on the message field.
+func (f *WorkflowExecutionLogFilter) WhereMessage(p entql.StringP) {
+	f.Where(p.Field(workflowexecutionlog.FieldMessage))
+}
+
+// WhereMetadata applies the entql json.RawMessage predicate on the metadata field.
+func (f *WorkflowExecutionLogFilter) WhereMetadata(p entql.BytesP) {
+	f.Where(p.Field(workflowexecutionlog.FieldMetadata))
+}
+
+// WhereLoggedAt applies the entql time.Time predicate on the logged_at field.
+func (f *WorkflowExecutionLogFilter) WhereLoggedAt(p entql.TimeP) {
+	f.Where(p.Field(workflowexecutionlog.FieldLoggedAt))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *WorkflowNodeQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the WorkflowNodeQuery builder.
+func (_q *WorkflowNodeQuery) Filter() *WorkflowNodeFilter {
+	return &WorkflowNodeFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *WorkflowNodeMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the WorkflowNodeMutation builder.
+func (m *WorkflowNodeMutation) Filter() *WorkflowNodeFilter {
+	return &WorkflowNodeFilter{config: m.config, predicateAdder: m}
+}
+
+// WorkflowNodeFilter provides a generic filtering capability at runtime for WorkflowNodeQuery.
+type WorkflowNodeFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *WorkflowNodeFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[30].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *WorkflowNodeFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(workflownode.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *WorkflowNodeFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(workflownode.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *WorkflowNodeFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflownode.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *WorkflowNodeFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(workflownode.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *WorkflowNodeFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflownode.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *WorkflowNodeFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(workflownode.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *WorkflowNodeFilter) WhereDeleteBy(p entql.Uint64P) {
+	f.Where(p.Field(workflownode.FieldDeleteBy))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *WorkflowNodeFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(workflownode.FieldName))
+}
+
+// WhereNodeKey applies the entql string predicate on the node_key field.
+func (f *WorkflowNodeFilter) WhereNodeKey(p entql.StringP) {
+	f.Where(p.Field(workflownode.FieldNodeKey))
+}
+
+// WhereType applies the entql string predicate on the type field.
+func (f *WorkflowNodeFilter) WhereType(p entql.StringP) {
+	f.Where(p.Field(workflownode.FieldType))
+}
+
+// WhereDescription applies the entql string predicate on the description field.
+func (f *WorkflowNodeFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(workflownode.FieldDescription))
+}
+
+// WherePrompt applies the entql string predicate on the prompt field.
+func (f *WorkflowNodeFilter) WherePrompt(p entql.StringP) {
+	f.Where(p.Field(workflownode.FieldPrompt))
+}
+
+// WhereConfig applies the entql json.RawMessage predicate on the config field.
+func (f *WorkflowNodeFilter) WhereConfig(p entql.BytesP) {
+	f.Where(p.Field(workflownode.FieldConfig))
+}
+
+// WhereApplicationID applies the entql uint64 predicate on the application_id field.
+func (f *WorkflowNodeFilter) WhereApplicationID(p entql.Uint64P) {
+	f.Where(p.Field(workflownode.FieldApplicationID))
+}
+
+// WhereProcessorLanguage applies the entql string predicate on the processor_language field.
+func (f *WorkflowNodeFilter) WhereProcessorLanguage(p entql.StringP) {
+	f.Where(p.Field(workflownode.FieldProcessorLanguage))
+}
+
+// WhereProcessorCode applies the entql string predicate on the processor_code field.
+func (f *WorkflowNodeFilter) WhereProcessorCode(p entql.StringP) {
+	f.Where(p.Field(workflownode.FieldProcessorCode))
+}
+
+// WhereNextNodeID applies the entql uint64 predicate on the next_node_id field.
+func (f *WorkflowNodeFilter) WhereNextNodeID(p entql.Uint64P) {
+	f.Where(p.Field(workflownode.FieldNextNodeID))
+}
+
+// WhereParentNodeID applies the entql uint64 predicate on the parent_node_id field.
+func (f *WorkflowNodeFilter) WhereParentNodeID(p entql.Uint64P) {
+	f.Where(p.Field(workflownode.FieldParentNodeID))
+}
+
+// WhereBranchNodes applies the entql json.RawMessage predicate on the branch_nodes field.
+func (f *WorkflowNodeFilter) WhereBranchNodes(p entql.BytesP) {
+	f.Where(p.Field(workflownode.FieldBranchNodes))
+}
+
+// WhereParallelConfig applies the entql json.RawMessage predicate on the parallel_config field.
+func (f *WorkflowNodeFilter) WhereParallelConfig(p entql.BytesP) {
+	f.Where(p.Field(workflownode.FieldParallelConfig))
+}
+
+// WhereAPIConfig applies the entql json.RawMessage predicate on the api_config field.
+func (f *WorkflowNodeFilter) WhereAPIConfig(p entql.BytesP) {
+	f.Where(p.Field(workflownode.FieldAPIConfig))
+}
+
+// WhereAsync applies the entql bool predicate on the async field.
+func (f *WorkflowNodeFilter) WhereAsync(p entql.BoolP) {
+	f.Where(p.Field(workflownode.FieldAsync))
+}
+
+// WhereTimeout applies the entql int predicate on the timeout field.
+func (f *WorkflowNodeFilter) WhereTimeout(p entql.IntP) {
+	f.Where(p.Field(workflownode.FieldTimeout))
+}
+
+// WhereRetryCount applies the entql int predicate on the retry_count field.
+func (f *WorkflowNodeFilter) WhereRetryCount(p entql.IntP) {
+	f.Where(p.Field(workflownode.FieldRetryCount))
+}
+
+// WherePositionX applies the entql int predicate on the position_x field.
+func (f *WorkflowNodeFilter) WherePositionX(p entql.IntP) {
+	f.Where(p.Field(workflownode.FieldPositionX))
+}
+
+// WherePositionY applies the entql int predicate on the position_y field.
+func (f *WorkflowNodeFilter) WherePositionY(p entql.IntP) {
+	f.Where(p.Field(workflownode.FieldPositionY))
+}
+
+// WhereHasApplication applies a predicate to check if query has an edge application.
+func (f *WorkflowNodeFilter) WhereHasApplication() {
+	f.Where(entql.HasEdge("application"))
+}
+
+// WhereHasApplicationWith applies a predicate to check if query has an edge application with a given conditions (other predicates).
+func (f *WorkflowNodeFilter) WhereHasApplicationWith(preds ...predicate.WorkflowApplication) {
+	f.Where(entql.HasEdgeWith("application", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasExecutions applies a predicate to check if query has an edge executions.
+func (f *WorkflowNodeFilter) WhereHasExecutions() {
+	f.Where(entql.HasEdge("executions"))
+}
+
+// WhereHasExecutionsWith applies a predicate to check if query has an edge executions with a given conditions (other predicates).
+func (f *WorkflowNodeFilter) WhereHasExecutionsWith(preds ...predicate.WorkflowNodeExecution) {
+	f.Where(entql.HasEdgeWith("executions", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *WorkflowNodeExecutionQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the WorkflowNodeExecutionQuery builder.
+func (_q *WorkflowNodeExecutionQuery) Filter() *WorkflowNodeExecutionFilter {
+	return &WorkflowNodeExecutionFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *WorkflowNodeExecutionMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the WorkflowNodeExecutionMutation builder.
+func (m *WorkflowNodeExecutionMutation) Filter() *WorkflowNodeExecutionFilter {
+	return &WorkflowNodeExecutionFilter{config: m.config, predicateAdder: m}
+}
+
+// WorkflowNodeExecutionFilter provides a generic filtering capability at runtime for WorkflowNodeExecutionQuery.
+type WorkflowNodeExecutionFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *WorkflowNodeExecutionFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[31].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *WorkflowNodeExecutionFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(workflownodeexecution.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *WorkflowNodeExecutionFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(workflownodeexecution.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *WorkflowNodeExecutionFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflownodeexecution.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *WorkflowNodeExecutionFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(workflownodeexecution.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *WorkflowNodeExecutionFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflownodeexecution.FieldUpdateBy))
+}
+
+// WhereExecutionID applies the entql uint64 predicate on the execution_id field.
+func (f *WorkflowNodeExecutionFilter) WhereExecutionID(p entql.Uint64P) {
+	f.Where(p.Field(workflownodeexecution.FieldExecutionID))
+}
+
+// WhereNodeID applies the entql uint64 predicate on the node_id field.
+func (f *WorkflowNodeExecutionFilter) WhereNodeID(p entql.Uint64P) {
+	f.Where(p.Field(workflownodeexecution.FieldNodeID))
+}
+
+// WhereNodeName applies the entql string predicate on the node_name field.
+func (f *WorkflowNodeExecutionFilter) WhereNodeName(p entql.StringP) {
+	f.Where(p.Field(workflownodeexecution.FieldNodeName))
+}
+
+// WhereNodeType applies the entql string predicate on the node_type field.
+func (f *WorkflowNodeExecutionFilter) WhereNodeType(p entql.StringP) {
+	f.Where(p.Field(workflownodeexecution.FieldNodeType))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *WorkflowNodeExecutionFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(workflownodeexecution.FieldStatus))
+}
+
+// WhereInput applies the entql json.RawMessage predicate on the input field.
+func (f *WorkflowNodeExecutionFilter) WhereInput(p entql.BytesP) {
+	f.Where(p.Field(workflownodeexecution.FieldInput))
+}
+
+// WhereOutput applies the entql json.RawMessage predicate on the output field.
+func (f *WorkflowNodeExecutionFilter) WhereOutput(p entql.BytesP) {
+	f.Where(p.Field(workflownodeexecution.FieldOutput))
+}
+
+// WhereExtra applies the entql json.RawMessage predicate on the extra field.
+func (f *WorkflowNodeExecutionFilter) WhereExtra(p entql.BytesP) {
+	f.Where(p.Field(workflownodeexecution.FieldExtra))
+}
+
+// WhereStartedAt applies the entql time.Time predicate on the started_at field.
+func (f *WorkflowNodeExecutionFilter) WhereStartedAt(p entql.TimeP) {
+	f.Where(p.Field(workflownodeexecution.FieldStartedAt))
+}
+
+// WhereFinishedAt applies the entql time.Time predicate on the finished_at field.
+func (f *WorkflowNodeExecutionFilter) WhereFinishedAt(p entql.TimeP) {
+	f.Where(p.Field(workflownodeexecution.FieldFinishedAt))
+}
+
+// WhereDurationMs applies the entql int predicate on the duration_ms field.
+func (f *WorkflowNodeExecutionFilter) WhereDurationMs(p entql.IntP) {
+	f.Where(p.Field(workflownodeexecution.FieldDurationMs))
+}
+
+// WherePromptTokens applies the entql int predicate on the prompt_tokens field.
+func (f *WorkflowNodeExecutionFilter) WherePromptTokens(p entql.IntP) {
+	f.Where(p.Field(workflownodeexecution.FieldPromptTokens))
+}
+
+// WhereCompletionTokens applies the entql int predicate on the completion_tokens field.
+func (f *WorkflowNodeExecutionFilter) WhereCompletionTokens(p entql.IntP) {
+	f.Where(p.Field(workflownodeexecution.FieldCompletionTokens))
+}
+
+// WhereTotalTokens applies the entql int predicate on the total_tokens field.
+func (f *WorkflowNodeExecutionFilter) WhereTotalTokens(p entql.IntP) {
+	f.Where(p.Field(workflownodeexecution.FieldTotalTokens))
+}
+
+// WhereCost applies the entql float64 predicate on the cost field.
+func (f *WorkflowNodeExecutionFilter) WhereCost(p entql.Float64P) {
+	f.Where(p.Field(workflownodeexecution.FieldCost))
+}
+
+// WhereModel applies the entql string predicate on the model field.
+func (f *WorkflowNodeExecutionFilter) WhereModel(p entql.StringP) {
+	f.Where(p.Field(workflownodeexecution.FieldModel))
+}
+
+// WhereErrorMessage applies the entql string predicate on the error_message field.
+func (f *WorkflowNodeExecutionFilter) WhereErrorMessage(p entql.StringP) {
+	f.Where(p.Field(workflownodeexecution.FieldErrorMessage))
+}
+
+// WhereErrorStack applies the entql string predicate on the error_stack field.
+func (f *WorkflowNodeExecutionFilter) WhereErrorStack(p entql.StringP) {
+	f.Where(p.Field(workflownodeexecution.FieldErrorStack))
+}
+
+// WhereRetryCount applies the entql int predicate on the retry_count field.
+func (f *WorkflowNodeExecutionFilter) WhereRetryCount(p entql.IntP) {
+	f.Where(p.Field(workflownodeexecution.FieldRetryCount))
+}
+
+// WhereIsAsync applies the entql bool predicate on the is_async field.
+func (f *WorkflowNodeExecutionFilter) WhereIsAsync(p entql.BoolP) {
+	f.Where(p.Field(workflownodeexecution.FieldIsAsync))
+}
+
+// WhereParentExecutionID applies the entql uint64 predicate on the parent_execution_id field.
+func (f *WorkflowNodeExecutionFilter) WhereParentExecutionID(p entql.Uint64P) {
+	f.Where(p.Field(workflownodeexecution.FieldParentExecutionID))
+}
+
+// WhereHasWorkflowExecution applies a predicate to check if query has an edge workflow_execution.
+func (f *WorkflowNodeExecutionFilter) WhereHasWorkflowExecution() {
+	f.Where(entql.HasEdge("workflow_execution"))
+}
+
+// WhereHasWorkflowExecutionWith applies a predicate to check if query has an edge workflow_execution with a given conditions (other predicates).
+func (f *WorkflowNodeExecutionFilter) WhereHasWorkflowExecutionWith(preds ...predicate.WorkflowExecution) {
+	f.Where(entql.HasEdgeWith("workflow_execution", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasNode applies a predicate to check if query has an edge node.
+func (f *WorkflowNodeExecutionFilter) WhereHasNode() {
+	f.Where(entql.HasEdge("node"))
+}
+
+// WhereHasNodeWith applies a predicate to check if query has an edge node with a given conditions (other predicates).
+func (f *WorkflowNodeExecutionFilter) WhereHasNodeWith(preds ...predicate.WorkflowNode) {
+	f.Where(entql.HasEdgeWith("node", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *WorkflowVersionQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the WorkflowVersionQuery builder.
+func (_q *WorkflowVersionQuery) Filter() *WorkflowVersionFilter {
+	return &WorkflowVersionFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *WorkflowVersionMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the WorkflowVersionMutation builder.
+func (m *WorkflowVersionMutation) Filter() *WorkflowVersionFilter {
+	return &WorkflowVersionFilter{config: m.config, predicateAdder: m}
+}
+
+// WorkflowVersionFilter provides a generic filtering capability at runtime for WorkflowVersionQuery.
+type WorkflowVersionFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *WorkflowVersionFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[32].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *WorkflowVersionFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(workflowversion.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *WorkflowVersionFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(workflowversion.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *WorkflowVersionFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflowversion.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *WorkflowVersionFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(workflowversion.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *WorkflowVersionFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflowversion.FieldUpdateBy))
+}
+
+// WhereApplicationID applies the entql uint64 predicate on the application_id field.
+func (f *WorkflowVersionFilter) WhereApplicationID(p entql.Uint64P) {
+	f.Where(p.Field(workflowversion.FieldApplicationID))
+}
+
+// WhereVersion applies the entql uint predicate on the version field.
+func (f *WorkflowVersionFilter) WhereVersion(p entql.UintP) {
+	f.Where(p.Field(workflowversion.FieldVersion))
+}
+
+// WhereSnapshot applies the entql json.RawMessage predicate on the snapshot field.
+func (f *WorkflowVersionFilter) WhereSnapshot(p entql.BytesP) {
+	f.Where(p.Field(workflowversion.FieldSnapshot))
+}
+
+// WhereChangeLog applies the entql string predicate on the change_log field.
+func (f *WorkflowVersionFilter) WhereChangeLog(p entql.StringP) {
+	f.Where(p.Field(workflowversion.FieldChangeLog))
+}
+
+// WhereCreatedBy applies the entql string predicate on the created_by field.
+func (f *WorkflowVersionFilter) WhereCreatedBy(p entql.StringP) {
+	f.Where(p.Field(workflowversion.FieldCreatedBy))
 }

@@ -33,6 +33,12 @@ import (
 	"go-backend/database/ent/user"
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
+	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowexecution"
+	"go-backend/database/ent/workflowexecutionlog"
+	"go-backend/database/ent/workflownode"
+	"go-backend/database/ent/workflownodeexecution"
+	"go-backend/database/ent/workflowversion"
 	"reflect"
 	"sync"
 
@@ -126,6 +132,12 @@ func checkColumn(t, c string) error {
 			user.Table:                   user.ValidColumn,
 			userrole.Table:               userrole.ValidColumn,
 			verifycode.Table:             verifycode.ValidColumn,
+			workflowapplication.Table:    workflowapplication.ValidColumn,
+			workflowexecution.Table:      workflowexecution.ValidColumn,
+			workflowexecutionlog.Table:   workflowexecutionlog.ValidColumn,
+			workflownode.Table:           workflownode.ValidColumn,
+			workflownodeexecution.Table:  workflownodeexecution.ValidColumn,
+			workflowversion.Table:        workflowversion.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

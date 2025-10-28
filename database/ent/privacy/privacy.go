@@ -759,6 +759,150 @@ func (f VerifyCodeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Muta
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.VerifyCodeMutation", m)
 }
 
+// The WorkflowApplicationQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type WorkflowApplicationQueryRuleFunc func(context.Context, *ent.WorkflowApplicationQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f WorkflowApplicationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowApplicationQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.WorkflowApplicationQuery", q)
+}
+
+// The WorkflowApplicationMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type WorkflowApplicationMutationRuleFunc func(context.Context, *ent.WorkflowApplicationMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f WorkflowApplicationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.WorkflowApplicationMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.WorkflowApplicationMutation", m)
+}
+
+// The WorkflowExecutionQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type WorkflowExecutionQueryRuleFunc func(context.Context, *ent.WorkflowExecutionQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f WorkflowExecutionQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowExecutionQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.WorkflowExecutionQuery", q)
+}
+
+// The WorkflowExecutionMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type WorkflowExecutionMutationRuleFunc func(context.Context, *ent.WorkflowExecutionMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f WorkflowExecutionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.WorkflowExecutionMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.WorkflowExecutionMutation", m)
+}
+
+// The WorkflowExecutionLogQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type WorkflowExecutionLogQueryRuleFunc func(context.Context, *ent.WorkflowExecutionLogQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f WorkflowExecutionLogQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowExecutionLogQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.WorkflowExecutionLogQuery", q)
+}
+
+// The WorkflowExecutionLogMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type WorkflowExecutionLogMutationRuleFunc func(context.Context, *ent.WorkflowExecutionLogMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f WorkflowExecutionLogMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.WorkflowExecutionLogMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.WorkflowExecutionLogMutation", m)
+}
+
+// The WorkflowNodeQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type WorkflowNodeQueryRuleFunc func(context.Context, *ent.WorkflowNodeQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f WorkflowNodeQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowNodeQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.WorkflowNodeQuery", q)
+}
+
+// The WorkflowNodeMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type WorkflowNodeMutationRuleFunc func(context.Context, *ent.WorkflowNodeMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f WorkflowNodeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.WorkflowNodeMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.WorkflowNodeMutation", m)
+}
+
+// The WorkflowNodeExecutionQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type WorkflowNodeExecutionQueryRuleFunc func(context.Context, *ent.WorkflowNodeExecutionQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f WorkflowNodeExecutionQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowNodeExecutionQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.WorkflowNodeExecutionQuery", q)
+}
+
+// The WorkflowNodeExecutionMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type WorkflowNodeExecutionMutationRuleFunc func(context.Context, *ent.WorkflowNodeExecutionMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f WorkflowNodeExecutionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.WorkflowNodeExecutionMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.WorkflowNodeExecutionMutation", m)
+}
+
+// The WorkflowVersionQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type WorkflowVersionQueryRuleFunc func(context.Context, *ent.WorkflowVersionQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f WorkflowVersionQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowVersionQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.WorkflowVersionQuery", q)
+}
+
+// The WorkflowVersionMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type WorkflowVersionMutationRuleFunc func(context.Context, *ent.WorkflowVersionMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f WorkflowVersionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.WorkflowVersionMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.WorkflowVersionMutation", m)
+}
+
 type (
 	// Filter is the interface that wraps the Where function
 	// for filtering nodes in queries and mutations.
@@ -848,6 +992,18 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.VerifyCodeQuery:
 		return q.Filter(), nil
+	case *ent.WorkflowApplicationQuery:
+		return q.Filter(), nil
+	case *ent.WorkflowExecutionQuery:
+		return q.Filter(), nil
+	case *ent.WorkflowExecutionLogQuery:
+		return q.Filter(), nil
+	case *ent.WorkflowNodeQuery:
+		return q.Filter(), nil
+	case *ent.WorkflowNodeExecutionQuery:
+		return q.Filter(), nil
+	case *ent.WorkflowVersionQuery:
+		return q.Filter(), nil
 	default:
 		return nil, Denyf("ent/privacy: unexpected query type %T for query filter", q)
 	}
@@ -908,6 +1064,18 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.UserRoleMutation:
 		return m.Filter(), nil
 	case *ent.VerifyCodeMutation:
+		return m.Filter(), nil
+	case *ent.WorkflowApplicationMutation:
+		return m.Filter(), nil
+	case *ent.WorkflowExecutionMutation:
+		return m.Filter(), nil
+	case *ent.WorkflowExecutionLogMutation:
+		return m.Filter(), nil
+	case *ent.WorkflowNodeMutation:
+		return m.Filter(), nil
+	case *ent.WorkflowNodeExecutionMutation:
+		return m.Filter(), nil
+	case *ent.WorkflowVersionMutation:
 		return m.Filter(), nil
 	default:
 		return nil, Denyf("ent/privacy: unexpected mutation type %T for mutation filter", m)

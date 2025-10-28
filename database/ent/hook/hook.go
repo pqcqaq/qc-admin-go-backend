@@ -332,6 +332,78 @@ func (f VerifyCodeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VerifyCodeMutation", m)
 }
 
+// The WorkflowApplicationFunc type is an adapter to allow the use of ordinary
+// function as WorkflowApplication mutator.
+type WorkflowApplicationFunc func(context.Context, *ent.WorkflowApplicationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WorkflowApplicationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WorkflowApplicationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkflowApplicationMutation", m)
+}
+
+// The WorkflowExecutionFunc type is an adapter to allow the use of ordinary
+// function as WorkflowExecution mutator.
+type WorkflowExecutionFunc func(context.Context, *ent.WorkflowExecutionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WorkflowExecutionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WorkflowExecutionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkflowExecutionMutation", m)
+}
+
+// The WorkflowExecutionLogFunc type is an adapter to allow the use of ordinary
+// function as WorkflowExecutionLog mutator.
+type WorkflowExecutionLogFunc func(context.Context, *ent.WorkflowExecutionLogMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WorkflowExecutionLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WorkflowExecutionLogMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkflowExecutionLogMutation", m)
+}
+
+// The WorkflowNodeFunc type is an adapter to allow the use of ordinary
+// function as WorkflowNode mutator.
+type WorkflowNodeFunc func(context.Context, *ent.WorkflowNodeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WorkflowNodeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WorkflowNodeMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkflowNodeMutation", m)
+}
+
+// The WorkflowNodeExecutionFunc type is an adapter to allow the use of ordinary
+// function as WorkflowNodeExecution mutator.
+type WorkflowNodeExecutionFunc func(context.Context, *ent.WorkflowNodeExecutionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WorkflowNodeExecutionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WorkflowNodeExecutionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkflowNodeExecutionMutation", m)
+}
+
+// The WorkflowVersionFunc type is an adapter to allow the use of ordinary
+// function as WorkflowVersion mutator.
+type WorkflowVersionFunc func(context.Context, *ent.WorkflowVersionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WorkflowVersionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WorkflowVersionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkflowVersionMutation", m)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 
