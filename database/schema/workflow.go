@@ -133,8 +133,8 @@ func (WorkflowNode) Fields() []ent.Field {
 		field.Bool("async").Default(false).Comment("是否异步执行"),
 		field.Int("timeout").Default(30).Comment("超时时间(秒)"),
 		field.Int("retry_count").Default(0).Comment("重试次数"),
-		field.Int("position_x").Default(0).Comment("画布X坐标"),
-		field.Int("position_y").Default(0).Comment("画布Y坐标"),
+		field.Float("position_x").Default(0).Comment("画布X坐标"),
+		field.Float("position_y").Default(0).Comment("画布Y坐标"),
 	}
 }
 
