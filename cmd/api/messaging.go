@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go-backend/internal/funcs"
+	"go-backend/internal/subscription"
 	"go-backend/pkg/logging"
 	"go-backend/pkg/messaging"
 	"go-backend/pkg/utils"
@@ -98,8 +99,19 @@ func setupHandlers(ctx context.Context) {
 
 		allowed, _ := funcs.IsTopicAllowed(socketMsg.Topic, socketMsg.UserID, SubscribeMethodStr)
 
+		var data any = nil
 		if !allowed {
 			logging.Warn("Subscription to topic %s denied for user %d", socketMsg.Topic, socketMsg.UserID)
+		} else {
+			data, err = subscription.PublishSubscribeSuccessMessage(socketMsg.Topic, subscription.SubscribeSuccessPayload{
+				Topic:     socketMsg.Topic,
+				UserID:    socketMsg.UserID,
+				SessionId: socketMsg.SessionId,
+				ClientId:  socketMsg.ClientId,
+			})
+			if err != nil {
+				logging.Warn("Failed to publish subscribe success message: %v", err)
+			}
 		}
 
 		// 这里发送创建请求, 若五秒钟之后还没应答则创建失败
@@ -112,6 +124,7 @@ func setupHandlers(ctx context.Context) {
 				ClientId:  socketMsg.ClientId,
 				Allowed:   allowed,
 				Timestamp: utils.Now().Unix(),
+				Data:      data,
 			},
 		})
 

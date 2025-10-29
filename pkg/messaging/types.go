@@ -36,6 +36,7 @@ type ChannelOpenCheckPayload struct {
 	ClientId  uint64 `msgpack:"client_id" json:"client_id"`   // 频道所属客户端ID
 	Allowed   bool   `msgpack:"allowed" json:"allowed"`       // 是否允许创建频道
 	Timestamp int64  `msgpack:"timestamp" json:"timestamp"`   // 消息发送的时间戳, 用于判断是否超时
+	Data      any    `msgpack:"data" json:"data"`             // 频道创建完成后，立即发送给客户端的json信息
 }
 
 type SubscribeCheckPayload struct {
@@ -45,6 +46,7 @@ type SubscribeCheckPayload struct {
 	ClientId  uint64 `msgpack:"client_id" json:"client_id"`   // 频道所属客户端ID
 	Allowed   bool   `msgpack:"allowed" json:"allowed"`       // 是否允许订阅频道
 	Timestamp int64  `msgpack:"timestamp" json:"timestamp"`   // 消息发送的时间戳, 用于判断是否超时
+	Data      any    `msgpack:"data" json:"data"`             // 订阅检查完成后，立即发送给客户端的json信息
 }
 
 type SocketMessagePayload struct {

@@ -9,6 +9,7 @@ import (
 
 	"go-backend/database/ent"
 	"go-backend/database/ent/systemmonitor"
+	"go-backend/internal/subscription"
 	"go-backend/pkg/database"
 	"go-backend/pkg/logging"
 	"go-backend/pkg/messaging"
@@ -151,6 +152,14 @@ func InitSystemMonitor(interval time.Duration, retentionDays int) error {
 			}
 		}
 	}()
+
+	subscription.RegisterSubscribeSuccessListener("system/monitor/update", func(payload subscription.SubscribeSuccessPayload) (subscription.MessageToClient, error) {
+		return subscription.MessageToClient{
+			"status":  "success",
+			"message": "Subscribed to system monitor updates",
+			"data":    payload,
+		}, nil
+	})
 
 	logging.Info("System monitor initialized with interval: %v, retention: %d days\n", interval, retentionDays)
 	return nil

@@ -294,6 +294,15 @@ func (s *WsServer) startChannelOpenListener() {
 
 		s.createNewChannel(socketMsg.Topic, socketMsg.ChannelID, socketMsg.SessionId, socketMsg.UserID, socketMsg.ClientId)
 
+		if socketMsg.Data != nil {
+			client := s.GetClientFromSessionId(socketMsg.SessionId)
+			if client != nil {
+				client.SendChannelMsg(socketMsg.ChannelID, channel.ChannelMsg{
+					Data: socketMsg.Data,
+				})
+			}
+		}
+
 		return nil
 	})
 }
@@ -349,6 +358,10 @@ func (s *WsServer) startSubscribeListener() {
 
 		logger.Info("Subscription to topic %s approved for userID: %d, sessionId: %s, clientId: %d", socketMsg.Topic, socketMsg.UserID, socketMsg.SessionId, socketMsg.ClientId)
 		s.subsTopic(session, socketMsg.Topic)
+
+		if socketMsg.Data != nil {
+			session.SendMessage(socketMsg.Data)
+		}
 
 		return nil
 	})
