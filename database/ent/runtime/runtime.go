@@ -1506,11 +1506,11 @@ func init() {
 	// workflownodeDescPositionX is the schema descriptor for position_x field.
 	workflownodeDescPositionX := workflownodeFields[17].Descriptor()
 	// workflownode.DefaultPositionX holds the default value on creation for the position_x field.
-	workflownode.DefaultPositionX = workflownodeDescPositionX.Default.(int)
+	workflownode.DefaultPositionX = workflownodeDescPositionX.Default.(float64)
 	// workflownodeDescPositionY is the schema descriptor for position_y field.
 	workflownodeDescPositionY := workflownodeFields[18].Descriptor()
 	// workflownode.DefaultPositionY holds the default value on creation for the position_y field.
-	workflownode.DefaultPositionY = workflownodeDescPositionY.Default.(int)
+	workflownode.DefaultPositionY = workflownodeDescPositionY.Default.(float64)
 	workflownodeexecutionMixin := schema.WorkflowNodeExecution{}.Mixin()
 	workflownodeexecutionMixinHooks0 := workflownodeexecutionMixin[0].Hooks()
 	workflownodeexecution.Hooks[0] = workflownodeexecutionMixinHooks0[0]

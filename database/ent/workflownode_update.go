@@ -426,14 +426,14 @@ func (_u *WorkflowNodeUpdate) AddRetryCount(v int) *WorkflowNodeUpdate {
 }
 
 // SetPositionX sets the "position_x" field.
-func (_u *WorkflowNodeUpdate) SetPositionX(v int) *WorkflowNodeUpdate {
+func (_u *WorkflowNodeUpdate) SetPositionX(v float64) *WorkflowNodeUpdate {
 	_u.mutation.ResetPositionX()
 	_u.mutation.SetPositionX(v)
 	return _u
 }
 
 // SetNillablePositionX sets the "position_x" field if the given value is not nil.
-func (_u *WorkflowNodeUpdate) SetNillablePositionX(v *int) *WorkflowNodeUpdate {
+func (_u *WorkflowNodeUpdate) SetNillablePositionX(v *float64) *WorkflowNodeUpdate {
 	if v != nil {
 		_u.SetPositionX(*v)
 	}
@@ -441,20 +441,20 @@ func (_u *WorkflowNodeUpdate) SetNillablePositionX(v *int) *WorkflowNodeUpdate {
 }
 
 // AddPositionX adds value to the "position_x" field.
-func (_u *WorkflowNodeUpdate) AddPositionX(v int) *WorkflowNodeUpdate {
+func (_u *WorkflowNodeUpdate) AddPositionX(v float64) *WorkflowNodeUpdate {
 	_u.mutation.AddPositionX(v)
 	return _u
 }
 
 // SetPositionY sets the "position_y" field.
-func (_u *WorkflowNodeUpdate) SetPositionY(v int) *WorkflowNodeUpdate {
+func (_u *WorkflowNodeUpdate) SetPositionY(v float64) *WorkflowNodeUpdate {
 	_u.mutation.ResetPositionY()
 	_u.mutation.SetPositionY(v)
 	return _u
 }
 
 // SetNillablePositionY sets the "position_y" field if the given value is not nil.
-func (_u *WorkflowNodeUpdate) SetNillablePositionY(v *int) *WorkflowNodeUpdate {
+func (_u *WorkflowNodeUpdate) SetNillablePositionY(v *float64) *WorkflowNodeUpdate {
 	if v != nil {
 		_u.SetPositionY(*v)
 	}
@@ -462,7 +462,7 @@ func (_u *WorkflowNodeUpdate) SetNillablePositionY(v *int) *WorkflowNodeUpdate {
 }
 
 // AddPositionY adds value to the "position_y" field.
-func (_u *WorkflowNodeUpdate) AddPositionY(v int) *WorkflowNodeUpdate {
+func (_u *WorkflowNodeUpdate) AddPositionY(v float64) *WorkflowNodeUpdate {
 	_u.mutation.AddPositionY(v)
 	return _u
 }
@@ -720,16 +720,16 @@ func (_u *WorkflowNodeUpdate) sqlSave(ctx context.Context) (_node int, err error
 		_spec.AddField(workflownode.FieldRetryCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.PositionX(); ok {
-		_spec.SetField(workflownode.FieldPositionX, field.TypeInt, value)
+		_spec.SetField(workflownode.FieldPositionX, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.AddedPositionX(); ok {
-		_spec.AddField(workflownode.FieldPositionX, field.TypeInt, value)
+		_spec.AddField(workflownode.FieldPositionX, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.PositionY(); ok {
-		_spec.SetField(workflownode.FieldPositionY, field.TypeInt, value)
+		_spec.SetField(workflownode.FieldPositionY, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.AddedPositionY(); ok {
-		_spec.AddField(workflownode.FieldPositionY, field.TypeInt, value)
+		_spec.AddField(workflownode.FieldPositionY, field.TypeFloat64, value)
 	}
 	if _u.mutation.ApplicationCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1221,14 +1221,14 @@ func (_u *WorkflowNodeUpdateOne) AddRetryCount(v int) *WorkflowNodeUpdateOne {
 }
 
 // SetPositionX sets the "position_x" field.
-func (_u *WorkflowNodeUpdateOne) SetPositionX(v int) *WorkflowNodeUpdateOne {
+func (_u *WorkflowNodeUpdateOne) SetPositionX(v float64) *WorkflowNodeUpdateOne {
 	_u.mutation.ResetPositionX()
 	_u.mutation.SetPositionX(v)
 	return _u
 }
 
 // SetNillablePositionX sets the "position_x" field if the given value is not nil.
-func (_u *WorkflowNodeUpdateOne) SetNillablePositionX(v *int) *WorkflowNodeUpdateOne {
+func (_u *WorkflowNodeUpdateOne) SetNillablePositionX(v *float64) *WorkflowNodeUpdateOne {
 	if v != nil {
 		_u.SetPositionX(*v)
 	}
@@ -1236,20 +1236,20 @@ func (_u *WorkflowNodeUpdateOne) SetNillablePositionX(v *int) *WorkflowNodeUpdat
 }
 
 // AddPositionX adds value to the "position_x" field.
-func (_u *WorkflowNodeUpdateOne) AddPositionX(v int) *WorkflowNodeUpdateOne {
+func (_u *WorkflowNodeUpdateOne) AddPositionX(v float64) *WorkflowNodeUpdateOne {
 	_u.mutation.AddPositionX(v)
 	return _u
 }
 
 // SetPositionY sets the "position_y" field.
-func (_u *WorkflowNodeUpdateOne) SetPositionY(v int) *WorkflowNodeUpdateOne {
+func (_u *WorkflowNodeUpdateOne) SetPositionY(v float64) *WorkflowNodeUpdateOne {
 	_u.mutation.ResetPositionY()
 	_u.mutation.SetPositionY(v)
 	return _u
 }
 
 // SetNillablePositionY sets the "position_y" field if the given value is not nil.
-func (_u *WorkflowNodeUpdateOne) SetNillablePositionY(v *int) *WorkflowNodeUpdateOne {
+func (_u *WorkflowNodeUpdateOne) SetNillablePositionY(v *float64) *WorkflowNodeUpdateOne {
 	if v != nil {
 		_u.SetPositionY(*v)
 	}
@@ -1257,7 +1257,7 @@ func (_u *WorkflowNodeUpdateOne) SetNillablePositionY(v *int) *WorkflowNodeUpdat
 }
 
 // AddPositionY adds value to the "position_y" field.
-func (_u *WorkflowNodeUpdateOne) AddPositionY(v int) *WorkflowNodeUpdateOne {
+func (_u *WorkflowNodeUpdateOne) AddPositionY(v float64) *WorkflowNodeUpdateOne {
 	_u.mutation.AddPositionY(v)
 	return _u
 }
@@ -1545,16 +1545,16 @@ func (_u *WorkflowNodeUpdateOne) sqlSave(ctx context.Context) (_node *WorkflowNo
 		_spec.AddField(workflownode.FieldRetryCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.PositionX(); ok {
-		_spec.SetField(workflownode.FieldPositionX, field.TypeInt, value)
+		_spec.SetField(workflownode.FieldPositionX, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.AddedPositionX(); ok {
-		_spec.AddField(workflownode.FieldPositionX, field.TypeInt, value)
+		_spec.AddField(workflownode.FieldPositionX, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.PositionY(); ok {
-		_spec.SetField(workflownode.FieldPositionY, field.TypeInt, value)
+		_spec.SetField(workflownode.FieldPositionY, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.AddedPositionY(); ok {
-		_spec.AddField(workflownode.FieldPositionY, field.TypeInt, value)
+		_spec.AddField(workflownode.FieldPositionY, field.TypeFloat64, value)
 	}
 	if _u.mutation.ApplicationCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -153,9 +153,9 @@ var (
 	// DefaultRetryCount holds the default value on creation for the "retry_count" field.
 	DefaultRetryCount int
 	// DefaultPositionX holds the default value on creation for the "position_x" field.
-	DefaultPositionX int
+	DefaultPositionX float64
 	// DefaultPositionY holds the default value on creation for the "position_y" field.
-	DefaultPositionY int
+	DefaultPositionY float64
 )
 
 // Type defines the type for the "type" enum field.

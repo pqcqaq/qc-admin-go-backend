@@ -1750,8 +1750,8 @@ var (
 		{Name: "async", Type: field.TypeBool, Default: false},
 		{Name: "timeout", Type: field.TypeInt, Default: 30},
 		{Name: "retry_count", Type: field.TypeInt, Default: 0},
-		{Name: "position_x", Type: field.TypeInt, Default: 0},
-		{Name: "position_y", Type: field.TypeInt, Default: 0},
+		{Name: "position_x", Type: field.TypeFloat64, Default: 0},
+		{Name: "position_y", Type: field.TypeFloat64, Default: 0},
 		{Name: "application_id", Type: field.TypeUint64},
 	}
 	// WorkflowNodesTable holds the schema information for the "workflow_nodes" table.

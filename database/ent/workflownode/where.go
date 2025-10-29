@@ -146,12 +146,12 @@ func RetryCount(v int) predicate.WorkflowNode {
 }
 
 // PositionX applies equality check predicate on the "position_x" field. It's identical to PositionXEQ.
-func PositionX(v int) predicate.WorkflowNode {
+func PositionX(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldEQ(FieldPositionX, v))
 }
 
 // PositionY applies equality check predicate on the "position_y" field. It's identical to PositionYEQ.
-func PositionY(v int) predicate.WorkflowNode {
+func PositionY(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldEQ(FieldPositionY, v))
 }
 
@@ -1126,82 +1126,82 @@ func RetryCountLTE(v int) predicate.WorkflowNode {
 }
 
 // PositionXEQ applies the EQ predicate on the "position_x" field.
-func PositionXEQ(v int) predicate.WorkflowNode {
+func PositionXEQ(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldEQ(FieldPositionX, v))
 }
 
 // PositionXNEQ applies the NEQ predicate on the "position_x" field.
-func PositionXNEQ(v int) predicate.WorkflowNode {
+func PositionXNEQ(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldNEQ(FieldPositionX, v))
 }
 
 // PositionXIn applies the In predicate on the "position_x" field.
-func PositionXIn(vs ...int) predicate.WorkflowNode {
+func PositionXIn(vs ...float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldIn(FieldPositionX, vs...))
 }
 
 // PositionXNotIn applies the NotIn predicate on the "position_x" field.
-func PositionXNotIn(vs ...int) predicate.WorkflowNode {
+func PositionXNotIn(vs ...float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldNotIn(FieldPositionX, vs...))
 }
 
 // PositionXGT applies the GT predicate on the "position_x" field.
-func PositionXGT(v int) predicate.WorkflowNode {
+func PositionXGT(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldGT(FieldPositionX, v))
 }
 
 // PositionXGTE applies the GTE predicate on the "position_x" field.
-func PositionXGTE(v int) predicate.WorkflowNode {
+func PositionXGTE(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldGTE(FieldPositionX, v))
 }
 
 // PositionXLT applies the LT predicate on the "position_x" field.
-func PositionXLT(v int) predicate.WorkflowNode {
+func PositionXLT(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldLT(FieldPositionX, v))
 }
 
 // PositionXLTE applies the LTE predicate on the "position_x" field.
-func PositionXLTE(v int) predicate.WorkflowNode {
+func PositionXLTE(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldLTE(FieldPositionX, v))
 }
 
 // PositionYEQ applies the EQ predicate on the "position_y" field.
-func PositionYEQ(v int) predicate.WorkflowNode {
+func PositionYEQ(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldEQ(FieldPositionY, v))
 }
 
 // PositionYNEQ applies the NEQ predicate on the "position_y" field.
-func PositionYNEQ(v int) predicate.WorkflowNode {
+func PositionYNEQ(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldNEQ(FieldPositionY, v))
 }
 
 // PositionYIn applies the In predicate on the "position_y" field.
-func PositionYIn(vs ...int) predicate.WorkflowNode {
+func PositionYIn(vs ...float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldIn(FieldPositionY, vs...))
 }
 
 // PositionYNotIn applies the NotIn predicate on the "position_y" field.
-func PositionYNotIn(vs ...int) predicate.WorkflowNode {
+func PositionYNotIn(vs ...float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldNotIn(FieldPositionY, vs...))
 }
 
 // PositionYGT applies the GT predicate on the "position_y" field.
-func PositionYGT(v int) predicate.WorkflowNode {
+func PositionYGT(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldGT(FieldPositionY, v))
 }
 
 // PositionYGTE applies the GTE predicate on the "position_y" field.
-func PositionYGTE(v int) predicate.WorkflowNode {
+func PositionYGTE(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldGTE(FieldPositionY, v))
 }
 
 // PositionYLT applies the LT predicate on the "position_y" field.
-func PositionYLT(v int) predicate.WorkflowNode {
+func PositionYLT(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldLT(FieldPositionY, v))
 }
 
 // PositionYLTE applies the LTE predicate on the "position_y" field.
-func PositionYLTE(v int) predicate.WorkflowNode {
+func PositionYLTE(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldLTE(FieldPositionY, v))
 }
 

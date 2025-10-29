@@ -67,9 +67,9 @@ type WorkflowNode struct {
 	// 重试次数
 	RetryCount int `json:"retry_count,omitempty"`
 	// 画布X坐标
-	PositionX int `json:"position_x,omitempty"`
+	PositionX float64 `json:"position_x,omitempty"`
 	// 画布Y坐标
-	PositionY int `json:"position_y,omitempty"`
+	PositionY float64 `json:"position_y,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkflowNodeQuery when eager-loading is set.
 	Edges        WorkflowNodeEdges `json:"edges"`
@@ -117,7 +117,9 @@ func (*WorkflowNode) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case workflownode.FieldAsync:
 			values[i] = new(sql.NullBool)
-		case workflownode.FieldID, workflownode.FieldCreateBy, workflownode.FieldUpdateBy, workflownode.FieldDeleteBy, workflownode.FieldApplicationID, workflownode.FieldNextNodeID, workflownode.FieldParentNodeID, workflownode.FieldTimeout, workflownode.FieldRetryCount, workflownode.FieldPositionX, workflownode.FieldPositionY:
+		case workflownode.FieldPositionX, workflownode.FieldPositionY:
+			values[i] = new(sql.NullFloat64)
+		case workflownode.FieldID, workflownode.FieldCreateBy, workflownode.FieldUpdateBy, workflownode.FieldDeleteBy, workflownode.FieldApplicationID, workflownode.FieldNextNodeID, workflownode.FieldParentNodeID, workflownode.FieldTimeout, workflownode.FieldRetryCount:
 			values[i] = new(sql.NullInt64)
 		case workflownode.FieldName, workflownode.FieldNodeKey, workflownode.FieldType, workflownode.FieldDescription, workflownode.FieldPrompt, workflownode.FieldProcessorLanguage, workflownode.FieldProcessorCode:
 			values[i] = new(sql.NullString)
@@ -291,16 +293,16 @@ func (_m *WorkflowNode) assignValues(columns []string, values []any) error {
 				_m.RetryCount = int(value.Int64)
 			}
 		case workflownode.FieldPositionX:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field position_x", values[i])
 			} else if value.Valid {
-				_m.PositionX = int(value.Int64)
+				_m.PositionX = value.Float64
 			}
 		case workflownode.FieldPositionY:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field position_y", values[i])
 			} else if value.Valid {
-				_m.PositionY = int(value.Int64)
+				_m.PositionY = value.Float64
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])

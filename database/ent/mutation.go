@@ -43732,10 +43732,10 @@ type WorkflowNodeMutation struct {
 	addtimeout         *int
 	retry_count        *int
 	addretry_count     *int
-	position_x         *int
-	addposition_x      *int
-	position_y         *int
-	addposition_y      *int
+	position_x         *float64
+	addposition_x      *float64
+	position_y         *float64
+	addposition_y      *float64
 	clearedFields      map[string]struct{}
 	application        *uint64
 	clearedapplication bool
@@ -44994,13 +44994,13 @@ func (m *WorkflowNodeMutation) ResetRetryCount() {
 }
 
 // SetPositionX sets the "position_x" field.
-func (m *WorkflowNodeMutation) SetPositionX(i int) {
-	m.position_x = &i
+func (m *WorkflowNodeMutation) SetPositionX(f float64) {
+	m.position_x = &f
 	m.addposition_x = nil
 }
 
 // PositionX returns the value of the "position_x" field in the mutation.
-func (m *WorkflowNodeMutation) PositionX() (r int, exists bool) {
+func (m *WorkflowNodeMutation) PositionX() (r float64, exists bool) {
 	v := m.position_x
 	if v == nil {
 		return
@@ -45011,7 +45011,7 @@ func (m *WorkflowNodeMutation) PositionX() (r int, exists bool) {
 // OldPositionX returns the old "position_x" field's value of the WorkflowNode entity.
 // If the WorkflowNode object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkflowNodeMutation) OldPositionX(ctx context.Context) (v int, err error) {
+func (m *WorkflowNodeMutation) OldPositionX(ctx context.Context) (v float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPositionX is only allowed on UpdateOne operations")
 	}
@@ -45025,17 +45025,17 @@ func (m *WorkflowNodeMutation) OldPositionX(ctx context.Context) (v int, err err
 	return oldValue.PositionX, nil
 }
 
-// AddPositionX adds i to the "position_x" field.
-func (m *WorkflowNodeMutation) AddPositionX(i int) {
+// AddPositionX adds f to the "position_x" field.
+func (m *WorkflowNodeMutation) AddPositionX(f float64) {
 	if m.addposition_x != nil {
-		*m.addposition_x += i
+		*m.addposition_x += f
 	} else {
-		m.addposition_x = &i
+		m.addposition_x = &f
 	}
 }
 
 // AddedPositionX returns the value that was added to the "position_x" field in this mutation.
-func (m *WorkflowNodeMutation) AddedPositionX() (r int, exists bool) {
+func (m *WorkflowNodeMutation) AddedPositionX() (r float64, exists bool) {
 	v := m.addposition_x
 	if v == nil {
 		return
@@ -45050,13 +45050,13 @@ func (m *WorkflowNodeMutation) ResetPositionX() {
 }
 
 // SetPositionY sets the "position_y" field.
-func (m *WorkflowNodeMutation) SetPositionY(i int) {
-	m.position_y = &i
+func (m *WorkflowNodeMutation) SetPositionY(f float64) {
+	m.position_y = &f
 	m.addposition_y = nil
 }
 
 // PositionY returns the value of the "position_y" field in the mutation.
-func (m *WorkflowNodeMutation) PositionY() (r int, exists bool) {
+func (m *WorkflowNodeMutation) PositionY() (r float64, exists bool) {
 	v := m.position_y
 	if v == nil {
 		return
@@ -45067,7 +45067,7 @@ func (m *WorkflowNodeMutation) PositionY() (r int, exists bool) {
 // OldPositionY returns the old "position_y" field's value of the WorkflowNode entity.
 // If the WorkflowNode object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkflowNodeMutation) OldPositionY(ctx context.Context) (v int, err error) {
+func (m *WorkflowNodeMutation) OldPositionY(ctx context.Context) (v float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPositionY is only allowed on UpdateOne operations")
 	}
@@ -45081,17 +45081,17 @@ func (m *WorkflowNodeMutation) OldPositionY(ctx context.Context) (v int, err err
 	return oldValue.PositionY, nil
 }
 
-// AddPositionY adds i to the "position_y" field.
-func (m *WorkflowNodeMutation) AddPositionY(i int) {
+// AddPositionY adds f to the "position_y" field.
+func (m *WorkflowNodeMutation) AddPositionY(f float64) {
 	if m.addposition_y != nil {
-		*m.addposition_y += i
+		*m.addposition_y += f
 	} else {
-		m.addposition_y = &i
+		m.addposition_y = &f
 	}
 }
 
 // AddedPositionY returns the value that was added to the "position_y" field in this mutation.
-func (m *WorkflowNodeMutation) AddedPositionY() (r int, exists bool) {
+func (m *WorkflowNodeMutation) AddedPositionY() (r float64, exists bool) {
 	v := m.addposition_y
 	if v == nil {
 		return
@@ -45584,14 +45584,14 @@ func (m *WorkflowNodeMutation) SetField(name string, value ent.Value) error {
 		m.SetRetryCount(v)
 		return nil
 	case workflownode.FieldPositionX:
-		v, ok := value.(int)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPositionX(v)
 		return nil
 	case workflownode.FieldPositionY:
-		v, ok := value.(int)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -45717,14 +45717,14 @@ func (m *WorkflowNodeMutation) AddField(name string, value ent.Value) error {
 		m.AddRetryCount(v)
 		return nil
 	case workflownode.FieldPositionX:
-		v, ok := value.(int)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddPositionX(v)
 		return nil
 	case workflownode.FieldPositionY:
-		v, ok := value.(int)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

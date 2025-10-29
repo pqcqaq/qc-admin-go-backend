@@ -281,13 +281,13 @@ func (_c *WorkflowNodeCreate) SetNillableRetryCount(v *int) *WorkflowNodeCreate 
 }
 
 // SetPositionX sets the "position_x" field.
-func (_c *WorkflowNodeCreate) SetPositionX(v int) *WorkflowNodeCreate {
+func (_c *WorkflowNodeCreate) SetPositionX(v float64) *WorkflowNodeCreate {
 	_c.mutation.SetPositionX(v)
 	return _c
 }
 
 // SetNillablePositionX sets the "position_x" field if the given value is not nil.
-func (_c *WorkflowNodeCreate) SetNillablePositionX(v *int) *WorkflowNodeCreate {
+func (_c *WorkflowNodeCreate) SetNillablePositionX(v *float64) *WorkflowNodeCreate {
 	if v != nil {
 		_c.SetPositionX(*v)
 	}
@@ -295,13 +295,13 @@ func (_c *WorkflowNodeCreate) SetNillablePositionX(v *int) *WorkflowNodeCreate {
 }
 
 // SetPositionY sets the "position_y" field.
-func (_c *WorkflowNodeCreate) SetPositionY(v int) *WorkflowNodeCreate {
+func (_c *WorkflowNodeCreate) SetPositionY(v float64) *WorkflowNodeCreate {
 	_c.mutation.SetPositionY(v)
 	return _c
 }
 
 // SetNillablePositionY sets the "position_y" field if the given value is not nil.
-func (_c *WorkflowNodeCreate) SetNillablePositionY(v *int) *WorkflowNodeCreate {
+func (_c *WorkflowNodeCreate) SetNillablePositionY(v *float64) *WorkflowNodeCreate {
 	if v != nil {
 		_c.SetPositionY(*v)
 	}
@@ -585,11 +585,11 @@ func (_c *WorkflowNodeCreate) createSpec() (*WorkflowNode, *sqlgraph.CreateSpec)
 		_node.RetryCount = value
 	}
 	if value, ok := _c.mutation.PositionX(); ok {
-		_spec.SetField(workflownode.FieldPositionX, field.TypeInt, value)
+		_spec.SetField(workflownode.FieldPositionX, field.TypeFloat64, value)
 		_node.PositionX = value
 	}
 	if value, ok := _c.mutation.PositionY(); ok {
-		_spec.SetField(workflownode.FieldPositionY, field.TypeInt, value)
+		_spec.SetField(workflownode.FieldPositionY, field.TypeFloat64, value)
 		_node.PositionY = value
 	}
 	if nodes := _c.mutation.ApplicationIDs(); len(nodes) > 0 {

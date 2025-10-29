@@ -888,8 +888,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 			workflownode.FieldAsync:             {Type: field.TypeBool, Column: workflownode.FieldAsync},
 			workflownode.FieldTimeout:           {Type: field.TypeInt, Column: workflownode.FieldTimeout},
 			workflownode.FieldRetryCount:        {Type: field.TypeInt, Column: workflownode.FieldRetryCount},
-			workflownode.FieldPositionX:         {Type: field.TypeInt, Column: workflownode.FieldPositionX},
-			workflownode.FieldPositionY:         {Type: field.TypeInt, Column: workflownode.FieldPositionY},
+			workflownode.FieldPositionX:         {Type: field.TypeFloat64, Column: workflownode.FieldPositionX},
+			workflownode.FieldPositionY:         {Type: field.TypeFloat64, Column: workflownode.FieldPositionY},
 		},
 	}
 	graph.Nodes[31] = &sqlgraph.Node{
@@ -6087,13 +6087,13 @@ func (f *WorkflowNodeFilter) WhereRetryCount(p entql.IntP) {
 	f.Where(p.Field(workflownode.FieldRetryCount))
 }
 
-// WherePositionX applies the entql int predicate on the position_x field.
-func (f *WorkflowNodeFilter) WherePositionX(p entql.IntP) {
+// WherePositionX applies the entql float64 predicate on the position_x field.
+func (f *WorkflowNodeFilter) WherePositionX(p entql.Float64P) {
 	f.Where(p.Field(workflownode.FieldPositionX))
 }
 
-// WherePositionY applies the entql int predicate on the position_y field.
-func (f *WorkflowNodeFilter) WherePositionY(p entql.IntP) {
+// WherePositionY applies the entql float64 predicate on the position_y field.
+func (f *WorkflowNodeFilter) WherePositionY(p entql.Float64P) {
 	f.Where(p.Field(workflownode.FieldPositionY))
 }
 
