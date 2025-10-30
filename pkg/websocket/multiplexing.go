@@ -360,7 +360,12 @@ func (s *WsServer) startSubscribeListener() {
 		s.subsTopic(session, socketMsg.Topic)
 
 		if socketMsg.Data != nil {
-			session.SendMessage(socketMsg.Data)
+			session.SendMessage(map[string]interface{}{
+				"topic":     socketMsg.Topic,
+				"action":    "init",
+				"data":      socketMsg.Data,
+				"timestamp": utils.Now().Unix(),
+			})
 		}
 
 		return nil
