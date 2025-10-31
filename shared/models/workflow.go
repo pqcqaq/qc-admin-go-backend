@@ -6,16 +6,16 @@ import "time"
 
 // WorkflowApplicationResponse 工作流应用响应结构
 type WorkflowApplicationResponse struct {
-	ID           string                 `json:"id"`
-	CreateTime   string                 `json:"createTime"`
-	UpdateTime   string                 `json:"updateTime"`
-	Name         string                 `json:"name"`
-	Description  string                 `json:"description,omitempty"`
-	StartNodeID  string                 `json:"startNodeId"`
-	ClientSecret string                 `json:"clientSecret"`
-	Variables    map[string]interface{} `json:"variables,omitempty"`
-	Version      uint                   `json:"version"`
-	Status       string                 `json:"status"` // draft, published, archived
+	ID           string                  `json:"id"`
+	CreateTime   string                  `json:"createTime"`
+	UpdateTime   string                  `json:"updateTime"`
+	Name         string                  `json:"name"`
+	Description  string                  `json:"description,omitempty"`
+	StartNodeID  string                  `json:"startNodeId"`
+	ClientSecret string                  `json:"clientSecret"`
+	Variables    map[string]interface{}  `json:"variables,omitempty"`
+	Version      uint                    `json:"version"`
+	Status       string                  `json:"status"` // draft, published, archived
 	Nodes        []*WorkflowNodeResponse `json:"nodes,omitempty"`
 }
 
@@ -23,7 +23,7 @@ type WorkflowApplicationResponse struct {
 type CreateWorkflowApplicationRequest struct {
 	Name        string                 `json:"name" binding:"required"`
 	Description string                 `json:"description,omitempty"`
-	StartNodeID string                 `json:"startNodeId" binding:"required"`
+	StartNodeID string                 `json:"startNodeId,omitempty"` // 可选，如果不提供则自动创建默认开始节点
 	Variables   map[string]interface{} `json:"variables,omitempty"`
 	Status      string                 `json:"status,omitempty"` // draft, published, archived
 }
@@ -147,24 +147,24 @@ type PageWorkflowNodeResponse struct {
 
 // WorkflowExecutionResponse 工作流执行记录响应结构
 type WorkflowExecutionResponse struct {
-	ID            string                 `json:"id"`
-	CreateTime    string                 `json:"createTime"`
-	UpdateTime    string                 `json:"updateTime"`
-	ExecutionID   string                 `json:"executionId"`
-	ApplicationID string                 `json:"applicationId"`
-	Status        string                 `json:"status"` // pending, running, completed, failed, cancelled, timeout
-	Input         map[string]interface{} `json:"input,omitempty"`
-	Output        map[string]interface{} `json:"output,omitempty"`
-	Context       map[string]interface{} `json:"context,omitempty"`
-	StartedAt     *time.Time             `json:"startedAt,omitempty"`
-	FinishedAt    *time.Time             `json:"finishedAt,omitempty"`
-	DurationMs    int                    `json:"durationMs"`
-	TotalTokens   int                    `json:"totalTokens"`
-	TotalCost     float64                `json:"totalCost"`
-	ErrorMessage  string                 `json:"errorMessage,omitempty"`
-	ErrorStack    string                 `json:"errorStack,omitempty"`
-	TriggeredBy   string                 `json:"triggeredBy,omitempty"`
-	TriggerSource string                 `json:"triggerSource,omitempty"`
+	ID             string                           `json:"id"`
+	CreateTime     string                           `json:"createTime"`
+	UpdateTime     string                           `json:"updateTime"`
+	ExecutionID    string                           `json:"executionId"`
+	ApplicationID  string                           `json:"applicationId"`
+	Status         string                           `json:"status"` // pending, running, completed, failed, cancelled, timeout
+	Input          map[string]interface{}           `json:"input,omitempty"`
+	Output         map[string]interface{}           `json:"output,omitempty"`
+	Context        map[string]interface{}           `json:"context,omitempty"`
+	StartedAt      *time.Time                       `json:"startedAt,omitempty"`
+	FinishedAt     *time.Time                       `json:"finishedAt,omitempty"`
+	DurationMs     int                              `json:"durationMs"`
+	TotalTokens    int                              `json:"totalTokens"`
+	TotalCost      float64                          `json:"totalCost"`
+	ErrorMessage   string                           `json:"errorMessage,omitempty"`
+	ErrorStack     string                           `json:"errorStack,omitempty"`
+	TriggeredBy    string                           `json:"triggeredBy,omitempty"`
+	TriggerSource  string                           `json:"triggerSource,omitempty"`
 	NodeExecutions []*WorkflowNodeExecutionResponse `json:"nodeExecutions,omitempty"`
 }
 

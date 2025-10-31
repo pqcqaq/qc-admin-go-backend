@@ -70,6 +70,8 @@ type WorkflowNode struct {
 	PositionX float64 `json:"position_x,omitempty"`
 	// 画布Y坐标
 	PositionY float64 `json:"position_y,omitempty"`
+	// 节点颜色
+	Color string `json:"color,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkflowNodeQuery when eager-loading is set.
 	Edges        WorkflowNodeEdges `json:"edges"`
@@ -121,7 +123,7 @@ func (*WorkflowNode) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case workflownode.FieldID, workflownode.FieldCreateBy, workflownode.FieldUpdateBy, workflownode.FieldDeleteBy, workflownode.FieldApplicationID, workflownode.FieldNextNodeID, workflownode.FieldParentNodeID, workflownode.FieldTimeout, workflownode.FieldRetryCount:
 			values[i] = new(sql.NullInt64)
-		case workflownode.FieldName, workflownode.FieldNodeKey, workflownode.FieldType, workflownode.FieldDescription, workflownode.FieldPrompt, workflownode.FieldProcessorLanguage, workflownode.FieldProcessorCode:
+		case workflownode.FieldName, workflownode.FieldNodeKey, workflownode.FieldType, workflownode.FieldDescription, workflownode.FieldPrompt, workflownode.FieldProcessorLanguage, workflownode.FieldProcessorCode, workflownode.FieldColor:
 			values[i] = new(sql.NullString)
 		case workflownode.FieldCreateTime, workflownode.FieldUpdateTime, workflownode.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
@@ -304,6 +306,12 @@ func (_m *WorkflowNode) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.PositionY = value.Float64
 			}
+		case workflownode.FieldColor:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field color", values[i])
+			} else if value.Valid {
+				_m.Color = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -424,6 +432,9 @@ func (_m *WorkflowNode) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("position_y=")
 	builder.WriteString(fmt.Sprintf("%v", _m.PositionY))
+	builder.WriteString(", ")
+	builder.WriteString("color=")
+	builder.WriteString(_m.Color)
 	builder.WriteByte(')')
 	return builder.String()
 }

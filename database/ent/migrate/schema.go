@@ -1752,6 +1752,7 @@ var (
 		{Name: "retry_count", Type: field.TypeInt, Default: 0},
 		{Name: "position_x", Type: field.TypeFloat64, Default: 0},
 		{Name: "position_y", Type: field.TypeFloat64, Default: 0},
+		{Name: "color", Type: field.TypeString, Nullable: true},
 		{Name: "application_id", Type: field.TypeUint64},
 	}
 	// WorkflowNodesTable holds the schema information for the "workflow_nodes" table.
@@ -1762,7 +1763,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "workflow_nodes_workflow_applications_nodes",
-				Columns:    []*schema.Column{WorkflowNodesColumns[25]},
+				Columns:    []*schema.Column{WorkflowNodesColumns[26]},
 				RefColumns: []*schema.Column{WorkflowApplicationsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1781,7 +1782,7 @@ var (
 			{
 				Name:    "workflownode_application_id_node_key",
 				Unique:  true,
-				Columns: []*schema.Column{WorkflowNodesColumns[25], WorkflowNodesColumns[8]},
+				Columns: []*schema.Column{WorkflowNodesColumns[26], WorkflowNodesColumns[8]},
 			},
 			{
 				Name:    "workflownode_next_node_id",

@@ -155,6 +155,11 @@ func PositionY(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldEQ(FieldPositionY, v))
 }
 
+// Color applies equality check predicate on the "color" field. It's identical to ColorEQ.
+func Color(v string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldEQ(FieldColor, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldEQ(FieldCreateTime, v))
@@ -1203,6 +1208,81 @@ func PositionYLT(v float64) predicate.WorkflowNode {
 // PositionYLTE applies the LTE predicate on the "position_y" field.
 func PositionYLTE(v float64) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldLTE(FieldPositionY, v))
+}
+
+// ColorEQ applies the EQ predicate on the "color" field.
+func ColorEQ(v string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldEQ(FieldColor, v))
+}
+
+// ColorNEQ applies the NEQ predicate on the "color" field.
+func ColorNEQ(v string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldNEQ(FieldColor, v))
+}
+
+// ColorIn applies the In predicate on the "color" field.
+func ColorIn(vs ...string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldIn(FieldColor, vs...))
+}
+
+// ColorNotIn applies the NotIn predicate on the "color" field.
+func ColorNotIn(vs ...string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldNotIn(FieldColor, vs...))
+}
+
+// ColorGT applies the GT predicate on the "color" field.
+func ColorGT(v string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldGT(FieldColor, v))
+}
+
+// ColorGTE applies the GTE predicate on the "color" field.
+func ColorGTE(v string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldGTE(FieldColor, v))
+}
+
+// ColorLT applies the LT predicate on the "color" field.
+func ColorLT(v string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldLT(FieldColor, v))
+}
+
+// ColorLTE applies the LTE predicate on the "color" field.
+func ColorLTE(v string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldLTE(FieldColor, v))
+}
+
+// ColorContains applies the Contains predicate on the "color" field.
+func ColorContains(v string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldContains(FieldColor, v))
+}
+
+// ColorHasPrefix applies the HasPrefix predicate on the "color" field.
+func ColorHasPrefix(v string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldHasPrefix(FieldColor, v))
+}
+
+// ColorHasSuffix applies the HasSuffix predicate on the "color" field.
+func ColorHasSuffix(v string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldHasSuffix(FieldColor, v))
+}
+
+// ColorIsNil applies the IsNil predicate on the "color" field.
+func ColorIsNil() predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldIsNull(FieldColor))
+}
+
+// ColorNotNil applies the NotNil predicate on the "color" field.
+func ColorNotNil() predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldNotNull(FieldColor))
+}
+
+// ColorEqualFold applies the EqualFold predicate on the "color" field.
+func ColorEqualFold(v string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldEqualFold(FieldColor, v))
+}
+
+// ColorContainsFold applies the ContainsFold predicate on the "color" field.
+func ColorContainsFold(v string) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldContainsFold(FieldColor, v))
 }
 
 // HasApplication applies the HasEdge predicate on the "application" edge.

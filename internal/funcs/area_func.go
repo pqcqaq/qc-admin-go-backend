@@ -16,16 +16,27 @@ import (
 type AreaFuncs struct{}
 
 // GetAllAreas 获取所有地区
-func (AreaFuncs) GetAllAreas(ctx context.Context) ([]*ent.Area, error) {
-	return database.Client.Area.Query().
+func (AreaFuncs) GetAllAreas(ctx context.Context) ([]*models.AreaResponse, error) {
+	areas, err := database.Client.Area.Query().
 		WithParent().
 		WithChildren().
 		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换为响应格式
+	areaResponses := make([]*models.AreaResponse, 0, len(areas))
+	for _, a := range areas {
+		areaResponses = append(areaResponses, AreaFuncs{}.ConvertAreaToResponse(a))
+	}
+
+	return areaResponses, nil
 }
 
 // GetAreaByID 根据ID获取地区
-func (AreaFuncs) GetAreaByID(ctx context.Context, id uint64) (*ent.Area, error) {
-	area, err := database.Client.Area.Query().
+func (AreaFuncs) GetAreaByID(ctx context.Context, id uint64) (*models.AreaResponse, error) {
+	areaEntity, err := database.Client.Area.Query().
 		Where(area.ID(id)).
 		WithParent().
 		WithChildren().
@@ -36,11 +47,11 @@ func (AreaFuncs) GetAreaByID(ctx context.Context, id uint64) (*ent.Area, error) 
 		}
 		return nil, err
 	}
-	return area, nil
+	return AreaFuncs{}.ConvertAreaToResponse(areaEntity), nil
 }
 
 // CreateArea 创建地区
-func (AreaFuncs) CreateArea(ctx context.Context, req *models.CreateAreaRequest) (*ent.Area, error) {
+func (AreaFuncs) CreateArea(ctx context.Context, req *models.CreateAreaRequest) (*models.AreaResponse, error) {
 	builder := database.Client.Area.Create().
 		SetName(req.Name).
 		SetLevel(area.Level(req.Level)).
@@ -58,16 +69,16 @@ func (AreaFuncs) CreateArea(ctx context.Context, req *models.CreateAreaRequest) 
 		builder = builder.SetParentID(parentId)
 	}
 
-	area, err := builder.Save(ctx)
+	areaEntity, err := builder.Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return AreaFuncs{}.GetAreaByID(ctx, area.ID)
+	return AreaFuncs{}.GetAreaByID(ctx, areaEntity.ID)
 }
 
 // UpdateArea 更新地区
-func (AreaFuncs) UpdateArea(ctx context.Context, id uint64, req *models.UpdateAreaRequest) (*ent.Area, error) {
+func (AreaFuncs) UpdateArea(ctx context.Context, id uint64, req *models.UpdateAreaRequest) (*models.AreaResponse, error) {
 	builder := database.Client.Area.UpdateOneID(id)
 
 	if req.Name != "" {

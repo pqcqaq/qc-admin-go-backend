@@ -308,6 +308,20 @@ func (_c *WorkflowNodeCreate) SetNillablePositionY(v *float64) *WorkflowNodeCrea
 	return _c
 }
 
+// SetColor sets the "color" field.
+func (_c *WorkflowNodeCreate) SetColor(v string) *WorkflowNodeCreate {
+	_c.mutation.SetColor(v)
+	return _c
+}
+
+// SetNillableColor sets the "color" field if the given value is not nil.
+func (_c *WorkflowNodeCreate) SetNillableColor(v *string) *WorkflowNodeCreate {
+	if v != nil {
+		_c.SetColor(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *WorkflowNodeCreate) SetID(v uint64) *WorkflowNodeCreate {
 	_c.mutation.SetID(v)
@@ -591,6 +605,10 @@ func (_c *WorkflowNodeCreate) createSpec() (*WorkflowNode, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.PositionY(); ok {
 		_spec.SetField(workflownode.FieldPositionY, field.TypeFloat64, value)
 		_node.PositionY = value
+	}
+	if value, ok := _c.mutation.Color(); ok {
+		_spec.SetField(workflownode.FieldColor, field.TypeString, value)
+		_node.Color = value
 	}
 	if nodes := _c.mutation.ApplicationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

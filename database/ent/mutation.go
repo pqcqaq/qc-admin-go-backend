@@ -43736,6 +43736,7 @@ type WorkflowNodeMutation struct {
 	addposition_x      *float64
 	position_y         *float64
 	addposition_y      *float64
+	color              *string
 	clearedFields      map[string]struct{}
 	application        *uint64
 	clearedapplication bool
@@ -45105,6 +45106,55 @@ func (m *WorkflowNodeMutation) ResetPositionY() {
 	m.addposition_y = nil
 }
 
+// SetColor sets the "color" field.
+func (m *WorkflowNodeMutation) SetColor(s string) {
+	m.color = &s
+}
+
+// Color returns the value of the "color" field in the mutation.
+func (m *WorkflowNodeMutation) Color() (r string, exists bool) {
+	v := m.color
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldColor returns the old "color" field's value of the WorkflowNode entity.
+// If the WorkflowNode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkflowNodeMutation) OldColor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldColor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldColor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldColor: %w", err)
+	}
+	return oldValue.Color, nil
+}
+
+// ClearColor clears the value of the "color" field.
+func (m *WorkflowNodeMutation) ClearColor() {
+	m.color = nil
+	m.clearedFields[workflownode.FieldColor] = struct{}{}
+}
+
+// ColorCleared returns if the "color" field was cleared in this mutation.
+func (m *WorkflowNodeMutation) ColorCleared() bool {
+	_, ok := m.clearedFields[workflownode.FieldColor]
+	return ok
+}
+
+// ResetColor resets all changes to the "color" field.
+func (m *WorkflowNodeMutation) ResetColor() {
+	m.color = nil
+	delete(m.clearedFields, workflownode.FieldColor)
+}
+
 // ClearApplication clears the "application" edge to the WorkflowApplication entity.
 func (m *WorkflowNodeMutation) ClearApplication() {
 	m.clearedapplication = true
@@ -45220,7 +45270,7 @@ func (m *WorkflowNodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkflowNodeMutation) Fields() []string {
-	fields := make([]string, 0, 25)
+	fields := make([]string, 0, 26)
 	if m.create_time != nil {
 		fields = append(fields, workflownode.FieldCreateTime)
 	}
@@ -45296,6 +45346,9 @@ func (m *WorkflowNodeMutation) Fields() []string {
 	if m.position_y != nil {
 		fields = append(fields, workflownode.FieldPositionY)
 	}
+	if m.color != nil {
+		fields = append(fields, workflownode.FieldColor)
+	}
 	return fields
 }
 
@@ -45354,6 +45407,8 @@ func (m *WorkflowNodeMutation) Field(name string) (ent.Value, bool) {
 		return m.PositionX()
 	case workflownode.FieldPositionY:
 		return m.PositionY()
+	case workflownode.FieldColor:
+		return m.Color()
 	}
 	return nil, false
 }
@@ -45413,6 +45468,8 @@ func (m *WorkflowNodeMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldPositionX(ctx)
 	case workflownode.FieldPositionY:
 		return m.OldPositionY(ctx)
+	case workflownode.FieldColor:
+		return m.OldColor(ctx)
 	}
 	return nil, fmt.Errorf("unknown WorkflowNode field %s", name)
 }
@@ -45597,6 +45654,13 @@ func (m *WorkflowNodeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetPositionY(v)
 		return nil
+	case workflownode.FieldColor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetColor(v)
+		return nil
 	}
 	return fmt.Errorf("unknown WorkflowNode field %s", name)
 }
@@ -45777,6 +45841,9 @@ func (m *WorkflowNodeMutation) ClearedFields() []string {
 	if m.FieldCleared(workflownode.FieldAPIConfig) {
 		fields = append(fields, workflownode.FieldAPIConfig)
 	}
+	if m.FieldCleared(workflownode.FieldColor) {
+		fields = append(fields, workflownode.FieldColor)
+	}
 	return fields
 }
 
@@ -45829,6 +45896,9 @@ func (m *WorkflowNodeMutation) ClearField(name string) error {
 		return nil
 	case workflownode.FieldAPIConfig:
 		m.ClearAPIConfig()
+		return nil
+	case workflownode.FieldColor:
+		m.ClearColor()
 		return nil
 	}
 	return fmt.Errorf("unknown WorkflowNode nullable field %s", name)
@@ -45912,6 +45982,9 @@ func (m *WorkflowNodeMutation) ResetField(name string) error {
 		return nil
 	case workflownode.FieldPositionY:
 		m.ResetPositionY()
+		return nil
+	case workflownode.FieldColor:
+		m.ResetColor()
 		return nil
 	}
 	return fmt.Errorf("unknown WorkflowNode field %s", name)

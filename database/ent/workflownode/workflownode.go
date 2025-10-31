@@ -66,6 +66,8 @@ const (
 	FieldPositionX = "position_x"
 	// FieldPositionY holds the string denoting the position_y field in the database.
 	FieldPositionY = "position_y"
+	// FieldColor holds the string denoting the color field in the database.
+	FieldColor = "color"
 	// EdgeApplication holds the string denoting the application edge name in mutations.
 	EdgeApplication = "application"
 	// EdgeExecutions holds the string denoting the executions edge name in mutations.
@@ -116,6 +118,7 @@ var Columns = []string{
 	FieldRetryCount,
 	FieldPositionX,
 	FieldPositionY,
+	FieldColor,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -299,6 +302,11 @@ func ByPositionX(opts ...sql.OrderTermOption) OrderOption {
 // ByPositionY orders the results by the position_y field.
 func ByPositionY(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPositionY, opts...).ToFunc()
+}
+
+// ByColor orders the results by the color field.
+func ByColor(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldColor, opts...).ToFunc()
 }
 
 // ByApplicationField orders the results by application field.

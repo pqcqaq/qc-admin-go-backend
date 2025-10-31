@@ -467,6 +467,26 @@ func (_u *WorkflowNodeUpdate) AddPositionY(v float64) *WorkflowNodeUpdate {
 	return _u
 }
 
+// SetColor sets the "color" field.
+func (_u *WorkflowNodeUpdate) SetColor(v string) *WorkflowNodeUpdate {
+	_u.mutation.SetColor(v)
+	return _u
+}
+
+// SetNillableColor sets the "color" field if the given value is not nil.
+func (_u *WorkflowNodeUpdate) SetNillableColor(v *string) *WorkflowNodeUpdate {
+	if v != nil {
+		_u.SetColor(*v)
+	}
+	return _u
+}
+
+// ClearColor clears the value of the "color" field.
+func (_u *WorkflowNodeUpdate) ClearColor() *WorkflowNodeUpdate {
+	_u.mutation.ClearColor()
+	return _u
+}
+
 // SetApplication sets the "application" edge to the WorkflowApplication entity.
 func (_u *WorkflowNodeUpdate) SetApplication(v *WorkflowApplication) *WorkflowNodeUpdate {
 	return _u.SetApplicationID(v.ID)
@@ -730,6 +750,12 @@ func (_u *WorkflowNodeUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if value, ok := _u.mutation.AddedPositionY(); ok {
 		_spec.AddField(workflownode.FieldPositionY, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.Color(); ok {
+		_spec.SetField(workflownode.FieldColor, field.TypeString, value)
+	}
+	if _u.mutation.ColorCleared() {
+		_spec.ClearField(workflownode.FieldColor, field.TypeString)
 	}
 	if _u.mutation.ApplicationCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1262,6 +1288,26 @@ func (_u *WorkflowNodeUpdateOne) AddPositionY(v float64) *WorkflowNodeUpdateOne 
 	return _u
 }
 
+// SetColor sets the "color" field.
+func (_u *WorkflowNodeUpdateOne) SetColor(v string) *WorkflowNodeUpdateOne {
+	_u.mutation.SetColor(v)
+	return _u
+}
+
+// SetNillableColor sets the "color" field if the given value is not nil.
+func (_u *WorkflowNodeUpdateOne) SetNillableColor(v *string) *WorkflowNodeUpdateOne {
+	if v != nil {
+		_u.SetColor(*v)
+	}
+	return _u
+}
+
+// ClearColor clears the value of the "color" field.
+func (_u *WorkflowNodeUpdateOne) ClearColor() *WorkflowNodeUpdateOne {
+	_u.mutation.ClearColor()
+	return _u
+}
+
 // SetApplication sets the "application" edge to the WorkflowApplication entity.
 func (_u *WorkflowNodeUpdateOne) SetApplication(v *WorkflowApplication) *WorkflowNodeUpdateOne {
 	return _u.SetApplicationID(v.ID)
@@ -1555,6 +1601,12 @@ func (_u *WorkflowNodeUpdateOne) sqlSave(ctx context.Context) (_node *WorkflowNo
 	}
 	if value, ok := _u.mutation.AddedPositionY(); ok {
 		_spec.AddField(workflownode.FieldPositionY, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.Color(); ok {
+		_spec.SetField(workflownode.FieldColor, field.TypeString, value)
+	}
+	if _u.mutation.ColorCleared() {
+		_spec.ClearField(workflownode.FieldColor, field.TypeString)
 	}
 	if _u.mutation.ApplicationCleared() {
 		edge := &sqlgraph.EdgeSpec{

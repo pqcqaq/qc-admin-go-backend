@@ -890,6 +890,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			workflownode.FieldRetryCount:        {Type: field.TypeInt, Column: workflownode.FieldRetryCount},
 			workflownode.FieldPositionX:         {Type: field.TypeFloat64, Column: workflownode.FieldPositionX},
 			workflownode.FieldPositionY:         {Type: field.TypeFloat64, Column: workflownode.FieldPositionY},
+			workflownode.FieldColor:             {Type: field.TypeString, Column: workflownode.FieldColor},
 		},
 	}
 	graph.Nodes[31] = &sqlgraph.Node{
@@ -6095,6 +6096,11 @@ func (f *WorkflowNodeFilter) WherePositionX(p entql.Float64P) {
 // WherePositionY applies the entql float64 predicate on the position_y field.
 func (f *WorkflowNodeFilter) WherePositionY(p entql.Float64P) {
 	f.Where(p.Field(workflownode.FieldPositionY))
+}
+
+// WhereColor applies the entql string predicate on the color field.
+func (f *WorkflowNodeFilter) WhereColor(p entql.StringP) {
+	f.Where(p.Field(workflownode.FieldColor))
 }
 
 // WhereHasApplication applies a predicate to check if query has an edge application.

@@ -135,6 +135,7 @@ func (WorkflowNode) Fields() []ent.Field {
 		field.Int("retry_count").Default(0).Comment("重试次数"),
 		field.Float("position_x").Default(0).Comment("画布X坐标"),
 		field.Float("position_y").Default(0).Comment("画布Y坐标"),
+		field.String("color").Optional().Comment("节点颜色"),
 	}
 }
 
