@@ -1595,7 +1595,7 @@ var (
 		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "start_node_id", Type: field.TypeUint64},
+		{Name: "start_node_id", Type: field.TypeUint64, Nullable: true},
 		{Name: "client_secret", Type: field.TypeString},
 		{Name: "variables", Type: field.TypeJSON, Nullable: true},
 		{Name: "version", Type: field.TypeUint, Default: 1},
@@ -1626,6 +1626,86 @@ var (
 				Name:    "workflowapplication_status",
 				Unique:  false,
 				Columns: []*schema.Column{WorkflowApplicationsColumns[13]},
+			},
+		},
+	}
+	// WorkflowEdgesColumns holds the columns for the "workflow_edges" table.
+	WorkflowEdgesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "create_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "update_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
+		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
+		{Name: "edge_key", Type: field.TypeString},
+		{Name: "source_handle", Type: field.TypeString, Nullable: true},
+		{Name: "target_handle", Type: field.TypeString, Nullable: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"default", "branch", "parallel"}, Default: "default"},
+		{Name: "label", Type: field.TypeString, Nullable: true},
+		{Name: "branch_name", Type: field.TypeString, Nullable: true},
+		{Name: "animated", Type: field.TypeBool, Default: false},
+		{Name: "style", Type: field.TypeJSON, Nullable: true},
+		{Name: "data", Type: field.TypeJSON, Nullable: true},
+		{Name: "application_id", Type: field.TypeUint64},
+		{Name: "source_node_id", Type: field.TypeUint64},
+		{Name: "target_node_id", Type: field.TypeUint64},
+	}
+	// WorkflowEdgesTable holds the schema information for the "workflow_edges" table.
+	WorkflowEdgesTable = &schema.Table{
+		Name:       "workflow_edges",
+		Columns:    WorkflowEdgesColumns,
+		PrimaryKey: []*schema.Column{WorkflowEdgesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "workflow_edges_workflow_applications_edges",
+				Columns:    []*schema.Column{WorkflowEdgesColumns[16]},
+				RefColumns: []*schema.Column{WorkflowApplicationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "workflow_edges_workflow_nodes_outgoing_edges",
+				Columns:    []*schema.Column{WorkflowEdgesColumns[17]},
+				RefColumns: []*schema.Column{WorkflowNodesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "workflow_edges_workflow_nodes_incoming_edges",
+				Columns:    []*schema.Column{WorkflowEdgesColumns[18]},
+				RefColumns: []*schema.Column{WorkflowNodesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workflowedge_delete_time",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowEdgesColumns[5]},
+			},
+			{
+				Name:    "workflowedge_delete_by",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowEdgesColumns[6]},
+			},
+			{
+				Name:    "workflowedge_application_id_edge_key",
+				Unique:  true,
+				Columns: []*schema.Column{WorkflowEdgesColumns[16], WorkflowEdgesColumns[7]},
+			},
+			{
+				Name:    "workflowedge_source_node_id",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowEdgesColumns[17]},
+			},
+			{
+				Name:    "workflowedge_target_node_id",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowEdgesColumns[18]},
+			},
+			{
+				Name:    "workflowedge_type",
+				Unique:  false,
+				Columns: []*schema.Column{WorkflowEdgesColumns[10]},
 			},
 		},
 	}
@@ -1883,7 +1963,6 @@ var (
 		{Name: "version", Type: field.TypeUint},
 		{Name: "snapshot", Type: field.TypeJSON},
 		{Name: "change_log", Type: field.TypeString, Nullable: true},
-		{Name: "created_by", Type: field.TypeString, Nullable: true},
 	}
 	// WorkflowVersionsTable holds the schema information for the "workflow_versions" table.
 	WorkflowVersionsTable = &schema.Table{
@@ -2003,6 +2082,7 @@ var (
 		SysUserRoleTable,
 		SysVerifyCodesTable,
 		WorkflowApplicationsTable,
+		WorkflowEdgesTable,
 		WorkflowExecutionsTable,
 		WorkflowExecutionLogsTable,
 		WorkflowNodesTable,
@@ -2125,6 +2205,12 @@ func init() {
 	}
 	WorkflowApplicationsTable.Annotation = &entsql.Annotation{
 		Table: "workflow_applications",
+	}
+	WorkflowEdgesTable.ForeignKeys[0].RefTable = WorkflowApplicationsTable
+	WorkflowEdgesTable.ForeignKeys[1].RefTable = WorkflowNodesTable
+	WorkflowEdgesTable.ForeignKeys[2].RefTable = WorkflowNodesTable
+	WorkflowEdgesTable.Annotation = &entsql.Annotation{
+		Table: "workflow_edges",
 	}
 	WorkflowExecutionsTable.ForeignKeys[0].RefTable = WorkflowApplicationsTable
 	WorkflowExecutionsTable.Annotation = &entsql.Annotation{

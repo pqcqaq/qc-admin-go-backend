@@ -32,6 +32,7 @@ import (
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
 	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowedge"
 	"go-backend/database/ent/workflowexecution"
 	"go-backend/database/ent/workflowexecutionlog"
 	"go-backend/database/ent/workflownode"
@@ -46,7 +47,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 33)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 34)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   apiauth.Table,
@@ -801,6 +802,37 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[28] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   workflowedge.Table,
+			Columns: workflowedge.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint64,
+				Column: workflowedge.FieldID,
+			},
+		},
+		Type: "WorkflowEdge",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			workflowedge.FieldCreateTime:    {Type: field.TypeTime, Column: workflowedge.FieldCreateTime},
+			workflowedge.FieldCreateBy:      {Type: field.TypeUint64, Column: workflowedge.FieldCreateBy},
+			workflowedge.FieldUpdateTime:    {Type: field.TypeTime, Column: workflowedge.FieldUpdateTime},
+			workflowedge.FieldUpdateBy:      {Type: field.TypeUint64, Column: workflowedge.FieldUpdateBy},
+			workflowedge.FieldDeleteTime:    {Type: field.TypeTime, Column: workflowedge.FieldDeleteTime},
+			workflowedge.FieldDeleteBy:      {Type: field.TypeUint64, Column: workflowedge.FieldDeleteBy},
+			workflowedge.FieldEdgeKey:       {Type: field.TypeString, Column: workflowedge.FieldEdgeKey},
+			workflowedge.FieldApplicationID: {Type: field.TypeUint64, Column: workflowedge.FieldApplicationID},
+			workflowedge.FieldSourceNodeID:  {Type: field.TypeUint64, Column: workflowedge.FieldSourceNodeID},
+			workflowedge.FieldTargetNodeID:  {Type: field.TypeUint64, Column: workflowedge.FieldTargetNodeID},
+			workflowedge.FieldSourceHandle:  {Type: field.TypeString, Column: workflowedge.FieldSourceHandle},
+			workflowedge.FieldTargetHandle:  {Type: field.TypeString, Column: workflowedge.FieldTargetHandle},
+			workflowedge.FieldType:          {Type: field.TypeEnum, Column: workflowedge.FieldType},
+			workflowedge.FieldLabel:         {Type: field.TypeString, Column: workflowedge.FieldLabel},
+			workflowedge.FieldBranchName:    {Type: field.TypeString, Column: workflowedge.FieldBranchName},
+			workflowedge.FieldAnimated:      {Type: field.TypeBool, Column: workflowedge.FieldAnimated},
+			workflowedge.FieldStyle:         {Type: field.TypeJSON, Column: workflowedge.FieldStyle},
+			workflowedge.FieldData:          {Type: field.TypeJSON, Column: workflowedge.FieldData},
+		},
+	}
+	graph.Nodes[29] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   workflowexecution.Table,
 			Columns: workflowexecution.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -831,7 +863,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			workflowexecution.FieldTriggerSource: {Type: field.TypeString, Column: workflowexecution.FieldTriggerSource},
 		},
 	}
-	graph.Nodes[29] = &sqlgraph.Node{
+	graph.Nodes[30] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   workflowexecutionlog.Table,
 			Columns: workflowexecutionlog.Columns,
@@ -854,7 +886,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			workflowexecutionlog.FieldLoggedAt:        {Type: field.TypeTime, Column: workflowexecutionlog.FieldLoggedAt},
 		},
 	}
-	graph.Nodes[30] = &sqlgraph.Node{
+	graph.Nodes[31] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   workflownode.Table,
 			Columns: workflownode.Columns,
@@ -893,7 +925,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			workflownode.FieldColor:             {Type: field.TypeString, Column: workflownode.FieldColor},
 		},
 	}
-	graph.Nodes[31] = &sqlgraph.Node{
+	graph.Nodes[32] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   workflownodeexecution.Table,
 			Columns: workflownodeexecution.Columns,
@@ -931,7 +963,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			workflownodeexecution.FieldParentExecutionID: {Type: field.TypeUint64, Column: workflownodeexecution.FieldParentExecutionID},
 		},
 	}
-	graph.Nodes[32] = &sqlgraph.Node{
+	graph.Nodes[33] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   workflowversion.Table,
 			Columns: workflowversion.Columns,
@@ -950,7 +982,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			workflowversion.FieldVersion:       {Type: field.TypeUint, Column: workflowversion.FieldVersion},
 			workflowversion.FieldSnapshot:      {Type: field.TypeJSON, Column: workflowversion.FieldSnapshot},
 			workflowversion.FieldChangeLog:     {Type: field.TypeString, Column: workflowversion.FieldChangeLog},
-			workflowversion.FieldCreatedBy:     {Type: field.TypeString, Column: workflowversion.FieldCreatedBy},
 		},
 	}
 	graph.MustAddE(
@@ -1674,6 +1705,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"WorkflowNode",
 	)
 	graph.MustAddE(
+		"edges",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowapplication.EdgesTable,
+			Columns: []string{workflowapplication.EdgesColumn},
+			Bidi:    false,
+		},
+		"WorkflowApplication",
+		"WorkflowEdge",
+	)
+	graph.MustAddE(
 		"executions",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1684,6 +1727,42 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"WorkflowApplication",
 		"WorkflowExecution",
+	)
+	graph.MustAddE(
+		"application",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workflowedge.ApplicationTable,
+			Columns: []string{workflowedge.ApplicationColumn},
+			Bidi:    false,
+		},
+		"WorkflowEdge",
+		"WorkflowApplication",
+	)
+	graph.MustAddE(
+		"source_node",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workflowedge.SourceNodeTable,
+			Columns: []string{workflowedge.SourceNodeColumn},
+			Bidi:    false,
+		},
+		"WorkflowEdge",
+		"WorkflowNode",
+	)
+	graph.MustAddE(
+		"target_node",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   workflowedge.TargetNodeTable,
+			Columns: []string{workflowedge.TargetNodeColumn},
+			Bidi:    false,
+		},
+		"WorkflowEdge",
+		"WorkflowNode",
 	)
 	graph.MustAddE(
 		"application",
@@ -1732,6 +1811,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"WorkflowNode",
 		"WorkflowNodeExecution",
+	)
+	graph.MustAddE(
+		"outgoing_edges",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflownode.OutgoingEdgesTable,
+			Columns: []string{workflownode.OutgoingEdgesColumn},
+			Bidi:    false,
+		},
+		"WorkflowNode",
+		"WorkflowEdge",
+	)
+	graph.MustAddE(
+		"incoming_edges",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflownode.IncomingEdgesTable,
+			Columns: []string{workflownode.IncomingEdgesColumn},
+			Bidi:    false,
+		},
+		"WorkflowNode",
+		"WorkflowEdge",
 	)
 	graph.MustAddE(
 		"workflow_execution",
@@ -5666,6 +5769,20 @@ func (f *WorkflowApplicationFilter) WhereHasNodesWith(preds ...predicate.Workflo
 	})))
 }
 
+// WhereHasEdges applies a predicate to check if query has an edge edges.
+func (f *WorkflowApplicationFilter) WhereHasEdges() {
+	f.Where(entql.HasEdge("edges"))
+}
+
+// WhereHasEdgesWith applies a predicate to check if query has an edge edges with a given conditions (other predicates).
+func (f *WorkflowApplicationFilter) WhereHasEdgesWith(preds ...predicate.WorkflowEdge) {
+	f.Where(entql.HasEdgeWith("edges", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // WhereHasExecutions applies a predicate to check if query has an edge executions.
 func (f *WorkflowApplicationFilter) WhereHasExecutions() {
 	f.Where(entql.HasEdge("executions"))
@@ -5674,6 +5791,178 @@ func (f *WorkflowApplicationFilter) WhereHasExecutions() {
 // WhereHasExecutionsWith applies a predicate to check if query has an edge executions with a given conditions (other predicates).
 func (f *WorkflowApplicationFilter) WhereHasExecutionsWith(preds ...predicate.WorkflowExecution) {
 	f.Where(entql.HasEdgeWith("executions", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *WorkflowEdgeQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the WorkflowEdgeQuery builder.
+func (_q *WorkflowEdgeQuery) Filter() *WorkflowEdgeFilter {
+	return &WorkflowEdgeFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *WorkflowEdgeMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the WorkflowEdgeMutation builder.
+func (m *WorkflowEdgeMutation) Filter() *WorkflowEdgeFilter {
+	return &WorkflowEdgeFilter{config: m.config, predicateAdder: m}
+}
+
+// WorkflowEdgeFilter provides a generic filtering capability at runtime for WorkflowEdgeQuery.
+type WorkflowEdgeFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *WorkflowEdgeFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[28].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint64 predicate on the id field.
+func (f *WorkflowEdgeFilter) WhereID(p entql.Uint64P) {
+	f.Where(p.Field(workflowedge.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *WorkflowEdgeFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(workflowedge.FieldCreateTime))
+}
+
+// WhereCreateBy applies the entql uint64 predicate on the create_by field.
+func (f *WorkflowEdgeFilter) WhereCreateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflowedge.FieldCreateBy))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *WorkflowEdgeFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(workflowedge.FieldUpdateTime))
+}
+
+// WhereUpdateBy applies the entql uint64 predicate on the update_by field.
+func (f *WorkflowEdgeFilter) WhereUpdateBy(p entql.Uint64P) {
+	f.Where(p.Field(workflowedge.FieldUpdateBy))
+}
+
+// WhereDeleteTime applies the entql time.Time predicate on the delete_time field.
+func (f *WorkflowEdgeFilter) WhereDeleteTime(p entql.TimeP) {
+	f.Where(p.Field(workflowedge.FieldDeleteTime))
+}
+
+// WhereDeleteBy applies the entql uint64 predicate on the delete_by field.
+func (f *WorkflowEdgeFilter) WhereDeleteBy(p entql.Uint64P) {
+	f.Where(p.Field(workflowedge.FieldDeleteBy))
+}
+
+// WhereEdgeKey applies the entql string predicate on the edge_key field.
+func (f *WorkflowEdgeFilter) WhereEdgeKey(p entql.StringP) {
+	f.Where(p.Field(workflowedge.FieldEdgeKey))
+}
+
+// WhereApplicationID applies the entql uint64 predicate on the application_id field.
+func (f *WorkflowEdgeFilter) WhereApplicationID(p entql.Uint64P) {
+	f.Where(p.Field(workflowedge.FieldApplicationID))
+}
+
+// WhereSourceNodeID applies the entql uint64 predicate on the source_node_id field.
+func (f *WorkflowEdgeFilter) WhereSourceNodeID(p entql.Uint64P) {
+	f.Where(p.Field(workflowedge.FieldSourceNodeID))
+}
+
+// WhereTargetNodeID applies the entql uint64 predicate on the target_node_id field.
+func (f *WorkflowEdgeFilter) WhereTargetNodeID(p entql.Uint64P) {
+	f.Where(p.Field(workflowedge.FieldTargetNodeID))
+}
+
+// WhereSourceHandle applies the entql string predicate on the source_handle field.
+func (f *WorkflowEdgeFilter) WhereSourceHandle(p entql.StringP) {
+	f.Where(p.Field(workflowedge.FieldSourceHandle))
+}
+
+// WhereTargetHandle applies the entql string predicate on the target_handle field.
+func (f *WorkflowEdgeFilter) WhereTargetHandle(p entql.StringP) {
+	f.Where(p.Field(workflowedge.FieldTargetHandle))
+}
+
+// WhereType applies the entql string predicate on the type field.
+func (f *WorkflowEdgeFilter) WhereType(p entql.StringP) {
+	f.Where(p.Field(workflowedge.FieldType))
+}
+
+// WhereLabel applies the entql string predicate on the label field.
+func (f *WorkflowEdgeFilter) WhereLabel(p entql.StringP) {
+	f.Where(p.Field(workflowedge.FieldLabel))
+}
+
+// WhereBranchName applies the entql string predicate on the branch_name field.
+func (f *WorkflowEdgeFilter) WhereBranchName(p entql.StringP) {
+	f.Where(p.Field(workflowedge.FieldBranchName))
+}
+
+// WhereAnimated applies the entql bool predicate on the animated field.
+func (f *WorkflowEdgeFilter) WhereAnimated(p entql.BoolP) {
+	f.Where(p.Field(workflowedge.FieldAnimated))
+}
+
+// WhereStyle applies the entql json.RawMessage predicate on the style field.
+func (f *WorkflowEdgeFilter) WhereStyle(p entql.BytesP) {
+	f.Where(p.Field(workflowedge.FieldStyle))
+}
+
+// WhereData applies the entql json.RawMessage predicate on the data field.
+func (f *WorkflowEdgeFilter) WhereData(p entql.BytesP) {
+	f.Where(p.Field(workflowedge.FieldData))
+}
+
+// WhereHasApplication applies a predicate to check if query has an edge application.
+func (f *WorkflowEdgeFilter) WhereHasApplication() {
+	f.Where(entql.HasEdge("application"))
+}
+
+// WhereHasApplicationWith applies a predicate to check if query has an edge application with a given conditions (other predicates).
+func (f *WorkflowEdgeFilter) WhereHasApplicationWith(preds ...predicate.WorkflowApplication) {
+	f.Where(entql.HasEdgeWith("application", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasSourceNode applies a predicate to check if query has an edge source_node.
+func (f *WorkflowEdgeFilter) WhereHasSourceNode() {
+	f.Where(entql.HasEdge("source_node"))
+}
+
+// WhereHasSourceNodeWith applies a predicate to check if query has an edge source_node with a given conditions (other predicates).
+func (f *WorkflowEdgeFilter) WhereHasSourceNodeWith(preds ...predicate.WorkflowNode) {
+	f.Where(entql.HasEdgeWith("source_node", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasTargetNode applies a predicate to check if query has an edge target_node.
+func (f *WorkflowEdgeFilter) WhereHasTargetNode() {
+	f.Where(entql.HasEdge("target_node"))
+}
+
+// WhereHasTargetNodeWith applies a predicate to check if query has an edge target_node with a given conditions (other predicates).
+func (f *WorkflowEdgeFilter) WhereHasTargetNodeWith(preds ...predicate.WorkflowNode) {
+	f.Where(entql.HasEdgeWith("target_node", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -5709,7 +5998,7 @@ type WorkflowExecutionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *WorkflowExecutionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[28].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[29].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -5872,7 +6161,7 @@ type WorkflowExecutionLogFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *WorkflowExecutionLogFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[29].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[30].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -5962,7 +6251,7 @@ type WorkflowNodeFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *WorkflowNodeFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[30].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[31].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -6131,6 +6420,34 @@ func (f *WorkflowNodeFilter) WhereHasExecutionsWith(preds ...predicate.WorkflowN
 	})))
 }
 
+// WhereHasOutgoingEdges applies a predicate to check if query has an edge outgoing_edges.
+func (f *WorkflowNodeFilter) WhereHasOutgoingEdges() {
+	f.Where(entql.HasEdge("outgoing_edges"))
+}
+
+// WhereHasOutgoingEdgesWith applies a predicate to check if query has an edge outgoing_edges with a given conditions (other predicates).
+func (f *WorkflowNodeFilter) WhereHasOutgoingEdgesWith(preds ...predicate.WorkflowEdge) {
+	f.Where(entql.HasEdgeWith("outgoing_edges", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasIncomingEdges applies a predicate to check if query has an edge incoming_edges.
+func (f *WorkflowNodeFilter) WhereHasIncomingEdges() {
+	f.Where(entql.HasEdge("incoming_edges"))
+}
+
+// WhereHasIncomingEdgesWith applies a predicate to check if query has an edge incoming_edges with a given conditions (other predicates).
+func (f *WorkflowNodeFilter) WhereHasIncomingEdgesWith(preds ...predicate.WorkflowEdge) {
+	f.Where(entql.HasEdgeWith("incoming_edges", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (_q *WorkflowNodeExecutionQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
@@ -6160,7 +6477,7 @@ type WorkflowNodeExecutionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *WorkflowNodeExecutionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[31].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[32].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -6353,7 +6670,7 @@ type WorkflowVersionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *WorkflowVersionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[32].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[33].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -6402,9 +6719,4 @@ func (f *WorkflowVersionFilter) WhereSnapshot(p entql.BytesP) {
 // WhereChangeLog applies the entql string predicate on the change_log field.
 func (f *WorkflowVersionFilter) WhereChangeLog(p entql.StringP) {
 	f.Where(p.Field(workflowversion.FieldChangeLog))
-}
-
-// WhereCreatedBy applies the entql string predicate on the created_by field.
-func (f *WorkflowVersionFilter) WhereCreatedBy(p entql.StringP) {
-	f.Where(p.Field(workflowversion.FieldCreatedBy))
 }

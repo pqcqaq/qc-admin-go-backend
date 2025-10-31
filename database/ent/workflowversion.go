@@ -34,9 +34,7 @@ type WorkflowVersion struct {
 	// 版本快照
 	Snapshot map[string]interface{} `json:"snapshot,omitempty"`
 	// 变更日志
-	ChangeLog string `json:"change_log,omitempty"`
-	// 创建者
-	CreatedBy    string `json:"created_by,omitempty"`
+	ChangeLog    string `json:"change_log,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -49,7 +47,7 @@ func (*WorkflowVersion) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case workflowversion.FieldID, workflowversion.FieldCreateBy, workflowversion.FieldUpdateBy, workflowversion.FieldApplicationID, workflowversion.FieldVersion:
 			values[i] = new(sql.NullInt64)
-		case workflowversion.FieldChangeLog, workflowversion.FieldCreatedBy:
+		case workflowversion.FieldChangeLog:
 			values[i] = new(sql.NullString)
 		case workflowversion.FieldCreateTime, workflowversion.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -124,12 +122,6 @@ func (_m *WorkflowVersion) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ChangeLog = value.String
 			}
-		case workflowversion.FieldCreatedBy:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field created_by", values[i])
-			} else if value.Valid {
-				_m.CreatedBy = value.String
-			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -189,9 +181,6 @@ func (_m *WorkflowVersion) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("change_log=")
 	builder.WriteString(_m.ChangeLog)
-	builder.WriteString(", ")
-	builder.WriteString("created_by=")
-	builder.WriteString(_m.CreatedBy)
 	builder.WriteByte(')')
 	return builder.String()
 }

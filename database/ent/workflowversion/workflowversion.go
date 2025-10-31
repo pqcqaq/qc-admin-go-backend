@@ -30,8 +30,6 @@ const (
 	FieldSnapshot = "snapshot"
 	// FieldChangeLog holds the string denoting the change_log field in the database.
 	FieldChangeLog = "change_log"
-	// FieldCreatedBy holds the string denoting the created_by field in the database.
-	FieldCreatedBy = "created_by"
 	// Table holds the table name of the workflowversion in the database.
 	Table = "workflow_versions"
 )
@@ -47,7 +45,6 @@ var Columns = []string{
 	FieldVersion,
 	FieldSnapshot,
 	FieldChangeLog,
-	FieldCreatedBy,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -116,9 +113,4 @@ func ByVersion(opts ...sql.OrderTermOption) OrderOption {
 // ByChangeLog orders the results by the change_log field.
 func ByChangeLog(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldChangeLog, opts...).ToFunc()
-}
-
-// ByCreatedBy orders the results by the created_by field.
-func ByCreatedBy(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedBy, opts...).ToFunc()
 }

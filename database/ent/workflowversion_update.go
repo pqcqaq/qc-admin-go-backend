@@ -156,26 +156,6 @@ func (_u *WorkflowVersionUpdate) ClearChangeLog() *WorkflowVersionUpdate {
 	return _u
 }
 
-// SetCreatedBy sets the "created_by" field.
-func (_u *WorkflowVersionUpdate) SetCreatedBy(v string) *WorkflowVersionUpdate {
-	_u.mutation.SetCreatedBy(v)
-	return _u
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (_u *WorkflowVersionUpdate) SetNillableCreatedBy(v *string) *WorkflowVersionUpdate {
-	if v != nil {
-		_u.SetCreatedBy(*v)
-	}
-	return _u
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (_u *WorkflowVersionUpdate) ClearCreatedBy() *WorkflowVersionUpdate {
-	_u.mutation.ClearCreatedBy()
-	return _u
-}
-
 // Mutation returns the WorkflowVersionMutation object of the builder.
 func (_u *WorkflowVersionUpdate) Mutation() *WorkflowVersionMutation {
 	return _u.mutation
@@ -273,12 +253,6 @@ func (_u *WorkflowVersionUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if _u.mutation.ChangeLogCleared() {
 		_spec.ClearField(workflowversion.FieldChangeLog, field.TypeString)
-	}
-	if value, ok := _u.mutation.CreatedBy(); ok {
-		_spec.SetField(workflowversion.FieldCreatedBy, field.TypeString, value)
-	}
-	if _u.mutation.CreatedByCleared() {
-		_spec.ClearField(workflowversion.FieldCreatedBy, field.TypeString)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -428,26 +402,6 @@ func (_u *WorkflowVersionUpdateOne) ClearChangeLog() *WorkflowVersionUpdateOne {
 	return _u
 }
 
-// SetCreatedBy sets the "created_by" field.
-func (_u *WorkflowVersionUpdateOne) SetCreatedBy(v string) *WorkflowVersionUpdateOne {
-	_u.mutation.SetCreatedBy(v)
-	return _u
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (_u *WorkflowVersionUpdateOne) SetNillableCreatedBy(v *string) *WorkflowVersionUpdateOne {
-	if v != nil {
-		_u.SetCreatedBy(*v)
-	}
-	return _u
-}
-
-// ClearCreatedBy clears the value of the "created_by" field.
-func (_u *WorkflowVersionUpdateOne) ClearCreatedBy() *WorkflowVersionUpdateOne {
-	_u.mutation.ClearCreatedBy()
-	return _u
-}
-
 // Mutation returns the WorkflowVersionMutation object of the builder.
 func (_u *WorkflowVersionUpdateOne) Mutation() *WorkflowVersionMutation {
 	return _u.mutation
@@ -575,12 +529,6 @@ func (_u *WorkflowVersionUpdateOne) sqlSave(ctx context.Context) (_node *Workflo
 	}
 	if _u.mutation.ChangeLogCleared() {
 		_spec.ClearField(workflowversion.FieldChangeLog, field.TypeString)
-	}
-	if value, ok := _u.mutation.CreatedBy(); ok {
-		_spec.SetField(workflowversion.FieldCreatedBy, field.TypeString, value)
-	}
-	if _u.mutation.CreatedByCleared() {
-		_spec.ClearField(workflowversion.FieldCreatedBy, field.TypeString)
 	}
 	_node = &WorkflowVersion{config: _u.config}
 	_spec.Assign = _node.assignValues

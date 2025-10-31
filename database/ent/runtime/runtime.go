@@ -31,6 +31,7 @@ import (
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
 	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowedge"
 	"go-backend/database/ent/workflowexecution"
 	"go-backend/database/ent/workflowexecutionlog"
 	"go-backend/database/ent/workflownode"
@@ -1405,6 +1406,36 @@ func init() {
 	workflowapplicationDescVersion := workflowapplicationFields[5].Descriptor()
 	// workflowapplication.DefaultVersion holds the default value on creation for the version field.
 	workflowapplication.DefaultVersion = workflowapplicationDescVersion.Default.(uint)
+	workflowedgeMixin := schema.WorkflowEdge{}.Mixin()
+	workflowedgeMixinHooks0 := workflowedgeMixin[0].Hooks()
+	workflowedgeMixinHooks1 := workflowedgeMixin[1].Hooks()
+	workflowedge.Hooks[0] = workflowedgeMixinHooks0[0]
+	workflowedge.Hooks[1] = workflowedgeMixinHooks0[1]
+	workflowedge.Hooks[2] = workflowedgeMixinHooks1[0]
+	workflowedgeMixinInters1 := workflowedgeMixin[1].Interceptors()
+	workflowedge.Interceptors[0] = workflowedgeMixinInters1[0]
+	workflowedgeMixinFields0 := workflowedgeMixin[0].Fields()
+	_ = workflowedgeMixinFields0
+	workflowedgeFields := schema.WorkflowEdge{}.Fields()
+	_ = workflowedgeFields
+	// workflowedgeDescCreateTime is the schema descriptor for create_time field.
+	workflowedgeDescCreateTime := workflowedgeMixinFields0[1].Descriptor()
+	// workflowedge.DefaultCreateTime holds the default value on creation for the create_time field.
+	workflowedge.DefaultCreateTime = workflowedgeDescCreateTime.Default.(func() time.Time)
+	// workflowedgeDescUpdateTime is the schema descriptor for update_time field.
+	workflowedgeDescUpdateTime := workflowedgeMixinFields0[3].Descriptor()
+	// workflowedge.DefaultUpdateTime holds the default value on creation for the update_time field.
+	workflowedge.DefaultUpdateTime = workflowedgeDescUpdateTime.Default.(func() time.Time)
+	// workflowedge.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	workflowedge.UpdateDefaultUpdateTime = workflowedgeDescUpdateTime.UpdateDefault.(func() time.Time)
+	// workflowedgeDescEdgeKey is the schema descriptor for edge_key field.
+	workflowedgeDescEdgeKey := workflowedgeFields[0].Descriptor()
+	// workflowedge.EdgeKeyValidator is a validator for the "edge_key" field. It is called by the builders before save.
+	workflowedge.EdgeKeyValidator = workflowedgeDescEdgeKey.Validators[0].(func(string) error)
+	// workflowedgeDescAnimated is the schema descriptor for animated field.
+	workflowedgeDescAnimated := workflowedgeFields[9].Descriptor()
+	// workflowedge.DefaultAnimated holds the default value on creation for the animated field.
+	workflowedge.DefaultAnimated = workflowedgeDescAnimated.Default.(bool)
 	workflowexecutionMixin := schema.WorkflowExecution{}.Mixin()
 	workflowexecutionMixinHooks0 := workflowexecutionMixin[0].Hooks()
 	workflowexecution.Hooks[0] = workflowexecutionMixinHooks0[0]

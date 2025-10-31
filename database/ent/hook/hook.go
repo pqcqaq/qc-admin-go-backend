@@ -344,6 +344,18 @@ func (f WorkflowApplicationFunc) Mutate(ctx context.Context, m ent.Mutation) (en
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkflowApplicationMutation", m)
 }
 
+// The WorkflowEdgeFunc type is an adapter to allow the use of ordinary
+// function as WorkflowEdge mutator.
+type WorkflowEdgeFunc func(context.Context, *ent.WorkflowEdgeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WorkflowEdgeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WorkflowEdgeMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkflowEdgeMutation", m)
+}
+
 // The WorkflowExecutionFunc type is an adapter to allow the use of ordinary
 // function as WorkflowExecution mutator.
 type WorkflowExecutionFunc func(context.Context, *ent.WorkflowExecutionMutation) (ent.Value, error)

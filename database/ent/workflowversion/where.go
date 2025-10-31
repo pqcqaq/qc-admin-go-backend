@@ -89,11 +89,6 @@ func ChangeLog(v string) predicate.WorkflowVersion {
 	return predicate.WorkflowVersion(sql.FieldEQ(FieldChangeLog, v))
 }
 
-// CreatedBy applies equality check predicate on the "created_by" field. It's identical to CreatedByEQ.
-func CreatedBy(v string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldEQ(FieldCreatedBy, v))
-}
-
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.WorkflowVersion {
 	return predicate.WorkflowVersion(sql.FieldEQ(FieldCreateTime, v))
@@ -427,81 +422,6 @@ func ChangeLogEqualFold(v string) predicate.WorkflowVersion {
 // ChangeLogContainsFold applies the ContainsFold predicate on the "change_log" field.
 func ChangeLogContainsFold(v string) predicate.WorkflowVersion {
 	return predicate.WorkflowVersion(sql.FieldContainsFold(FieldChangeLog, v))
-}
-
-// CreatedByEQ applies the EQ predicate on the "created_by" field.
-func CreatedByEQ(v string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldEQ(FieldCreatedBy, v))
-}
-
-// CreatedByNEQ applies the NEQ predicate on the "created_by" field.
-func CreatedByNEQ(v string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldNEQ(FieldCreatedBy, v))
-}
-
-// CreatedByIn applies the In predicate on the "created_by" field.
-func CreatedByIn(vs ...string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldIn(FieldCreatedBy, vs...))
-}
-
-// CreatedByNotIn applies the NotIn predicate on the "created_by" field.
-func CreatedByNotIn(vs ...string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldNotIn(FieldCreatedBy, vs...))
-}
-
-// CreatedByGT applies the GT predicate on the "created_by" field.
-func CreatedByGT(v string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldGT(FieldCreatedBy, v))
-}
-
-// CreatedByGTE applies the GTE predicate on the "created_by" field.
-func CreatedByGTE(v string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldGTE(FieldCreatedBy, v))
-}
-
-// CreatedByLT applies the LT predicate on the "created_by" field.
-func CreatedByLT(v string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldLT(FieldCreatedBy, v))
-}
-
-// CreatedByLTE applies the LTE predicate on the "created_by" field.
-func CreatedByLTE(v string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldLTE(FieldCreatedBy, v))
-}
-
-// CreatedByContains applies the Contains predicate on the "created_by" field.
-func CreatedByContains(v string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldContains(FieldCreatedBy, v))
-}
-
-// CreatedByHasPrefix applies the HasPrefix predicate on the "created_by" field.
-func CreatedByHasPrefix(v string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldHasPrefix(FieldCreatedBy, v))
-}
-
-// CreatedByHasSuffix applies the HasSuffix predicate on the "created_by" field.
-func CreatedByHasSuffix(v string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldHasSuffix(FieldCreatedBy, v))
-}
-
-// CreatedByIsNil applies the IsNil predicate on the "created_by" field.
-func CreatedByIsNil() predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldIsNull(FieldCreatedBy))
-}
-
-// CreatedByNotNil applies the NotNil predicate on the "created_by" field.
-func CreatedByNotNil() predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldNotNull(FieldCreatedBy))
-}
-
-// CreatedByEqualFold applies the EqualFold predicate on the "created_by" field.
-func CreatedByEqualFold(v string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldEqualFold(FieldCreatedBy, v))
-}
-
-// CreatedByContainsFold applies the ContainsFold predicate on the "created_by" field.
-func CreatedByContainsFold(v string) predicate.WorkflowVersion {
-	return predicate.WorkflowVersion(sql.FieldContainsFold(FieldCreatedBy, v))
 }
 
 // And groups predicates with the AND operator between them.

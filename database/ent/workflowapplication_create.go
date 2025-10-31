@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowedge"
 	"go-backend/database/ent/workflowexecution"
 	"go-backend/database/ent/workflownode"
 	"time"
@@ -132,6 +133,14 @@ func (_c *WorkflowApplicationCreate) SetStartNodeID(v uint64) *WorkflowApplicati
 	return _c
 }
 
+// SetNillableStartNodeID sets the "start_node_id" field if the given value is not nil.
+func (_c *WorkflowApplicationCreate) SetNillableStartNodeID(v *uint64) *WorkflowApplicationCreate {
+	if v != nil {
+		_c.SetStartNodeID(*v)
+	}
+	return _c
+}
+
 // SetClientSecret sets the "client_secret" field.
 func (_c *WorkflowApplicationCreate) SetClientSecret(v string) *WorkflowApplicationCreate {
 	_c.mutation.SetClientSecret(v)
@@ -191,6 +200,21 @@ func (_c *WorkflowApplicationCreate) AddNodes(v ...*WorkflowNode) *WorkflowAppli
 		ids[i] = v[i].ID
 	}
 	return _c.AddNodeIDs(ids...)
+}
+
+// AddEdgeIDs adds the "edges" edge to the WorkflowEdge entity by IDs.
+func (_c *WorkflowApplicationCreate) AddEdgeIDs(ids ...uint64) *WorkflowApplicationCreate {
+	_c.mutation.AddEdgeIDs(ids...)
+	return _c
+}
+
+// AddEdges adds the "edges" edges to the WorkflowEdge entity.
+func (_c *WorkflowApplicationCreate) AddEdges(v ...*WorkflowEdge) *WorkflowApplicationCreate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddEdgeIDs(ids...)
 }
 
 // AddExecutionIDs adds the "executions" edge to the WorkflowExecution entity by IDs.
@@ -285,9 +309,6 @@ func (_c *WorkflowApplicationCreate) check() error {
 		if err := workflowapplication.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "WorkflowApplication.name": %w`, err)}
 		}
-	}
-	if _, ok := _c.mutation.StartNodeID(); !ok {
-		return &ValidationError{Name: "start_node_id", err: errors.New(`ent: missing required field "WorkflowApplication.start_node_id"`)}
 	}
 	if _, ok := _c.mutation.ClientSecret(); !ok {
 		return &ValidationError{Name: "client_secret", err: errors.New(`ent: missing required field "WorkflowApplication.client_secret"`)}
@@ -396,6 +417,22 @@ func (_c *WorkflowApplicationCreate) createSpec() (*WorkflowApplication, *sqlgra
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(workflownode.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.EdgesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowapplication.EdgesTable,
+			Columns: []string{workflowapplication.EdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowedge.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

@@ -1331,6 +1331,52 @@ func HasExecutionsWith(preds ...predicate.WorkflowNodeExecution) predicate.Workf
 	})
 }
 
+// HasOutgoingEdges applies the HasEdge predicate on the "outgoing_edges" edge.
+func HasOutgoingEdges() predicate.WorkflowNode {
+	return predicate.WorkflowNode(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OutgoingEdgesTable, OutgoingEdgesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOutgoingEdgesWith applies the HasEdge predicate on the "outgoing_edges" edge with a given conditions (other predicates).
+func HasOutgoingEdgesWith(preds ...predicate.WorkflowEdge) predicate.WorkflowNode {
+	return predicate.WorkflowNode(func(s *sql.Selector) {
+		step := newOutgoingEdgesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasIncomingEdges applies the HasEdge predicate on the "incoming_edges" edge.
+func HasIncomingEdges() predicate.WorkflowNode {
+	return predicate.WorkflowNode(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, IncomingEdgesTable, IncomingEdgesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIncomingEdgesWith applies the HasEdge predicate on the "incoming_edges" edge with a given conditions (other predicates).
+func HasIncomingEdgesWith(preds ...predicate.WorkflowEdge) predicate.WorkflowNode {
+	return predicate.WorkflowNode(func(s *sql.Selector) {
+		step := newIncomingEdgesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.WorkflowNode) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.AndPredicates(predicates...))

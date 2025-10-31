@@ -72,6 +72,10 @@ const (
 	EdgeApplication = "application"
 	// EdgeExecutions holds the string denoting the executions edge name in mutations.
 	EdgeExecutions = "executions"
+	// EdgeOutgoingEdges holds the string denoting the outgoing_edges edge name in mutations.
+	EdgeOutgoingEdges = "outgoing_edges"
+	// EdgeIncomingEdges holds the string denoting the incoming_edges edge name in mutations.
+	EdgeIncomingEdges = "incoming_edges"
 	// Table holds the table name of the workflownode in the database.
 	Table = "workflow_nodes"
 	// ApplicationTable is the table that holds the application relation/edge.
@@ -88,6 +92,20 @@ const (
 	ExecutionsInverseTable = "workflow_node_executions"
 	// ExecutionsColumn is the table column denoting the executions relation/edge.
 	ExecutionsColumn = "node_id"
+	// OutgoingEdgesTable is the table that holds the outgoing_edges relation/edge.
+	OutgoingEdgesTable = "workflow_edges"
+	// OutgoingEdgesInverseTable is the table name for the WorkflowEdge entity.
+	// It exists in this package in order to avoid circular dependency with the "workflowedge" package.
+	OutgoingEdgesInverseTable = "workflow_edges"
+	// OutgoingEdgesColumn is the table column denoting the outgoing_edges relation/edge.
+	OutgoingEdgesColumn = "source_node_id"
+	// IncomingEdgesTable is the table that holds the incoming_edges relation/edge.
+	IncomingEdgesTable = "workflow_edges"
+	// IncomingEdgesInverseTable is the table name for the WorkflowEdge entity.
+	// It exists in this package in order to avoid circular dependency with the "workflowedge" package.
+	IncomingEdgesInverseTable = "workflow_edges"
+	// IncomingEdgesColumn is the table column denoting the incoming_edges relation/edge.
+	IncomingEdgesColumn = "target_node_id"
 )
 
 // Columns holds all SQL columns for workflownode fields.
@@ -329,6 +347,34 @@ func ByExecutions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newExecutionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByOutgoingEdgesCount orders the results by outgoing_edges count.
+func ByOutgoingEdgesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOutgoingEdgesStep(), opts...)
+	}
+}
+
+// ByOutgoingEdges orders the results by outgoing_edges terms.
+func ByOutgoingEdges(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOutgoingEdgesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByIncomingEdgesCount orders the results by incoming_edges count.
+func ByIncomingEdgesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIncomingEdgesStep(), opts...)
+	}
+}
+
+// ByIncomingEdges orders the results by incoming_edges terms.
+func ByIncomingEdges(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIncomingEdgesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newApplicationStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -341,5 +387,19 @@ func newExecutionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ExecutionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ExecutionsTable, ExecutionsColumn),
+	)
+}
+func newOutgoingEdgesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OutgoingEdgesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OutgoingEdgesTable, OutgoingEdgesColumn),
+	)
+}
+func newIncomingEdgesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IncomingEdgesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, IncomingEdgesTable, IncomingEdgesColumn),
 	)
 }

@@ -34,6 +34,7 @@ import (
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
 	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowedge"
 	"go-backend/database/ent/workflowexecution"
 	"go-backend/database/ent/workflowexecutionlog"
 	"go-backend/database/ent/workflownode"
@@ -133,6 +134,7 @@ func checkColumn(t, c string) error {
 			userrole.Table:               userrole.ValidColumn,
 			verifycode.Table:             verifycode.ValidColumn,
 			workflowapplication.Table:    workflowapplication.ValidColumn,
+			workflowedge.Table:           workflowedge.ValidColumn,
 			workflowexecution.Table:      workflowexecution.ValidColumn,
 			workflowexecutionlog.Table:   workflowexecutionlog.ValidColumn,
 			workflownode.Table:           workflownode.ValidColumn,

@@ -84,10 +84,16 @@ type WorkflowNodeEdges struct {
 	Application *WorkflowApplication `json:"application,omitempty"`
 	// Executions holds the value of the executions edge.
 	Executions []*WorkflowNodeExecution `json:"executions,omitempty"`
+	// OutgoingEdges holds the value of the outgoing_edges edge.
+	OutgoingEdges []*WorkflowEdge `json:"outgoing_edges,omitempty"`
+	// IncomingEdges holds the value of the incoming_edges edge.
+	IncomingEdges []*WorkflowEdge `json:"incoming_edges,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes     [2]bool
-	namedExecutions map[string][]*WorkflowNodeExecution
+	loadedTypes        [4]bool
+	namedExecutions    map[string][]*WorkflowNodeExecution
+	namedOutgoingEdges map[string][]*WorkflowEdge
+	namedIncomingEdges map[string][]*WorkflowEdge
 }
 
 // ApplicationOrErr returns the Application value or an error if the edge
@@ -108,6 +114,24 @@ func (e WorkflowNodeEdges) ExecutionsOrErr() ([]*WorkflowNodeExecution, error) {
 		return e.Executions, nil
 	}
 	return nil, &NotLoadedError{edge: "executions"}
+}
+
+// OutgoingEdgesOrErr returns the OutgoingEdges value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkflowNodeEdges) OutgoingEdgesOrErr() ([]*WorkflowEdge, error) {
+	if e.loadedTypes[2] {
+		return e.OutgoingEdges, nil
+	}
+	return nil, &NotLoadedError{edge: "outgoing_edges"}
+}
+
+// IncomingEdgesOrErr returns the IncomingEdges value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkflowNodeEdges) IncomingEdgesOrErr() ([]*WorkflowEdge, error) {
+	if e.loadedTypes[3] {
+		return e.IncomingEdges, nil
+	}
+	return nil, &NotLoadedError{edge: "incoming_edges"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -335,6 +359,16 @@ func (_m *WorkflowNode) QueryExecutions() *WorkflowNodeExecutionQuery {
 	return NewWorkflowNodeClient(_m.config).QueryExecutions(_m)
 }
 
+// QueryOutgoingEdges queries the "outgoing_edges" edge of the WorkflowNode entity.
+func (_m *WorkflowNode) QueryOutgoingEdges() *WorkflowEdgeQuery {
+	return NewWorkflowNodeClient(_m.config).QueryOutgoingEdges(_m)
+}
+
+// QueryIncomingEdges queries the "incoming_edges" edge of the WorkflowNode entity.
+func (_m *WorkflowNode) QueryIncomingEdges() *WorkflowEdgeQuery {
+	return NewWorkflowNodeClient(_m.config).QueryIncomingEdges(_m)
+}
+
 // Update returns a builder for updating this WorkflowNode.
 // Note that you need to call WorkflowNode.Unwrap() before calling this method if this WorkflowNode
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -460,6 +494,54 @@ func (_m *WorkflowNode) appendNamedExecutions(name string, edges ...*WorkflowNod
 		_m.Edges.namedExecutions[name] = []*WorkflowNodeExecution{}
 	} else {
 		_m.Edges.namedExecutions[name] = append(_m.Edges.namedExecutions[name], edges...)
+	}
+}
+
+// NamedOutgoingEdges returns the OutgoingEdges named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *WorkflowNode) NamedOutgoingEdges(name string) ([]*WorkflowEdge, error) {
+	if _m.Edges.namedOutgoingEdges == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedOutgoingEdges[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *WorkflowNode) appendNamedOutgoingEdges(name string, edges ...*WorkflowEdge) {
+	if _m.Edges.namedOutgoingEdges == nil {
+		_m.Edges.namedOutgoingEdges = make(map[string][]*WorkflowEdge)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedOutgoingEdges[name] = []*WorkflowEdge{}
+	} else {
+		_m.Edges.namedOutgoingEdges[name] = append(_m.Edges.namedOutgoingEdges[name], edges...)
+	}
+}
+
+// NamedIncomingEdges returns the IncomingEdges named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *WorkflowNode) NamedIncomingEdges(name string) ([]*WorkflowEdge, error) {
+	if _m.Edges.namedIncomingEdges == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedIncomingEdges[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *WorkflowNode) appendNamedIncomingEdges(name string, edges ...*WorkflowEdge) {
+	if _m.Edges.namedIncomingEdges == nil {
+		_m.Edges.namedIncomingEdges = make(map[string][]*WorkflowEdge)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedIncomingEdges[name] = []*WorkflowEdge{}
+	} else {
+		_m.Edges.namedIncomingEdges[name] = append(_m.Edges.namedIncomingEdges[name], edges...)
 	}
 }
 

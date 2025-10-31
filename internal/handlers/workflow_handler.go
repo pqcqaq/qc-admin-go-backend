@@ -1066,3 +1066,401 @@ func (h *WorkflowHandler) BatchDeleteNodes(c *gin.Context) {
 		"message": "节点批量删除成功",
 	})
 }
+
+// ============ WorkflowEdge Handlers ============
+
+// GetAllWorkflowEdges 获取所有工作流边
+// @Summary      获取所有工作流边
+// @Description  获取所有工作流边列表
+// @Tags         workflow-edges
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  object{success=bool,data=[]models.WorkflowEdgeResponse}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /workflow/edges [get]
+func (h *WorkflowHandler) GetAllWorkflowEdges(c *gin.Context) {
+	ctx := middleware.GetRequestContext(c)
+	edges, err := funcs.WorkflowFuncs{}.GetAllWorkflowEdges(ctx)
+	if err != nil {
+		middleware.ThrowError(c, middleware.DatabaseError("获取工作流边列表失败", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    edges,
+	})
+}
+
+// GetWorkflowEdge 获取单个工作流边
+// @Summary      获取工作流边详情
+// @Description  根据ID获取工作流边详细信息
+// @Tags         workflow-edges
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "边ID"
+// @Success      200  {object}  object{success=bool,data=models.WorkflowEdgeResponse}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /workflow/edges/{id} [get]
+func (h *WorkflowHandler) GetWorkflowEdge(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("边ID格式无效", nil))
+		return
+	}
+
+	ctx := middleware.GetRequestContext(c)
+	edge, err := funcs.WorkflowFuncs{}.GetWorkflowEdgeByID(ctx, id)
+	if err != nil {
+		if err.Error() == "workflow edge not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("工作流边不存在", nil))
+			return
+		}
+		middleware.ThrowError(c, middleware.DatabaseError("获取工作流边失败", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    edge,
+	})
+}
+
+// GetWorkflowEdgesByApplicationID 根据应用ID获取所有边
+// @Summary      根据应用ID获取边列表
+// @Description  获取指定工作流应用的所有边
+// @Tags         workflow-edges
+// @Accept       json
+// @Produce      json
+// @Param        applicationId  query     string  true  "应用ID"
+// @Success      200            {object}  object{success=bool,data=[]models.WorkflowEdgeResponse}
+// @Failure      400            {object}  object{success=bool,message=string}
+// @Failure      500            {object}  object{success=bool,message=string}
+// @Router       /workflow/edges/by-application [get]
+func (h *WorkflowHandler) GetWorkflowEdgesByApplicationID(c *gin.Context) {
+	applicationIDStr := c.Query("applicationId")
+	if applicationIDStr == "" {
+		middleware.ThrowError(c, middleware.BadRequestError("应用ID不能为空", nil))
+		return
+	}
+
+	applicationID, err := strconv.ParseUint(applicationIDStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("应用ID格式无效", nil))
+		return
+	}
+
+	ctx := middleware.GetRequestContext(c)
+	edges, err := funcs.WorkflowFuncs{}.GetWorkflowEdgesByApplicationID(ctx, applicationID)
+	if err != nil {
+		middleware.ThrowError(c, middleware.DatabaseError("获取工作流边列表失败", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    edges,
+	})
+}
+
+// CreateWorkflowEdge 创建工作流边
+// @Summary      创建工作流边
+// @Description  创建新的工作流边
+// @Tags         workflow-edges
+// @Accept       json
+// @Produce      json
+// @Param        edge  body      models.CreateWorkflowEdgeRequest  true  "工作流边信息"
+// @Success      201   {object}  object{success=bool,data=models.WorkflowEdgeResponse}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /workflow/edges [post]
+func (h *WorkflowHandler) CreateWorkflowEdge(c *gin.Context) {
+	var req models.CreateWorkflowEdgeRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+		return
+	}
+
+	ctx := middleware.GetRequestContext(c)
+	edge, err := funcs.WorkflowFuncs{}.CreateWorkflowEdge(ctx, &req)
+	if err != nil {
+		middleware.ThrowError(c, middleware.DatabaseError("创建工作流边失败", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"success": true,
+		"data":    edge,
+		"message": "工作流边创建成功",
+	})
+}
+
+// UpdateWorkflowEdge 更新工作流边
+// @Summary      更新工作流边
+// @Description  更新工作流边信息
+// @Tags         workflow-edges
+// @Accept       json
+// @Produce      json
+// @Param        id    path      string                            true  "边ID"
+// @Param        edge  body      models.UpdateWorkflowEdgeRequest  true  "工作流边信息"
+// @Success      200   {object}  object{success=bool,data=models.WorkflowEdgeResponse}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      404   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /workflow/edges/{id} [put]
+func (h *WorkflowHandler) UpdateWorkflowEdge(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("边ID格式无效", nil))
+		return
+	}
+
+	var req models.UpdateWorkflowEdgeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+		return
+	}
+
+	ctx := middleware.GetRequestContext(c)
+	edge, err := funcs.WorkflowFuncs{}.UpdateWorkflowEdge(ctx, id, &req)
+	if err != nil {
+		if err.Error() == "workflow edge not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("工作流边不存在", nil))
+			return
+		}
+		middleware.ThrowError(c, middleware.DatabaseError("更新工作流边失败", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    edge,
+		"message": "工作流边更新成功",
+	})
+}
+
+// DeleteWorkflowEdge 删除工作流边
+// @Summary      删除工作流边
+// @Description  删除指定的工作流边
+// @Tags         workflow-edges
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "边ID"
+// @Success      200  {object}  object{success=bool,message=string}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /workflow/edges/{id} [delete]
+func (h *WorkflowHandler) DeleteWorkflowEdge(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("边ID格式无效", nil))
+		return
+	}
+
+	ctx := middleware.GetRequestContext(c)
+	err = funcs.WorkflowFuncs{}.DeleteWorkflowEdge(ctx, id)
+	if err != nil {
+		if err.Error() == "workflow edge not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("工作流边不存在", nil))
+			return
+		}
+		middleware.ThrowError(c, middleware.DatabaseError("删除工作流边失败", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "工作流边删除成功",
+	})
+}
+
+// BatchCreateWorkflowEdges 批量创建工作流边
+// @Summary      批量创建工作流边
+// @Description  批量创建多个工作流边
+// @Tags         workflow-edges
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.BatchCreateWorkflowEdgesRequest  true  "边列表"
+// @Success      201   {object}  object{success=bool,data=[]models.WorkflowEdgeResponse}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /workflow/edges/batch-create [post]
+func (h *WorkflowHandler) BatchCreateWorkflowEdges(c *gin.Context) {
+	var req models.BatchCreateWorkflowEdgesRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+		return
+	}
+
+	ctx := middleware.GetRequestContext(c)
+	edges, err := funcs.WorkflowFuncs{}.BatchCreateWorkflowEdges(ctx, &req)
+	if err != nil {
+		middleware.ThrowError(c, middleware.DatabaseError("批量创建工作流边失败", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"success": true,
+		"data":    edges,
+		"message": "工作流边批量创建成功",
+	})
+}
+
+// BatchDeleteWorkflowEdges 批量删除工作流边
+// @Summary      批量删除工作流边
+// @Description  批量删除多个工作流边
+// @Tags         workflow-edges
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.BatchDeleteWorkflowEdgesRequest  true  "边ID列表"
+// @Success      200   {object}  object{success=bool,message=string}
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /workflow/edges/batch-delete [post]
+func (h *WorkflowHandler) BatchDeleteWorkflowEdges(c *gin.Context) {
+	var req models.BatchDeleteWorkflowEdgesRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+		return
+	}
+
+	ctx := middleware.GetRequestContext(c)
+	err := funcs.WorkflowFuncs{}.BatchDeleteWorkflowEdges(ctx, &req)
+	if err != nil {
+		middleware.ThrowError(c, middleware.DatabaseError("批量删除工作流边失败", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "工作流边批量删除成功",
+	})
+}
+
+// ============ WorkflowVersion Handlers ============
+
+// CreateWorkflowVersion 创建工作流版本快照
+// @Summary      创建工作流版本快照
+// @Description  为指定应用创建版本快照，自动递增版本号
+// @Tags         workflow-versions
+// @Accept       json
+// @Produce      json
+// @Param        request  body      models.CreateWorkflowVersionRequest  true  "创建版本请求"
+// @Success      200      {object}  object{success=bool,data=models.WorkflowVersionResponse}
+// @Failure      400      {object}  object{success=bool,message=string}
+// @Failure      500      {object}  object{success=bool,message=string}
+// @Router       /workflow/versions [post]
+func (h *WorkflowHandler) CreateWorkflowVersion(c *gin.Context) {
+	var req models.CreateWorkflowVersionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("请求参数错误", map[string]any{
+			"error": err.Error(),
+		}))
+		return
+	}
+
+	ctx := middleware.GetRequestContext(c)
+	version, err := funcs.WorkflowFuncs{}.CreateWorkflowVersion(ctx, &req)
+	if err != nil {
+		if err.Error() == "workflow application not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("工作流应用不存在", nil))
+			return
+		}
+		middleware.ThrowError(c, middleware.DatabaseError("创建工作流版本失败", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    version,
+		"message": "工作流版本创建成功",
+	})
+}
+
+// GetWorkflowVersionsByApplicationID 根据应用ID获取版本列表
+// @Summary      根据应用ID获取版本列表
+// @Description  获取指定应用的所有版本快照，按版本号降序排列
+// @Tags         workflow-versions
+// @Accept       json
+// @Produce      json
+// @Param        applicationId  query     string  true  "应用ID"
+// @Success      200            {object}  object{success=bool,data=[]models.WorkflowVersionResponse}
+// @Failure      400            {object}  object{success=bool,message=string}
+// @Failure      500            {object}  object{success=bool,message=string}
+// @Router       /workflow/versions/by-application [get]
+func (h *WorkflowHandler) GetWorkflowVersionsByApplicationID(c *gin.Context) {
+	applicationIDStr := c.Query("applicationId")
+	if applicationIDStr == "" {
+		middleware.ThrowError(c, middleware.BadRequestError("应用ID不能为空", nil))
+		return
+	}
+
+	applicationID, err := strconv.ParseUint(applicationIDStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("应用ID格式无效", map[string]any{
+			"provided_id": applicationIDStr,
+		}))
+		return
+	}
+
+	ctx := middleware.GetRequestContext(c)
+	versions, err := funcs.WorkflowFuncs{}.GetWorkflowVersionsByApplicationID(ctx, applicationID)
+	if err != nil {
+		middleware.ThrowError(c, middleware.DatabaseError("获取版本列表失败", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    versions,
+		"count":   len(versions),
+	})
+}
+
+// GetWorkflowVersion 获取单个版本
+// @Summary      获取单个版本
+// @Description  根据版本ID获取版本详情
+// @Tags         workflow-versions
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "版本ID"
+// @Success      200  {object}  object{success=bool,data=models.WorkflowVersionResponse}
+// @Failure      400  {object}  object{success=bool,message=string}
+// @Failure      404  {object}  object{success=bool,message=string}
+// @Failure      500  {object}  object{success=bool,message=string}
+// @Router       /workflow/versions/{id} [get]
+func (h *WorkflowHandler) GetWorkflowVersion(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		middleware.ThrowError(c, middleware.BadRequestError("版本ID格式无效", map[string]any{
+			"provided_id": idStr,
+		}))
+		return
+	}
+
+	ctx := middleware.GetRequestContext(c)
+	version, err := funcs.WorkflowFuncs{}.GetWorkflowVersionByID(ctx, id)
+	if err != nil {
+		if err.Error() == "workflow version not found" {
+			middleware.ThrowError(c, middleware.NotFoundError("工作流版本不存在", nil))
+			return
+		}
+		middleware.ThrowError(c, middleware.DatabaseError("获取版本失败", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    version,
+	})
+}

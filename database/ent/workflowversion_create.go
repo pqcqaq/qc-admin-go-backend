@@ -108,20 +108,6 @@ func (_c *WorkflowVersionCreate) SetNillableChangeLog(v *string) *WorkflowVersio
 	return _c
 }
 
-// SetCreatedBy sets the "created_by" field.
-func (_c *WorkflowVersionCreate) SetCreatedBy(v string) *WorkflowVersionCreate {
-	_c.mutation.SetCreatedBy(v)
-	return _c
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (_c *WorkflowVersionCreate) SetNillableCreatedBy(v *string) *WorkflowVersionCreate {
-	if v != nil {
-		_c.SetCreatedBy(*v)
-	}
-	return _c
-}
-
 // SetID sets the "id" field.
 func (_c *WorkflowVersionCreate) SetID(v uint64) *WorkflowVersionCreate {
 	_c.mutation.SetID(v)
@@ -262,10 +248,6 @@ func (_c *WorkflowVersionCreate) createSpec() (*WorkflowVersion, *sqlgraph.Creat
 	if value, ok := _c.mutation.ChangeLog(); ok {
 		_spec.SetField(workflowversion.FieldChangeLog, field.TypeString, value)
 		_node.ChangeLog = value
-	}
-	if value, ok := _c.mutation.CreatedBy(); ok {
-		_spec.SetField(workflowversion.FieldCreatedBy, field.TypeString, value)
-		_node.CreatedBy = value
 	}
 	return _node, _spec
 }

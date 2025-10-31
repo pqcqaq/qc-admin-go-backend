@@ -4,13 +4,16 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"math"
 	"time"
 
 	"go-backend/database/ent"
 	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowedge"
 	"go-backend/database/ent/workflownode"
+	"go-backend/database/ent/workflowversion"
 	"go-backend/pkg/database"
 	"go-backend/pkg/utils"
 	"go-backend/shared/models"
@@ -43,7 +46,7 @@ func (WorkflowFuncs) GetAllWorkflowApplications(ctx context.Context) ([]*models.
 func (WorkflowFuncs) GetWorkflowApplicationByID(ctx context.Context, id uint64) (*models.WorkflowApplicationResponse, error) {
 	app, err := database.Client.WorkflowApplication.Query().
 		Where(workflowapplication.ID(id)).
-		WithNodes().
+		// WithNodes().
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -295,13 +298,13 @@ func (WorkflowFuncs) ConvertWorkflowApplicationToResponse(app *ent.WorkflowAppli
 		Status:       string(app.Status),
 	}
 
-	// 转换节点列表
-	if len(app.Edges.Nodes) > 0 {
-		resp.Nodes = make([]*models.WorkflowNodeResponse, 0, len(app.Edges.Nodes))
-		for _, node := range app.Edges.Nodes {
-			resp.Nodes = append(resp.Nodes, WorkflowFuncs{}.ConvertWorkflowNodeToResponse(node))
-		}
-	}
+	// // 转换节点列表（旧架构，保留兼容）
+	// if len(app.Edges.Nodes) > 0 {
+	// 	resp.Nodes = make([]*models.WorkflowNodeResponse, 0, len(app.Edges.Nodes))
+	// 	for _, node := range app.Edges.Nodes {
+	// 		resp.Nodes = append(resp.Nodes, WorkflowFuncs{}.ConvertWorkflowNodeToResponse(node))
+	// 	}
+	// }
 
 	return resp
 }
@@ -438,6 +441,10 @@ func (WorkflowFuncs) CreateWorkflowNode(ctx context.Context, req *models.CreateW
 		builder = builder.SetPositionY(*req.PositionY)
 	}
 
+	if req.Color != "" {
+		builder = builder.SetColor(req.Color)
+	}
+
 	node, err := builder.Save(ctx)
 	if err != nil {
 		return nil, err
@@ -524,6 +531,10 @@ func (WorkflowFuncs) UpdateWorkflowNode(ctx context.Context, id uint64, req *mod
 		builder = builder.SetPositionY(*req.PositionY)
 	}
 
+	if req.Color != "" {
+		builder = builder.SetColor(req.Color)
+	}
+
 	err := builder.Exec(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -570,6 +581,7 @@ func (WorkflowFuncs) ConvertWorkflowNodeToResponse(node *ent.WorkflowNode) *mode
 		RetryCount:        node.RetryCount,
 		PositionX:         node.PositionX,
 		PositionY:         node.PositionY,
+		Color:             node.Color,
 	}
 
 	if node.NextNodeID != 0 {
@@ -1159,6 +1171,7 @@ func (WorkflowFuncs) CloneWorkflowApplication(ctx context.Context, applicationID
 			SetRetryCount(oldNode.RetryCount).
 			SetPositionX(oldNode.PositionX).
 			SetPositionY(oldNode.PositionY).
+			SetColor(oldNode.Color).
 			Save(ctx)
 		if err != nil {
 			tx.Rollback()
@@ -1207,4 +1220,371 @@ func (WorkflowFuncs) CloneWorkflowApplication(ctx context.Context, applicationID
 	}
 
 	return WorkflowFuncs{}.GetWorkflowApplicationByID(ctx, newApp.ID)
+}
+
+// ============ WorkflowEdge CRUD ============
+
+// GetAllWorkflowEdges 获取所有工作流边
+func (WorkflowFuncs) GetAllWorkflowEdges(ctx context.Context) ([]*models.WorkflowEdgeResponse, error) {
+	edges, err := database.Client.WorkflowEdge.Query().
+		WithApplication().
+		WithSourceNode().
+		WithTargetNode().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换为响应格式
+	edgeResponses := make([]*models.WorkflowEdgeResponse, 0, len(edges))
+	for _, edge := range edges {
+		edgeResponses = append(edgeResponses, WorkflowFuncs{}.ConvertWorkflowEdgeToResponse(edge))
+	}
+
+	return edgeResponses, nil
+}
+
+// GetWorkflowEdgeByID 根据ID获取工作流边
+func (WorkflowFuncs) GetWorkflowEdgeByID(ctx context.Context, id uint64) (*models.WorkflowEdgeResponse, error) {
+	edge, err := database.Client.WorkflowEdge.Query().
+		Where(workflowedge.ID(id)).
+		WithApplication().
+		WithSourceNode().
+		WithTargetNode().
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("workflow edge not found")
+		}
+		return nil, err
+	}
+	return WorkflowFuncs{}.ConvertWorkflowEdgeToResponse(edge), nil
+}
+
+// GetWorkflowEdgesByApplicationID 根据应用ID获取所有边
+func (WorkflowFuncs) GetWorkflowEdgesByApplicationID(ctx context.Context, applicationID uint64) ([]*models.WorkflowEdgeResponse, error) {
+	edges, err := database.Client.WorkflowEdge.Query().
+		Where(workflowedge.ApplicationIDEQ(applicationID)).
+		WithApplication().
+		WithSourceNode().
+		WithTargetNode().
+		Order(ent.Asc(workflowedge.FieldCreateTime)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	edgeResponses := make([]*models.WorkflowEdgeResponse, 0, len(edges))
+	for _, edge := range edges {
+		edgeResponses = append(edgeResponses, WorkflowFuncs{}.ConvertWorkflowEdgeToResponse(edge))
+	}
+
+	return edgeResponses, nil
+}
+
+// CreateWorkflowEdge 创建工作流边
+func (WorkflowFuncs) CreateWorkflowEdge(ctx context.Context, req *models.CreateWorkflowEdgeRequest) (*models.WorkflowEdgeResponse, error) {
+	applicationID := utils.StringToUint64(req.ApplicationID)
+	sourceNodeID := utils.StringToUint64(req.SourceNodeID)
+	targetNodeID := utils.StringToUint64(req.TargetNodeID)
+
+	builder := database.Client.WorkflowEdge.Create().
+		SetEdgeKey(req.EdgeKey).
+		SetApplicationID(applicationID).
+		SetSourceNodeID(sourceNodeID).
+		SetTargetNodeID(targetNodeID)
+
+	if req.SourceHandle != "" {
+		builder = builder.SetSourceHandle(req.SourceHandle)
+	}
+
+	if req.TargetHandle != "" {
+		builder = builder.SetTargetHandle(req.TargetHandle)
+	}
+
+	if req.Type != "" {
+		builder = builder.SetType(workflowedge.Type(req.Type))
+	}
+
+	if req.Label != "" {
+		builder = builder.SetLabel(req.Label)
+	}
+
+	if req.BranchName != "" {
+		builder = builder.SetBranchName(req.BranchName)
+	}
+
+	builder = builder.SetAnimated(req.Animated)
+
+	if req.Style != nil {
+		builder = builder.SetStyle(req.Style)
+	}
+
+	if req.Data != nil {
+		builder = builder.SetData(req.Data)
+	}
+
+	edge, err := builder.Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return WorkflowFuncs{}.GetWorkflowEdgeByID(ctx, edge.ID)
+}
+
+// UpdateWorkflowEdge 更新工作流边
+func (WorkflowFuncs) UpdateWorkflowEdge(ctx context.Context, id uint64, req *models.UpdateWorkflowEdgeRequest) (*models.WorkflowEdgeResponse, error) {
+	builder := database.Client.WorkflowEdge.UpdateOneID(id)
+
+	if req.EdgeKey != "" {
+		builder = builder.SetEdgeKey(req.EdgeKey)
+	}
+
+	if req.SourceHandle != "" {
+		builder = builder.SetSourceHandle(req.SourceHandle)
+	}
+
+	if req.TargetHandle != "" {
+		builder = builder.SetTargetHandle(req.TargetHandle)
+	}
+
+	if req.Type != "" {
+		builder = builder.SetType(workflowedge.Type(req.Type))
+	}
+
+	if req.Label != "" {
+		builder = builder.SetLabel(req.Label)
+	}
+
+	if req.BranchName != "" {
+		builder = builder.SetBranchName(req.BranchName)
+	}
+
+	if req.Animated != nil {
+		builder = builder.SetAnimated(*req.Animated)
+	}
+
+	if req.Style != nil {
+		builder = builder.SetStyle(req.Style)
+	}
+
+	if req.Data != nil {
+		builder = builder.SetData(req.Data)
+	}
+
+	err := builder.Exec(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("workflow edge not found")
+		}
+		return nil, err
+	}
+
+	return WorkflowFuncs{}.GetWorkflowEdgeByID(ctx, id)
+}
+
+// DeleteWorkflowEdge 删除工作流边(软删除)
+func (WorkflowFuncs) DeleteWorkflowEdge(ctx context.Context, id uint64) error {
+	err := database.Client.WorkflowEdge.DeleteOneID(id).Exec(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return fmt.Errorf("workflow edge not found")
+		}
+		return err
+	}
+	return nil
+}
+
+// BatchCreateWorkflowEdges 批量创建工作流边
+func (WorkflowFuncs) BatchCreateWorkflowEdges(ctx context.Context, req *models.BatchCreateWorkflowEdgesRequest) ([]*models.WorkflowEdgeResponse, error) {
+	responses := make([]*models.WorkflowEdgeResponse, 0, len(req.Edges))
+
+	for _, edgeReq := range req.Edges {
+		edge, err := WorkflowFuncs{}.CreateWorkflowEdge(ctx, &edgeReq)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create edge %s: %w", edgeReq.EdgeKey, err)
+		}
+		responses = append(responses, edge)
+	}
+
+	return responses, nil
+}
+
+// BatchDeleteWorkflowEdges 批量删除工作流边
+func (WorkflowFuncs) BatchDeleteWorkflowEdges(ctx context.Context, req *models.BatchDeleteWorkflowEdgesRequest) error {
+	for _, edgeIDStr := range req.EdgeIDs {
+		edgeID := utils.StringToUint64(edgeIDStr)
+		err := WorkflowFuncs{}.DeleteWorkflowEdge(ctx, edgeID)
+		if err != nil {
+			return fmt.Errorf("failed to delete edge %s: %w", edgeIDStr, err)
+		}
+	}
+	return nil
+}
+
+// ConvertWorkflowEdgeToResponse 将工作流边实体转换为响应格式
+func (WorkflowFuncs) ConvertWorkflowEdgeToResponse(edge *ent.WorkflowEdge) *models.WorkflowEdgeResponse {
+	resp := &models.WorkflowEdgeResponse{
+		ID:            utils.Uint64ToString(edge.ID),
+		CreateTime:    utils.FormatDateTime(edge.CreateTime),
+		UpdateTime:    utils.FormatDateTime(edge.UpdateTime),
+		EdgeKey:       edge.EdgeKey,
+		ApplicationID: utils.Uint64ToString(edge.ApplicationID),
+		SourceNodeID:  utils.Uint64ToString(edge.SourceNodeID), // 返回数据库 ID
+		TargetNodeID:  utils.Uint64ToString(edge.TargetNodeID), // 返回数据库 ID
+		SourceHandle:  edge.SourceHandle,
+		TargetHandle:  edge.TargetHandle,
+		Type:          string(edge.Type),
+		Label:         edge.Label,
+		BranchName:    edge.BranchName,
+		Animated:      edge.Animated,
+		Style:         edge.Style,
+		Data:          edge.Data,
+	}
+
+	return resp
+}
+
+// ============ WorkflowVersion CRUD ============
+
+// CreateWorkflowVersion 创建工作流版本快照
+func (WorkflowFuncs) CreateWorkflowVersion(ctx context.Context, req *models.CreateWorkflowVersionRequest) (*models.WorkflowVersionResponse, error) {
+	applicationID := utils.StringToUint64(req.ApplicationID)
+
+	// 1. 查询应用是否存在且为激活状态
+	_, err := database.Client.WorkflowApplication.Query().Where(
+		workflowapplication.ID(applicationID),
+		workflowapplication.StatusEQ(workflowapplication.StatusArchived),
+	).Count(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("workflow application not found")
+		}
+		return nil, err
+	}
+
+	// 2. 查询当前应用的最大版本号
+	maxVersion, err := database.Client.WorkflowVersion.Query().
+		Where(workflowversion.ApplicationID(applicationID)).
+		Aggregate(ent.Max(workflowversion.FieldVersion)).
+		Int(ctx)
+	if err != nil && !ent.IsNotFound(err) {
+		return nil, err
+	}
+
+	// 新版本号 = 最大版本号 + 1
+	newVersion := uint(maxVersion + 1)
+
+	// 3. 查询所有节点
+	nodes, err := database.Client.WorkflowNode.Query().
+		Where(workflownode.ApplicationID(applicationID)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// 4. 查询所有边
+	edges, err := database.Client.WorkflowEdge.Query().
+		Where(workflowedge.ApplicationID(applicationID)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// 5. 构建快照数据
+	nodeResponses := make([]*models.WorkflowNodeResponse, 0, len(nodes))
+	for _, node := range nodes {
+		nodeResponses = append(nodeResponses, WorkflowFuncs{}.ConvertWorkflowNodeToResponse(node))
+	}
+
+	edgeResponses := make([]*models.WorkflowEdgeResponse, 0, len(edges))
+	for _, edge := range edges {
+		edgeResponses = append(edgeResponses, WorkflowFuncs{}.ConvertWorkflowEdgeToResponse(edge))
+	}
+
+	snapshot := models.WorkflowVersionSnapshot{
+		Nodes: nodeResponses,
+		Edges: edgeResponses,
+	}
+
+	// 6. 将快照转换为 map[string]interface{} 以存储到数据库
+	snapshotMap := map[string]interface{}{
+		"nodes": nodeResponses,
+		"edges": edgeResponses,
+	}
+
+	// 7. 创建版本记录
+	version, err := database.Client.WorkflowVersion.Create().
+		SetApplicationID(applicationID).
+		SetVersion(newVersion).
+		SetSnapshot(snapshotMap).
+		SetNillableChangeLog(&req.ChangeLog).
+		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// 8. 返回响应
+	return &models.WorkflowVersionResponse{
+		ID:            utils.Uint64ToString(version.ID),
+		CreateTime:    utils.FormatDateTime(version.CreateTime),
+		UpdateTime:    utils.FormatDateTime(version.UpdateTime),
+		ApplicationID: utils.Uint64ToString(version.ApplicationID),
+		Version:       version.Version,
+		Snapshot:      snapshot,
+		ChangeLog:     version.ChangeLog,
+	}, nil
+}
+
+// GetWorkflowVersionsByApplicationID 根据应用ID获取所有版本
+func (WorkflowFuncs) GetWorkflowVersionsByApplicationID(ctx context.Context, applicationID uint64) ([]*models.WorkflowVersionResponse, error) {
+	versions, err := database.Client.WorkflowVersion.Query().
+		Where(workflowversion.ApplicationID(applicationID)).
+		Order(ent.Desc(workflowversion.FieldVersion)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	responses := make([]*models.WorkflowVersionResponse, 0, len(versions))
+	for _, version := range versions {
+		responses = append(responses, WorkflowFuncs{}.ConvertWorkflowVersionToResponse(version))
+	}
+
+	return responses, nil
+}
+
+// GetWorkflowVersionByID 根据ID获取版本
+func (WorkflowFuncs) GetWorkflowVersionByID(ctx context.Context, id uint64) (*models.WorkflowVersionResponse, error) {
+	version, err := database.Client.WorkflowVersion.Get(ctx, id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("workflow version not found")
+		}
+		return nil, err
+	}
+
+	return WorkflowFuncs{}.ConvertWorkflowVersionToResponse(version), nil
+}
+
+// ConvertWorkflowVersionToResponse 将工作流版本实体转换为响应格式
+func (WorkflowFuncs) ConvertWorkflowVersionToResponse(version *ent.WorkflowVersion) *models.WorkflowVersionResponse {
+	// 从 snapshot map 中提取节点和边
+	var snapshot models.WorkflowVersionSnapshot
+
+	// 使用 JSON 序列化/反序列化来转换类型
+	snapshotBytes, err := json.Marshal(version.Snapshot)
+	if err == nil {
+		json.Unmarshal(snapshotBytes, &snapshot)
+	}
+
+	return &models.WorkflowVersionResponse{
+		ID:            utils.Uint64ToString(version.ID),
+		CreateTime:    utils.FormatDateTime(version.CreateTime),
+		UpdateTime:    utils.FormatDateTime(version.UpdateTime),
+		ApplicationID: utils.Uint64ToString(version.ApplicationID),
+		Version:       version.Version,
+		Snapshot:      snapshot,
+		ChangeLog:     version.ChangeLog,
+	}
 }

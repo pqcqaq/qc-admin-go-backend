@@ -90,6 +90,9 @@ type VerifyCode func(*sql.Selector)
 // WorkflowApplication is the predicate function for workflowapplication builders.
 type WorkflowApplication func(*sql.Selector)
 
+// WorkflowEdge is the predicate function for workflowedge builders.
+type WorkflowEdge func(*sql.Selector)
+
 // WorkflowExecution is the predicate function for workflowexecution builders.
 type WorkflowExecution func(*sql.Selector)
 

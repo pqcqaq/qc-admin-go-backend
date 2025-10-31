@@ -70,6 +70,8 @@ type Tx struct {
 	VerifyCode *VerifyCodeClient
 	// WorkflowApplication is the client for interacting with the WorkflowApplication builders.
 	WorkflowApplication *WorkflowApplicationClient
+	// WorkflowEdge is the client for interacting with the WorkflowEdge builders.
+	WorkflowEdge *WorkflowEdgeClient
 	// WorkflowExecution is the client for interacting with the WorkflowExecution builders.
 	WorkflowExecution *WorkflowExecutionClient
 	// WorkflowExecutionLog is the client for interacting with the WorkflowExecutionLog builders.
@@ -239,6 +241,7 @@ func (tx *Tx) init() {
 	tx.UserRole = NewUserRoleClient(tx.config)
 	tx.VerifyCode = NewVerifyCodeClient(tx.config)
 	tx.WorkflowApplication = NewWorkflowApplicationClient(tx.config)
+	tx.WorkflowEdge = NewWorkflowEdgeClient(tx.config)
 	tx.WorkflowExecution = NewWorkflowExecutionClient(tx.config)
 	tx.WorkflowExecutionLog = NewWorkflowExecutionLogClient(tx.config)
 	tx.WorkflowNode = NewWorkflowNodeClient(tx.config)

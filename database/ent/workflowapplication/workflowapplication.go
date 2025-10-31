@@ -44,6 +44,8 @@ const (
 	FieldStatus = "status"
 	// EdgeNodes holds the string denoting the nodes edge name in mutations.
 	EdgeNodes = "nodes"
+	// EdgeEdges holds the string denoting the edges edge name in mutations.
+	EdgeEdges = "edges"
 	// EdgeExecutions holds the string denoting the executions edge name in mutations.
 	EdgeExecutions = "executions"
 	// Table holds the table name of the workflowapplication in the database.
@@ -55,6 +57,13 @@ const (
 	NodesInverseTable = "workflow_nodes"
 	// NodesColumn is the table column denoting the nodes relation/edge.
 	NodesColumn = "application_id"
+	// EdgesTable is the table that holds the edges relation/edge.
+	EdgesTable = "workflow_edges"
+	// EdgesInverseTable is the table name for the WorkflowEdge entity.
+	// It exists in this package in order to avoid circular dependency with the "workflowedge" package.
+	EdgesInverseTable = "workflow_edges"
+	// EdgesColumn is the table column denoting the edges relation/edge.
+	EdgesColumn = "application_id"
 	// ExecutionsTable is the table that holds the executions relation/edge.
 	ExecutionsTable = "workflow_executions"
 	// ExecutionsInverseTable is the table name for the WorkflowExecution entity.
@@ -221,6 +230,20 @@ func ByNodes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByEdgesCount orders the results by edges count.
+func ByEdgesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newEdgesStep(), opts...)
+	}
+}
+
+// ByEdges orders the results by edges terms.
+func ByEdges(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEdgesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByExecutionsCount orders the results by executions count.
 func ByExecutionsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -239,6 +262,13 @@ func newNodesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(NodesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, NodesTable, NodesColumn),
+	)
+}
+func newEdgesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EdgesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, EdgesTable, EdgesColumn),
 	)
 }
 func newExecutionsStep() *sqlgraph.Step {

@@ -40,6 +40,30 @@ func (r *Router) setupWorkflowRoutes(rg *gin.RouterGroup) {
 			nodes.DELETE("/:id", workflowHandler.DeleteWorkflowNode)                      // 删除工作流节点
 		}
 
+		// WorkflowEdge 路由
+		edges := workflow.Group("/edges")
+		{
+			// 基本CRUD操作
+			edges.GET("", workflowHandler.GetAllWorkflowEdges)                            // 获取所有工作流边
+			edges.GET("/by-application", workflowHandler.GetWorkflowEdgesByApplicationID) // 根据应用ID获取边
+			edges.GET("/:id", workflowHandler.GetWorkflowEdge)                            // 根据ID获取工作流边
+			edges.POST("", workflowHandler.CreateWorkflowEdge)                            // 创建工作流边
+			edges.PUT("/:id", workflowHandler.UpdateWorkflowEdge)                         // 更新工作流边
+			edges.DELETE("/:id", workflowHandler.DeleteWorkflowEdge)                      // 删除工作流边
+
+			// 批量操作
+			edges.POST("/batch-create", workflowHandler.BatchCreateWorkflowEdges) // 批量创建工作流边
+			edges.POST("/batch-delete", workflowHandler.BatchDeleteWorkflowEdges) // 批量删除工作流边
+		}
+
+		// WorkflowVersion 路由
+		versions := workflow.Group("/versions")
+		{
+			versions.POST("", workflowHandler.CreateWorkflowVersion)                            // 创建版本快照
+			versions.GET("/by-application", workflowHandler.GetWorkflowVersionsByApplicationID) // 根据应用ID获取版本列表
+			versions.GET("/:id", workflowHandler.GetWorkflowVersion)                            // 获取单个版本
+		}
+
 		// Workflow Graph 操作路由
 		graph := workflow.Group("/graph")
 		{

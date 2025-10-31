@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"go-backend/database/ent/predicate"
 	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowedge"
 	"go-backend/database/ent/workflowexecution"
 	"go-backend/database/ent/workflownode"
 	"time"
@@ -192,6 +193,12 @@ func (_u *WorkflowApplicationUpdate) AddStartNodeID(v int64) *WorkflowApplicatio
 	return _u
 }
 
+// ClearStartNodeID clears the value of the "start_node_id" field.
+func (_u *WorkflowApplicationUpdate) ClearStartNodeID() *WorkflowApplicationUpdate {
+	_u.mutation.ClearStartNodeID()
+	return _u
+}
+
 // SetClientSecret sets the "client_secret" field.
 func (_u *WorkflowApplicationUpdate) SetClientSecret(v string) *WorkflowApplicationUpdate {
 	_u.mutation.SetClientSecret(v)
@@ -268,6 +275,21 @@ func (_u *WorkflowApplicationUpdate) AddNodes(v ...*WorkflowNode) *WorkflowAppli
 	return _u.AddNodeIDs(ids...)
 }
 
+// AddEdgeIDs adds the "edges" edge to the WorkflowEdge entity by IDs.
+func (_u *WorkflowApplicationUpdate) AddEdgeIDs(ids ...uint64) *WorkflowApplicationUpdate {
+	_u.mutation.AddEdgeIDs(ids...)
+	return _u
+}
+
+// AddEdges adds the "edges" edges to the WorkflowEdge entity.
+func (_u *WorkflowApplicationUpdate) AddEdges(v ...*WorkflowEdge) *WorkflowApplicationUpdate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEdgeIDs(ids...)
+}
+
 // AddExecutionIDs adds the "executions" edge to the WorkflowExecution entity by IDs.
 func (_u *WorkflowApplicationUpdate) AddExecutionIDs(ids ...uint64) *WorkflowApplicationUpdate {
 	_u.mutation.AddExecutionIDs(ids...)
@@ -307,6 +329,27 @@ func (_u *WorkflowApplicationUpdate) RemoveNodes(v ...*WorkflowNode) *WorkflowAp
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveNodeIDs(ids...)
+}
+
+// ClearEdges clears all "edges" edges to the WorkflowEdge entity.
+func (_u *WorkflowApplicationUpdate) ClearEdges() *WorkflowApplicationUpdate {
+	_u.mutation.ClearEdges()
+	return _u
+}
+
+// RemoveEdgeIDs removes the "edges" edge to WorkflowEdge entities by IDs.
+func (_u *WorkflowApplicationUpdate) RemoveEdgeIDs(ids ...uint64) *WorkflowApplicationUpdate {
+	_u.mutation.RemoveEdgeIDs(ids...)
+	return _u
+}
+
+// RemoveEdges removes "edges" edges to WorkflowEdge entities.
+func (_u *WorkflowApplicationUpdate) RemoveEdges(v ...*WorkflowEdge) *WorkflowApplicationUpdate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEdgeIDs(ids...)
 }
 
 // ClearExecutions clears all "executions" edges to the WorkflowExecution entity.
@@ -450,6 +493,9 @@ func (_u *WorkflowApplicationUpdate) sqlSave(ctx context.Context) (_node int, er
 	if value, ok := _u.mutation.AddedStartNodeID(); ok {
 		_spec.AddField(workflowapplication.FieldStartNodeID, field.TypeUint64, value)
 	}
+	if _u.mutation.StartNodeIDCleared() {
+		_spec.ClearField(workflowapplication.FieldStartNodeID, field.TypeUint64)
+	}
 	if value, ok := _u.mutation.ClientSecret(); ok {
 		_spec.SetField(workflowapplication.FieldClientSecret, field.TypeString, value)
 	}
@@ -506,6 +552,51 @@ func (_u *WorkflowApplicationUpdate) sqlSave(ctx context.Context) (_node int, er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(workflownode.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.EdgesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowapplication.EdgesTable,
+			Columns: []string{workflowapplication.EdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowedge.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEdgesIDs(); len(nodes) > 0 && !_u.mutation.EdgesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowapplication.EdgesTable,
+			Columns: []string{workflowapplication.EdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowedge.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EdgesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowapplication.EdgesTable,
+			Columns: []string{workflowapplication.EdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowedge.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
@@ -740,6 +831,12 @@ func (_u *WorkflowApplicationUpdateOne) AddStartNodeID(v int64) *WorkflowApplica
 	return _u
 }
 
+// ClearStartNodeID clears the value of the "start_node_id" field.
+func (_u *WorkflowApplicationUpdateOne) ClearStartNodeID() *WorkflowApplicationUpdateOne {
+	_u.mutation.ClearStartNodeID()
+	return _u
+}
+
 // SetClientSecret sets the "client_secret" field.
 func (_u *WorkflowApplicationUpdateOne) SetClientSecret(v string) *WorkflowApplicationUpdateOne {
 	_u.mutation.SetClientSecret(v)
@@ -816,6 +913,21 @@ func (_u *WorkflowApplicationUpdateOne) AddNodes(v ...*WorkflowNode) *WorkflowAp
 	return _u.AddNodeIDs(ids...)
 }
 
+// AddEdgeIDs adds the "edges" edge to the WorkflowEdge entity by IDs.
+func (_u *WorkflowApplicationUpdateOne) AddEdgeIDs(ids ...uint64) *WorkflowApplicationUpdateOne {
+	_u.mutation.AddEdgeIDs(ids...)
+	return _u
+}
+
+// AddEdges adds the "edges" edges to the WorkflowEdge entity.
+func (_u *WorkflowApplicationUpdateOne) AddEdges(v ...*WorkflowEdge) *WorkflowApplicationUpdateOne {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEdgeIDs(ids...)
+}
+
 // AddExecutionIDs adds the "executions" edge to the WorkflowExecution entity by IDs.
 func (_u *WorkflowApplicationUpdateOne) AddExecutionIDs(ids ...uint64) *WorkflowApplicationUpdateOne {
 	_u.mutation.AddExecutionIDs(ids...)
@@ -855,6 +967,27 @@ func (_u *WorkflowApplicationUpdateOne) RemoveNodes(v ...*WorkflowNode) *Workflo
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveNodeIDs(ids...)
+}
+
+// ClearEdges clears all "edges" edges to the WorkflowEdge entity.
+func (_u *WorkflowApplicationUpdateOne) ClearEdges() *WorkflowApplicationUpdateOne {
+	_u.mutation.ClearEdges()
+	return _u
+}
+
+// RemoveEdgeIDs removes the "edges" edge to WorkflowEdge entities by IDs.
+func (_u *WorkflowApplicationUpdateOne) RemoveEdgeIDs(ids ...uint64) *WorkflowApplicationUpdateOne {
+	_u.mutation.RemoveEdgeIDs(ids...)
+	return _u
+}
+
+// RemoveEdges removes "edges" edges to WorkflowEdge entities.
+func (_u *WorkflowApplicationUpdateOne) RemoveEdges(v ...*WorkflowEdge) *WorkflowApplicationUpdateOne {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEdgeIDs(ids...)
 }
 
 // ClearExecutions clears all "executions" edges to the WorkflowExecution entity.
@@ -1028,6 +1161,9 @@ func (_u *WorkflowApplicationUpdateOne) sqlSave(ctx context.Context) (_node *Wor
 	if value, ok := _u.mutation.AddedStartNodeID(); ok {
 		_spec.AddField(workflowapplication.FieldStartNodeID, field.TypeUint64, value)
 	}
+	if _u.mutation.StartNodeIDCleared() {
+		_spec.ClearField(workflowapplication.FieldStartNodeID, field.TypeUint64)
+	}
 	if value, ok := _u.mutation.ClientSecret(); ok {
 		_spec.SetField(workflowapplication.FieldClientSecret, field.TypeString, value)
 	}
@@ -1084,6 +1220,51 @@ func (_u *WorkflowApplicationUpdateOne) sqlSave(ctx context.Context) (_node *Wor
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(workflownode.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.EdgesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowapplication.EdgesTable,
+			Columns: []string{workflowapplication.EdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowedge.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEdgesIDs(); len(nodes) > 0 && !_u.mutation.EdgesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowapplication.EdgesTable,
+			Columns: []string{workflowapplication.EdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowedge.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EdgesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   workflowapplication.EdgesTable,
+			Columns: []string{workflowapplication.EdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(workflowedge.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

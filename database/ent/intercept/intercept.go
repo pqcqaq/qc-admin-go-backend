@@ -36,6 +36,7 @@ import (
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
 	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowedge"
 	"go-backend/database/ent/workflowexecution"
 	"go-backend/database/ent/workflowexecutionlog"
 	"go-backend/database/ent/workflownode"
@@ -857,6 +858,33 @@ func (f TraverseWorkflowApplication) Traverse(ctx context.Context, q ent.Query) 
 	return fmt.Errorf("unexpected query type %T. expect *ent.WorkflowApplicationQuery", q)
 }
 
+// The WorkflowEdgeFunc type is an adapter to allow the use of ordinary function as a Querier.
+type WorkflowEdgeFunc func(context.Context, *ent.WorkflowEdgeQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f WorkflowEdgeFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.WorkflowEdgeQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.WorkflowEdgeQuery", q)
+}
+
+// The TraverseWorkflowEdge type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseWorkflowEdge func(context.Context, *ent.WorkflowEdgeQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseWorkflowEdge) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseWorkflowEdge) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkflowEdgeQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.WorkflowEdgeQuery", q)
+}
+
 // The WorkflowExecutionFunc type is an adapter to allow the use of ordinary function as a Querier.
 type WorkflowExecutionFunc func(context.Context, *ent.WorkflowExecutionQuery) (ent.Value, error)
 
@@ -1051,6 +1079,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.VerifyCodeQuery, predicate.VerifyCode, verifycode.OrderOption]{typ: ent.TypeVerifyCode, tq: q}, nil
 	case *ent.WorkflowApplicationQuery:
 		return &query[*ent.WorkflowApplicationQuery, predicate.WorkflowApplication, workflowapplication.OrderOption]{typ: ent.TypeWorkflowApplication, tq: q}, nil
+	case *ent.WorkflowEdgeQuery:
+		return &query[*ent.WorkflowEdgeQuery, predicate.WorkflowEdge, workflowedge.OrderOption]{typ: ent.TypeWorkflowEdge, tq: q}, nil
 	case *ent.WorkflowExecutionQuery:
 		return &query[*ent.WorkflowExecutionQuery, predicate.WorkflowExecution, workflowexecution.OrderOption]{typ: ent.TypeWorkflowExecution, tq: q}, nil
 	case *ent.WorkflowExecutionLogQuery:

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"go-backend/database/ent/predicate"
 	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowedge"
 	"go-backend/database/ent/workflowexecution"
 	"go-backend/database/ent/workflownode"
 	"math"
@@ -27,9 +28,11 @@ type WorkflowApplicationQuery struct {
 	inters              []Interceptor
 	predicates          []predicate.WorkflowApplication
 	withNodes           *WorkflowNodeQuery
+	withEdges           *WorkflowEdgeQuery
 	withExecutions      *WorkflowExecutionQuery
 	modifiers           []func(*sql.Selector)
 	withNamedNodes      map[string]*WorkflowNodeQuery
+	withNamedEdges      map[string]*WorkflowEdgeQuery
 	withNamedExecutions map[string]*WorkflowExecutionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -82,6 +85,28 @@ func (_q *WorkflowApplicationQuery) QueryNodes() *WorkflowNodeQuery {
 			sqlgraph.From(workflowapplication.Table, workflowapplication.FieldID, selector),
 			sqlgraph.To(workflownode.Table, workflownode.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, workflowapplication.NodesTable, workflowapplication.NodesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryEdges chains the current query on the "edges" edge.
+func (_q *WorkflowApplicationQuery) QueryEdges() *WorkflowEdgeQuery {
+	query := (&WorkflowEdgeClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowapplication.Table, workflowapplication.FieldID, selector),
+			sqlgraph.To(workflowedge.Table, workflowedge.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflowapplication.EdgesTable, workflowapplication.EdgesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -304,6 +329,7 @@ func (_q *WorkflowApplicationQuery) Clone() *WorkflowApplicationQuery {
 		inters:         append([]Interceptor{}, _q.inters...),
 		predicates:     append([]predicate.WorkflowApplication{}, _q.predicates...),
 		withNodes:      _q.withNodes.Clone(),
+		withEdges:      _q.withEdges.Clone(),
 		withExecutions: _q.withExecutions.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
@@ -319,6 +345,17 @@ func (_q *WorkflowApplicationQuery) WithNodes(opts ...func(*WorkflowNodeQuery)) 
 		opt(query)
 	}
 	_q.withNodes = query
+	return _q
+}
+
+// WithEdges tells the query-builder to eager-load the nodes that are connected to
+// the "edges" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *WorkflowApplicationQuery) WithEdges(opts ...func(*WorkflowEdgeQuery)) *WorkflowApplicationQuery {
+	query := (&WorkflowEdgeClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withEdges = query
 	return _q
 }
 
@@ -411,8 +448,9 @@ func (_q *WorkflowApplicationQuery) sqlAll(ctx context.Context, hooks ...queryHo
 	var (
 		nodes       = []*WorkflowApplication{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withNodes != nil,
+			_q.withEdges != nil,
 			_q.withExecutions != nil,
 		}
 	)
@@ -444,6 +482,13 @@ func (_q *WorkflowApplicationQuery) sqlAll(ctx context.Context, hooks ...queryHo
 			return nil, err
 		}
 	}
+	if query := _q.withEdges; query != nil {
+		if err := _q.loadEdges(ctx, query, nodes,
+			func(n *WorkflowApplication) { n.Edges.Edges = []*WorkflowEdge{} },
+			func(n *WorkflowApplication, e *WorkflowEdge) { n.Edges.Edges = append(n.Edges.Edges, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := _q.withExecutions; query != nil {
 		if err := _q.loadExecutions(ctx, query, nodes,
 			func(n *WorkflowApplication) { n.Edges.Executions = []*WorkflowExecution{} },
@@ -455,6 +500,13 @@ func (_q *WorkflowApplicationQuery) sqlAll(ctx context.Context, hooks ...queryHo
 		if err := _q.loadNodes(ctx, query, nodes,
 			func(n *WorkflowApplication) { n.appendNamedNodes(name) },
 			func(n *WorkflowApplication, e *WorkflowNode) { n.appendNamedNodes(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range _q.withNamedEdges {
+		if err := _q.loadEdges(ctx, query, nodes,
+			func(n *WorkflowApplication) { n.appendNamedEdges(name) },
+			func(n *WorkflowApplication, e *WorkflowEdge) { n.appendNamedEdges(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -483,6 +535,36 @@ func (_q *WorkflowApplicationQuery) loadNodes(ctx context.Context, query *Workfl
 	}
 	query.Where(predicate.WorkflowNode(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(workflowapplication.NodesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ApplicationID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "application_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *WorkflowApplicationQuery) loadEdges(ctx context.Context, query *WorkflowEdgeQuery, nodes []*WorkflowApplication, init func(*WorkflowApplication), assign func(*WorkflowApplication, *WorkflowEdge)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*WorkflowApplication)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(workflowedge.FieldApplicationID)
+	}
+	query.Where(predicate.WorkflowEdge(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(workflowapplication.EdgesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -653,6 +735,20 @@ func (_q *WorkflowApplicationQuery) WithNamedNodes(name string, opts ...func(*Wo
 		_q.withNamedNodes = make(map[string]*WorkflowNodeQuery)
 	}
 	_q.withNamedNodes[name] = query
+	return _q
+}
+
+// WithNamedEdges tells the query-builder to eager-load the nodes that are connected to the "edges"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (_q *WorkflowApplicationQuery) WithNamedEdges(name string, opts ...func(*WorkflowEdgeQuery)) *WorkflowApplicationQuery {
+	query := (&WorkflowEdgeClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if _q.withNamedEdges == nil {
+		_q.withNamedEdges = make(map[string]*WorkflowEdgeQuery)
+	}
+	_q.withNamedEdges[name] = query
 	return _q
 }
 

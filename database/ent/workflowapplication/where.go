@@ -570,6 +570,16 @@ func StartNodeIDLTE(v uint64) predicate.WorkflowApplication {
 	return predicate.WorkflowApplication(sql.FieldLTE(FieldStartNodeID, v))
 }
 
+// StartNodeIDIsNil applies the IsNil predicate on the "start_node_id" field.
+func StartNodeIDIsNil() predicate.WorkflowApplication {
+	return predicate.WorkflowApplication(sql.FieldIsNull(FieldStartNodeID))
+}
+
+// StartNodeIDNotNil applies the NotNil predicate on the "start_node_id" field.
+func StartNodeIDNotNil() predicate.WorkflowApplication {
+	return predicate.WorkflowApplication(sql.FieldNotNull(FieldStartNodeID))
+}
+
 // ClientSecretEQ applies the EQ predicate on the "client_secret" field.
 func ClientSecretEQ(v string) predicate.WorkflowApplication {
 	return predicate.WorkflowApplication(sql.FieldEQ(FieldClientSecret, v))
@@ -720,6 +730,29 @@ func HasNodes() predicate.WorkflowApplication {
 func HasNodesWith(preds ...predicate.WorkflowNode) predicate.WorkflowApplication {
 	return predicate.WorkflowApplication(func(s *sql.Selector) {
 		step := newNodesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasEdges applies the HasEdge predicate on the "edges" edge.
+func HasEdges() predicate.WorkflowApplication {
+	return predicate.WorkflowApplication(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, EdgesTable, EdgesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEdgesWith applies the HasEdge predicate on the "edges" edge with a given conditions (other predicates).
+func HasEdgesWith(preds ...predicate.WorkflowEdge) predicate.WorkflowApplication {
+	return predicate.WorkflowApplication(func(s *sql.Selector) {
+		step := newEdgesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -34,7 +34,7 @@ func (WorkflowApplication) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").NotEmpty().Comment("工作流应用名称"),
 		field.String("description").Optional().Comment("工作流应用描述"),
-		field.Uint64("start_node_id").Comment("起始节点ID"),
+		field.Uint64("start_node_id").Optional().Comment("起始节点ID（旧架构，保留兼容）"),
 		field.String("client_secret").Comment("客户端密钥"),
 		field.JSON("variables", map[string]interface{}{}).Optional().Comment("全局变量定义"),
 		field.Uint("version").Default(1).Comment("版本号"),
@@ -52,6 +52,7 @@ func (WorkflowApplication) Indexes() []ent.Index {
 func (WorkflowApplication) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("nodes", WorkflowNode.Type),
+		edge.To("edges", WorkflowEdge.Type),
 		edge.To("executions", WorkflowExecution.Type),
 	}
 }
@@ -155,6 +156,73 @@ func (WorkflowNode) Edges() []ent.Edge {
 			Field("application_id").
 			Required(),
 		edge.To("executions", WorkflowNodeExecution.Type),
+		edge.To("outgoing_edges", WorkflowEdge.Type),
+		edge.To("incoming_edges", WorkflowEdge.Type),
+	}
+}
+
+// WorkflowEdge 工作流边（连接）
+type WorkflowEdge struct {
+	ent.Schema
+}
+
+func (WorkflowEdge) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Annotation{Table: "workflow_edges"},
+	}
+}
+
+func (WorkflowEdge) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		mixins.BaseMixin{},
+		mixins.SoftDeleteMixin{},
+	}
+}
+
+func (WorkflowEdge) Fields() []ent.Field {
+	return []ent.Field{
+		field.String("edge_key").NotEmpty().Comment("边唯一标识符"),
+		field.Uint64("application_id").Comment("所属工作流应用ID"),
+		field.Uint64("source_node_id").Comment("源节点ID"),
+		field.Uint64("target_node_id").Comment("目标节点ID"),
+		field.String("source_handle").Optional().Comment("源节点连接点ID"),
+		field.String("target_handle").Optional().Comment("目标节点连接点ID"),
+		field.Enum("type").Values(
+			"default",  // 默认连接
+			"branch",   // 分支连接
+			"parallel", // 并行连接
+		).Default("default").Comment("边类型"),
+		field.String("label").Optional().Comment("边标签"),
+		field.String("branch_name").Optional().Comment("分支名称（用于 condition_checker）"),
+		field.Bool("animated").Default(false).Comment("是否动画"),
+		field.JSON("style", map[string]interface{}{}).Optional().Comment("边样式"),
+		field.JSON("data", map[string]interface{}{}).Optional().Comment("边数据"),
+	}
+}
+
+func (WorkflowEdge) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("application_id", "edge_key").Unique(),
+		index.Fields("source_node_id"),
+		index.Fields("target_node_id"),
+		index.Fields("type"),
+	}
+}
+
+func (WorkflowEdge) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("application", WorkflowApplication.Type).
+			Ref("edges").Unique().
+			Field("application_id").
+			Required(),
+		edge.From("source_node", WorkflowNode.Type).
+			Ref("outgoing_edges").Unique().
+			Field("source_node_id").
+			Required(),
+		edge.From("target_node", WorkflowNode.Type).
+			Ref("incoming_edges").Unique().
+			Field("target_node_id").
+			Required(),
 	}
 }
 
@@ -313,10 +381,9 @@ func (WorkflowVersion) Mixin() []ent.Mixin {
 func (WorkflowVersion) Fields() []ent.Field {
 	return []ent.Field{
 		field.Uint64("application_id").Comment("工作流应用ID"),
-		field.Uint("version").Comment("版本号"),
+		field.Uint("version").Comment("版本号"), // 在保存时自动增加
 		field.JSON("snapshot", map[string]interface{}{}).Comment("版本快照"),
-		field.String("change_log").Optional().Comment("变更日志"),
-		field.String("created_by").Optional().Comment("创建者"),
+		field.String("change_log").Optional().Comment("变更日志"), // autosave或者手动保存时填写
 	}
 }
 

@@ -35,7 +35,7 @@ type WorkflowApplication struct {
 	Name string `json:"name,omitempty"`
 	// 工作流应用描述
 	Description string `json:"description,omitempty"`
-	// 起始节点ID
+	// 起始节点ID（旧架构，保留兼容）
 	StartNodeID uint64 `json:"start_node_id,omitempty"`
 	// 客户端密钥
 	ClientSecret string `json:"client_secret,omitempty"`
@@ -55,12 +55,15 @@ type WorkflowApplication struct {
 type WorkflowApplicationEdges struct {
 	// Nodes holds the value of the nodes edge.
 	Nodes []*WorkflowNode `json:"nodes,omitempty"`
+	// Edges holds the value of the edges edge.
+	Edges []*WorkflowEdge `json:"edges,omitempty"`
 	// Executions holds the value of the executions edge.
 	Executions []*WorkflowExecution `json:"executions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes     [2]bool
+	loadedTypes     [3]bool
 	namedNodes      map[string][]*WorkflowNode
+	namedEdges      map[string][]*WorkflowEdge
 	namedExecutions map[string][]*WorkflowExecution
 }
 
@@ -73,10 +76,19 @@ func (e WorkflowApplicationEdges) NodesOrErr() ([]*WorkflowNode, error) {
 	return nil, &NotLoadedError{edge: "nodes"}
 }
 
+// EdgesOrErr returns the Edges value or an error if the edge
+// was not loaded in eager-loading.
+func (e WorkflowApplicationEdges) EdgesOrErr() ([]*WorkflowEdge, error) {
+	if e.loadedTypes[1] {
+		return e.Edges, nil
+	}
+	return nil, &NotLoadedError{edge: "edges"}
+}
+
 // ExecutionsOrErr returns the Executions value or an error if the edge
 // was not loaded in eager-loading.
 func (e WorkflowApplicationEdges) ExecutionsOrErr() ([]*WorkflowExecution, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Executions, nil
 	}
 	return nil, &NotLoadedError{edge: "executions"}
@@ -214,6 +226,11 @@ func (_m *WorkflowApplication) QueryNodes() *WorkflowNodeQuery {
 	return NewWorkflowApplicationClient(_m.config).QueryNodes(_m)
 }
 
+// QueryEdges queries the "edges" edge of the WorkflowApplication entity.
+func (_m *WorkflowApplication) QueryEdges() *WorkflowEdgeQuery {
+	return NewWorkflowApplicationClient(_m.config).QueryEdges(_m)
+}
+
 // QueryExecutions queries the "executions" edge of the WorkflowApplication entity.
 func (_m *WorkflowApplication) QueryExecutions() *WorkflowExecutionQuery {
 	return NewWorkflowApplicationClient(_m.config).QueryExecutions(_m)
@@ -305,6 +322,30 @@ func (_m *WorkflowApplication) appendNamedNodes(name string, edges ...*WorkflowN
 		_m.Edges.namedNodes[name] = []*WorkflowNode{}
 	} else {
 		_m.Edges.namedNodes[name] = append(_m.Edges.namedNodes[name], edges...)
+	}
+}
+
+// NamedEdges returns the Edges named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (_m *WorkflowApplication) NamedEdges(name string) ([]*WorkflowEdge, error) {
+	if _m.Edges.namedEdges == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := _m.Edges.namedEdges[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (_m *WorkflowApplication) appendNamedEdges(name string, edges ...*WorkflowEdge) {
+	if _m.Edges.namedEdges == nil {
+		_m.Edges.namedEdges = make(map[string][]*WorkflowEdge)
+	}
+	if len(edges) == 0 {
+		_m.Edges.namedEdges[name] = []*WorkflowEdge{}
+	} else {
+		_m.Edges.namedEdges[name] = append(_m.Edges.namedEdges[name], edges...)
 	}
 }
 

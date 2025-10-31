@@ -39,6 +39,7 @@ import (
 	"go-backend/database/ent/userrole"
 	"go-backend/database/ent/verifycode"
 	"go-backend/database/ent/workflowapplication"
+	"go-backend/database/ent/workflowedge"
 	"go-backend/database/ent/workflowexecution"
 	"go-backend/database/ent/workflowexecutionlog"
 	"go-backend/database/ent/workflownode"
@@ -114,6 +115,8 @@ type Client struct {
 	VerifyCode *VerifyCodeClient
 	// WorkflowApplication is the client for interacting with the WorkflowApplication builders.
 	WorkflowApplication *WorkflowApplicationClient
+	// WorkflowEdge is the client for interacting with the WorkflowEdge builders.
+	WorkflowEdge *WorkflowEdgeClient
 	// WorkflowExecution is the client for interacting with the WorkflowExecution builders.
 	WorkflowExecution *WorkflowExecutionClient
 	// WorkflowExecutionLog is the client for interacting with the WorkflowExecutionLog builders.
@@ -163,6 +166,7 @@ func (c *Client) init() {
 	c.UserRole = NewUserRoleClient(c.config)
 	c.VerifyCode = NewVerifyCodeClient(c.config)
 	c.WorkflowApplication = NewWorkflowApplicationClient(c.config)
+	c.WorkflowEdge = NewWorkflowEdgeClient(c.config)
 	c.WorkflowExecution = NewWorkflowExecutionClient(c.config)
 	c.WorkflowExecutionLog = NewWorkflowExecutionLogClient(c.config)
 	c.WorkflowNode = NewWorkflowNodeClient(c.config)
@@ -288,6 +292,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		UserRole:               NewUserRoleClient(cfg),
 		VerifyCode:             NewVerifyCodeClient(cfg),
 		WorkflowApplication:    NewWorkflowApplicationClient(cfg),
+		WorkflowEdge:           NewWorkflowEdgeClient(cfg),
 		WorkflowExecution:      NewWorkflowExecutionClient(cfg),
 		WorkflowExecutionLog:   NewWorkflowExecutionLogClient(cfg),
 		WorkflowNode:           NewWorkflowNodeClient(cfg),
@@ -340,6 +345,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		UserRole:               NewUserRoleClient(cfg),
 		VerifyCode:             NewVerifyCodeClient(cfg),
 		WorkflowApplication:    NewWorkflowApplicationClient(cfg),
+		WorkflowEdge:           NewWorkflowEdgeClient(cfg),
 		WorkflowExecution:      NewWorkflowExecutionClient(cfg),
 		WorkflowExecutionLog:   NewWorkflowExecutionLogClient(cfg),
 		WorkflowNode:           NewWorkflowNodeClient(cfg),
@@ -379,9 +385,9 @@ func (c *Client) Use(hooks ...Hook) {
 		c.OauthProvider, c.OauthState, c.OauthToken, c.OauthUser,
 		c.OauthUserAuthorization, c.Permission, c.Role, c.RolePermission, c.Scan,
 		c.Scope, c.Station, c.Subway, c.SubwayStation, c.SystemMonitor, c.User,
-		c.UserRole, c.VerifyCode, c.WorkflowApplication, c.WorkflowExecution,
-		c.WorkflowExecutionLog, c.WorkflowNode, c.WorkflowNodeExecution,
-		c.WorkflowVersion,
+		c.UserRole, c.VerifyCode, c.WorkflowApplication, c.WorkflowEdge,
+		c.WorkflowExecution, c.WorkflowExecutionLog, c.WorkflowNode,
+		c.WorkflowNodeExecution, c.WorkflowVersion,
 	} {
 		n.Use(hooks...)
 	}
@@ -396,9 +402,9 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.OauthProvider, c.OauthState, c.OauthToken, c.OauthUser,
 		c.OauthUserAuthorization, c.Permission, c.Role, c.RolePermission, c.Scan,
 		c.Scope, c.Station, c.Subway, c.SubwayStation, c.SystemMonitor, c.User,
-		c.UserRole, c.VerifyCode, c.WorkflowApplication, c.WorkflowExecution,
-		c.WorkflowExecutionLog, c.WorkflowNode, c.WorkflowNodeExecution,
-		c.WorkflowVersion,
+		c.UserRole, c.VerifyCode, c.WorkflowApplication, c.WorkflowEdge,
+		c.WorkflowExecution, c.WorkflowExecutionLog, c.WorkflowNode,
+		c.WorkflowNodeExecution, c.WorkflowVersion,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -463,6 +469,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.VerifyCode.mutate(ctx, m)
 	case *WorkflowApplicationMutation:
 		return c.WorkflowApplication.mutate(ctx, m)
+	case *WorkflowEdgeMutation:
+		return c.WorkflowEdge.mutate(ctx, m)
 	case *WorkflowExecutionMutation:
 		return c.WorkflowExecution.mutate(ctx, m)
 	case *WorkflowExecutionLogMutation:
@@ -5189,6 +5197,22 @@ func (c *WorkflowApplicationClient) QueryNodes(_m *WorkflowApplication) *Workflo
 	return query
 }
 
+// QueryEdges queries the edges edge of a WorkflowApplication.
+func (c *WorkflowApplicationClient) QueryEdges(_m *WorkflowApplication) *WorkflowEdgeQuery {
+	query := (&WorkflowEdgeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowapplication.Table, workflowapplication.FieldID, id),
+			sqlgraph.To(workflowedge.Table, workflowedge.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflowapplication.EdgesTable, workflowapplication.EdgesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryExecutions queries the executions edge of a WorkflowApplication.
 func (c *WorkflowApplicationClient) QueryExecutions(_m *WorkflowApplication) *WorkflowExecutionQuery {
 	query := (&WorkflowExecutionClient{config: c.config}).Query()
@@ -5229,6 +5253,189 @@ func (c *WorkflowApplicationClient) mutate(ctx context.Context, m *WorkflowAppli
 		return (&WorkflowApplicationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown WorkflowApplication mutation op: %q", m.Op())
+	}
+}
+
+// WorkflowEdgeClient is a client for the WorkflowEdge schema.
+type WorkflowEdgeClient struct {
+	config
+}
+
+// NewWorkflowEdgeClient returns a client for the WorkflowEdge from the given config.
+func NewWorkflowEdgeClient(c config) *WorkflowEdgeClient {
+	return &WorkflowEdgeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `workflowedge.Hooks(f(g(h())))`.
+func (c *WorkflowEdgeClient) Use(hooks ...Hook) {
+	c.hooks.WorkflowEdge = append(c.hooks.WorkflowEdge, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `workflowedge.Intercept(f(g(h())))`.
+func (c *WorkflowEdgeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WorkflowEdge = append(c.inters.WorkflowEdge, interceptors...)
+}
+
+// Create returns a builder for creating a WorkflowEdge entity.
+func (c *WorkflowEdgeClient) Create() *WorkflowEdgeCreate {
+	mutation := newWorkflowEdgeMutation(c.config, OpCreate)
+	return &WorkflowEdgeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WorkflowEdge entities.
+func (c *WorkflowEdgeClient) CreateBulk(builders ...*WorkflowEdgeCreate) *WorkflowEdgeCreateBulk {
+	return &WorkflowEdgeCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WorkflowEdgeClient) MapCreateBulk(slice any, setFunc func(*WorkflowEdgeCreate, int)) *WorkflowEdgeCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WorkflowEdgeCreateBulk{err: fmt.Errorf("calling to WorkflowEdgeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WorkflowEdgeCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WorkflowEdgeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WorkflowEdge.
+func (c *WorkflowEdgeClient) Update() *WorkflowEdgeUpdate {
+	mutation := newWorkflowEdgeMutation(c.config, OpUpdate)
+	return &WorkflowEdgeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WorkflowEdgeClient) UpdateOne(_m *WorkflowEdge) *WorkflowEdgeUpdateOne {
+	mutation := newWorkflowEdgeMutation(c.config, OpUpdateOne, withWorkflowEdge(_m))
+	return &WorkflowEdgeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WorkflowEdgeClient) UpdateOneID(id uint64) *WorkflowEdgeUpdateOne {
+	mutation := newWorkflowEdgeMutation(c.config, OpUpdateOne, withWorkflowEdgeID(id))
+	return &WorkflowEdgeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WorkflowEdge.
+func (c *WorkflowEdgeClient) Delete() *WorkflowEdgeDelete {
+	mutation := newWorkflowEdgeMutation(c.config, OpDelete)
+	return &WorkflowEdgeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WorkflowEdgeClient) DeleteOne(_m *WorkflowEdge) *WorkflowEdgeDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WorkflowEdgeClient) DeleteOneID(id uint64) *WorkflowEdgeDeleteOne {
+	builder := c.Delete().Where(workflowedge.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WorkflowEdgeDeleteOne{builder}
+}
+
+// Query returns a query builder for WorkflowEdge.
+func (c *WorkflowEdgeClient) Query() *WorkflowEdgeQuery {
+	return &WorkflowEdgeQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWorkflowEdge},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WorkflowEdge entity by its id.
+func (c *WorkflowEdgeClient) Get(ctx context.Context, id uint64) (*WorkflowEdge, error) {
+	return c.Query().Where(workflowedge.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WorkflowEdgeClient) GetX(ctx context.Context, id uint64) *WorkflowEdge {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryApplication queries the application edge of a WorkflowEdge.
+func (c *WorkflowEdgeClient) QueryApplication(_m *WorkflowEdge) *WorkflowApplicationQuery {
+	query := (&WorkflowApplicationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowedge.Table, workflowedge.FieldID, id),
+			sqlgraph.To(workflowapplication.Table, workflowapplication.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, workflowedge.ApplicationTable, workflowedge.ApplicationColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySourceNode queries the source_node edge of a WorkflowEdge.
+func (c *WorkflowEdgeClient) QuerySourceNode(_m *WorkflowEdge) *WorkflowNodeQuery {
+	query := (&WorkflowNodeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowedge.Table, workflowedge.FieldID, id),
+			sqlgraph.To(workflownode.Table, workflownode.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, workflowedge.SourceNodeTable, workflowedge.SourceNodeColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetNode queries the target_node edge of a WorkflowEdge.
+func (c *WorkflowEdgeClient) QueryTargetNode(_m *WorkflowEdge) *WorkflowNodeQuery {
+	query := (&WorkflowNodeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflowedge.Table, workflowedge.FieldID, id),
+			sqlgraph.To(workflownode.Table, workflownode.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, workflowedge.TargetNodeTable, workflowedge.TargetNodeColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *WorkflowEdgeClient) Hooks() []Hook {
+	hooks := c.hooks.WorkflowEdge
+	return append(hooks[:len(hooks):len(hooks)], workflowedge.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *WorkflowEdgeClient) Interceptors() []Interceptor {
+	inters := c.inters.WorkflowEdge
+	return append(inters[:len(inters):len(inters)], workflowedge.Interceptors[:]...)
+}
+
+func (c *WorkflowEdgeClient) mutate(ctx context.Context, m *WorkflowEdgeMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WorkflowEdgeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WorkflowEdgeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WorkflowEdgeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WorkflowEdgeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown WorkflowEdge mutation op: %q", m.Op())
 	}
 }
 
@@ -5672,6 +5879,38 @@ func (c *WorkflowNodeClient) QueryExecutions(_m *WorkflowNode) *WorkflowNodeExec
 	return query
 }
 
+// QueryOutgoingEdges queries the outgoing_edges edge of a WorkflowNode.
+func (c *WorkflowNodeClient) QueryOutgoingEdges(_m *WorkflowNode) *WorkflowEdgeQuery {
+	query := (&WorkflowEdgeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflownode.Table, workflownode.FieldID, id),
+			sqlgraph.To(workflowedge.Table, workflowedge.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflownode.OutgoingEdgesTable, workflownode.OutgoingEdgesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncomingEdges queries the incoming_edges edge of a WorkflowNode.
+func (c *WorkflowNodeClient) QueryIncomingEdges(_m *WorkflowNode) *WorkflowEdgeQuery {
+	query := (&WorkflowEdgeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(workflownode.Table, workflownode.FieldID, id),
+			sqlgraph.To(workflowedge.Table, workflowedge.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, workflownode.IncomingEdgesTable, workflownode.IncomingEdgesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *WorkflowNodeClient) Hooks() []Hook {
 	hooks := c.hooks.WorkflowNode
@@ -6006,8 +6245,8 @@ type (
 		LoginRecord, OauthApplication, OauthAuthorizationCode, OauthProvider,
 		OauthState, OauthToken, OauthUser, OauthUserAuthorization, Permission, Role,
 		RolePermission, Scan, Scope, Station, Subway, SubwayStation, SystemMonitor,
-		User, UserRole, VerifyCode, WorkflowApplication, WorkflowExecution,
-		WorkflowExecutionLog, WorkflowNode, WorkflowNodeExecution,
+		User, UserRole, VerifyCode, WorkflowApplication, WorkflowEdge,
+		WorkflowExecution, WorkflowExecutionLog, WorkflowNode, WorkflowNodeExecution,
 		WorkflowVersion []ent.Hook
 	}
 	inters struct {
@@ -6015,8 +6254,8 @@ type (
 		LoginRecord, OauthApplication, OauthAuthorizationCode, OauthProvider,
 		OauthState, OauthToken, OauthUser, OauthUserAuthorization, Permission, Role,
 		RolePermission, Scan, Scope, Station, Subway, SubwayStation, SystemMonitor,
-		User, UserRole, VerifyCode, WorkflowApplication, WorkflowExecution,
-		WorkflowExecutionLog, WorkflowNode, WorkflowNodeExecution,
+		User, UserRole, VerifyCode, WorkflowApplication, WorkflowEdge,
+		WorkflowExecution, WorkflowExecutionLog, WorkflowNode, WorkflowNodeExecution,
 		WorkflowVersion []ent.Interceptor
 	}
 )

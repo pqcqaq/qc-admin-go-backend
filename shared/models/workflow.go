@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 // ============ WorkflowApplication Models ============
 
@@ -11,12 +13,13 @@ type WorkflowApplicationResponse struct {
 	UpdateTime   string                  `json:"updateTime"`
 	Name         string                  `json:"name"`
 	Description  string                  `json:"description,omitempty"`
-	StartNodeID  string                  `json:"startNodeId"`
+	StartNodeID  string                  `json:"startNodeId,omitempty"` // 旧架构，保留兼容
 	ClientSecret string                  `json:"clientSecret"`
 	Variables    map[string]interface{}  `json:"variables,omitempty"`
 	Version      uint                    `json:"version"`
-	Status       string                  `json:"status"` // draft, published, archived
-	Nodes        []*WorkflowNodeResponse `json:"nodes,omitempty"`
+	Status       string                  `json:"status"`              // draft, published, archived
+	GraphData    string                  `json:"graphData,omitempty"` // 新架构：完整的工作流图JSON
+	Nodes        []*WorkflowNodeResponse `json:"nodes,omitempty"`     // 旧架构，保留兼容
 }
 
 // CreateWorkflowApplicationRequest 创建工作流应用请求结构
@@ -30,12 +33,13 @@ type CreateWorkflowApplicationRequest struct {
 
 // UpdateWorkflowApplicationRequest 更新工作流应用请求结构
 type UpdateWorkflowApplicationRequest struct {
-	Name        string                 `json:"name" binding:"required"`
+	Name        string                 `json:"name,omitempty"` // 改为可选
 	Description string                 `json:"description,omitempty"`
-	StartNodeID string                 `json:"startNodeId" binding:"required"`
+	StartNodeID string                 `json:"startNodeId,omitempty"` // 旧架构，改为可选
 	Variables   map[string]interface{} `json:"variables,omitempty"`
 	Version     uint                   `json:"version,omitempty"`
-	Status      string                 `json:"status,omitempty"` // draft, published, archived
+	Status      string                 `json:"status,omitempty"`    // draft, published, archived
+	GraphData   string                 `json:"graphData,omitempty"` // 新架构：完整的工作流图JSON
 }
 
 // PageWorkflowApplicationRequest 分页查询工作流应用请求结构
@@ -51,6 +55,83 @@ type PageWorkflowApplicationRequest struct {
 type PageWorkflowApplicationResponse struct {
 	Data       []*WorkflowApplicationResponse `json:"data"`
 	Pagination Pagination                     `json:"pagination"`
+}
+
+// ============ WorkflowEdge Models ============
+
+// WorkflowEdgeResponse 工作流边响应结构
+type WorkflowEdgeResponse struct {
+	ID            string                 `json:"id"`
+	CreateTime    string                 `json:"createTime"`
+	UpdateTime    string                 `json:"updateTime"`
+	EdgeKey       string                 `json:"edgeKey"`
+	ApplicationID string                 `json:"applicationId"`
+	SourceNodeID  string                 `json:"source"` // 源节点数据库ID
+	TargetNodeID  string                 `json:"target"` // 目标节点数据库ID
+	SourceHandle  string                 `json:"sourceHandle,omitempty"`
+	TargetHandle  string                 `json:"targetHandle,omitempty"`
+	Type          string                 `json:"type"` // default, branch, parallel
+	Label         string                 `json:"label,omitempty"`
+	BranchName    string                 `json:"branchName,omitempty"`
+	Animated      bool                   `json:"animated"`
+	Style         map[string]interface{} `json:"style,omitempty"`
+	Data          map[string]interface{} `json:"data,omitempty"`
+}
+
+// CreateWorkflowEdgeRequest 创建工作流边请求结构
+type CreateWorkflowEdgeRequest struct {
+	EdgeKey       string                 `json:"edgeKey" binding:"required"`
+	ApplicationID string                 `json:"applicationId" binding:"required"`
+	SourceNodeID  string                 `json:"source" binding:"required"` // 源节点数据库ID
+	TargetNodeID  string                 `json:"target" binding:"required"` // 目标节点数据库ID
+	SourceHandle  string                 `json:"sourceHandle,omitempty"`
+	TargetHandle  string                 `json:"targetHandle,omitempty"`
+	Type          string                 `json:"type,omitempty"` // default, branch, parallel
+	Label         string                 `json:"label,omitempty"`
+	BranchName    string                 `json:"branchName,omitempty"`
+	Animated      bool                   `json:"animated,omitempty"`
+	Style         map[string]interface{} `json:"style,omitempty"`
+	Data          map[string]interface{} `json:"data,omitempty"`
+}
+
+// UpdateWorkflowEdgeRequest 更新工作流边请求结构
+type UpdateWorkflowEdgeRequest struct {
+	EdgeKey      string                 `json:"edgeKey,omitempty"`
+	SourceHandle string                 `json:"sourceHandle,omitempty"`
+	TargetHandle string                 `json:"targetHandle,omitempty"`
+	Type         string                 `json:"type,omitempty"`
+	Label        string                 `json:"label,omitempty"`
+	BranchName   string                 `json:"branchName,omitempty"`
+	Animated     *bool                  `json:"animated,omitempty"`
+	Style        map[string]interface{} `json:"style,omitempty"`
+	Data         map[string]interface{} `json:"data,omitempty"`
+}
+
+// PageWorkflowEdgeRequest 分页查询工作流边请求结构
+type PageWorkflowEdgeRequest struct {
+	PaginationRequest
+	ApplicationID string `json:"applicationId,omitempty" form:"applicationId"`
+	SourceNodeID  string `json:"sourceNodeId,omitempty" form:"sourceNodeId"`
+	TargetNodeID  string `json:"targetNodeId,omitempty" form:"targetNodeId"`
+	Type          string `json:"type,omitempty" form:"type"`
+	BeginTime     string `json:"beginTime,omitempty" form:"beginTime"`
+	EndTime       string `json:"endTime,omitempty" form:"endTime"`
+}
+
+// PageWorkflowEdgeResponse 分页查询工作流边响应结构
+type PageWorkflowEdgeResponse struct {
+	Data       []*WorkflowEdgeResponse `json:"data"`
+	Pagination Pagination              `json:"pagination"`
+}
+
+// BatchCreateWorkflowEdgesRequest 批量创建工作流边请求结构
+type BatchCreateWorkflowEdgesRequest struct {
+	Edges []CreateWorkflowEdgeRequest `json:"edges" binding:"required"`
+}
+
+// BatchDeleteWorkflowEdgesRequest 批量删除工作流边请求结构
+type BatchDeleteWorkflowEdgesRequest struct {
+	EdgeIDs []string `json:"edgeIds" binding:"required"`
 }
 
 // ============ WorkflowNode Models ============
@@ -79,6 +160,7 @@ type WorkflowNodeResponse struct {
 	RetryCount        int                    `json:"retryCount"`
 	PositionX         float64                `json:"positionX"`
 	PositionY         float64                `json:"positionY"`
+	Color             string                 `json:"color,omitempty"`
 }
 
 // CreateWorkflowNodeRequest 创建工作流节点请求结构
@@ -102,6 +184,7 @@ type CreateWorkflowNodeRequest struct {
 	RetryCount        *int                   `json:"retryCount,omitempty"`
 	PositionX         *float64               `json:"positionX,omitempty"`
 	PositionY         *float64               `json:"positionY,omitempty"`
+	Color             string                 `json:"color,omitempty"`
 }
 
 // UpdateWorkflowNodeRequest 更新工作流节点请求结构
@@ -124,6 +207,7 @@ type UpdateWorkflowNodeRequest struct {
 	RetryCount        *int                   `json:"retryCount,omitempty"`
 	PositionX         *float64               `json:"positionX,omitempty"`
 	PositionY         *float64               `json:"positionY,omitempty"`
+	Color             string                 `json:"color,omitempty"`
 }
 
 // PageWorkflowNodeRequest 分页查询工作流节点请求结构
@@ -279,25 +363,27 @@ type PageWorkflowNodeExecutionResponse struct {
 
 // ============ WorkflowVersion Models ============
 
+// WorkflowVersionSnapshot 版本快照数据结构
+type WorkflowVersionSnapshot struct {
+	Nodes []*WorkflowNodeResponse `json:"nodes"`
+	Edges []*WorkflowEdgeResponse `json:"edges"`
+}
+
 // WorkflowVersionResponse 工作流版本响应结构
 type WorkflowVersionResponse struct {
-	ID            string                 `json:"id"`
-	CreateTime    string                 `json:"createTime"`
-	UpdateTime    string                 `json:"updateTime"`
-	ApplicationID string                 `json:"applicationId"`
-	Version       uint                   `json:"version"`
-	Snapshot      map[string]interface{} `json:"snapshot"`
-	ChangeLog     string                 `json:"changeLog,omitempty"`
-	CreatedBy     string                 `json:"createdBy,omitempty"`
+	ID            string                  `json:"id"`
+	CreateTime    string                  `json:"createTime"`
+	UpdateTime    string                  `json:"updateTime"`
+	ApplicationID string                  `json:"applicationId"`
+	Version       uint                    `json:"version"`
+	Snapshot      WorkflowVersionSnapshot `json:"snapshot"`
+	ChangeLog     string                  `json:"changeLog,omitempty"`
 }
 
 // CreateWorkflowVersionRequest 创建工作流版本请求结构
 type CreateWorkflowVersionRequest struct {
-	ApplicationID string                 `json:"applicationId" binding:"required"`
-	Version       uint                   `json:"version" binding:"required"`
-	Snapshot      map[string]interface{} `json:"snapshot" binding:"required"`
-	ChangeLog     string                 `json:"changeLog,omitempty"`
-	CreatedBy     string                 `json:"createdBy,omitempty"`
+	ApplicationID string `json:"applicationId" binding:"required"`
+	ChangeLog     string `json:"changeLog,omitempty"` // 可选的变更日志
 }
 
 // PageWorkflowVersionRequest 分页查询工作流版本请求结构
@@ -313,6 +399,20 @@ type PageWorkflowVersionRequest struct {
 type PageWorkflowVersionResponse struct {
 	Data       []*WorkflowVersionResponse `json:"data"`
 	Pagination Pagination                 `json:"pagination"`
+}
+
+// WorkflowVersionResult 工作流版本结果
+type WorkflowVersionResult struct {
+	Success bool                     `json:"success"`
+	Data    *WorkflowVersionResponse `json:"data,omitempty"`
+	Message string                   `json:"message,omitempty"`
+}
+
+// WorkflowVersionListResult 工作流版本列表结果
+type WorkflowVersionListResult struct {
+	Success bool                       `json:"success"`
+	Data    []*WorkflowVersionResponse `json:"data,omitempty"`
+	Message string                     `json:"message,omitempty"`
 }
 
 // ============ WorkflowExecutionLog Models ============
