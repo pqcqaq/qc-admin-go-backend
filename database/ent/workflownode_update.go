@@ -302,6 +302,33 @@ func (_u *WorkflowNodeUpdate) ClearAPIConfig() *WorkflowNodeUpdate {
 	return _u
 }
 
+// SetWorkflowApplicationID sets the "workflow_application_id" field.
+func (_u *WorkflowNodeUpdate) SetWorkflowApplicationID(v uint64) *WorkflowNodeUpdate {
+	_u.mutation.ResetWorkflowApplicationID()
+	_u.mutation.SetWorkflowApplicationID(v)
+	return _u
+}
+
+// SetNillableWorkflowApplicationID sets the "workflow_application_id" field if the given value is not nil.
+func (_u *WorkflowNodeUpdate) SetNillableWorkflowApplicationID(v *uint64) *WorkflowNodeUpdate {
+	if v != nil {
+		_u.SetWorkflowApplicationID(*v)
+	}
+	return _u
+}
+
+// AddWorkflowApplicationID adds value to the "workflow_application_id" field.
+func (_u *WorkflowNodeUpdate) AddWorkflowApplicationID(v int64) *WorkflowNodeUpdate {
+	_u.mutation.AddWorkflowApplicationID(v)
+	return _u
+}
+
+// ClearWorkflowApplicationID clears the value of the "workflow_application_id" field.
+func (_u *WorkflowNodeUpdate) ClearWorkflowApplicationID() *WorkflowNodeUpdate {
+	_u.mutation.ClearWorkflowApplicationID()
+	return _u
+}
+
 // SetAsync sets the "async" field.
 func (_u *WorkflowNodeUpdate) SetAsync(v bool) *WorkflowNodeUpdate {
 	_u.mutation.SetAsync(v)
@@ -702,6 +729,15 @@ func (_u *WorkflowNodeUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if _u.mutation.APIConfigCleared() {
 		_spec.ClearField(workflownode.FieldAPIConfig, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.WorkflowApplicationID(); ok {
+		_spec.SetField(workflownode.FieldWorkflowApplicationID, field.TypeUint64, value)
+	}
+	if value, ok := _u.mutation.AddedWorkflowApplicationID(); ok {
+		_spec.AddField(workflownode.FieldWorkflowApplicationID, field.TypeUint64, value)
+	}
+	if _u.mutation.WorkflowApplicationIDCleared() {
+		_spec.ClearField(workflownode.FieldWorkflowApplicationID, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.Async(); ok {
 		_spec.SetField(workflownode.FieldAsync, field.TypeBool, value)
@@ -1191,6 +1227,33 @@ func (_u *WorkflowNodeUpdateOne) ClearAPIConfig() *WorkflowNodeUpdateOne {
 	return _u
 }
 
+// SetWorkflowApplicationID sets the "workflow_application_id" field.
+func (_u *WorkflowNodeUpdateOne) SetWorkflowApplicationID(v uint64) *WorkflowNodeUpdateOne {
+	_u.mutation.ResetWorkflowApplicationID()
+	_u.mutation.SetWorkflowApplicationID(v)
+	return _u
+}
+
+// SetNillableWorkflowApplicationID sets the "workflow_application_id" field if the given value is not nil.
+func (_u *WorkflowNodeUpdateOne) SetNillableWorkflowApplicationID(v *uint64) *WorkflowNodeUpdateOne {
+	if v != nil {
+		_u.SetWorkflowApplicationID(*v)
+	}
+	return _u
+}
+
+// AddWorkflowApplicationID adds value to the "workflow_application_id" field.
+func (_u *WorkflowNodeUpdateOne) AddWorkflowApplicationID(v int64) *WorkflowNodeUpdateOne {
+	_u.mutation.AddWorkflowApplicationID(v)
+	return _u
+}
+
+// ClearWorkflowApplicationID clears the value of the "workflow_application_id" field.
+func (_u *WorkflowNodeUpdateOne) ClearWorkflowApplicationID() *WorkflowNodeUpdateOne {
+	_u.mutation.ClearWorkflowApplicationID()
+	return _u
+}
+
 // SetAsync sets the "async" field.
 func (_u *WorkflowNodeUpdateOne) SetAsync(v bool) *WorkflowNodeUpdateOne {
 	_u.mutation.SetAsync(v)
@@ -1621,6 +1684,15 @@ func (_u *WorkflowNodeUpdateOne) sqlSave(ctx context.Context) (_node *WorkflowNo
 	}
 	if _u.mutation.APIConfigCleared() {
 		_spec.ClearField(workflownode.FieldAPIConfig, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.WorkflowApplicationID(); ok {
+		_spec.SetField(workflownode.FieldWorkflowApplicationID, field.TypeUint64, value)
+	}
+	if value, ok := _u.mutation.AddedWorkflowApplicationID(); ok {
+		_spec.AddField(workflownode.FieldWorkflowApplicationID, field.TypeUint64, value)
+	}
+	if _u.mutation.WorkflowApplicationIDCleared() {
+		_spec.ClearField(workflownode.FieldWorkflowApplicationID, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.Async(); ok {
 		_spec.SetField(workflownode.FieldAsync, field.TypeBool, value)

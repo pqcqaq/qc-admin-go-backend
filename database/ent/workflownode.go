@@ -54,6 +54,8 @@ type WorkflowNode struct {
 	ParallelConfig map[string]interface{} `json:"parallel_config,omitempty"`
 	// API调用配置
 	APIConfig map[string]interface{} `json:"api_config,omitempty"`
+	// 引用的工作流应用ID（workflow节点专用）
+	WorkflowApplicationID uint64 `json:"workflow_application_id,omitempty"`
 	// 是否异步执行
 	Async bool `json:"async,omitempty"`
 	// 超时时间(秒)
@@ -139,7 +141,7 @@ func (*WorkflowNode) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case workflownode.FieldPositionX, workflownode.FieldPositionY:
 			values[i] = new(sql.NullFloat64)
-		case workflownode.FieldID, workflownode.FieldCreateBy, workflownode.FieldUpdateBy, workflownode.FieldDeleteBy, workflownode.FieldApplicationID, workflownode.FieldTimeout, workflownode.FieldRetryCount:
+		case workflownode.FieldID, workflownode.FieldCreateBy, workflownode.FieldUpdateBy, workflownode.FieldDeleteBy, workflownode.FieldApplicationID, workflownode.FieldWorkflowApplicationID, workflownode.FieldTimeout, workflownode.FieldRetryCount:
 			values[i] = new(sql.NullInt64)
 		case workflownode.FieldName, workflownode.FieldType, workflownode.FieldDescription, workflownode.FieldPrompt, workflownode.FieldProcessorLanguage, workflownode.FieldProcessorCode, workflownode.FieldColor:
 			values[i] = new(sql.NullString)
@@ -275,6 +277,12 @@ func (_m *WorkflowNode) assignValues(columns []string, values []any) error {
 				if err := json.Unmarshal(*value, &_m.APIConfig); err != nil {
 					return fmt.Errorf("unmarshal field api_config: %w", err)
 				}
+			}
+		case workflownode.FieldWorkflowApplicationID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field workflow_application_id", values[i])
+			} else if value.Valid {
+				_m.WorkflowApplicationID = uint64(value.Int64)
 			}
 		case workflownode.FieldAsync:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -418,6 +426,9 @@ func (_m *WorkflowNode) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("api_config=")
 	builder.WriteString(fmt.Sprintf("%v", _m.APIConfig))
+	builder.WriteString(", ")
+	builder.WriteString("workflow_application_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.WorkflowApplicationID))
 	builder.WriteString(", ")
 	builder.WriteString("async=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Async))

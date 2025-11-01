@@ -137,68 +137,71 @@ type BatchDeleteWorkflowEdgesRequest struct {
 
 // WorkflowNodeResponse 工作流节点响应结构
 type WorkflowNodeResponse struct {
-	ID                string                 `json:"id"`
-	CreateTime        string                 `json:"createTime"`
-	UpdateTime        string                 `json:"updateTime"`
-	Name              string                 `json:"name"`
-	Type              string                 `json:"type"` // user_input, todo_task_generator, condition_checker, api_caller, data_processor, while_loop, end_node, parallel_executor, llm_caller
-	Description       string                 `json:"description,omitempty"`
-	Prompt            string                 `json:"prompt,omitempty"`
-	Config            map[string]interface{} `json:"config"`
-	ApplicationID     string                 `json:"applicationId"`
-	ProcessorLanguage string                 `json:"processorLanguage,omitempty"`
-	ProcessorCode     string                 `json:"processorCode,omitempty"`
-	BranchNodes       map[string]interface{} `json:"branchNodes,omitempty"`
-	ParallelConfig    map[string]interface{} `json:"parallelConfig,omitempty"`
-	APIConfig         map[string]interface{} `json:"apiConfig,omitempty"`
-	Async             bool                   `json:"async"`
-	Timeout           int                    `json:"timeout"`
-	RetryCount        int                    `json:"retryCount"`
-	PositionX         float64                `json:"positionX"`
-	PositionY         float64                `json:"positionY"`
-	Color             string                 `json:"color,omitempty"`
+	ID                    string                 `json:"id"`
+	CreateTime            string                 `json:"createTime"`
+	UpdateTime            string                 `json:"updateTime"`
+	Name                  string                 `json:"name"`
+	Type                  string                 `json:"type"` // user_input, todo_task_generator, condition_checker, api_caller, data_processor, while_loop, end_node, parallel_executor, llm_caller, workflow
+	Description           string                 `json:"description,omitempty"`
+	Prompt                string                 `json:"prompt,omitempty"`
+	Config                map[string]interface{} `json:"config"`
+	ApplicationID         string                 `json:"applicationId"`
+	ProcessorLanguage     string                 `json:"processorLanguage,omitempty"`
+	ProcessorCode         string                 `json:"processorCode,omitempty"`
+	BranchNodes           map[string]interface{} `json:"branchNodes,omitempty"`
+	ParallelConfig        map[string]interface{} `json:"parallelConfig,omitempty"`
+	APIConfig             map[string]interface{} `json:"apiConfig,omitempty"`
+	WorkflowApplicationID string                 `json:"workflowApplicationId,omitempty"` // 引用的工作流应用ID（workflow节点专用）
+	Async                 bool                   `json:"async"`
+	Timeout               int                    `json:"timeout"`
+	RetryCount            int                    `json:"retryCount"`
+	PositionX             float64                `json:"positionX"`
+	PositionY             float64                `json:"positionY"`
+	Color                 string                 `json:"color,omitempty"`
 }
 
 // CreateWorkflowNodeRequest 创建工作流节点请求结构
 type CreateWorkflowNodeRequest struct {
-	Name              string                 `json:"name" binding:"required"`
-	Type              string                 `json:"type" binding:"required"` // user_input, todo_task_generator, condition_checker, api_caller, data_processor, while_loop, end_node, parallel_executor, llm_caller
-	Description       string                 `json:"description,omitempty"`
-	Prompt            string                 `json:"prompt,omitempty"`
-	Config            map[string]interface{} `json:"config" binding:"required"`
-	ApplicationID     string                 `json:"applicationId" binding:"required"`
-	ProcessorLanguage string                 `json:"processorLanguage,omitempty"`
-	ProcessorCode     string                 `json:"processorCode,omitempty"`
-	BranchNodes       map[string]interface{} `json:"branchNodes,omitempty"`
-	ParallelConfig    map[string]interface{} `json:"parallelConfig,omitempty"`
-	APIConfig         map[string]interface{} `json:"apiConfig,omitempty"`
-	Async             *bool                  `json:"async,omitempty"`
-	Timeout           *int                   `json:"timeout,omitempty"`
-	RetryCount        *int                   `json:"retryCount,omitempty"`
-	PositionX         *float64               `json:"positionX,omitempty"`
-	PositionY         *float64               `json:"positionY,omitempty"`
-	Color             string                 `json:"color,omitempty"`
+	Name                  string                 `json:"name" binding:"required"`
+	Type                  string                 `json:"type" binding:"required"` // user_input, todo_task_generator, condition_checker, api_caller, data_processor, while_loop, end_node, parallel_executor, llm_caller, workflow
+	Description           string                 `json:"description,omitempty"`
+	Prompt                string                 `json:"prompt,omitempty"`
+	Config                map[string]interface{} `json:"config" binding:"required"`
+	ApplicationID         string                 `json:"applicationId" binding:"required"`
+	ProcessorLanguage     string                 `json:"processorLanguage,omitempty"`
+	ProcessorCode         string                 `json:"processorCode,omitempty"`
+	BranchNodes           map[string]interface{} `json:"branchNodes,omitempty"`
+	ParallelConfig        map[string]interface{} `json:"parallelConfig,omitempty"`
+	APIConfig             map[string]interface{} `json:"apiConfig,omitempty"`
+	WorkflowApplicationID string                 `json:"workflowApplicationId,omitempty"` // 引用的工作流应用ID（workflow节点专用）
+	Async                 *bool                  `json:"async,omitempty"`
+	Timeout               *int                   `json:"timeout,omitempty"`
+	RetryCount            *int                   `json:"retryCount,omitempty"`
+	PositionX             *float64               `json:"positionX,omitempty"`
+	PositionY             *float64               `json:"positionY,omitempty"`
+	Color                 string                 `json:"color,omitempty"`
 }
 
 // UpdateWorkflowNodeRequest 更新工作流节点请求结构
 // 注意：所有字段都是可选的，只更新提交的字段
 type UpdateWorkflowNodeRequest struct {
-	Name              string                 `json:"name,omitempty"`
-	Type              string                 `json:"type,omitempty"` // user_input, todo_task_generator, condition_checker, api_caller, data_processor, while_loop, end_node, parallel_executor, llm_caller
-	Description       string                 `json:"description,omitempty"`
-	Prompt            string                 `json:"prompt,omitempty"`
-	Config            map[string]interface{} `json:"config,omitempty"`
-	ProcessorLanguage string                 `json:"processorLanguage,omitempty"`
-	ProcessorCode     string                 `json:"processorCode,omitempty"`
-	BranchNodes       map[string]interface{} `json:"branchNodes,omitempty"`
-	ParallelConfig    map[string]interface{} `json:"parallelConfig,omitempty"`
-	APIConfig         map[string]interface{} `json:"apiConfig,omitempty"`
-	Async             *bool                  `json:"async,omitempty"`
-	Timeout           *int                   `json:"timeout,omitempty"`
-	RetryCount        *int                   `json:"retryCount,omitempty"`
-	PositionX         *float64               `json:"positionX,omitempty"`
-	PositionY         *float64               `json:"positionY,omitempty"`
-	Color             string                 `json:"color,omitempty"`
+	Name                  string                 `json:"name,omitempty"`
+	Type                  string                 `json:"type,omitempty"` // user_input, todo_task_generator, condition_checker, api_caller, data_processor, while_loop, end_node, parallel_executor, llm_caller, workflow
+	Description           string                 `json:"description,omitempty"`
+	Prompt                string                 `json:"prompt,omitempty"`
+	Config                map[string]interface{} `json:"config,omitempty"`
+	ProcessorLanguage     string                 `json:"processorLanguage,omitempty"`
+	ProcessorCode         string                 `json:"processorCode,omitempty"`
+	BranchNodes           map[string]interface{} `json:"branchNodes,omitempty"`
+	ParallelConfig        map[string]interface{} `json:"parallelConfig,omitempty"`
+	APIConfig             map[string]interface{} `json:"apiConfig,omitempty"`
+	WorkflowApplicationID string                 `json:"workflowApplicationId,omitempty"` // 引用的工作流应用ID（workflow节点专用）
+	Async                 *bool                  `json:"async,omitempty"`
+	Timeout               *int                   `json:"timeout,omitempty"`
+	RetryCount            *int                   `json:"retryCount,omitempty"`
+	PositionX             *float64               `json:"positionX,omitempty"`
+	PositionY             *float64               `json:"positionY,omitempty"`
+	Color                 string                 `json:"color,omitempty"`
 }
 
 // PageWorkflowNodeRequest 分页查询工作流节点请求结构

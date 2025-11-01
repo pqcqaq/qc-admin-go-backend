@@ -119,6 +119,7 @@ func (WorkflowNode) Fields() []ent.Field {
 			"end_node",            // 结束节点
 			"parallel_executor",   // 并行执行节点（可选择部分进行处理）
 			"llm_caller",          // LLM调用节点
+			"workflow",            // 工作流节点（引用第三方WorkflowApplication）
 		).Comment("节点类型"),
 		field.String("description").Optional().Comment("节点描述"),
 		field.Text("prompt").Optional().Comment("节点提示词"),
@@ -129,6 +130,7 @@ func (WorkflowNode) Fields() []ent.Field {
 		field.JSON("branch_nodes", map[string]interface{}{}).Optional().Comment("分支配置映射（存储完整的分支配置：name, condition, handlerId, targetNodeId）"),
 		field.JSON("parallel_config", map[string]interface{}{}).Optional().Comment("并行执行配置"),
 		field.JSON("api_config", map[string]interface{}{}).Optional().Comment("API调用配置"),
+		field.Uint64("workflow_application_id").Optional().Comment("引用的工作流应用ID（workflow节点专用）"),
 		field.Bool("async").Default(false).Comment("是否异步执行"),
 		field.Int("timeout").Default(30).Comment("超时时间(秒)"),
 		field.Int("retry_count").Default(0).Comment("重试次数"),

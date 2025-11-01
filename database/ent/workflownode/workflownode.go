@@ -50,6 +50,8 @@ const (
 	FieldParallelConfig = "parallel_config"
 	// FieldAPIConfig holds the string denoting the api_config field in the database.
 	FieldAPIConfig = "api_config"
+	// FieldWorkflowApplicationID holds the string denoting the workflow_application_id field in the database.
+	FieldWorkflowApplicationID = "workflow_application_id"
 	// FieldAsync holds the string denoting the async field in the database.
 	FieldAsync = "async"
 	// FieldTimeout holds the string denoting the timeout field in the database.
@@ -122,6 +124,7 @@ var Columns = []string{
 	FieldBranchNodes,
 	FieldParallelConfig,
 	FieldAPIConfig,
+	FieldWorkflowApplicationID,
 	FieldAsync,
 	FieldTimeout,
 	FieldRetryCount,
@@ -182,6 +185,7 @@ const (
 	TypeEndNode           Type = "end_node"
 	TypeParallelExecutor  Type = "parallel_executor"
 	TypeLlmCaller         Type = "llm_caller"
+	TypeWorkflow          Type = "workflow"
 )
 
 func (_type Type) String() string {
@@ -191,7 +195,7 @@ func (_type Type) String() string {
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
 func TypeValidator(_type Type) error {
 	switch _type {
-	case TypeUserInput, TypeTodoTaskGenerator, TypeConditionChecker, TypeAPICaller, TypeDataProcessor, TypeWhileLoop, TypeEndNode, TypeParallelExecutor, TypeLlmCaller:
+	case TypeUserInput, TypeTodoTaskGenerator, TypeConditionChecker, TypeAPICaller, TypeDataProcessor, TypeWhileLoop, TypeEndNode, TypeParallelExecutor, TypeLlmCaller, TypeWorkflow:
 		return nil
 	default:
 		return fmt.Errorf("workflownode: invalid enum value for type field: %q", _type)
@@ -269,6 +273,11 @@ func ByProcessorLanguage(opts ...sql.OrderTermOption) OrderOption {
 // ByProcessorCode orders the results by the processor_code field.
 func ByProcessorCode(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProcessorCode, opts...).ToFunc()
+}
+
+// ByWorkflowApplicationID orders the results by the workflow_application_id field.
+func ByWorkflowApplicationID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWorkflowApplicationID, opts...).ToFunc()
 }
 
 // ByAsync orders the results by the async field.

@@ -1815,7 +1815,7 @@ var (
 		{Name: "delete_time", Type: field.TypeTime, Nullable: true},
 		{Name: "delete_by", Type: field.TypeUint64, Nullable: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"user_input", "todo_task_generator", "condition_checker", "api_caller", "data_processor", "while_loop", "end_node", "parallel_executor", "llm_caller"}},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"user_input", "todo_task_generator", "condition_checker", "api_caller", "data_processor", "while_loop", "end_node", "parallel_executor", "llm_caller", "workflow"}},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "prompt", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "config", Type: field.TypeJSON},
@@ -1824,6 +1824,7 @@ var (
 		{Name: "branch_nodes", Type: field.TypeJSON, Nullable: true},
 		{Name: "parallel_config", Type: field.TypeJSON, Nullable: true},
 		{Name: "api_config", Type: field.TypeJSON, Nullable: true},
+		{Name: "workflow_application_id", Type: field.TypeUint64, Nullable: true},
 		{Name: "async", Type: field.TypeBool, Default: false},
 		{Name: "timeout", Type: field.TypeInt, Default: 30},
 		{Name: "retry_count", Type: field.TypeInt, Default: 0},
@@ -1840,7 +1841,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "workflow_nodes_workflow_applications_nodes",
-				Columns:    []*schema.Column{WorkflowNodesColumns[23]},
+				Columns:    []*schema.Column{WorkflowNodesColumns[24]},
 				RefColumns: []*schema.Column{WorkflowApplicationsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1859,7 +1860,7 @@ var (
 			{
 				Name:    "workflownode_application_id",
 				Unique:  false,
-				Columns: []*schema.Column{WorkflowNodesColumns[23]},
+				Columns: []*schema.Column{WorkflowNodesColumns[24]},
 			},
 			{
 				Name:    "workflownode_type",

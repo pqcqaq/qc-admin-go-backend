@@ -45518,53 +45518,55 @@ func (m *WorkflowExecutionLogMutation) ResetEdge(name string) error {
 // WorkflowNodeMutation represents an operation that mutates the WorkflowNode nodes in the graph.
 type WorkflowNodeMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uint64
-	create_time           *time.Time
-	create_by             *uint64
-	addcreate_by          *int64
-	update_time           *time.Time
-	update_by             *uint64
-	addupdate_by          *int64
-	delete_time           *time.Time
-	delete_by             *uint64
-	adddelete_by          *int64
-	name                  *string
-	_type                 *workflownode.Type
-	description           *string
-	prompt                *string
-	_config               *map[string]interface{}
-	processor_language    *string
-	processor_code        *string
-	branch_nodes          *map[string]interface{}
-	parallel_config       *map[string]interface{}
-	api_config            *map[string]interface{}
-	async                 *bool
-	timeout               *int
-	addtimeout            *int
-	retry_count           *int
-	addretry_count        *int
-	position_x            *float64
-	addposition_x         *float64
-	position_y            *float64
-	addposition_y         *float64
-	color                 *string
-	clearedFields         map[string]struct{}
-	application           *uint64
-	clearedapplication    bool
-	executions            map[uint64]struct{}
-	removedexecutions     map[uint64]struct{}
-	clearedexecutions     bool
-	outgoing_edges        map[uint64]struct{}
-	removedoutgoing_edges map[uint64]struct{}
-	clearedoutgoing_edges bool
-	incoming_edges        map[uint64]struct{}
-	removedincoming_edges map[uint64]struct{}
-	clearedincoming_edges bool
-	done                  bool
-	oldValue              func(context.Context) (*WorkflowNode, error)
-	predicates            []predicate.WorkflowNode
+	op                         Op
+	typ                        string
+	id                         *uint64
+	create_time                *time.Time
+	create_by                  *uint64
+	addcreate_by               *int64
+	update_time                *time.Time
+	update_by                  *uint64
+	addupdate_by               *int64
+	delete_time                *time.Time
+	delete_by                  *uint64
+	adddelete_by               *int64
+	name                       *string
+	_type                      *workflownode.Type
+	description                *string
+	prompt                     *string
+	_config                    *map[string]interface{}
+	processor_language         *string
+	processor_code             *string
+	branch_nodes               *map[string]interface{}
+	parallel_config            *map[string]interface{}
+	api_config                 *map[string]interface{}
+	workflow_application_id    *uint64
+	addworkflow_application_id *int64
+	async                      *bool
+	timeout                    *int
+	addtimeout                 *int
+	retry_count                *int
+	addretry_count             *int
+	position_x                 *float64
+	addposition_x              *float64
+	position_y                 *float64
+	addposition_y              *float64
+	color                      *string
+	clearedFields              map[string]struct{}
+	application                *uint64
+	clearedapplication         bool
+	executions                 map[uint64]struct{}
+	removedexecutions          map[uint64]struct{}
+	clearedexecutions          bool
+	outgoing_edges             map[uint64]struct{}
+	removedoutgoing_edges      map[uint64]struct{}
+	clearedoutgoing_edges      bool
+	incoming_edges             map[uint64]struct{}
+	removedincoming_edges      map[uint64]struct{}
+	clearedincoming_edges      bool
+	done                       bool
+	oldValue                   func(context.Context) (*WorkflowNode, error)
+	predicates                 []predicate.WorkflowNode
 }
 
 var _ ent.Mutation = (*WorkflowNodeMutation)(nil)
@@ -46489,6 +46491,76 @@ func (m *WorkflowNodeMutation) ResetAPIConfig() {
 	delete(m.clearedFields, workflownode.FieldAPIConfig)
 }
 
+// SetWorkflowApplicationID sets the "workflow_application_id" field.
+func (m *WorkflowNodeMutation) SetWorkflowApplicationID(u uint64) {
+	m.workflow_application_id = &u
+	m.addworkflow_application_id = nil
+}
+
+// WorkflowApplicationID returns the value of the "workflow_application_id" field in the mutation.
+func (m *WorkflowNodeMutation) WorkflowApplicationID() (r uint64, exists bool) {
+	v := m.workflow_application_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWorkflowApplicationID returns the old "workflow_application_id" field's value of the WorkflowNode entity.
+// If the WorkflowNode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkflowNodeMutation) OldWorkflowApplicationID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWorkflowApplicationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWorkflowApplicationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWorkflowApplicationID: %w", err)
+	}
+	return oldValue.WorkflowApplicationID, nil
+}
+
+// AddWorkflowApplicationID adds u to the "workflow_application_id" field.
+func (m *WorkflowNodeMutation) AddWorkflowApplicationID(u int64) {
+	if m.addworkflow_application_id != nil {
+		*m.addworkflow_application_id += u
+	} else {
+		m.addworkflow_application_id = &u
+	}
+}
+
+// AddedWorkflowApplicationID returns the value that was added to the "workflow_application_id" field in this mutation.
+func (m *WorkflowNodeMutation) AddedWorkflowApplicationID() (r int64, exists bool) {
+	v := m.addworkflow_application_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearWorkflowApplicationID clears the value of the "workflow_application_id" field.
+func (m *WorkflowNodeMutation) ClearWorkflowApplicationID() {
+	m.workflow_application_id = nil
+	m.addworkflow_application_id = nil
+	m.clearedFields[workflownode.FieldWorkflowApplicationID] = struct{}{}
+}
+
+// WorkflowApplicationIDCleared returns if the "workflow_application_id" field was cleared in this mutation.
+func (m *WorkflowNodeMutation) WorkflowApplicationIDCleared() bool {
+	_, ok := m.clearedFields[workflownode.FieldWorkflowApplicationID]
+	return ok
+}
+
+// ResetWorkflowApplicationID resets all changes to the "workflow_application_id" field.
+func (m *WorkflowNodeMutation) ResetWorkflowApplicationID() {
+	m.workflow_application_id = nil
+	m.addworkflow_application_id = nil
+	delete(m.clearedFields, workflownode.FieldWorkflowApplicationID)
+}
+
 // SetAsync sets the "async" field.
 func (m *WorkflowNodeMutation) SetAsync(b bool) {
 	m.async = &b
@@ -47021,7 +47093,7 @@ func (m *WorkflowNodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkflowNodeMutation) Fields() []string {
-	fields := make([]string, 0, 23)
+	fields := make([]string, 0, 24)
 	if m.create_time != nil {
 		fields = append(fields, workflownode.FieldCreateTime)
 	}
@@ -47072,6 +47144,9 @@ func (m *WorkflowNodeMutation) Fields() []string {
 	}
 	if m.api_config != nil {
 		fields = append(fields, workflownode.FieldAPIConfig)
+	}
+	if m.workflow_application_id != nil {
+		fields = append(fields, workflownode.FieldWorkflowApplicationID)
 	}
 	if m.async != nil {
 		fields = append(fields, workflownode.FieldAsync)
@@ -47133,6 +47208,8 @@ func (m *WorkflowNodeMutation) Field(name string) (ent.Value, bool) {
 		return m.ParallelConfig()
 	case workflownode.FieldAPIConfig:
 		return m.APIConfig()
+	case workflownode.FieldWorkflowApplicationID:
+		return m.WorkflowApplicationID()
 	case workflownode.FieldAsync:
 		return m.Async()
 	case workflownode.FieldTimeout:
@@ -47188,6 +47265,8 @@ func (m *WorkflowNodeMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldParallelConfig(ctx)
 	case workflownode.FieldAPIConfig:
 		return m.OldAPIConfig(ctx)
+	case workflownode.FieldWorkflowApplicationID:
+		return m.OldWorkflowApplicationID(ctx)
 	case workflownode.FieldAsync:
 		return m.OldAsync(ctx)
 	case workflownode.FieldTimeout:
@@ -47328,6 +47407,13 @@ func (m *WorkflowNodeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAPIConfig(v)
 		return nil
+	case workflownode.FieldWorkflowApplicationID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWorkflowApplicationID(v)
+		return nil
 	case workflownode.FieldAsync:
 		v, ok := value.(bool)
 		if !ok {
@@ -47387,6 +47473,9 @@ func (m *WorkflowNodeMutation) AddedFields() []string {
 	if m.adddelete_by != nil {
 		fields = append(fields, workflownode.FieldDeleteBy)
 	}
+	if m.addworkflow_application_id != nil {
+		fields = append(fields, workflownode.FieldWorkflowApplicationID)
+	}
 	if m.addtimeout != nil {
 		fields = append(fields, workflownode.FieldTimeout)
 	}
@@ -47413,6 +47502,8 @@ func (m *WorkflowNodeMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedUpdateBy()
 	case workflownode.FieldDeleteBy:
 		return m.AddedDeleteBy()
+	case workflownode.FieldWorkflowApplicationID:
+		return m.AddedWorkflowApplicationID()
 	case workflownode.FieldTimeout:
 		return m.AddedTimeout()
 	case workflownode.FieldRetryCount:
@@ -47450,6 +47541,13 @@ func (m *WorkflowNodeMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddDeleteBy(v)
+		return nil
+	case workflownode.FieldWorkflowApplicationID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWorkflowApplicationID(v)
 		return nil
 	case workflownode.FieldTimeout:
 		v, ok := value.(int)
@@ -47520,6 +47618,9 @@ func (m *WorkflowNodeMutation) ClearedFields() []string {
 	if m.FieldCleared(workflownode.FieldAPIConfig) {
 		fields = append(fields, workflownode.FieldAPIConfig)
 	}
+	if m.FieldCleared(workflownode.FieldWorkflowApplicationID) {
+		fields = append(fields, workflownode.FieldWorkflowApplicationID)
+	}
 	if m.FieldCleared(workflownode.FieldColor) {
 		fields = append(fields, workflownode.FieldColor)
 	}
@@ -47569,6 +47670,9 @@ func (m *WorkflowNodeMutation) ClearField(name string) error {
 		return nil
 	case workflownode.FieldAPIConfig:
 		m.ClearAPIConfig()
+		return nil
+	case workflownode.FieldWorkflowApplicationID:
+		m.ClearWorkflowApplicationID()
 		return nil
 	case workflownode.FieldColor:
 		m.ClearColor()
@@ -47631,6 +47735,9 @@ func (m *WorkflowNodeMutation) ResetField(name string) error {
 		return nil
 	case workflownode.FieldAPIConfig:
 		m.ResetAPIConfig()
+		return nil
+	case workflownode.FieldWorkflowApplicationID:
+		m.ResetWorkflowApplicationID()
 		return nil
 	case workflownode.FieldAsync:
 		m.ResetAsync()

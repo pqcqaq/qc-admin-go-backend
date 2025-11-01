@@ -897,29 +897,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "WorkflowNode",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			workflownode.FieldCreateTime:        {Type: field.TypeTime, Column: workflownode.FieldCreateTime},
-			workflownode.FieldCreateBy:          {Type: field.TypeUint64, Column: workflownode.FieldCreateBy},
-			workflownode.FieldUpdateTime:        {Type: field.TypeTime, Column: workflownode.FieldUpdateTime},
-			workflownode.FieldUpdateBy:          {Type: field.TypeUint64, Column: workflownode.FieldUpdateBy},
-			workflownode.FieldDeleteTime:        {Type: field.TypeTime, Column: workflownode.FieldDeleteTime},
-			workflownode.FieldDeleteBy:          {Type: field.TypeUint64, Column: workflownode.FieldDeleteBy},
-			workflownode.FieldName:              {Type: field.TypeString, Column: workflownode.FieldName},
-			workflownode.FieldType:              {Type: field.TypeEnum, Column: workflownode.FieldType},
-			workflownode.FieldDescription:       {Type: field.TypeString, Column: workflownode.FieldDescription},
-			workflownode.FieldPrompt:            {Type: field.TypeString, Column: workflownode.FieldPrompt},
-			workflownode.FieldConfig:            {Type: field.TypeJSON, Column: workflownode.FieldConfig},
-			workflownode.FieldApplicationID:     {Type: field.TypeUint64, Column: workflownode.FieldApplicationID},
-			workflownode.FieldProcessorLanguage: {Type: field.TypeString, Column: workflownode.FieldProcessorLanguage},
-			workflownode.FieldProcessorCode:     {Type: field.TypeString, Column: workflownode.FieldProcessorCode},
-			workflownode.FieldBranchNodes:       {Type: field.TypeJSON, Column: workflownode.FieldBranchNodes},
-			workflownode.FieldParallelConfig:    {Type: field.TypeJSON, Column: workflownode.FieldParallelConfig},
-			workflownode.FieldAPIConfig:         {Type: field.TypeJSON, Column: workflownode.FieldAPIConfig},
-			workflownode.FieldAsync:             {Type: field.TypeBool, Column: workflownode.FieldAsync},
-			workflownode.FieldTimeout:           {Type: field.TypeInt, Column: workflownode.FieldTimeout},
-			workflownode.FieldRetryCount:        {Type: field.TypeInt, Column: workflownode.FieldRetryCount},
-			workflownode.FieldPositionX:         {Type: field.TypeFloat64, Column: workflownode.FieldPositionX},
-			workflownode.FieldPositionY:         {Type: field.TypeFloat64, Column: workflownode.FieldPositionY},
-			workflownode.FieldColor:             {Type: field.TypeString, Column: workflownode.FieldColor},
+			workflownode.FieldCreateTime:            {Type: field.TypeTime, Column: workflownode.FieldCreateTime},
+			workflownode.FieldCreateBy:              {Type: field.TypeUint64, Column: workflownode.FieldCreateBy},
+			workflownode.FieldUpdateTime:            {Type: field.TypeTime, Column: workflownode.FieldUpdateTime},
+			workflownode.FieldUpdateBy:              {Type: field.TypeUint64, Column: workflownode.FieldUpdateBy},
+			workflownode.FieldDeleteTime:            {Type: field.TypeTime, Column: workflownode.FieldDeleteTime},
+			workflownode.FieldDeleteBy:              {Type: field.TypeUint64, Column: workflownode.FieldDeleteBy},
+			workflownode.FieldName:                  {Type: field.TypeString, Column: workflownode.FieldName},
+			workflownode.FieldType:                  {Type: field.TypeEnum, Column: workflownode.FieldType},
+			workflownode.FieldDescription:           {Type: field.TypeString, Column: workflownode.FieldDescription},
+			workflownode.FieldPrompt:                {Type: field.TypeString, Column: workflownode.FieldPrompt},
+			workflownode.FieldConfig:                {Type: field.TypeJSON, Column: workflownode.FieldConfig},
+			workflownode.FieldApplicationID:         {Type: field.TypeUint64, Column: workflownode.FieldApplicationID},
+			workflownode.FieldProcessorLanguage:     {Type: field.TypeString, Column: workflownode.FieldProcessorLanguage},
+			workflownode.FieldProcessorCode:         {Type: field.TypeString, Column: workflownode.FieldProcessorCode},
+			workflownode.FieldBranchNodes:           {Type: field.TypeJSON, Column: workflownode.FieldBranchNodes},
+			workflownode.FieldParallelConfig:        {Type: field.TypeJSON, Column: workflownode.FieldParallelConfig},
+			workflownode.FieldAPIConfig:             {Type: field.TypeJSON, Column: workflownode.FieldAPIConfig},
+			workflownode.FieldWorkflowApplicationID: {Type: field.TypeUint64, Column: workflownode.FieldWorkflowApplicationID},
+			workflownode.FieldAsync:                 {Type: field.TypeBool, Column: workflownode.FieldAsync},
+			workflownode.FieldTimeout:               {Type: field.TypeInt, Column: workflownode.FieldTimeout},
+			workflownode.FieldRetryCount:            {Type: field.TypeInt, Column: workflownode.FieldRetryCount},
+			workflownode.FieldPositionX:             {Type: field.TypeFloat64, Column: workflownode.FieldPositionX},
+			workflownode.FieldPositionY:             {Type: field.TypeFloat64, Column: workflownode.FieldPositionY},
+			workflownode.FieldColor:                 {Type: field.TypeString, Column: workflownode.FieldColor},
 		},
 	}
 	graph.Nodes[32] = &sqlgraph.Node{
@@ -6342,6 +6343,11 @@ func (f *WorkflowNodeFilter) WhereParallelConfig(p entql.BytesP) {
 // WhereAPIConfig applies the entql json.RawMessage predicate on the api_config field.
 func (f *WorkflowNodeFilter) WhereAPIConfig(p entql.BytesP) {
 	f.Where(p.Field(workflownode.FieldAPIConfig))
+}
+
+// WhereWorkflowApplicationID applies the entql uint64 predicate on the workflow_application_id field.
+func (f *WorkflowNodeFilter) WhereWorkflowApplicationID(p entql.Uint64P) {
+	f.Where(p.Field(workflownode.FieldWorkflowApplicationID))
 }
 
 // WhereAsync applies the entql bool predicate on the async field.

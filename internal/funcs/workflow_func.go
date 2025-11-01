@@ -104,7 +104,7 @@ func (WorkflowFuncs) CreateWorkflowApplication(ctx context.Context, req *models.
 	// 如果没有提供 startNodeId，创建默认的开始节点
 	if req.StartNodeID == "" {
 		startNode, err := tx.WorkflowNode.Create().
-			SetName("开始").
+			SetName("用户输入").
 			SetType(workflownode.TypeUserInput).
 			SetDescription("工作流开始节点").
 			SetConfig(map[string]interface{}{}).
@@ -414,6 +414,11 @@ func (WorkflowFuncs) CreateWorkflowNode(ctx context.Context, req *models.CreateW
 		builder = builder.SetAPIConfig(req.APIConfig)
 	}
 
+	if req.WorkflowApplicationID != "" {
+		workflowAppID := utils.StringToUint64(req.WorkflowApplicationID)
+		builder = builder.SetWorkflowApplicationID(workflowAppID)
+	}
+
 	if req.Async != nil {
 		builder = builder.SetAsync(*req.Async)
 	}
@@ -490,6 +495,11 @@ func (WorkflowFuncs) UpdateWorkflowNode(ctx context.Context, id uint64, req *mod
 		builder = builder.SetAPIConfig(req.APIConfig)
 	}
 
+	if req.WorkflowApplicationID != "" {
+		workflowAppID := utils.StringToUint64(req.WorkflowApplicationID)
+		builder = builder.SetWorkflowApplicationID(workflowAppID)
+	}
+
 	if req.Async != nil {
 		builder = builder.SetAsync(*req.Async)
 	}
@@ -539,27 +549,34 @@ func (WorkflowFuncs) DeleteWorkflowNode(ctx context.Context, id uint64) error {
 
 // ConvertWorkflowNodeToResponse 将工作流节点实体转换为响应格式
 func (WorkflowFuncs) ConvertWorkflowNodeToResponse(node *ent.WorkflowNode) *models.WorkflowNodeResponse {
+	// 处理 workflowApplicationId：0 值转换为空字符串
+	workflowAppID := ""
+	if node.WorkflowApplicationID != 0 {
+		workflowAppID = utils.Uint64ToString(node.WorkflowApplicationID)
+	}
+
 	resp := &models.WorkflowNodeResponse{
-		ID:                utils.Uint64ToString(node.ID),
-		CreateTime:        utils.FormatDateTime(node.CreateTime),
-		UpdateTime:        utils.FormatDateTime(node.UpdateTime),
-		Name:              node.Name,
-		Type:              string(node.Type),
-		Description:       node.Description,
-		Prompt:            node.Prompt,
-		Config:            node.Config,
-		ApplicationID:     utils.Uint64ToString(node.ApplicationID),
-		ProcessorLanguage: node.ProcessorLanguage,
-		ProcessorCode:     node.ProcessorCode,
-		BranchNodes:       node.BranchNodes,
-		ParallelConfig:    node.ParallelConfig,
-		APIConfig:         node.APIConfig,
-		Async:             node.Async,
-		Timeout:           node.Timeout,
-		RetryCount:        node.RetryCount,
-		PositionX:         node.PositionX,
-		PositionY:         node.PositionY,
-		Color:             node.Color,
+		ID:                    utils.Uint64ToString(node.ID),
+		CreateTime:            utils.FormatDateTime(node.CreateTime),
+		UpdateTime:            utils.FormatDateTime(node.UpdateTime),
+		Name:                  node.Name,
+		Type:                  string(node.Type),
+		Description:           node.Description,
+		Prompt:                node.Prompt,
+		Config:                node.Config,
+		ApplicationID:         utils.Uint64ToString(node.ApplicationID),
+		ProcessorLanguage:     node.ProcessorLanguage,
+		ProcessorCode:         node.ProcessorCode,
+		BranchNodes:           node.BranchNodes,
+		ParallelConfig:        node.ParallelConfig,
+		APIConfig:             node.APIConfig,
+		WorkflowApplicationID: workflowAppID,
+		Async:                 node.Async,
+		Timeout:               node.Timeout,
+		RetryCount:            node.RetryCount,
+		PositionX:             node.PositionX,
+		PositionY:             node.PositionY,
+		Color:                 node.Color,
 	}
 
 	return resp
@@ -1605,6 +1622,10 @@ func (WorkflowFuncs) BatchSaveWorkflow(ctx context.Context, req *models.BatchSav
 		if nodeReq.BranchNodes != nil {
 			builder = builder.SetBranchNodes(nodeReq.BranchNodes)
 		}
+		if nodeReq.WorkflowApplicationID != "" {
+			workflowAppID := utils.StringToUint64(nodeReq.WorkflowApplicationID)
+			builder = builder.SetWorkflowApplicationID(workflowAppID)
+		}
 		if nodeReq.Async != nil {
 			builder = builder.SetAsync(*nodeReq.Async)
 		}
@@ -1675,6 +1696,10 @@ func (WorkflowFuncs) BatchSaveWorkflow(ctx context.Context, req *models.BatchSav
 		}
 		if nodeReq.BranchNodes != nil {
 			builder = builder.SetBranchNodes(nodeReq.BranchNodes)
+		}
+		if nodeReq.WorkflowApplicationID != "" {
+			workflowAppID := utils.StringToUint64(nodeReq.WorkflowApplicationID)
+			builder = builder.SetWorkflowApplicationID(workflowAppID)
 		}
 		if nodeReq.Async != nil {
 			builder = builder.SetAsync(*nodeReq.Async)

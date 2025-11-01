@@ -205,6 +205,20 @@ func (_c *WorkflowNodeCreate) SetAPIConfig(v map[string]interface{}) *WorkflowNo
 	return _c
 }
 
+// SetWorkflowApplicationID sets the "workflow_application_id" field.
+func (_c *WorkflowNodeCreate) SetWorkflowApplicationID(v uint64) *WorkflowNodeCreate {
+	_c.mutation.SetWorkflowApplicationID(v)
+	return _c
+}
+
+// SetNillableWorkflowApplicationID sets the "workflow_application_id" field if the given value is not nil.
+func (_c *WorkflowNodeCreate) SetNillableWorkflowApplicationID(v *uint64) *WorkflowNodeCreate {
+	if v != nil {
+		_c.SetWorkflowApplicationID(*v)
+	}
+	return _c
+}
+
 // SetAsync sets the "async" field.
 func (_c *WorkflowNodeCreate) SetAsync(v bool) *WorkflowNodeCreate {
 	_c.mutation.SetAsync(v)
@@ -562,6 +576,10 @@ func (_c *WorkflowNodeCreate) createSpec() (*WorkflowNode, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.APIConfig(); ok {
 		_spec.SetField(workflownode.FieldAPIConfig, field.TypeJSON, value)
 		_node.APIConfig = value
+	}
+	if value, ok := _c.mutation.WorkflowApplicationID(); ok {
+		_spec.SetField(workflownode.FieldWorkflowApplicationID, field.TypeUint64, value)
+		_node.WorkflowApplicationID = value
 	}
 	if value, ok := _c.mutation.Async(); ok {
 		_spec.SetField(workflownode.FieldAsync, field.TypeBool, value)

@@ -1515,23 +1515,23 @@ func init() {
 	// workflownode.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	workflownode.NameValidator = workflownodeDescName.Validators[0].(func(string) error)
 	// workflownodeDescAsync is the schema descriptor for async field.
-	workflownodeDescAsync := workflownodeFields[11].Descriptor()
+	workflownodeDescAsync := workflownodeFields[12].Descriptor()
 	// workflownode.DefaultAsync holds the default value on creation for the async field.
 	workflownode.DefaultAsync = workflownodeDescAsync.Default.(bool)
 	// workflownodeDescTimeout is the schema descriptor for timeout field.
-	workflownodeDescTimeout := workflownodeFields[12].Descriptor()
+	workflownodeDescTimeout := workflownodeFields[13].Descriptor()
 	// workflownode.DefaultTimeout holds the default value on creation for the timeout field.
 	workflownode.DefaultTimeout = workflownodeDescTimeout.Default.(int)
 	// workflownodeDescRetryCount is the schema descriptor for retry_count field.
-	workflownodeDescRetryCount := workflownodeFields[13].Descriptor()
+	workflownodeDescRetryCount := workflownodeFields[14].Descriptor()
 	// workflownode.DefaultRetryCount holds the default value on creation for the retry_count field.
 	workflownode.DefaultRetryCount = workflownodeDescRetryCount.Default.(int)
 	// workflownodeDescPositionX is the schema descriptor for position_x field.
-	workflownodeDescPositionX := workflownodeFields[14].Descriptor()
+	workflownodeDescPositionX := workflownodeFields[15].Descriptor()
 	// workflownode.DefaultPositionX holds the default value on creation for the position_x field.
 	workflownode.DefaultPositionX = workflownodeDescPositionX.Default.(float64)
 	// workflownodeDescPositionY is the schema descriptor for position_y field.
-	workflownodeDescPositionY := workflownodeFields[15].Descriptor()
+	workflownodeDescPositionY := workflownodeFields[16].Descriptor()
 	// workflownode.DefaultPositionY holds the default value on creation for the position_y field.
 	workflownode.DefaultPositionY = workflownodeDescPositionY.Default.(float64)
 	workflownodeexecutionMixin := schema.WorkflowNodeExecution{}.Mixin()

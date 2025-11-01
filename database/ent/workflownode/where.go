@@ -115,6 +115,11 @@ func ProcessorCode(v string) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldEQ(FieldProcessorCode, v))
 }
 
+// WorkflowApplicationID applies equality check predicate on the "workflow_application_id" field. It's identical to WorkflowApplicationIDEQ.
+func WorkflowApplicationID(v uint64) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldEQ(FieldWorkflowApplicationID, v))
+}
+
 // Async applies equality check predicate on the "async" field. It's identical to AsyncEQ.
 func Async(v bool) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldEQ(FieldAsync, v))
@@ -858,6 +863,56 @@ func APIConfigIsNil() predicate.WorkflowNode {
 // APIConfigNotNil applies the NotNil predicate on the "api_config" field.
 func APIConfigNotNil() predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldNotNull(FieldAPIConfig))
+}
+
+// WorkflowApplicationIDEQ applies the EQ predicate on the "workflow_application_id" field.
+func WorkflowApplicationIDEQ(v uint64) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldEQ(FieldWorkflowApplicationID, v))
+}
+
+// WorkflowApplicationIDNEQ applies the NEQ predicate on the "workflow_application_id" field.
+func WorkflowApplicationIDNEQ(v uint64) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldNEQ(FieldWorkflowApplicationID, v))
+}
+
+// WorkflowApplicationIDIn applies the In predicate on the "workflow_application_id" field.
+func WorkflowApplicationIDIn(vs ...uint64) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldIn(FieldWorkflowApplicationID, vs...))
+}
+
+// WorkflowApplicationIDNotIn applies the NotIn predicate on the "workflow_application_id" field.
+func WorkflowApplicationIDNotIn(vs ...uint64) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldNotIn(FieldWorkflowApplicationID, vs...))
+}
+
+// WorkflowApplicationIDGT applies the GT predicate on the "workflow_application_id" field.
+func WorkflowApplicationIDGT(v uint64) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldGT(FieldWorkflowApplicationID, v))
+}
+
+// WorkflowApplicationIDGTE applies the GTE predicate on the "workflow_application_id" field.
+func WorkflowApplicationIDGTE(v uint64) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldGTE(FieldWorkflowApplicationID, v))
+}
+
+// WorkflowApplicationIDLT applies the LT predicate on the "workflow_application_id" field.
+func WorkflowApplicationIDLT(v uint64) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldLT(FieldWorkflowApplicationID, v))
+}
+
+// WorkflowApplicationIDLTE applies the LTE predicate on the "workflow_application_id" field.
+func WorkflowApplicationIDLTE(v uint64) predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldLTE(FieldWorkflowApplicationID, v))
+}
+
+// WorkflowApplicationIDIsNil applies the IsNil predicate on the "workflow_application_id" field.
+func WorkflowApplicationIDIsNil() predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldIsNull(FieldWorkflowApplicationID))
+}
+
+// WorkflowApplicationIDNotNil applies the NotNil predicate on the "workflow_application_id" field.
+func WorkflowApplicationIDNotNil() predicate.WorkflowNode {
+	return predicate.WorkflowNode(sql.FieldNotNull(FieldWorkflowApplicationID))
 }
 
 // AsyncEQ applies the EQ predicate on the "async" field.
