@@ -152,20 +152,6 @@ func (_u *WorkflowNodeUpdate) SetNillableName(v *string) *WorkflowNodeUpdate {
 	return _u
 }
 
-// SetNodeKey sets the "node_key" field.
-func (_u *WorkflowNodeUpdate) SetNodeKey(v string) *WorkflowNodeUpdate {
-	_u.mutation.SetNodeKey(v)
-	return _u
-}
-
-// SetNillableNodeKey sets the "node_key" field if the given value is not nil.
-func (_u *WorkflowNodeUpdate) SetNillableNodeKey(v *string) *WorkflowNodeUpdate {
-	if v != nil {
-		_u.SetNodeKey(*v)
-	}
-	return _u
-}
-
 // SetType sets the "type" field.
 func (_u *WorkflowNodeUpdate) SetType(v workflownode.Type) *WorkflowNodeUpdate {
 	_u.mutation.SetType(v)
@@ -277,60 +263,6 @@ func (_u *WorkflowNodeUpdate) SetNillableProcessorCode(v *string) *WorkflowNodeU
 // ClearProcessorCode clears the value of the "processor_code" field.
 func (_u *WorkflowNodeUpdate) ClearProcessorCode() *WorkflowNodeUpdate {
 	_u.mutation.ClearProcessorCode()
-	return _u
-}
-
-// SetNextNodeID sets the "next_node_id" field.
-func (_u *WorkflowNodeUpdate) SetNextNodeID(v uint64) *WorkflowNodeUpdate {
-	_u.mutation.ResetNextNodeID()
-	_u.mutation.SetNextNodeID(v)
-	return _u
-}
-
-// SetNillableNextNodeID sets the "next_node_id" field if the given value is not nil.
-func (_u *WorkflowNodeUpdate) SetNillableNextNodeID(v *uint64) *WorkflowNodeUpdate {
-	if v != nil {
-		_u.SetNextNodeID(*v)
-	}
-	return _u
-}
-
-// AddNextNodeID adds value to the "next_node_id" field.
-func (_u *WorkflowNodeUpdate) AddNextNodeID(v int64) *WorkflowNodeUpdate {
-	_u.mutation.AddNextNodeID(v)
-	return _u
-}
-
-// ClearNextNodeID clears the value of the "next_node_id" field.
-func (_u *WorkflowNodeUpdate) ClearNextNodeID() *WorkflowNodeUpdate {
-	_u.mutation.ClearNextNodeID()
-	return _u
-}
-
-// SetParentNodeID sets the "parent_node_id" field.
-func (_u *WorkflowNodeUpdate) SetParentNodeID(v uint64) *WorkflowNodeUpdate {
-	_u.mutation.ResetParentNodeID()
-	_u.mutation.SetParentNodeID(v)
-	return _u
-}
-
-// SetNillableParentNodeID sets the "parent_node_id" field if the given value is not nil.
-func (_u *WorkflowNodeUpdate) SetNillableParentNodeID(v *uint64) *WorkflowNodeUpdate {
-	if v != nil {
-		_u.SetParentNodeID(*v)
-	}
-	return _u
-}
-
-// AddParentNodeID adds value to the "parent_node_id" field.
-func (_u *WorkflowNodeUpdate) AddParentNodeID(v int64) *WorkflowNodeUpdate {
-	_u.mutation.AddParentNodeID(v)
-	return _u
-}
-
-// ClearParentNodeID clears the value of the "parent_node_id" field.
-func (_u *WorkflowNodeUpdate) ClearParentNodeID() *WorkflowNodeUpdate {
-	_u.mutation.ClearParentNodeID()
 	return _u
 }
 
@@ -661,11 +593,6 @@ func (_u *WorkflowNodeUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "WorkflowNode.name": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.NodeKey(); ok {
-		if err := workflownode.NodeKeyValidator(v); err != nil {
-			return &ValidationError{Name: "node_key", err: fmt.Errorf(`ent: validator failed for field "WorkflowNode.node_key": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.GetType(); ok {
 		if err := workflownode.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "WorkflowNode.type": %w`, err)}
@@ -728,9 +655,6 @@ func (_u *WorkflowNodeUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(workflownode.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.NodeKey(); ok {
-		_spec.SetField(workflownode.FieldNodeKey, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(workflownode.FieldType, field.TypeEnum, value)
 	}
@@ -760,24 +684,6 @@ func (_u *WorkflowNodeUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if _u.mutation.ProcessorCodeCleared() {
 		_spec.ClearField(workflownode.FieldProcessorCode, field.TypeString)
-	}
-	if value, ok := _u.mutation.NextNodeID(); ok {
-		_spec.SetField(workflownode.FieldNextNodeID, field.TypeUint64, value)
-	}
-	if value, ok := _u.mutation.AddedNextNodeID(); ok {
-		_spec.AddField(workflownode.FieldNextNodeID, field.TypeUint64, value)
-	}
-	if _u.mutation.NextNodeIDCleared() {
-		_spec.ClearField(workflownode.FieldNextNodeID, field.TypeUint64)
-	}
-	if value, ok := _u.mutation.ParentNodeID(); ok {
-		_spec.SetField(workflownode.FieldParentNodeID, field.TypeUint64, value)
-	}
-	if value, ok := _u.mutation.AddedParentNodeID(); ok {
-		_spec.AddField(workflownode.FieldParentNodeID, field.TypeUint64, value)
-	}
-	if _u.mutation.ParentNodeIDCleared() {
-		_spec.ClearField(workflownode.FieldParentNodeID, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.BranchNodes(); ok {
 		_spec.SetField(workflownode.FieldBranchNodes, field.TypeJSON, value)
@@ -1135,20 +1041,6 @@ func (_u *WorkflowNodeUpdateOne) SetNillableName(v *string) *WorkflowNodeUpdateO
 	return _u
 }
 
-// SetNodeKey sets the "node_key" field.
-func (_u *WorkflowNodeUpdateOne) SetNodeKey(v string) *WorkflowNodeUpdateOne {
-	_u.mutation.SetNodeKey(v)
-	return _u
-}
-
-// SetNillableNodeKey sets the "node_key" field if the given value is not nil.
-func (_u *WorkflowNodeUpdateOne) SetNillableNodeKey(v *string) *WorkflowNodeUpdateOne {
-	if v != nil {
-		_u.SetNodeKey(*v)
-	}
-	return _u
-}
-
 // SetType sets the "type" field.
 func (_u *WorkflowNodeUpdateOne) SetType(v workflownode.Type) *WorkflowNodeUpdateOne {
 	_u.mutation.SetType(v)
@@ -1260,60 +1152,6 @@ func (_u *WorkflowNodeUpdateOne) SetNillableProcessorCode(v *string) *WorkflowNo
 // ClearProcessorCode clears the value of the "processor_code" field.
 func (_u *WorkflowNodeUpdateOne) ClearProcessorCode() *WorkflowNodeUpdateOne {
 	_u.mutation.ClearProcessorCode()
-	return _u
-}
-
-// SetNextNodeID sets the "next_node_id" field.
-func (_u *WorkflowNodeUpdateOne) SetNextNodeID(v uint64) *WorkflowNodeUpdateOne {
-	_u.mutation.ResetNextNodeID()
-	_u.mutation.SetNextNodeID(v)
-	return _u
-}
-
-// SetNillableNextNodeID sets the "next_node_id" field if the given value is not nil.
-func (_u *WorkflowNodeUpdateOne) SetNillableNextNodeID(v *uint64) *WorkflowNodeUpdateOne {
-	if v != nil {
-		_u.SetNextNodeID(*v)
-	}
-	return _u
-}
-
-// AddNextNodeID adds value to the "next_node_id" field.
-func (_u *WorkflowNodeUpdateOne) AddNextNodeID(v int64) *WorkflowNodeUpdateOne {
-	_u.mutation.AddNextNodeID(v)
-	return _u
-}
-
-// ClearNextNodeID clears the value of the "next_node_id" field.
-func (_u *WorkflowNodeUpdateOne) ClearNextNodeID() *WorkflowNodeUpdateOne {
-	_u.mutation.ClearNextNodeID()
-	return _u
-}
-
-// SetParentNodeID sets the "parent_node_id" field.
-func (_u *WorkflowNodeUpdateOne) SetParentNodeID(v uint64) *WorkflowNodeUpdateOne {
-	_u.mutation.ResetParentNodeID()
-	_u.mutation.SetParentNodeID(v)
-	return _u
-}
-
-// SetNillableParentNodeID sets the "parent_node_id" field if the given value is not nil.
-func (_u *WorkflowNodeUpdateOne) SetNillableParentNodeID(v *uint64) *WorkflowNodeUpdateOne {
-	if v != nil {
-		_u.SetParentNodeID(*v)
-	}
-	return _u
-}
-
-// AddParentNodeID adds value to the "parent_node_id" field.
-func (_u *WorkflowNodeUpdateOne) AddParentNodeID(v int64) *WorkflowNodeUpdateOne {
-	_u.mutation.AddParentNodeID(v)
-	return _u
-}
-
-// ClearParentNodeID clears the value of the "parent_node_id" field.
-func (_u *WorkflowNodeUpdateOne) ClearParentNodeID() *WorkflowNodeUpdateOne {
-	_u.mutation.ClearParentNodeID()
 	return _u
 }
 
@@ -1657,11 +1495,6 @@ func (_u *WorkflowNodeUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "WorkflowNode.name": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.NodeKey(); ok {
-		if err := workflownode.NodeKeyValidator(v); err != nil {
-			return &ValidationError{Name: "node_key", err: fmt.Errorf(`ent: validator failed for field "WorkflowNode.node_key": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.GetType(); ok {
 		if err := workflownode.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "WorkflowNode.type": %w`, err)}
@@ -1741,9 +1574,6 @@ func (_u *WorkflowNodeUpdateOne) sqlSave(ctx context.Context) (_node *WorkflowNo
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(workflownode.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.NodeKey(); ok {
-		_spec.SetField(workflownode.FieldNodeKey, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(workflownode.FieldType, field.TypeEnum, value)
 	}
@@ -1773,24 +1603,6 @@ func (_u *WorkflowNodeUpdateOne) sqlSave(ctx context.Context) (_node *WorkflowNo
 	}
 	if _u.mutation.ProcessorCodeCleared() {
 		_spec.ClearField(workflownode.FieldProcessorCode, field.TypeString)
-	}
-	if value, ok := _u.mutation.NextNodeID(); ok {
-		_spec.SetField(workflownode.FieldNextNodeID, field.TypeUint64, value)
-	}
-	if value, ok := _u.mutation.AddedNextNodeID(); ok {
-		_spec.AddField(workflownode.FieldNextNodeID, field.TypeUint64, value)
-	}
-	if _u.mutation.NextNodeIDCleared() {
-		_spec.ClearField(workflownode.FieldNextNodeID, field.TypeUint64)
-	}
-	if value, ok := _u.mutation.ParentNodeID(); ok {
-		_spec.SetField(workflownode.FieldParentNodeID, field.TypeUint64, value)
-	}
-	if value, ok := _u.mutation.AddedParentNodeID(); ok {
-		_spec.AddField(workflownode.FieldParentNodeID, field.TypeUint64, value)
-	}
-	if _u.mutation.ParentNodeIDCleared() {
-		_spec.ClearField(workflownode.FieldParentNodeID, field.TypeUint64)
 	}
 	if value, ok := _u.mutation.BranchNodes(); ok {
 		_spec.SetField(workflownode.FieldBranchNodes, field.TypeJSON, value)

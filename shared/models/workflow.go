@@ -66,7 +66,6 @@ type WorkflowEdgeResponse struct {
 	ID            string                 `json:"id"`
 	CreateTime    string                 `json:"createTime"`
 	UpdateTime    string                 `json:"updateTime"`
-	EdgeKey       string                 `json:"edgeKey"`
 	ApplicationID string                 `json:"applicationId"`
 	SourceNodeID  string                 `json:"source"` // 源节点数据库ID
 	TargetNodeID  string                 `json:"target"` // 目标节点数据库ID
@@ -82,7 +81,6 @@ type WorkflowEdgeResponse struct {
 
 // CreateWorkflowEdgeRequest 创建工作流边请求结构
 type CreateWorkflowEdgeRequest struct {
-	EdgeKey       string                 `json:"edgeKey" binding:"required"`
 	ApplicationID string                 `json:"applicationId" binding:"required"`
 	SourceNodeID  string                 `json:"source" binding:"required"` // 源节点数据库ID
 	TargetNodeID  string                 `json:"target" binding:"required"` // 目标节点数据库ID
@@ -98,7 +96,6 @@ type CreateWorkflowEdgeRequest struct {
 
 // UpdateWorkflowEdgeRequest 更新工作流边请求结构
 type UpdateWorkflowEdgeRequest struct {
-	EdgeKey      string                 `json:"edgeKey,omitempty"`
 	SourceHandle string                 `json:"sourceHandle,omitempty"`
 	TargetHandle string                 `json:"targetHandle,omitempty"`
 	Type         string                 `json:"type,omitempty"`
@@ -144,7 +141,6 @@ type WorkflowNodeResponse struct {
 	CreateTime        string                 `json:"createTime"`
 	UpdateTime        string                 `json:"updateTime"`
 	Name              string                 `json:"name"`
-	NodeKey           string                 `json:"nodeKey"`
 	Type              string                 `json:"type"` // user_input, todo_task_generator, condition_checker, api_caller, data_processor, while_loop, end_node, parallel_executor, llm_caller
 	Description       string                 `json:"description,omitempty"`
 	Prompt            string                 `json:"prompt,omitempty"`
@@ -152,8 +148,6 @@ type WorkflowNodeResponse struct {
 	ApplicationID     string                 `json:"applicationId"`
 	ProcessorLanguage string                 `json:"processorLanguage,omitempty"`
 	ProcessorCode     string                 `json:"processorCode,omitempty"`
-	NextNodeID        string                 `json:"nextNodeId,omitempty"`
-	ParentNodeID      string                 `json:"parentNodeId,omitempty"`
 	BranchNodes       map[string]interface{} `json:"branchNodes,omitempty"`
 	ParallelConfig    map[string]interface{} `json:"parallelConfig,omitempty"`
 	APIConfig         map[string]interface{} `json:"apiConfig,omitempty"`
@@ -168,7 +162,6 @@ type WorkflowNodeResponse struct {
 // CreateWorkflowNodeRequest 创建工作流节点请求结构
 type CreateWorkflowNodeRequest struct {
 	Name              string                 `json:"name" binding:"required"`
-	NodeKey           string                 `json:"nodeKey" binding:"required"`
 	Type              string                 `json:"type" binding:"required"` // user_input, todo_task_generator, condition_checker, api_caller, data_processor, while_loop, end_node, parallel_executor, llm_caller
 	Description       string                 `json:"description,omitempty"`
 	Prompt            string                 `json:"prompt,omitempty"`
@@ -176,8 +169,6 @@ type CreateWorkflowNodeRequest struct {
 	ApplicationID     string                 `json:"applicationId" binding:"required"`
 	ProcessorLanguage string                 `json:"processorLanguage,omitempty"`
 	ProcessorCode     string                 `json:"processorCode,omitempty"`
-	NextNodeID        string                 `json:"nextNodeId,omitempty"`
-	ParentNodeID      string                 `json:"parentNodeId,omitempty"`
 	BranchNodes       map[string]interface{} `json:"branchNodes,omitempty"`
 	ParallelConfig    map[string]interface{} `json:"parallelConfig,omitempty"`
 	APIConfig         map[string]interface{} `json:"apiConfig,omitempty"`
@@ -193,15 +184,12 @@ type CreateWorkflowNodeRequest struct {
 // 注意：所有字段都是可选的，只更新提交的字段
 type UpdateWorkflowNodeRequest struct {
 	Name              string                 `json:"name,omitempty"`
-	NodeKey           string                 `json:"nodeKey,omitempty"`
 	Type              string                 `json:"type,omitempty"` // user_input, todo_task_generator, condition_checker, api_caller, data_processor, while_loop, end_node, parallel_executor, llm_caller
 	Description       string                 `json:"description,omitempty"`
 	Prompt            string                 `json:"prompt,omitempty"`
 	Config            map[string]interface{} `json:"config,omitempty"`
 	ProcessorLanguage string                 `json:"processorLanguage,omitempty"`
 	ProcessorCode     string                 `json:"processorCode,omitempty"`
-	NextNodeID        string                 `json:"nextNodeId,omitempty"`
-	ParentNodeID      string                 `json:"parentNodeId,omitempty"`
 	BranchNodes       map[string]interface{} `json:"branchNodes,omitempty"`
 	ParallelConfig    map[string]interface{} `json:"parallelConfig,omitempty"`
 	APIConfig         map[string]interface{} `json:"apiConfig,omitempty"`
@@ -217,7 +205,6 @@ type UpdateWorkflowNodeRequest struct {
 type PageWorkflowNodeRequest struct {
 	PaginationRequest
 	Name          string `form:"name" json:"name"`                   // 按名称模糊搜索
-	NodeKey       string `form:"nodeKey" json:"nodeKey"`             // 按节点Key搜索
 	Type          string `form:"type" json:"type"`                   // 按类型过滤
 	ApplicationID string `form:"applicationId" json:"applicationId"` // 按应用ID过滤
 	BeginTime     string `form:"beginTime" json:"beginTime"`         // 开始时间
@@ -456,4 +443,61 @@ type PageWorkflowExecutionLogRequest struct {
 type PageWorkflowExecutionLogResponse struct {
 	Data       []*WorkflowExecutionLogResponse `json:"data"`
 	Pagination Pagination                      `json:"pagination"`
+}
+
+// ============ Batch Save Models ============
+
+// BatchSaveWorkflowRequest 批量保存工作流请求结构
+type BatchSaveWorkflowRequest struct {
+	ApplicationID   string                      `json:"applicationId" binding:"required"`
+	NodeTempIDs     []string                    `json:"nodeTempIds"` // 要创建的节点的临时ID列表（与 NodesToCreate 一一对应）
+	EdgeTempIDs     []string                    `json:"edgeTempIds"` // 要创建的边的临时ID列表（与 EdgesToCreate 一一对应）
+	NodesToCreate   []CreateWorkflowNodeRequest `json:"nodesToCreate"`
+	NodesToUpdate   []UpdateWorkflowNodeWithID  `json:"nodesToUpdate"`
+	NodeIDsToDelete []string                    `json:"nodeIdsToDelete"`
+	EdgesToCreate   []CreateWorkflowEdgeRequest `json:"edgesToCreate"`
+	EdgesToUpdate   []UpdateWorkflowEdgeWithID  `json:"edgesToUpdate"`
+	EdgeIDsToDelete []string                    `json:"edgeIdsToDelete"`
+}
+
+// UpdateWorkflowNodeWithID 带ID的节点更新请求
+type UpdateWorkflowNodeWithID struct {
+	ID   string                    `json:"id" binding:"required"`
+	Data UpdateWorkflowNodeRequest `json:"data" binding:"required"`
+}
+
+// UpdateWorkflowEdgeWithID 带ID的边更新请求
+type UpdateWorkflowEdgeWithID struct {
+	ID   string                    `json:"id" binding:"required"`
+	Data UpdateWorkflowEdgeRequest `json:"data" binding:"required"`
+}
+
+// BatchSaveWorkflowStats 批量保存统计信息
+type BatchSaveWorkflowStats struct {
+	NodesCreated int `json:"nodesCreated"`
+	NodesUpdated int `json:"nodesUpdated"`
+	NodesDeleted int `json:"nodesDeleted"`
+	EdgesCreated int `json:"edgesCreated"`
+	EdgesUpdated int `json:"edgesUpdated"`
+	EdgesDeleted int `json:"edgesDeleted"`
+}
+
+// BatchSaveWorkflowData 批量保存返回数据
+type BatchSaveWorkflowData struct {
+	NodeIDMapping  map[string]string       `json:"nodeIdMapping"` // 临时ID -> 数据库ID 映射
+	EdgeIDMapping  map[string]string       `json:"edgeIdMapping"` // 临时ID -> 数据库ID 映射
+	CreatedNodes   []*WorkflowNodeResponse `json:"createdNodes"`
+	UpdatedNodes   []*WorkflowNodeResponse `json:"updatedNodes"`
+	DeletedNodeIDs []string                `json:"deletedNodeIds"`
+	CreatedEdges   []*WorkflowEdgeResponse `json:"createdEdges"`
+	UpdatedEdges   []*WorkflowEdgeResponse `json:"updatedEdges"`
+	DeletedEdgeIDs []string                `json:"deletedEdgeIds"`
+	Stats          BatchSaveWorkflowStats  `json:"stats"`
+}
+
+// BatchSaveWorkflowResponse 批量保存工作流响应结构
+type BatchSaveWorkflowResponse struct {
+	Success bool                   `json:"success"`
+	Message string                 `json:"message"`
+	Data    *BatchSaveWorkflowData `json:"data"`
 }

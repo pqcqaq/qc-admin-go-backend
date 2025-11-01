@@ -90,11 +90,6 @@ func Name(v string) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldEQ(FieldName, v))
 }
 
-// NodeKey applies equality check predicate on the "node_key" field. It's identical to NodeKeyEQ.
-func NodeKey(v string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldEQ(FieldNodeKey, v))
-}
-
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
 func Description(v string) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldEQ(FieldDescription, v))
@@ -118,16 +113,6 @@ func ProcessorLanguage(v string) predicate.WorkflowNode {
 // ProcessorCode applies equality check predicate on the "processor_code" field. It's identical to ProcessorCodeEQ.
 func ProcessorCode(v string) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldEQ(FieldProcessorCode, v))
-}
-
-// NextNodeID applies equality check predicate on the "next_node_id" field. It's identical to NextNodeIDEQ.
-func NextNodeID(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldEQ(FieldNextNodeID, v))
-}
-
-// ParentNodeID applies equality check predicate on the "parent_node_id" field. It's identical to ParentNodeIDEQ.
-func ParentNodeID(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldEQ(FieldParentNodeID, v))
 }
 
 // Async applies equality check predicate on the "async" field. It's identical to AsyncEQ.
@@ -505,71 +490,6 @@ func NameContainsFold(v string) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldContainsFold(FieldName, v))
 }
 
-// NodeKeyEQ applies the EQ predicate on the "node_key" field.
-func NodeKeyEQ(v string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldEQ(FieldNodeKey, v))
-}
-
-// NodeKeyNEQ applies the NEQ predicate on the "node_key" field.
-func NodeKeyNEQ(v string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldNEQ(FieldNodeKey, v))
-}
-
-// NodeKeyIn applies the In predicate on the "node_key" field.
-func NodeKeyIn(vs ...string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldIn(FieldNodeKey, vs...))
-}
-
-// NodeKeyNotIn applies the NotIn predicate on the "node_key" field.
-func NodeKeyNotIn(vs ...string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldNotIn(FieldNodeKey, vs...))
-}
-
-// NodeKeyGT applies the GT predicate on the "node_key" field.
-func NodeKeyGT(v string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldGT(FieldNodeKey, v))
-}
-
-// NodeKeyGTE applies the GTE predicate on the "node_key" field.
-func NodeKeyGTE(v string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldGTE(FieldNodeKey, v))
-}
-
-// NodeKeyLT applies the LT predicate on the "node_key" field.
-func NodeKeyLT(v string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldLT(FieldNodeKey, v))
-}
-
-// NodeKeyLTE applies the LTE predicate on the "node_key" field.
-func NodeKeyLTE(v string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldLTE(FieldNodeKey, v))
-}
-
-// NodeKeyContains applies the Contains predicate on the "node_key" field.
-func NodeKeyContains(v string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldContains(FieldNodeKey, v))
-}
-
-// NodeKeyHasPrefix applies the HasPrefix predicate on the "node_key" field.
-func NodeKeyHasPrefix(v string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldHasPrefix(FieldNodeKey, v))
-}
-
-// NodeKeyHasSuffix applies the HasSuffix predicate on the "node_key" field.
-func NodeKeyHasSuffix(v string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldHasSuffix(FieldNodeKey, v))
-}
-
-// NodeKeyEqualFold applies the EqualFold predicate on the "node_key" field.
-func NodeKeyEqualFold(v string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldEqualFold(FieldNodeKey, v))
-}
-
-// NodeKeyContainsFold applies the ContainsFold predicate on the "node_key" field.
-func NodeKeyContainsFold(v string) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldContainsFold(FieldNodeKey, v))
-}
-
 // TypeEQ applies the EQ predicate on the "type" field.
 func TypeEQ(v Type) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldEQ(FieldType, v))
@@ -908,106 +828,6 @@ func ProcessorCodeEqualFold(v string) predicate.WorkflowNode {
 // ProcessorCodeContainsFold applies the ContainsFold predicate on the "processor_code" field.
 func ProcessorCodeContainsFold(v string) predicate.WorkflowNode {
 	return predicate.WorkflowNode(sql.FieldContainsFold(FieldProcessorCode, v))
-}
-
-// NextNodeIDEQ applies the EQ predicate on the "next_node_id" field.
-func NextNodeIDEQ(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldEQ(FieldNextNodeID, v))
-}
-
-// NextNodeIDNEQ applies the NEQ predicate on the "next_node_id" field.
-func NextNodeIDNEQ(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldNEQ(FieldNextNodeID, v))
-}
-
-// NextNodeIDIn applies the In predicate on the "next_node_id" field.
-func NextNodeIDIn(vs ...uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldIn(FieldNextNodeID, vs...))
-}
-
-// NextNodeIDNotIn applies the NotIn predicate on the "next_node_id" field.
-func NextNodeIDNotIn(vs ...uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldNotIn(FieldNextNodeID, vs...))
-}
-
-// NextNodeIDGT applies the GT predicate on the "next_node_id" field.
-func NextNodeIDGT(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldGT(FieldNextNodeID, v))
-}
-
-// NextNodeIDGTE applies the GTE predicate on the "next_node_id" field.
-func NextNodeIDGTE(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldGTE(FieldNextNodeID, v))
-}
-
-// NextNodeIDLT applies the LT predicate on the "next_node_id" field.
-func NextNodeIDLT(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldLT(FieldNextNodeID, v))
-}
-
-// NextNodeIDLTE applies the LTE predicate on the "next_node_id" field.
-func NextNodeIDLTE(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldLTE(FieldNextNodeID, v))
-}
-
-// NextNodeIDIsNil applies the IsNil predicate on the "next_node_id" field.
-func NextNodeIDIsNil() predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldIsNull(FieldNextNodeID))
-}
-
-// NextNodeIDNotNil applies the NotNil predicate on the "next_node_id" field.
-func NextNodeIDNotNil() predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldNotNull(FieldNextNodeID))
-}
-
-// ParentNodeIDEQ applies the EQ predicate on the "parent_node_id" field.
-func ParentNodeIDEQ(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldEQ(FieldParentNodeID, v))
-}
-
-// ParentNodeIDNEQ applies the NEQ predicate on the "parent_node_id" field.
-func ParentNodeIDNEQ(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldNEQ(FieldParentNodeID, v))
-}
-
-// ParentNodeIDIn applies the In predicate on the "parent_node_id" field.
-func ParentNodeIDIn(vs ...uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldIn(FieldParentNodeID, vs...))
-}
-
-// ParentNodeIDNotIn applies the NotIn predicate on the "parent_node_id" field.
-func ParentNodeIDNotIn(vs ...uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldNotIn(FieldParentNodeID, vs...))
-}
-
-// ParentNodeIDGT applies the GT predicate on the "parent_node_id" field.
-func ParentNodeIDGT(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldGT(FieldParentNodeID, v))
-}
-
-// ParentNodeIDGTE applies the GTE predicate on the "parent_node_id" field.
-func ParentNodeIDGTE(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldGTE(FieldParentNodeID, v))
-}
-
-// ParentNodeIDLT applies the LT predicate on the "parent_node_id" field.
-func ParentNodeIDLT(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldLT(FieldParentNodeID, v))
-}
-
-// ParentNodeIDLTE applies the LTE predicate on the "parent_node_id" field.
-func ParentNodeIDLTE(v uint64) predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldLTE(FieldParentNodeID, v))
-}
-
-// ParentNodeIDIsNil applies the IsNil predicate on the "parent_node_id" field.
-func ParentNodeIDIsNil() predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldIsNull(FieldParentNodeID))
-}
-
-// ParentNodeIDNotNil applies the NotNil predicate on the "parent_node_id" field.
-func ParentNodeIDNotNil() predicate.WorkflowNode {
-	return predicate.WorkflowNode(sql.FieldNotNull(FieldParentNodeID))
 }
 
 // BranchNodesIsNil applies the IsNil predicate on the "branch_nodes" field.

@@ -105,7 +105,6 @@ func (WorkflowFuncs) CreateWorkflowApplication(ctx context.Context, req *models.
 	if req.StartNodeID == "" {
 		startNode, err := tx.WorkflowNode.Create().
 			SetName("开始").
-			SetNodeKey("start_node").
 			SetType(workflownode.TypeUserInput).
 			SetDescription("工作流开始节点").
 			SetConfig(map[string]interface{}{}).
@@ -383,7 +382,6 @@ func (WorkflowFuncs) CreateWorkflowNode(ctx context.Context, req *models.CreateW
 
 	builder := database.Client.WorkflowNode.Create().
 		SetName(req.Name).
-		SetNodeKey(req.NodeKey).
 		SetType(workflownode.Type(req.Type)).
 		SetConfig(req.Config).
 		SetApplicationID(applicationID)
@@ -402,16 +400,6 @@ func (WorkflowFuncs) CreateWorkflowNode(ctx context.Context, req *models.CreateW
 
 	if req.ProcessorCode != "" {
 		builder = builder.SetProcessorCode(req.ProcessorCode)
-	}
-
-	if req.NextNodeID != "" {
-		nextNodeID := utils.StringToUint64(req.NextNodeID)
-		builder = builder.SetNextNodeID(nextNodeID)
-	}
-
-	if req.ParentNodeID != "" {
-		parentNodeID := utils.StringToUint64(req.ParentNodeID)
-		builder = builder.SetParentNodeID(parentNodeID)
 	}
 
 	if req.BranchNodes != nil {
@@ -466,10 +454,6 @@ func (WorkflowFuncs) UpdateWorkflowNode(ctx context.Context, id uint64, req *mod
 		builder = builder.SetName(req.Name)
 	}
 
-	if req.NodeKey != "" {
-		builder = builder.SetNodeKey(req.NodeKey)
-	}
-
 	if req.Type != "" {
 		builder = builder.SetType(workflownode.Type(req.Type))
 	}
@@ -492,16 +476,6 @@ func (WorkflowFuncs) UpdateWorkflowNode(ctx context.Context, id uint64, req *mod
 
 	if req.ProcessorCode != "" {
 		builder = builder.SetProcessorCode(req.ProcessorCode)
-	}
-
-	if req.NextNodeID != "" {
-		nextNodeID := utils.StringToUint64(req.NextNodeID)
-		builder = builder.SetNextNodeID(nextNodeID)
-	}
-
-	if req.ParentNodeID != "" {
-		parentNodeID := utils.StringToUint64(req.ParentNodeID)
-		builder = builder.SetParentNodeID(parentNodeID)
 	}
 
 	if req.BranchNodes != nil {
@@ -570,7 +544,6 @@ func (WorkflowFuncs) ConvertWorkflowNodeToResponse(node *ent.WorkflowNode) *mode
 		CreateTime:        utils.FormatDateTime(node.CreateTime),
 		UpdateTime:        utils.FormatDateTime(node.UpdateTime),
 		Name:              node.Name,
-		NodeKey:           node.NodeKey,
 		Type:              string(node.Type),
 		Description:       node.Description,
 		Prompt:            node.Prompt,
@@ -587,14 +560,6 @@ func (WorkflowFuncs) ConvertWorkflowNodeToResponse(node *ent.WorkflowNode) *mode
 		PositionX:         node.PositionX,
 		PositionY:         node.PositionY,
 		Color:             node.Color,
-	}
-
-	if node.NextNodeID != 0 {
-		resp.NextNodeID = utils.Uint64ToString(node.NextNodeID)
-	}
-
-	if node.ParentNodeID != 0 {
-		resp.ParentNodeID = utils.Uint64ToString(node.ParentNodeID)
 	}
 
 	return resp
@@ -1162,7 +1127,6 @@ func (WorkflowFuncs) CloneWorkflowApplication(ctx context.Context, applicationID
 	for _, oldNode := range originalApp.Edges.Nodes {
 		newNode, err := tx.WorkflowNode.Create().
 			SetName(oldNode.Name).
-			SetNodeKey(oldNode.NodeKey).
 			SetType(oldNode.Type).
 			SetDescription(oldNode.Description).
 			SetPrompt(oldNode.Prompt).
@@ -1185,30 +1149,6 @@ func (WorkflowFuncs) CloneWorkflowApplication(ctx context.Context, applicationID
 			return nil, err
 		}
 		nodeIDMap[oldNode.ID] = newNode.ID
-	}
-
-	// 更新节点之间的连接关系
-	for _, oldNode := range originalApp.Edges.Nodes {
-		newNodeID := nodeIDMap[oldNode.ID]
-		updateBuilder := tx.WorkflowNode.UpdateOneID(newNodeID)
-
-		if oldNode.NextNodeID != 0 {
-			if newNextNodeID, ok := nodeIDMap[oldNode.NextNodeID]; ok {
-				updateBuilder = updateBuilder.SetNextNodeID(newNextNodeID)
-			}
-		}
-
-		if oldNode.ParentNodeID != 0 {
-			if newParentNodeID, ok := nodeIDMap[oldNode.ParentNodeID]; ok {
-				updateBuilder = updateBuilder.SetParentNodeID(newParentNodeID)
-			}
-		}
-
-		err = updateBuilder.Exec(ctx)
-		if err != nil {
-			tx.Rollback()
-			return nil, err
-		}
 	}
 
 	// 更新新应用的起始节点ID
@@ -1296,7 +1236,6 @@ func (WorkflowFuncs) CreateWorkflowEdge(ctx context.Context, req *models.CreateW
 	targetNodeID := utils.StringToUint64(req.TargetNodeID)
 
 	builder := database.Client.WorkflowEdge.Create().
-		SetEdgeKey(req.EdgeKey).
 		SetApplicationID(applicationID).
 		SetSourceNodeID(sourceNodeID).
 		SetTargetNodeID(targetNodeID)
@@ -1342,10 +1281,6 @@ func (WorkflowFuncs) CreateWorkflowEdge(ctx context.Context, req *models.CreateW
 // UpdateWorkflowEdge 更新工作流边
 func (WorkflowFuncs) UpdateWorkflowEdge(ctx context.Context, id uint64, req *models.UpdateWorkflowEdgeRequest) (*models.WorkflowEdgeResponse, error) {
 	builder := database.Client.WorkflowEdge.UpdateOneID(id)
-
-	if req.EdgeKey != "" {
-		builder = builder.SetEdgeKey(req.EdgeKey)
-	}
 
 	if req.SourceHandle != "" {
 		builder = builder.SetSourceHandle(req.SourceHandle)
@@ -1409,7 +1344,7 @@ func (WorkflowFuncs) BatchCreateWorkflowEdges(ctx context.Context, req *models.B
 	for _, edgeReq := range req.Edges {
 		edge, err := WorkflowFuncs{}.CreateWorkflowEdge(ctx, &edgeReq)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create edge %s: %w", edgeReq.EdgeKey, err)
+			return nil, fmt.Errorf("failed to create edge: %w", err)
 		}
 		responses = append(responses, edge)
 	}
@@ -1435,7 +1370,6 @@ func (WorkflowFuncs) ConvertWorkflowEdgeToResponse(edge *ent.WorkflowEdge) *mode
 		ID:            utils.Uint64ToString(edge.ID),
 		CreateTime:    utils.FormatDateTime(edge.CreateTime),
 		UpdateTime:    utils.FormatDateTime(edge.UpdateTime),
-		EdgeKey:       edge.EdgeKey,
 		ApplicationID: utils.Uint64ToString(edge.ApplicationID),
 		SourceNodeID:  utils.Uint64ToString(edge.SourceNodeID), // 返回数据库 ID
 		TargetNodeID:  utils.Uint64ToString(edge.TargetNodeID), // 返回数据库 ID
@@ -1594,4 +1528,332 @@ func (WorkflowFuncs) ConvertWorkflowVersionToResponse(version *ent.WorkflowVersi
 		Snapshot:      snapshot,
 		ChangeLog:     version.ChangeLog,
 	}
+}
+
+// ============ Batch Save ============
+
+// BatchSaveWorkflow 批量保存工作流（节点和边的增删改）
+func (WorkflowFuncs) BatchSaveWorkflow(ctx context.Context, req *models.BatchSaveWorkflowRequest) (*models.BatchSaveWorkflowData, error) {
+	applicationID := utils.StringToUint64(req.ApplicationID)
+
+	// 验证应用是否存在
+	exists, err := database.Client.WorkflowApplication.Query().
+		Where(workflowapplication.ID(applicationID)).
+		Exist(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check application existence: %w", err)
+	}
+	if !exists {
+		return nil, fmt.Errorf("workflow application not found")
+	}
+
+	// 使用事务确保所有操作要么全部成功，要么全部失败
+	tx, err := database.Client.Tx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start transaction: %w", err)
+	}
+
+	result := &models.BatchSaveWorkflowData{
+		NodeIDMapping:  make(map[string]string),
+		EdgeIDMapping:  make(map[string]string),
+		CreatedNodes:   make([]*models.WorkflowNodeResponse, 0),
+		UpdatedNodes:   make([]*models.WorkflowNodeResponse, 0),
+		DeletedNodeIDs: make([]string, 0),
+		CreatedEdges:   make([]*models.WorkflowEdgeResponse, 0),
+		UpdatedEdges:   make([]*models.WorkflowEdgeResponse, 0),
+		DeletedEdgeIDs: make([]string, 0),
+		Stats: models.BatchSaveWorkflowStats{
+			NodesCreated: 0,
+			NodesUpdated: 0,
+			NodesDeleted: 0,
+			EdgesCreated: 0,
+			EdgesUpdated: 0,
+			EdgesDeleted: 0,
+		},
+	}
+
+	// 临时ID到数据库ID的映射表（用于边的创建）
+	// 注意：我们需要从前端请求中获取临时ID，这里通过请求数组的顺序来建立映射
+	tempIDToDBID := make(map[string]uint64)
+
+	// 1. 创建节点
+	for i, nodeReq := range req.NodesToCreate {
+		builder := tx.WorkflowNode.Create().
+			SetName(nodeReq.Name).
+			SetType(workflownode.Type(nodeReq.Type)).
+			SetConfig(nodeReq.Config).
+			SetApplicationID(applicationID)
+
+		if nodeReq.Description != "" {
+			builder = builder.SetDescription(nodeReq.Description)
+		}
+		if nodeReq.Prompt != "" {
+			builder = builder.SetPrompt(nodeReq.Prompt)
+		}
+		if nodeReq.ProcessorLanguage != "" {
+			builder = builder.SetProcessorLanguage(nodeReq.ProcessorLanguage)
+		}
+		if nodeReq.ProcessorCode != "" {
+			builder = builder.SetProcessorCode(nodeReq.ProcessorCode)
+		}
+		if nodeReq.APIConfig != nil {
+			builder = builder.SetAPIConfig(nodeReq.APIConfig)
+		}
+		if nodeReq.ParallelConfig != nil {
+			builder = builder.SetParallelConfig(nodeReq.ParallelConfig)
+		}
+		if nodeReq.BranchNodes != nil {
+			builder = builder.SetBranchNodes(nodeReq.BranchNodes)
+		}
+		if nodeReq.Async != nil {
+			builder = builder.SetAsync(*nodeReq.Async)
+		}
+		if nodeReq.Timeout != nil {
+			builder = builder.SetTimeout(*nodeReq.Timeout)
+		}
+		if nodeReq.RetryCount != nil {
+			builder = builder.SetRetryCount(*nodeReq.RetryCount)
+		}
+		if nodeReq.Color != "" {
+			builder = builder.SetColor(nodeReq.Color)
+		}
+		if nodeReq.PositionX != nil {
+			builder = builder.SetPositionX(*nodeReq.PositionX)
+		}
+		if nodeReq.PositionY != nil {
+			builder = builder.SetPositionY(*nodeReq.PositionY)
+		}
+
+		node, err := builder.Save(ctx)
+		if err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("failed to create node: %w", err)
+		}
+
+		// 记录临时ID到数据库ID的映射
+		if i < len(req.NodeTempIDs) {
+			tempID := req.NodeTempIDs[i]
+			dbID := utils.Uint64ToString(node.ID)
+			tempIDToDBID[tempID] = node.ID
+			result.NodeIDMapping[tempID] = dbID
+		}
+
+		result.CreatedNodes = append(result.CreatedNodes, WorkflowFuncs{}.ConvertWorkflowNodeToResponse(node))
+		result.Stats.NodesCreated++
+	}
+
+	// 2. 更新节点
+	for _, nodeUpdate := range req.NodesToUpdate {
+		nodeID := utils.StringToUint64(nodeUpdate.ID)
+		nodeReq := nodeUpdate.Data
+
+		builder := tx.WorkflowNode.UpdateOneID(nodeID)
+
+		if nodeReq.Name != "" {
+			builder = builder.SetName(nodeReq.Name)
+		}
+		if nodeReq.Description != "" {
+			builder = builder.SetDescription(nodeReq.Description)
+		}
+		if nodeReq.Config != nil {
+			builder = builder.SetConfig(nodeReq.Config)
+		}
+		if nodeReq.Prompt != "" {
+			builder = builder.SetPrompt(nodeReq.Prompt)
+		}
+		if nodeReq.ProcessorLanguage != "" {
+			builder = builder.SetProcessorLanguage(nodeReq.ProcessorLanguage)
+		}
+		if nodeReq.ProcessorCode != "" {
+			builder = builder.SetProcessorCode(nodeReq.ProcessorCode)
+		}
+		if nodeReq.APIConfig != nil {
+			builder = builder.SetAPIConfig(nodeReq.APIConfig)
+		}
+		if nodeReq.ParallelConfig != nil {
+			builder = builder.SetParallelConfig(nodeReq.ParallelConfig)
+		}
+		if nodeReq.BranchNodes != nil {
+			builder = builder.SetBranchNodes(nodeReq.BranchNodes)
+		}
+		if nodeReq.Async != nil {
+			builder = builder.SetAsync(*nodeReq.Async)
+		}
+		if nodeReq.Timeout != nil {
+			builder = builder.SetTimeout(*nodeReq.Timeout)
+		}
+		if nodeReq.RetryCount != nil {
+			builder = builder.SetRetryCount(*nodeReq.RetryCount)
+		}
+		if nodeReq.Color != "" {
+			builder = builder.SetColor(nodeReq.Color)
+		}
+		if nodeReq.PositionX != nil {
+			builder = builder.SetPositionX(*nodeReq.PositionX)
+		}
+		if nodeReq.PositionY != nil {
+			builder = builder.SetPositionY(*nodeReq.PositionY)
+		}
+
+		node, err := builder.Save(ctx)
+		if err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("failed to update node %s: %w", nodeUpdate.ID, err)
+		}
+
+		result.UpdatedNodes = append(result.UpdatedNodes, WorkflowFuncs{}.ConvertWorkflowNodeToResponse(node))
+		result.Stats.NodesUpdated++
+	}
+
+	// 3. 删除节点
+	for _, nodeIDStr := range req.NodeIDsToDelete {
+		nodeID := utils.StringToUint64(nodeIDStr)
+
+		err := tx.WorkflowNode.DeleteOneID(nodeID).Exec(ctx)
+		if err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("failed to delete node %s: %w", nodeIDStr, err)
+		}
+
+		result.DeletedNodeIDs = append(result.DeletedNodeIDs, nodeIDStr)
+		result.Stats.NodesDeleted++
+	}
+
+	// 4. 创建边
+	for i, edgeReq := range req.EdgesToCreate {
+		// 解析节点ID，优先从临时ID映射表查找，如果找不到再尝试解析为数据库ID
+		var sourceNodeID uint64
+		if dbID, ok := tempIDToDBID[edgeReq.SourceNodeID]; ok {
+			// 从临时ID映射表找到
+			sourceNodeID = dbID
+		} else {
+			// 尝试解析为数据库ID
+			sourceNodeID = utils.StringToUint64(edgeReq.SourceNodeID)
+			if sourceNodeID == 0 {
+				tx.Rollback()
+				return nil, fmt.Errorf("source node ID not found: %s (neither database ID nor temp ID)", edgeReq.SourceNodeID)
+			}
+		}
+
+		var targetNodeID uint64
+		if dbID, ok := tempIDToDBID[edgeReq.TargetNodeID]; ok {
+			// 从临时ID映射表找到
+			targetNodeID = dbID
+		} else {
+			// 尝试解析为数据库ID
+			targetNodeID = utils.StringToUint64(edgeReq.TargetNodeID)
+			if targetNodeID == 0 {
+				tx.Rollback()
+				return nil, fmt.Errorf("target node ID not found: %s (neither database ID nor temp ID)", edgeReq.TargetNodeID)
+			}
+		}
+
+		builder := tx.WorkflowEdge.Create().
+			SetApplicationID(applicationID).
+			SetSourceNodeID(sourceNodeID).
+			SetTargetNodeID(targetNodeID)
+
+		if edgeReq.SourceHandle != "" {
+			builder = builder.SetSourceHandle(edgeReq.SourceHandle)
+		}
+		if edgeReq.TargetHandle != "" {
+			builder = builder.SetTargetHandle(edgeReq.TargetHandle)
+		}
+		if edgeReq.Type != "" {
+			builder = builder.SetType(workflowedge.Type(edgeReq.Type))
+		}
+		if edgeReq.Label != "" {
+			builder = builder.SetLabel(edgeReq.Label)
+		}
+		if edgeReq.BranchName != "" {
+			builder = builder.SetBranchName(edgeReq.BranchName)
+		}
+		// Animated 在 CreateWorkflowEdgeRequest 中是 bool 类型，直接设置
+		builder = builder.SetAnimated(edgeReq.Animated)
+		if edgeReq.Style != nil {
+			builder = builder.SetStyle(edgeReq.Style)
+		}
+		if edgeReq.Data != nil {
+			builder = builder.SetData(edgeReq.Data)
+		}
+
+		edge, err := builder.Save(ctx)
+		if err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("failed to create edge: %w", err)
+		}
+
+		// 记录临时ID到数据库ID的映射
+		if i < len(req.EdgeTempIDs) {
+			tempID := req.EdgeTempIDs[i]
+			dbID := utils.Uint64ToString(edge.ID)
+			result.EdgeIDMapping[tempID] = dbID
+		}
+
+		result.CreatedEdges = append(result.CreatedEdges, WorkflowFuncs{}.ConvertWorkflowEdgeToResponse(edge))
+		result.Stats.EdgesCreated++
+	}
+
+	// 5. 更新边
+	for _, edgeUpdate := range req.EdgesToUpdate {
+		edgeID := utils.StringToUint64(edgeUpdate.ID)
+		edgeReq := edgeUpdate.Data
+
+		builder := tx.WorkflowEdge.UpdateOneID(edgeID)
+
+		if edgeReq.SourceHandle != "" {
+			builder = builder.SetSourceHandle(edgeReq.SourceHandle)
+		}
+		if edgeReq.TargetHandle != "" {
+			builder = builder.SetTargetHandle(edgeReq.TargetHandle)
+		}
+		if edgeReq.Type != "" {
+			builder = builder.SetType(workflowedge.Type(edgeReq.Type))
+		}
+		if edgeReq.Label != "" {
+			builder = builder.SetLabel(edgeReq.Label)
+		}
+		if edgeReq.BranchName != "" {
+			builder = builder.SetBranchName(edgeReq.BranchName)
+		}
+		if edgeReq.Animated != nil {
+			builder = builder.SetAnimated(*edgeReq.Animated)
+		}
+		if edgeReq.Style != nil {
+			builder = builder.SetStyle(edgeReq.Style)
+		}
+		if edgeReq.Data != nil {
+			builder = builder.SetData(edgeReq.Data)
+		}
+
+		edge, err := builder.Save(ctx)
+		if err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("failed to update edge %s: %w", edgeUpdate.ID, err)
+		}
+
+		result.UpdatedEdges = append(result.UpdatedEdges, WorkflowFuncs{}.ConvertWorkflowEdgeToResponse(edge))
+		result.Stats.EdgesUpdated++
+	}
+
+	// 6. 删除边
+	for _, edgeIDStr := range req.EdgeIDsToDelete {
+		edgeID := utils.StringToUint64(edgeIDStr)
+
+		err := tx.WorkflowEdge.DeleteOneID(edgeID).Exec(ctx)
+		if err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("failed to delete edge %s: %w", edgeIDStr, err)
+		}
+
+		result.DeletedEdgeIDs = append(result.DeletedEdgeIDs, edgeIDStr)
+		result.Stats.EdgesDeleted++
+	}
+
+	// 提交事务
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return result, nil
 }

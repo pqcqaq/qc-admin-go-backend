@@ -64,6 +64,9 @@ func (r *Router) setupWorkflowRoutes(rg *gin.RouterGroup) {
 			versions.GET("/:id", workflowHandler.GetWorkflowVersion)                            // 获取单个版本
 		}
 
+		// 批量保存路由
+		workflow.POST("/batch-save", workflowHandler.BatchSaveWorkflow) // 批量保存工作流
+
 		// // Workflow Graph 操作路由
 		// graph := workflow.Group("/graph")
 		// {

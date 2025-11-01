@@ -137,20 +137,6 @@ func (_u *WorkflowEdgeUpdate) ClearDeleteBy() *WorkflowEdgeUpdate {
 	return _u
 }
 
-// SetEdgeKey sets the "edge_key" field.
-func (_u *WorkflowEdgeUpdate) SetEdgeKey(v string) *WorkflowEdgeUpdate {
-	_u.mutation.SetEdgeKey(v)
-	return _u
-}
-
-// SetNillableEdgeKey sets the "edge_key" field if the given value is not nil.
-func (_u *WorkflowEdgeUpdate) SetNillableEdgeKey(v *string) *WorkflowEdgeUpdate {
-	if v != nil {
-		_u.SetEdgeKey(*v)
-	}
-	return _u
-}
-
 // SetApplicationID sets the "application_id" field.
 func (_u *WorkflowEdgeUpdate) SetApplicationID(v uint64) *WorkflowEdgeUpdate {
 	_u.mutation.SetApplicationID(v)
@@ -407,11 +393,6 @@ func (_u *WorkflowEdgeUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *WorkflowEdgeUpdate) check() error {
-	if v, ok := _u.mutation.EdgeKey(); ok {
-		if err := workflowedge.EdgeKeyValidator(v); err != nil {
-			return &ValidationError{Name: "edge_key", err: fmt.Errorf(`ent: validator failed for field "WorkflowEdge.edge_key": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.GetType(); ok {
 		if err := workflowedge.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "WorkflowEdge.type": %w`, err)}
@@ -476,9 +457,6 @@ func (_u *WorkflowEdgeUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if _u.mutation.DeleteByCleared() {
 		_spec.ClearField(workflowedge.FieldDeleteBy, field.TypeUint64)
-	}
-	if value, ok := _u.mutation.EdgeKey(); ok {
-		_spec.SetField(workflowedge.FieldEdgeKey, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.SourceHandle(); ok {
 		_spec.SetField(workflowedge.FieldSourceHandle, field.TypeString, value)
@@ -733,20 +711,6 @@ func (_u *WorkflowEdgeUpdateOne) AddDeleteBy(v int64) *WorkflowEdgeUpdateOne {
 // ClearDeleteBy clears the value of the "delete_by" field.
 func (_u *WorkflowEdgeUpdateOne) ClearDeleteBy() *WorkflowEdgeUpdateOne {
 	_u.mutation.ClearDeleteBy()
-	return _u
-}
-
-// SetEdgeKey sets the "edge_key" field.
-func (_u *WorkflowEdgeUpdateOne) SetEdgeKey(v string) *WorkflowEdgeUpdateOne {
-	_u.mutation.SetEdgeKey(v)
-	return _u
-}
-
-// SetNillableEdgeKey sets the "edge_key" field if the given value is not nil.
-func (_u *WorkflowEdgeUpdateOne) SetNillableEdgeKey(v *string) *WorkflowEdgeUpdateOne {
-	if v != nil {
-		_u.SetEdgeKey(*v)
-	}
 	return _u
 }
 
@@ -1019,11 +983,6 @@ func (_u *WorkflowEdgeUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *WorkflowEdgeUpdateOne) check() error {
-	if v, ok := _u.mutation.EdgeKey(); ok {
-		if err := workflowedge.EdgeKeyValidator(v); err != nil {
-			return &ValidationError{Name: "edge_key", err: fmt.Errorf(`ent: validator failed for field "WorkflowEdge.edge_key": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.GetType(); ok {
 		if err := workflowedge.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "WorkflowEdge.type": %w`, err)}
@@ -1105,9 +1064,6 @@ func (_u *WorkflowEdgeUpdateOne) sqlSave(ctx context.Context) (_node *WorkflowEd
 	}
 	if _u.mutation.DeleteByCleared() {
 		_spec.ClearField(workflowedge.FieldDeleteBy, field.TypeUint64)
-	}
-	if value, ok := _u.mutation.EdgeKey(); ok {
-		_spec.SetField(workflowedge.FieldEdgeKey, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.SourceHandle(); ok {
 		_spec.SetField(workflowedge.FieldSourceHandle, field.TypeString, value)

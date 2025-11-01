@@ -109,7 +109,6 @@ graph TD
 func (WorkflowNode) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").NotEmpty().Comment("节点名称"),
-		field.String("node_key").NotEmpty().Comment("节点唯一标识符"),
 		field.Enum("type").Values(
 			"user_input",          // 用户输入节点
 			"todo_task_generator", // 待办任务生成器节点
@@ -127,8 +126,6 @@ func (WorkflowNode) Fields() []ent.Field {
 		field.Uint64("application_id").Comment("所属工作流应用ID"),
 		field.String("processor_language").Optional().Comment("处理器语言"),
 		field.Text("processor_code").Optional().Comment("代码处理器"),
-		field.Uint64("next_node_id").Optional().Comment("下一个节点ID"),
-		field.Uint64("parent_node_id").Optional().Comment("父节点ID"),
 		field.JSON("branch_nodes", map[string]interface{}{}).Optional().Comment("分支配置映射（存储完整的分支配置：name, condition, handlerId, targetNodeId）"),
 		field.JSON("parallel_config", map[string]interface{}{}).Optional().Comment("并行执行配置"),
 		field.JSON("api_config", map[string]interface{}{}).Optional().Comment("API调用配置"),
@@ -143,9 +140,7 @@ func (WorkflowNode) Fields() []ent.Field {
 
 func (WorkflowNode) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("application_id", "node_key").Unique(),
-		index.Fields("next_node_id"),
-		index.Fields("parent_node_id"),
+		index.Fields("application_id"),
 		index.Fields("type"),
 	}
 }
@@ -182,7 +177,6 @@ func (WorkflowEdge) Mixin() []ent.Mixin {
 
 func (WorkflowEdge) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("edge_key").NotEmpty().Comment("边唯一标识符"),
 		field.Uint64("application_id").Comment("所属工作流应用ID"),
 		field.Uint64("source_node_id").Comment("源节点ID"),
 		field.Uint64("target_node_id").Comment("目标节点ID"),
@@ -203,7 +197,7 @@ func (WorkflowEdge) Fields() []ent.Field {
 
 func (WorkflowEdge) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("application_id", "edge_key").Unique(),
+		index.Fields("application_id"),
 		index.Fields("source_node_id"),
 		index.Fields("target_node_id"),
 		index.Fields("type"),

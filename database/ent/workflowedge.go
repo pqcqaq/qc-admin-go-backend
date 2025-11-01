@@ -33,8 +33,6 @@ type WorkflowEdge struct {
 	DeleteTime time.Time `json:"delete_time,omitempty"`
 	// 删除人ID
 	DeleteBy uint64 `json:"delete_by,omitempty"`
-	// 边唯一标识符
-	EdgeKey string `json:"edge_key,omitempty"`
 	// 所属工作流应用ID
 	ApplicationID uint64 `json:"application_id,omitempty"`
 	// 源节点ID
@@ -120,7 +118,7 @@ func (*WorkflowEdge) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case workflowedge.FieldID, workflowedge.FieldCreateBy, workflowedge.FieldUpdateBy, workflowedge.FieldDeleteBy, workflowedge.FieldApplicationID, workflowedge.FieldSourceNodeID, workflowedge.FieldTargetNodeID:
 			values[i] = new(sql.NullInt64)
-		case workflowedge.FieldEdgeKey, workflowedge.FieldSourceHandle, workflowedge.FieldTargetHandle, workflowedge.FieldType, workflowedge.FieldLabel, workflowedge.FieldBranchName:
+		case workflowedge.FieldSourceHandle, workflowedge.FieldTargetHandle, workflowedge.FieldType, workflowedge.FieldLabel, workflowedge.FieldBranchName:
 			values[i] = new(sql.NullString)
 		case workflowedge.FieldCreateTime, workflowedge.FieldUpdateTime, workflowedge.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
@@ -180,12 +178,6 @@ func (_m *WorkflowEdge) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field delete_by", values[i])
 			} else if value.Valid {
 				_m.DeleteBy = uint64(value.Int64)
-			}
-		case workflowedge.FieldEdgeKey:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field edge_key", values[i])
-			} else if value.Valid {
-				_m.EdgeKey = value.String
 			}
 		case workflowedge.FieldApplicationID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -325,9 +317,6 @@ func (_m *WorkflowEdge) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("delete_by=")
 	builder.WriteString(fmt.Sprintf("%v", _m.DeleteBy))
-	builder.WriteString(", ")
-	builder.WriteString("edge_key=")
-	builder.WriteString(_m.EdgeKey)
 	builder.WriteString(", ")
 	builder.WriteString("application_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ApplicationID))

@@ -34,8 +34,6 @@ type WorkflowNode struct {
 	DeleteBy uint64 `json:"delete_by,omitempty"`
 	// 节点名称
 	Name string `json:"name,omitempty"`
-	// 节点唯一标识符
-	NodeKey string `json:"node_key,omitempty"`
 	// 节点类型
 	Type workflownode.Type `json:"type,omitempty"`
 	// 节点描述
@@ -50,10 +48,6 @@ type WorkflowNode struct {
 	ProcessorLanguage string `json:"processor_language,omitempty"`
 	// 代码处理器
 	ProcessorCode string `json:"processor_code,omitempty"`
-	// 下一个节点ID
-	NextNodeID uint64 `json:"next_node_id,omitempty"`
-	// 父节点ID
-	ParentNodeID uint64 `json:"parent_node_id,omitempty"`
 	// 分支配置映射（存储完整的分支配置：name, condition, handlerId, targetNodeId）
 	BranchNodes map[string]interface{} `json:"branch_nodes,omitempty"`
 	// 并行执行配置
@@ -145,9 +139,9 @@ func (*WorkflowNode) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case workflownode.FieldPositionX, workflownode.FieldPositionY:
 			values[i] = new(sql.NullFloat64)
-		case workflownode.FieldID, workflownode.FieldCreateBy, workflownode.FieldUpdateBy, workflownode.FieldDeleteBy, workflownode.FieldApplicationID, workflownode.FieldNextNodeID, workflownode.FieldParentNodeID, workflownode.FieldTimeout, workflownode.FieldRetryCount:
+		case workflownode.FieldID, workflownode.FieldCreateBy, workflownode.FieldUpdateBy, workflownode.FieldDeleteBy, workflownode.FieldApplicationID, workflownode.FieldTimeout, workflownode.FieldRetryCount:
 			values[i] = new(sql.NullInt64)
-		case workflownode.FieldName, workflownode.FieldNodeKey, workflownode.FieldType, workflownode.FieldDescription, workflownode.FieldPrompt, workflownode.FieldProcessorLanguage, workflownode.FieldProcessorCode, workflownode.FieldColor:
+		case workflownode.FieldName, workflownode.FieldType, workflownode.FieldDescription, workflownode.FieldPrompt, workflownode.FieldProcessorLanguage, workflownode.FieldProcessorCode, workflownode.FieldColor:
 			values[i] = new(sql.NullString)
 		case workflownode.FieldCreateTime, workflownode.FieldUpdateTime, workflownode.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
@@ -214,12 +208,6 @@ func (_m *WorkflowNode) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Name = value.String
 			}
-		case workflownode.FieldNodeKey:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field node_key", values[i])
-			} else if value.Valid {
-				_m.NodeKey = value.String
-			}
 		case workflownode.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
@@ -263,18 +251,6 @@ func (_m *WorkflowNode) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field processor_code", values[i])
 			} else if value.Valid {
 				_m.ProcessorCode = value.String
-			}
-		case workflownode.FieldNextNodeID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field next_node_id", values[i])
-			} else if value.Valid {
-				_m.NextNodeID = uint64(value.Int64)
-			}
-		case workflownode.FieldParentNodeID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field parent_node_id", values[i])
-			} else if value.Valid {
-				_m.ParentNodeID = uint64(value.Int64)
 			}
 		case workflownode.FieldBranchNodes:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -413,9 +389,6 @@ func (_m *WorkflowNode) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
-	builder.WriteString("node_key=")
-	builder.WriteString(_m.NodeKey)
-	builder.WriteString(", ")
 	builder.WriteString("type=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Type))
 	builder.WriteString(", ")
@@ -436,12 +409,6 @@ func (_m *WorkflowNode) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("processor_code=")
 	builder.WriteString(_m.ProcessorCode)
-	builder.WriteString(", ")
-	builder.WriteString("next_node_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.NextNodeID))
-	builder.WriteString(", ")
-	builder.WriteString("parent_node_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ParentNodeID))
 	builder.WriteString(", ")
 	builder.WriteString("branch_nodes=")
 	builder.WriteString(fmt.Sprintf("%v", _m.BranchNodes))

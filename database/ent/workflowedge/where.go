@@ -85,11 +85,6 @@ func DeleteBy(v uint64) predicate.WorkflowEdge {
 	return predicate.WorkflowEdge(sql.FieldEQ(FieldDeleteBy, v))
 }
 
-// EdgeKey applies equality check predicate on the "edge_key" field. It's identical to EdgeKeyEQ.
-func EdgeKey(v string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldEQ(FieldEdgeKey, v))
-}
-
 // ApplicationID applies equality check predicate on the "application_id" field. It's identical to ApplicationIDEQ.
 func ApplicationID(v uint64) predicate.WorkflowEdge {
 	return predicate.WorkflowEdge(sql.FieldEQ(FieldApplicationID, v))
@@ -403,71 +398,6 @@ func DeleteByIsNil() predicate.WorkflowEdge {
 // DeleteByNotNil applies the NotNil predicate on the "delete_by" field.
 func DeleteByNotNil() predicate.WorkflowEdge {
 	return predicate.WorkflowEdge(sql.FieldNotNull(FieldDeleteBy))
-}
-
-// EdgeKeyEQ applies the EQ predicate on the "edge_key" field.
-func EdgeKeyEQ(v string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldEQ(FieldEdgeKey, v))
-}
-
-// EdgeKeyNEQ applies the NEQ predicate on the "edge_key" field.
-func EdgeKeyNEQ(v string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldNEQ(FieldEdgeKey, v))
-}
-
-// EdgeKeyIn applies the In predicate on the "edge_key" field.
-func EdgeKeyIn(vs ...string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldIn(FieldEdgeKey, vs...))
-}
-
-// EdgeKeyNotIn applies the NotIn predicate on the "edge_key" field.
-func EdgeKeyNotIn(vs ...string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldNotIn(FieldEdgeKey, vs...))
-}
-
-// EdgeKeyGT applies the GT predicate on the "edge_key" field.
-func EdgeKeyGT(v string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldGT(FieldEdgeKey, v))
-}
-
-// EdgeKeyGTE applies the GTE predicate on the "edge_key" field.
-func EdgeKeyGTE(v string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldGTE(FieldEdgeKey, v))
-}
-
-// EdgeKeyLT applies the LT predicate on the "edge_key" field.
-func EdgeKeyLT(v string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldLT(FieldEdgeKey, v))
-}
-
-// EdgeKeyLTE applies the LTE predicate on the "edge_key" field.
-func EdgeKeyLTE(v string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldLTE(FieldEdgeKey, v))
-}
-
-// EdgeKeyContains applies the Contains predicate on the "edge_key" field.
-func EdgeKeyContains(v string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldContains(FieldEdgeKey, v))
-}
-
-// EdgeKeyHasPrefix applies the HasPrefix predicate on the "edge_key" field.
-func EdgeKeyHasPrefix(v string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldHasPrefix(FieldEdgeKey, v))
-}
-
-// EdgeKeyHasSuffix applies the HasSuffix predicate on the "edge_key" field.
-func EdgeKeyHasSuffix(v string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldHasSuffix(FieldEdgeKey, v))
-}
-
-// EdgeKeyEqualFold applies the EqualFold predicate on the "edge_key" field.
-func EdgeKeyEqualFold(v string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldEqualFold(FieldEdgeKey, v))
-}
-
-// EdgeKeyContainsFold applies the ContainsFold predicate on the "edge_key" field.
-func EdgeKeyContainsFold(v string) predicate.WorkflowEdge {
-	return predicate.WorkflowEdge(sql.FieldContainsFold(FieldEdgeKey, v))
 }
 
 // ApplicationIDEQ applies the EQ predicate on the "application_id" field.

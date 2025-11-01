@@ -113,12 +113,6 @@ func (_c *WorkflowNodeCreate) SetName(v string) *WorkflowNodeCreate {
 	return _c
 }
 
-// SetNodeKey sets the "node_key" field.
-func (_c *WorkflowNodeCreate) SetNodeKey(v string) *WorkflowNodeCreate {
-	_c.mutation.SetNodeKey(v)
-	return _c
-}
-
 // SetType sets the "type" field.
 func (_c *WorkflowNodeCreate) SetType(v workflownode.Type) *WorkflowNodeCreate {
 	_c.mutation.SetType(v)
@@ -189,34 +183,6 @@ func (_c *WorkflowNodeCreate) SetProcessorCode(v string) *WorkflowNodeCreate {
 func (_c *WorkflowNodeCreate) SetNillableProcessorCode(v *string) *WorkflowNodeCreate {
 	if v != nil {
 		_c.SetProcessorCode(*v)
-	}
-	return _c
-}
-
-// SetNextNodeID sets the "next_node_id" field.
-func (_c *WorkflowNodeCreate) SetNextNodeID(v uint64) *WorkflowNodeCreate {
-	_c.mutation.SetNextNodeID(v)
-	return _c
-}
-
-// SetNillableNextNodeID sets the "next_node_id" field if the given value is not nil.
-func (_c *WorkflowNodeCreate) SetNillableNextNodeID(v *uint64) *WorkflowNodeCreate {
-	if v != nil {
-		_c.SetNextNodeID(*v)
-	}
-	return _c
-}
-
-// SetParentNodeID sets the "parent_node_id" field.
-func (_c *WorkflowNodeCreate) SetParentNodeID(v uint64) *WorkflowNodeCreate {
-	_c.mutation.SetParentNodeID(v)
-	return _c
-}
-
-// SetNillableParentNodeID sets the "parent_node_id" field if the given value is not nil.
-func (_c *WorkflowNodeCreate) SetNillableParentNodeID(v *uint64) *WorkflowNodeCreate {
-	if v != nil {
-		_c.SetParentNodeID(*v)
 	}
 	return _c
 }
@@ -469,14 +435,6 @@ func (_c *WorkflowNodeCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "WorkflowNode.name": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.NodeKey(); !ok {
-		return &ValidationError{Name: "node_key", err: errors.New(`ent: missing required field "WorkflowNode.node_key"`)}
-	}
-	if v, ok := _c.mutation.NodeKey(); ok {
-		if err := workflownode.NodeKeyValidator(v); err != nil {
-			return &ValidationError{Name: "node_key", err: fmt.Errorf(`ent: validator failed for field "WorkflowNode.node_key": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "WorkflowNode.type"`)}
 	}
@@ -569,10 +527,6 @@ func (_c *WorkflowNodeCreate) createSpec() (*WorkflowNode, *sqlgraph.CreateSpec)
 		_spec.SetField(workflownode.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := _c.mutation.NodeKey(); ok {
-		_spec.SetField(workflownode.FieldNodeKey, field.TypeString, value)
-		_node.NodeKey = value
-	}
 	if value, ok := _c.mutation.GetType(); ok {
 		_spec.SetField(workflownode.FieldType, field.TypeEnum, value)
 		_node.Type = value
@@ -596,14 +550,6 @@ func (_c *WorkflowNodeCreate) createSpec() (*WorkflowNode, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.ProcessorCode(); ok {
 		_spec.SetField(workflownode.FieldProcessorCode, field.TypeString, value)
 		_node.ProcessorCode = value
-	}
-	if value, ok := _c.mutation.NextNodeID(); ok {
-		_spec.SetField(workflownode.FieldNextNodeID, field.TypeUint64, value)
-		_node.NextNodeID = value
-	}
-	if value, ok := _c.mutation.ParentNodeID(); ok {
-		_spec.SetField(workflownode.FieldParentNodeID, field.TypeUint64, value)
-		_node.ParentNodeID = value
 	}
 	if value, ok := _c.mutation.BranchNodes(); ok {
 		_spec.SetField(workflownode.FieldBranchNodes, field.TypeJSON, value)

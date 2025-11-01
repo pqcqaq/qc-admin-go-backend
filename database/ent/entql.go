@@ -818,7 +818,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			workflowedge.FieldUpdateBy:      {Type: field.TypeUint64, Column: workflowedge.FieldUpdateBy},
 			workflowedge.FieldDeleteTime:    {Type: field.TypeTime, Column: workflowedge.FieldDeleteTime},
 			workflowedge.FieldDeleteBy:      {Type: field.TypeUint64, Column: workflowedge.FieldDeleteBy},
-			workflowedge.FieldEdgeKey:       {Type: field.TypeString, Column: workflowedge.FieldEdgeKey},
 			workflowedge.FieldApplicationID: {Type: field.TypeUint64, Column: workflowedge.FieldApplicationID},
 			workflowedge.FieldSourceNodeID:  {Type: field.TypeUint64, Column: workflowedge.FieldSourceNodeID},
 			workflowedge.FieldTargetNodeID:  {Type: field.TypeUint64, Column: workflowedge.FieldTargetNodeID},
@@ -905,7 +904,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			workflownode.FieldDeleteTime:        {Type: field.TypeTime, Column: workflownode.FieldDeleteTime},
 			workflownode.FieldDeleteBy:          {Type: field.TypeUint64, Column: workflownode.FieldDeleteBy},
 			workflownode.FieldName:              {Type: field.TypeString, Column: workflownode.FieldName},
-			workflownode.FieldNodeKey:           {Type: field.TypeString, Column: workflownode.FieldNodeKey},
 			workflownode.FieldType:              {Type: field.TypeEnum, Column: workflownode.FieldType},
 			workflownode.FieldDescription:       {Type: field.TypeString, Column: workflownode.FieldDescription},
 			workflownode.FieldPrompt:            {Type: field.TypeString, Column: workflownode.FieldPrompt},
@@ -913,8 +911,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			workflownode.FieldApplicationID:     {Type: field.TypeUint64, Column: workflownode.FieldApplicationID},
 			workflownode.FieldProcessorLanguage: {Type: field.TypeString, Column: workflownode.FieldProcessorLanguage},
 			workflownode.FieldProcessorCode:     {Type: field.TypeString, Column: workflownode.FieldProcessorCode},
-			workflownode.FieldNextNodeID:        {Type: field.TypeUint64, Column: workflownode.FieldNextNodeID},
-			workflownode.FieldParentNodeID:      {Type: field.TypeUint64, Column: workflownode.FieldParentNodeID},
 			workflownode.FieldBranchNodes:       {Type: field.TypeJSON, Column: workflownode.FieldBranchNodes},
 			workflownode.FieldParallelConfig:    {Type: field.TypeJSON, Column: workflownode.FieldParallelConfig},
 			workflownode.FieldAPIConfig:         {Type: field.TypeJSON, Column: workflownode.FieldAPIConfig},
@@ -5873,11 +5869,6 @@ func (f *WorkflowEdgeFilter) WhereDeleteBy(p entql.Uint64P) {
 	f.Where(p.Field(workflowedge.FieldDeleteBy))
 }
 
-// WhereEdgeKey applies the entql string predicate on the edge_key field.
-func (f *WorkflowEdgeFilter) WhereEdgeKey(p entql.StringP) {
-	f.Where(p.Field(workflowedge.FieldEdgeKey))
-}
-
 // WhereApplicationID applies the entql uint64 predicate on the application_id field.
 func (f *WorkflowEdgeFilter) WhereApplicationID(p entql.Uint64P) {
 	f.Where(p.Field(workflowedge.FieldApplicationID))
@@ -6303,11 +6294,6 @@ func (f *WorkflowNodeFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(workflownode.FieldName))
 }
 
-// WhereNodeKey applies the entql string predicate on the node_key field.
-func (f *WorkflowNodeFilter) WhereNodeKey(p entql.StringP) {
-	f.Where(p.Field(workflownode.FieldNodeKey))
-}
-
 // WhereType applies the entql string predicate on the type field.
 func (f *WorkflowNodeFilter) WhereType(p entql.StringP) {
 	f.Where(p.Field(workflownode.FieldType))
@@ -6341,16 +6327,6 @@ func (f *WorkflowNodeFilter) WhereProcessorLanguage(p entql.StringP) {
 // WhereProcessorCode applies the entql string predicate on the processor_code field.
 func (f *WorkflowNodeFilter) WhereProcessorCode(p entql.StringP) {
 	f.Where(p.Field(workflownode.FieldProcessorCode))
-}
-
-// WhereNextNodeID applies the entql uint64 predicate on the next_node_id field.
-func (f *WorkflowNodeFilter) WhereNextNodeID(p entql.Uint64P) {
-	f.Where(p.Field(workflownode.FieldNextNodeID))
-}
-
-// WhereParentNodeID applies the entql uint64 predicate on the parent_node_id field.
-func (f *WorkflowNodeFilter) WhereParentNodeID(p entql.Uint64P) {
-	f.Where(p.Field(workflownode.FieldParentNodeID))
 }
 
 // WhereBranchNodes applies the entql json.RawMessage predicate on the branch_nodes field.

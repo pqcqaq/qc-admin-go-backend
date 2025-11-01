@@ -1426,6 +1426,46 @@ func (h *WorkflowHandler) GetWorkflowVersionsByApplicationID(c *gin.Context) {
 	})
 }
 
+// ============ Batch Save Handler ============
+
+// BatchSaveWorkflow 批量保存工作流
+// @Summary      批量保存工作流
+// @Description  批量保存工作流的节点和边（增删改）
+// @Tags         workflow-batch
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.BatchSaveWorkflowRequest  true  "批量保存请求"
+// @Success      200   {object}  models.BatchSaveWorkflowResponse
+// @Failure      400   {object}  object{success=bool,message=string}
+// @Failure      500   {object}  object{success=bool,message=string}
+// @Router       /workflow/batch-save [post]
+func (h *WorkflowHandler) BatchSaveWorkflow(c *gin.Context) {
+	var req models.BatchSaveWorkflowRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+		return
+	}
+
+	if req.ApplicationID == "" {
+		middleware.ThrowError(c, middleware.BadRequestError("应用ID不能为空", nil))
+		return
+	}
+
+	ctx := middleware.GetRequestContext(c)
+	result, err := funcs.WorkflowFuncs{}.BatchSaveWorkflow(ctx, &req)
+	if err != nil {
+		middleware.ThrowError(c, middleware.DatabaseError("批量保存工作流失败", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "批量保存成功",
+		"data":    result,
+	})
+}
+
 // GetWorkflowVersion 获取单个版本
 // @Summary      获取单个版本
 // @Description  根据版本ID获取版本详情

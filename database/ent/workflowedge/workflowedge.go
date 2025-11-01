@@ -28,8 +28,6 @@ const (
 	FieldDeleteTime = "delete_time"
 	// FieldDeleteBy holds the string denoting the delete_by field in the database.
 	FieldDeleteBy = "delete_by"
-	// FieldEdgeKey holds the string denoting the edge_key field in the database.
-	FieldEdgeKey = "edge_key"
 	// FieldApplicationID holds the string denoting the application_id field in the database.
 	FieldApplicationID = "application_id"
 	// FieldSourceNodeID holds the string denoting the source_node_id field in the database.
@@ -92,7 +90,6 @@ var Columns = []string{
 	FieldUpdateBy,
 	FieldDeleteTime,
 	FieldDeleteBy,
-	FieldEdgeKey,
 	FieldApplicationID,
 	FieldSourceNodeID,
 	FieldTargetNodeID,
@@ -130,8 +127,6 @@ var (
 	DefaultUpdateTime func() time.Time
 	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
 	UpdateDefaultUpdateTime func() time.Time
-	// EdgeKeyValidator is a validator for the "edge_key" field. It is called by the builders before save.
-	EdgeKeyValidator func(string) error
 	// DefaultAnimated holds the default value on creation for the "animated" field.
 	DefaultAnimated bool
 )
@@ -199,11 +194,6 @@ func ByDeleteTime(opts ...sql.OrderTermOption) OrderOption {
 // ByDeleteBy orders the results by the delete_by field.
 func ByDeleteBy(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeleteBy, opts...).ToFunc()
-}
-
-// ByEdgeKey orders the results by the edge_key field.
-func ByEdgeKey(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEdgeKey, opts...).ToFunc()
 }
 
 // ByApplicationID orders the results by the application_id field.

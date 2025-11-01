@@ -1428,12 +1428,8 @@ func init() {
 	workflowedge.DefaultUpdateTime = workflowedgeDescUpdateTime.Default.(func() time.Time)
 	// workflowedge.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	workflowedge.UpdateDefaultUpdateTime = workflowedgeDescUpdateTime.UpdateDefault.(func() time.Time)
-	// workflowedgeDescEdgeKey is the schema descriptor for edge_key field.
-	workflowedgeDescEdgeKey := workflowedgeFields[0].Descriptor()
-	// workflowedge.EdgeKeyValidator is a validator for the "edge_key" field. It is called by the builders before save.
-	workflowedge.EdgeKeyValidator = workflowedgeDescEdgeKey.Validators[0].(func(string) error)
 	// workflowedgeDescAnimated is the schema descriptor for animated field.
-	workflowedgeDescAnimated := workflowedgeFields[9].Descriptor()
+	workflowedgeDescAnimated := workflowedgeFields[8].Descriptor()
 	// workflowedge.DefaultAnimated holds the default value on creation for the animated field.
 	workflowedge.DefaultAnimated = workflowedgeDescAnimated.Default.(bool)
 	workflowexecutionMixin := schema.WorkflowExecution{}.Mixin()
@@ -1518,28 +1514,24 @@ func init() {
 	workflownodeDescName := workflownodeFields[0].Descriptor()
 	// workflownode.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	workflownode.NameValidator = workflownodeDescName.Validators[0].(func(string) error)
-	// workflownodeDescNodeKey is the schema descriptor for node_key field.
-	workflownodeDescNodeKey := workflownodeFields[1].Descriptor()
-	// workflownode.NodeKeyValidator is a validator for the "node_key" field. It is called by the builders before save.
-	workflownode.NodeKeyValidator = workflownodeDescNodeKey.Validators[0].(func(string) error)
 	// workflownodeDescAsync is the schema descriptor for async field.
-	workflownodeDescAsync := workflownodeFields[14].Descriptor()
+	workflownodeDescAsync := workflownodeFields[11].Descriptor()
 	// workflownode.DefaultAsync holds the default value on creation for the async field.
 	workflownode.DefaultAsync = workflownodeDescAsync.Default.(bool)
 	// workflownodeDescTimeout is the schema descriptor for timeout field.
-	workflownodeDescTimeout := workflownodeFields[15].Descriptor()
+	workflownodeDescTimeout := workflownodeFields[12].Descriptor()
 	// workflownode.DefaultTimeout holds the default value on creation for the timeout field.
 	workflownode.DefaultTimeout = workflownodeDescTimeout.Default.(int)
 	// workflownodeDescRetryCount is the schema descriptor for retry_count field.
-	workflownodeDescRetryCount := workflownodeFields[16].Descriptor()
+	workflownodeDescRetryCount := workflownodeFields[13].Descriptor()
 	// workflownode.DefaultRetryCount holds the default value on creation for the retry_count field.
 	workflownode.DefaultRetryCount = workflownodeDescRetryCount.Default.(int)
 	// workflownodeDescPositionX is the schema descriptor for position_x field.
-	workflownodeDescPositionX := workflownodeFields[17].Descriptor()
+	workflownodeDescPositionX := workflownodeFields[14].Descriptor()
 	// workflownode.DefaultPositionX holds the default value on creation for the position_x field.
 	workflownode.DefaultPositionX = workflownodeDescPositionX.Default.(float64)
 	// workflownodeDescPositionY is the schema descriptor for position_y field.
-	workflownodeDescPositionY := workflownodeFields[18].Descriptor()
+	workflownodeDescPositionY := workflownodeFields[15].Descriptor()
 	// workflownode.DefaultPositionY holds the default value on creation for the position_y field.
 	workflownode.DefaultPositionY = workflownodeDescPositionY.Default.(float64)
 	workflownodeexecutionMixin := schema.WorkflowNodeExecution{}.Mixin()

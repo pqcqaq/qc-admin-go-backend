@@ -41030,7 +41030,6 @@ type WorkflowEdgeMutation struct {
 	delete_time        *time.Time
 	delete_by          *uint64
 	adddelete_by       *int64
-	edge_key           *string
 	source_handle      *string
 	target_handle      *string
 	_type              *workflowedge.Type
@@ -41484,42 +41483,6 @@ func (m *WorkflowEdgeMutation) ResetDeleteBy() {
 	m.delete_by = nil
 	m.adddelete_by = nil
 	delete(m.clearedFields, workflowedge.FieldDeleteBy)
-}
-
-// SetEdgeKey sets the "edge_key" field.
-func (m *WorkflowEdgeMutation) SetEdgeKey(s string) {
-	m.edge_key = &s
-}
-
-// EdgeKey returns the value of the "edge_key" field in the mutation.
-func (m *WorkflowEdgeMutation) EdgeKey() (r string, exists bool) {
-	v := m.edge_key
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldEdgeKey returns the old "edge_key" field's value of the WorkflowEdge entity.
-// If the WorkflowEdge object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkflowEdgeMutation) OldEdgeKey(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEdgeKey is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEdgeKey requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEdgeKey: %w", err)
-	}
-	return oldValue.EdgeKey, nil
-}
-
-// ResetEdgeKey resets all changes to the "edge_key" field.
-func (m *WorkflowEdgeMutation) ResetEdgeKey() {
-	m.edge_key = nil
 }
 
 // SetApplicationID sets the "application_id" field.
@@ -42111,7 +42074,7 @@ func (m *WorkflowEdgeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkflowEdgeMutation) Fields() []string {
-	fields := make([]string, 0, 18)
+	fields := make([]string, 0, 17)
 	if m.create_time != nil {
 		fields = append(fields, workflowedge.FieldCreateTime)
 	}
@@ -42129,9 +42092,6 @@ func (m *WorkflowEdgeMutation) Fields() []string {
 	}
 	if m.delete_by != nil {
 		fields = append(fields, workflowedge.FieldDeleteBy)
-	}
-	if m.edge_key != nil {
-		fields = append(fields, workflowedge.FieldEdgeKey)
 	}
 	if m.application != nil {
 		fields = append(fields, workflowedge.FieldApplicationID)
@@ -42186,8 +42146,6 @@ func (m *WorkflowEdgeMutation) Field(name string) (ent.Value, bool) {
 		return m.DeleteTime()
 	case workflowedge.FieldDeleteBy:
 		return m.DeleteBy()
-	case workflowedge.FieldEdgeKey:
-		return m.EdgeKey()
 	case workflowedge.FieldApplicationID:
 		return m.ApplicationID()
 	case workflowedge.FieldSourceNodeID:
@@ -42231,8 +42189,6 @@ func (m *WorkflowEdgeMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldDeleteTime(ctx)
 	case workflowedge.FieldDeleteBy:
 		return m.OldDeleteBy(ctx)
-	case workflowedge.FieldEdgeKey:
-		return m.OldEdgeKey(ctx)
 	case workflowedge.FieldApplicationID:
 		return m.OldApplicationID(ctx)
 	case workflowedge.FieldSourceNodeID:
@@ -42305,13 +42261,6 @@ func (m *WorkflowEdgeMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDeleteBy(v)
-		return nil
-	case workflowedge.FieldEdgeKey:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetEdgeKey(v)
 		return nil
 	case workflowedge.FieldApplicationID:
 		v, ok := value.(uint64)
@@ -42558,9 +42507,6 @@ func (m *WorkflowEdgeMutation) ResetField(name string) error {
 		return nil
 	case workflowedge.FieldDeleteBy:
 		m.ResetDeleteBy()
-		return nil
-	case workflowedge.FieldEdgeKey:
-		m.ResetEdgeKey()
 		return nil
 	case workflowedge.FieldApplicationID:
 		m.ResetApplicationID()
@@ -45585,17 +45531,12 @@ type WorkflowNodeMutation struct {
 	delete_by             *uint64
 	adddelete_by          *int64
 	name                  *string
-	node_key              *string
 	_type                 *workflownode.Type
 	description           *string
 	prompt                *string
 	_config               *map[string]interface{}
 	processor_language    *string
 	processor_code        *string
-	next_node_id          *uint64
-	addnext_node_id       *int64
-	parent_node_id        *uint64
-	addparent_node_id     *int64
 	branch_nodes          *map[string]interface{}
 	parallel_config       *map[string]interface{}
 	api_config            *map[string]interface{}
@@ -46097,42 +46038,6 @@ func (m *WorkflowNodeMutation) ResetName() {
 	m.name = nil
 }
 
-// SetNodeKey sets the "node_key" field.
-func (m *WorkflowNodeMutation) SetNodeKey(s string) {
-	m.node_key = &s
-}
-
-// NodeKey returns the value of the "node_key" field in the mutation.
-func (m *WorkflowNodeMutation) NodeKey() (r string, exists bool) {
-	v := m.node_key
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldNodeKey returns the old "node_key" field's value of the WorkflowNode entity.
-// If the WorkflowNode object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkflowNodeMutation) OldNodeKey(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldNodeKey is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldNodeKey requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldNodeKey: %w", err)
-	}
-	return oldValue.NodeKey, nil
-}
-
-// ResetNodeKey resets all changes to the "node_key" field.
-func (m *WorkflowNodeMutation) ResetNodeKey() {
-	m.node_key = nil
-}
-
 // SetType sets the "type" field.
 func (m *WorkflowNodeMutation) SetType(w workflownode.Type) {
 	m._type = &w
@@ -46435,146 +46340,6 @@ func (m *WorkflowNodeMutation) ProcessorCodeCleared() bool {
 func (m *WorkflowNodeMutation) ResetProcessorCode() {
 	m.processor_code = nil
 	delete(m.clearedFields, workflownode.FieldProcessorCode)
-}
-
-// SetNextNodeID sets the "next_node_id" field.
-func (m *WorkflowNodeMutation) SetNextNodeID(u uint64) {
-	m.next_node_id = &u
-	m.addnext_node_id = nil
-}
-
-// NextNodeID returns the value of the "next_node_id" field in the mutation.
-func (m *WorkflowNodeMutation) NextNodeID() (r uint64, exists bool) {
-	v := m.next_node_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldNextNodeID returns the old "next_node_id" field's value of the WorkflowNode entity.
-// If the WorkflowNode object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkflowNodeMutation) OldNextNodeID(ctx context.Context) (v uint64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldNextNodeID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldNextNodeID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldNextNodeID: %w", err)
-	}
-	return oldValue.NextNodeID, nil
-}
-
-// AddNextNodeID adds u to the "next_node_id" field.
-func (m *WorkflowNodeMutation) AddNextNodeID(u int64) {
-	if m.addnext_node_id != nil {
-		*m.addnext_node_id += u
-	} else {
-		m.addnext_node_id = &u
-	}
-}
-
-// AddedNextNodeID returns the value that was added to the "next_node_id" field in this mutation.
-func (m *WorkflowNodeMutation) AddedNextNodeID() (r int64, exists bool) {
-	v := m.addnext_node_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearNextNodeID clears the value of the "next_node_id" field.
-func (m *WorkflowNodeMutation) ClearNextNodeID() {
-	m.next_node_id = nil
-	m.addnext_node_id = nil
-	m.clearedFields[workflownode.FieldNextNodeID] = struct{}{}
-}
-
-// NextNodeIDCleared returns if the "next_node_id" field was cleared in this mutation.
-func (m *WorkflowNodeMutation) NextNodeIDCleared() bool {
-	_, ok := m.clearedFields[workflownode.FieldNextNodeID]
-	return ok
-}
-
-// ResetNextNodeID resets all changes to the "next_node_id" field.
-func (m *WorkflowNodeMutation) ResetNextNodeID() {
-	m.next_node_id = nil
-	m.addnext_node_id = nil
-	delete(m.clearedFields, workflownode.FieldNextNodeID)
-}
-
-// SetParentNodeID sets the "parent_node_id" field.
-func (m *WorkflowNodeMutation) SetParentNodeID(u uint64) {
-	m.parent_node_id = &u
-	m.addparent_node_id = nil
-}
-
-// ParentNodeID returns the value of the "parent_node_id" field in the mutation.
-func (m *WorkflowNodeMutation) ParentNodeID() (r uint64, exists bool) {
-	v := m.parent_node_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldParentNodeID returns the old "parent_node_id" field's value of the WorkflowNode entity.
-// If the WorkflowNode object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkflowNodeMutation) OldParentNodeID(ctx context.Context) (v uint64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldParentNodeID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldParentNodeID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldParentNodeID: %w", err)
-	}
-	return oldValue.ParentNodeID, nil
-}
-
-// AddParentNodeID adds u to the "parent_node_id" field.
-func (m *WorkflowNodeMutation) AddParentNodeID(u int64) {
-	if m.addparent_node_id != nil {
-		*m.addparent_node_id += u
-	} else {
-		m.addparent_node_id = &u
-	}
-}
-
-// AddedParentNodeID returns the value that was added to the "parent_node_id" field in this mutation.
-func (m *WorkflowNodeMutation) AddedParentNodeID() (r int64, exists bool) {
-	v := m.addparent_node_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearParentNodeID clears the value of the "parent_node_id" field.
-func (m *WorkflowNodeMutation) ClearParentNodeID() {
-	m.parent_node_id = nil
-	m.addparent_node_id = nil
-	m.clearedFields[workflownode.FieldParentNodeID] = struct{}{}
-}
-
-// ParentNodeIDCleared returns if the "parent_node_id" field was cleared in this mutation.
-func (m *WorkflowNodeMutation) ParentNodeIDCleared() bool {
-	_, ok := m.clearedFields[workflownode.FieldParentNodeID]
-	return ok
-}
-
-// ResetParentNodeID resets all changes to the "parent_node_id" field.
-func (m *WorkflowNodeMutation) ResetParentNodeID() {
-	m.parent_node_id = nil
-	m.addparent_node_id = nil
-	delete(m.clearedFields, workflownode.FieldParentNodeID)
 }
 
 // SetBranchNodes sets the "branch_nodes" field.
@@ -47256,7 +47021,7 @@ func (m *WorkflowNodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkflowNodeMutation) Fields() []string {
-	fields := make([]string, 0, 26)
+	fields := make([]string, 0, 23)
 	if m.create_time != nil {
 		fields = append(fields, workflownode.FieldCreateTime)
 	}
@@ -47278,9 +47043,6 @@ func (m *WorkflowNodeMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, workflownode.FieldName)
 	}
-	if m.node_key != nil {
-		fields = append(fields, workflownode.FieldNodeKey)
-	}
 	if m._type != nil {
 		fields = append(fields, workflownode.FieldType)
 	}
@@ -47301,12 +47063,6 @@ func (m *WorkflowNodeMutation) Fields() []string {
 	}
 	if m.processor_code != nil {
 		fields = append(fields, workflownode.FieldProcessorCode)
-	}
-	if m.next_node_id != nil {
-		fields = append(fields, workflownode.FieldNextNodeID)
-	}
-	if m.parent_node_id != nil {
-		fields = append(fields, workflownode.FieldParentNodeID)
 	}
 	if m.branch_nodes != nil {
 		fields = append(fields, workflownode.FieldBranchNodes)
@@ -47357,8 +47113,6 @@ func (m *WorkflowNodeMutation) Field(name string) (ent.Value, bool) {
 		return m.DeleteBy()
 	case workflownode.FieldName:
 		return m.Name()
-	case workflownode.FieldNodeKey:
-		return m.NodeKey()
 	case workflownode.FieldType:
 		return m.GetType()
 	case workflownode.FieldDescription:
@@ -47373,10 +47127,6 @@ func (m *WorkflowNodeMutation) Field(name string) (ent.Value, bool) {
 		return m.ProcessorLanguage()
 	case workflownode.FieldProcessorCode:
 		return m.ProcessorCode()
-	case workflownode.FieldNextNodeID:
-		return m.NextNodeID()
-	case workflownode.FieldParentNodeID:
-		return m.ParentNodeID()
 	case workflownode.FieldBranchNodes:
 		return m.BranchNodes()
 	case workflownode.FieldParallelConfig:
@@ -47418,8 +47168,6 @@ func (m *WorkflowNodeMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldDeleteBy(ctx)
 	case workflownode.FieldName:
 		return m.OldName(ctx)
-	case workflownode.FieldNodeKey:
-		return m.OldNodeKey(ctx)
 	case workflownode.FieldType:
 		return m.OldType(ctx)
 	case workflownode.FieldDescription:
@@ -47434,10 +47182,6 @@ func (m *WorkflowNodeMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldProcessorLanguage(ctx)
 	case workflownode.FieldProcessorCode:
 		return m.OldProcessorCode(ctx)
-	case workflownode.FieldNextNodeID:
-		return m.OldNextNodeID(ctx)
-	case workflownode.FieldParentNodeID:
-		return m.OldParentNodeID(ctx)
 	case workflownode.FieldBranchNodes:
 		return m.OldBranchNodes(ctx)
 	case workflownode.FieldParallelConfig:
@@ -47514,13 +47258,6 @@ func (m *WorkflowNodeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case workflownode.FieldNodeKey:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetNodeKey(v)
-		return nil
 	case workflownode.FieldType:
 		v, ok := value.(workflownode.Type)
 		if !ok {
@@ -47569,20 +47306,6 @@ func (m *WorkflowNodeMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetProcessorCode(v)
-		return nil
-	case workflownode.FieldNextNodeID:
-		v, ok := value.(uint64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetNextNodeID(v)
-		return nil
-	case workflownode.FieldParentNodeID:
-		v, ok := value.(uint64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetParentNodeID(v)
 		return nil
 	case workflownode.FieldBranchNodes:
 		v, ok := value.(map[string]interface{})
@@ -47664,12 +47387,6 @@ func (m *WorkflowNodeMutation) AddedFields() []string {
 	if m.adddelete_by != nil {
 		fields = append(fields, workflownode.FieldDeleteBy)
 	}
-	if m.addnext_node_id != nil {
-		fields = append(fields, workflownode.FieldNextNodeID)
-	}
-	if m.addparent_node_id != nil {
-		fields = append(fields, workflownode.FieldParentNodeID)
-	}
 	if m.addtimeout != nil {
 		fields = append(fields, workflownode.FieldTimeout)
 	}
@@ -47696,10 +47413,6 @@ func (m *WorkflowNodeMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedUpdateBy()
 	case workflownode.FieldDeleteBy:
 		return m.AddedDeleteBy()
-	case workflownode.FieldNextNodeID:
-		return m.AddedNextNodeID()
-	case workflownode.FieldParentNodeID:
-		return m.AddedParentNodeID()
 	case workflownode.FieldTimeout:
 		return m.AddedTimeout()
 	case workflownode.FieldRetryCount:
@@ -47737,20 +47450,6 @@ func (m *WorkflowNodeMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddDeleteBy(v)
-		return nil
-	case workflownode.FieldNextNodeID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddNextNodeID(v)
-		return nil
-	case workflownode.FieldParentNodeID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddParentNodeID(v)
 		return nil
 	case workflownode.FieldTimeout:
 		v, ok := value.(int)
@@ -47812,12 +47511,6 @@ func (m *WorkflowNodeMutation) ClearedFields() []string {
 	if m.FieldCleared(workflownode.FieldProcessorCode) {
 		fields = append(fields, workflownode.FieldProcessorCode)
 	}
-	if m.FieldCleared(workflownode.FieldNextNodeID) {
-		fields = append(fields, workflownode.FieldNextNodeID)
-	}
-	if m.FieldCleared(workflownode.FieldParentNodeID) {
-		fields = append(fields, workflownode.FieldParentNodeID)
-	}
 	if m.FieldCleared(workflownode.FieldBranchNodes) {
 		fields = append(fields, workflownode.FieldBranchNodes)
 	}
@@ -47868,12 +47561,6 @@ func (m *WorkflowNodeMutation) ClearField(name string) error {
 	case workflownode.FieldProcessorCode:
 		m.ClearProcessorCode()
 		return nil
-	case workflownode.FieldNextNodeID:
-		m.ClearNextNodeID()
-		return nil
-	case workflownode.FieldParentNodeID:
-		m.ClearParentNodeID()
-		return nil
 	case workflownode.FieldBranchNodes:
 		m.ClearBranchNodes()
 		return nil
@@ -47915,9 +47602,6 @@ func (m *WorkflowNodeMutation) ResetField(name string) error {
 	case workflownode.FieldName:
 		m.ResetName()
 		return nil
-	case workflownode.FieldNodeKey:
-		m.ResetNodeKey()
-		return nil
 	case workflownode.FieldType:
 		m.ResetType()
 		return nil
@@ -47938,12 +47622,6 @@ func (m *WorkflowNodeMutation) ResetField(name string) error {
 		return nil
 	case workflownode.FieldProcessorCode:
 		m.ResetProcessorCode()
-		return nil
-	case workflownode.FieldNextNodeID:
-		m.ResetNextNodeID()
-		return nil
-	case workflownode.FieldParentNodeID:
-		m.ResetParentNodeID()
 		return nil
 	case workflownode.FieldBranchNodes:
 		m.ResetBranchNodes()

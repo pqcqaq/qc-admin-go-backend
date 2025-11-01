@@ -30,8 +30,6 @@ const (
 	FieldDeleteBy = "delete_by"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldNodeKey holds the string denoting the node_key field in the database.
-	FieldNodeKey = "node_key"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -46,10 +44,6 @@ const (
 	FieldProcessorLanguage = "processor_language"
 	// FieldProcessorCode holds the string denoting the processor_code field in the database.
 	FieldProcessorCode = "processor_code"
-	// FieldNextNodeID holds the string denoting the next_node_id field in the database.
-	FieldNextNodeID = "next_node_id"
-	// FieldParentNodeID holds the string denoting the parent_node_id field in the database.
-	FieldParentNodeID = "parent_node_id"
 	// FieldBranchNodes holds the string denoting the branch_nodes field in the database.
 	FieldBranchNodes = "branch_nodes"
 	// FieldParallelConfig holds the string denoting the parallel_config field in the database.
@@ -118,7 +112,6 @@ var Columns = []string{
 	FieldDeleteTime,
 	FieldDeleteBy,
 	FieldName,
-	FieldNodeKey,
 	FieldType,
 	FieldDescription,
 	FieldPrompt,
@@ -126,8 +119,6 @@ var Columns = []string{
 	FieldApplicationID,
 	FieldProcessorLanguage,
 	FieldProcessorCode,
-	FieldNextNodeID,
-	FieldParentNodeID,
 	FieldBranchNodes,
 	FieldParallelConfig,
 	FieldAPIConfig,
@@ -165,8 +156,6 @@ var (
 	UpdateDefaultUpdateTime func() time.Time
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
-	// NodeKeyValidator is a validator for the "node_key" field. It is called by the builders before save.
-	NodeKeyValidator func(string) error
 	// DefaultAsync holds the default value on creation for the "async" field.
 	DefaultAsync bool
 	// DefaultTimeout holds the default value on creation for the "timeout" field.
@@ -252,11 +241,6 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
-// ByNodeKey orders the results by the node_key field.
-func ByNodeKey(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldNodeKey, opts...).ToFunc()
-}
-
 // ByType orders the results by the type field.
 func ByType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldType, opts...).ToFunc()
@@ -285,16 +269,6 @@ func ByProcessorLanguage(opts ...sql.OrderTermOption) OrderOption {
 // ByProcessorCode orders the results by the processor_code field.
 func ByProcessorCode(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProcessorCode, opts...).ToFunc()
-}
-
-// ByNextNodeID orders the results by the next_node_id field.
-func ByNextNodeID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldNextNodeID, opts...).ToFunc()
-}
-
-// ByParentNodeID orders the results by the parent_node_id field.
-func ByParentNodeID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldParentNodeID, opts...).ToFunc()
 }
 
 // ByAsync orders the results by the async field.

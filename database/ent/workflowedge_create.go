@@ -106,12 +106,6 @@ func (_c *WorkflowEdgeCreate) SetNillableDeleteBy(v *uint64) *WorkflowEdgeCreate
 	return _c
 }
 
-// SetEdgeKey sets the "edge_key" field.
-func (_c *WorkflowEdgeCreate) SetEdgeKey(v string) *WorkflowEdgeCreate {
-	_c.mutation.SetEdgeKey(v)
-	return _c
-}
-
 // SetApplicationID sets the "application_id" field.
 func (_c *WorkflowEdgeCreate) SetApplicationID(v uint64) *WorkflowEdgeCreate {
 	_c.mutation.SetApplicationID(v)
@@ -317,14 +311,6 @@ func (_c *WorkflowEdgeCreate) check() error {
 	if _, ok := _c.mutation.UpdateTime(); !ok {
 		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "WorkflowEdge.update_time"`)}
 	}
-	if _, ok := _c.mutation.EdgeKey(); !ok {
-		return &ValidationError{Name: "edge_key", err: errors.New(`ent: missing required field "WorkflowEdge.edge_key"`)}
-	}
-	if v, ok := _c.mutation.EdgeKey(); ok {
-		if err := workflowedge.EdgeKeyValidator(v); err != nil {
-			return &ValidationError{Name: "edge_key", err: fmt.Errorf(`ent: validator failed for field "WorkflowEdge.edge_key": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.ApplicationID(); !ok {
 		return &ValidationError{Name: "application_id", err: errors.New(`ent: missing required field "WorkflowEdge.application_id"`)}
 	}
@@ -409,10 +395,6 @@ func (_c *WorkflowEdgeCreate) createSpec() (*WorkflowEdge, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.DeleteBy(); ok {
 		_spec.SetField(workflowedge.FieldDeleteBy, field.TypeUint64, value)
 		_node.DeleteBy = value
-	}
-	if value, ok := _c.mutation.EdgeKey(); ok {
-		_spec.SetField(workflowedge.FieldEdgeKey, field.TypeString, value)
-		_node.EdgeKey = value
 	}
 	if value, ok := _c.mutation.SourceHandle(); ok {
 		_spec.SetField(workflowedge.FieldSourceHandle, field.TypeString, value)
