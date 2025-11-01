@@ -39,6 +39,7 @@ func (WorkflowApplication) Fields() []ent.Field {
 		field.JSON("variables", map[string]interface{}{}).Optional().Comment("全局变量定义"),
 		field.Uint("version").Default(1).Comment("版本号"),
 		field.Enum("status").Values("draft", "published", "archived").Default("draft").Comment("状态"),
+		field.JSON("viewport_config", map[string]interface{}{}).Optional().Comment("画布视口配置（zoom, x, y）"),
 	}
 }
 
@@ -128,7 +129,7 @@ func (WorkflowNode) Fields() []ent.Field {
 		field.Text("processor_code").Optional().Comment("代码处理器"),
 		field.Uint64("next_node_id").Optional().Comment("下一个节点ID"),
 		field.Uint64("parent_node_id").Optional().Comment("父节点ID"),
-		field.JSON("branch_nodes", map[string]uint64{}).Optional().Comment("分支节点映射"),
+		field.JSON("branch_nodes", map[string]interface{}{}).Optional().Comment("分支配置映射（存储完整的分支配置：name, condition, handlerId, targetNodeId）"),
 		field.JSON("parallel_config", map[string]interface{}{}).Optional().Comment("并行执行配置"),
 		field.JSON("api_config", map[string]interface{}{}).Optional().Comment("API调用配置"),
 		field.Bool("async").Default(false).Comment("是否异步执行"),

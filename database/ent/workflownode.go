@@ -54,8 +54,8 @@ type WorkflowNode struct {
 	NextNodeID uint64 `json:"next_node_id,omitempty"`
 	// 父节点ID
 	ParentNodeID uint64 `json:"parent_node_id,omitempty"`
-	// 分支节点映射
-	BranchNodes map[string]uint64 `json:"branch_nodes,omitempty"`
+	// 分支配置映射（存储完整的分支配置：name, condition, handlerId, targetNodeId）
+	BranchNodes map[string]interface{} `json:"branch_nodes,omitempty"`
 	// 并行执行配置
 	ParallelConfig map[string]interface{} `json:"parallel_config,omitempty"`
 	// API调用配置

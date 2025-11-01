@@ -715,6 +715,16 @@ func StatusNotIn(vs ...Status) predicate.WorkflowApplication {
 	return predicate.WorkflowApplication(sql.FieldNotIn(FieldStatus, vs...))
 }
 
+// ViewportConfigIsNil applies the IsNil predicate on the "viewport_config" field.
+func ViewportConfigIsNil() predicate.WorkflowApplication {
+	return predicate.WorkflowApplication(sql.FieldIsNull(FieldViewportConfig))
+}
+
+// ViewportConfigNotNil applies the NotNil predicate on the "viewport_config" field.
+func ViewportConfigNotNil() predicate.WorkflowApplication {
+	return predicate.WorkflowApplication(sql.FieldNotNull(FieldViewportConfig))
+}
+
 // HasNodes applies the HasEdge predicate on the "nodes" edge.
 func HasNodes() predicate.WorkflowApplication {
 	return predicate.WorkflowApplication(func(s *sql.Selector) {

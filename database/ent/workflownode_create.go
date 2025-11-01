@@ -222,7 +222,7 @@ func (_c *WorkflowNodeCreate) SetNillableParentNodeID(v *uint64) *WorkflowNodeCr
 }
 
 // SetBranchNodes sets the "branch_nodes" field.
-func (_c *WorkflowNodeCreate) SetBranchNodes(v map[string]uint64) *WorkflowNodeCreate {
+func (_c *WorkflowNodeCreate) SetBranchNodes(v map[string]interface{}) *WorkflowNodeCreate {
 	_c.mutation.SetBranchNodes(v)
 	return _c
 }

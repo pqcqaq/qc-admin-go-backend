@@ -260,6 +260,18 @@ func (_u *WorkflowApplicationUpdate) SetNillableStatus(v *workflowapplication.St
 	return _u
 }
 
+// SetViewportConfig sets the "viewport_config" field.
+func (_u *WorkflowApplicationUpdate) SetViewportConfig(v map[string]interface{}) *WorkflowApplicationUpdate {
+	_u.mutation.SetViewportConfig(v)
+	return _u
+}
+
+// ClearViewportConfig clears the value of the "viewport_config" field.
+func (_u *WorkflowApplicationUpdate) ClearViewportConfig() *WorkflowApplicationUpdate {
+	_u.mutation.ClearViewportConfig()
+	return _u
+}
+
 // AddNodeIDs adds the "nodes" edge to the WorkflowNode entity by IDs.
 func (_u *WorkflowApplicationUpdate) AddNodeIDs(ids ...uint64) *WorkflowApplicationUpdate {
 	_u.mutation.AddNodeIDs(ids...)
@@ -513,6 +525,12 @@ func (_u *WorkflowApplicationUpdate) sqlSave(ctx context.Context) (_node int, er
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(workflowapplication.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ViewportConfig(); ok {
+		_spec.SetField(workflowapplication.FieldViewportConfig, field.TypeJSON, value)
+	}
+	if _u.mutation.ViewportConfigCleared() {
+		_spec.ClearField(workflowapplication.FieldViewportConfig, field.TypeJSON)
 	}
 	if _u.mutation.NodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -898,6 +916,18 @@ func (_u *WorkflowApplicationUpdateOne) SetNillableStatus(v *workflowapplication
 	return _u
 }
 
+// SetViewportConfig sets the "viewport_config" field.
+func (_u *WorkflowApplicationUpdateOne) SetViewportConfig(v map[string]interface{}) *WorkflowApplicationUpdateOne {
+	_u.mutation.SetViewportConfig(v)
+	return _u
+}
+
+// ClearViewportConfig clears the value of the "viewport_config" field.
+func (_u *WorkflowApplicationUpdateOne) ClearViewportConfig() *WorkflowApplicationUpdateOne {
+	_u.mutation.ClearViewportConfig()
+	return _u
+}
+
 // AddNodeIDs adds the "nodes" edge to the WorkflowNode entity by IDs.
 func (_u *WorkflowApplicationUpdateOne) AddNodeIDs(ids ...uint64) *WorkflowApplicationUpdateOne {
 	_u.mutation.AddNodeIDs(ids...)
@@ -1181,6 +1211,12 @@ func (_u *WorkflowApplicationUpdateOne) sqlSave(ctx context.Context) (_node *Wor
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(workflowapplication.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ViewportConfig(); ok {
+		_spec.SetField(workflowapplication.FieldViewportConfig, field.TypeJSON, value)
+	}
+	if _u.mutation.ViewportConfigCleared() {
+		_spec.ClearField(workflowapplication.FieldViewportConfig, field.TypeJSON)
 	}
 	if _u.mutation.NodesCleared() {
 		edge := &sqlgraph.EdgeSpec{

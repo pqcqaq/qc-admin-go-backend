@@ -8,18 +8,19 @@ import (
 
 // WorkflowApplicationResponse 工作流应用响应结构
 type WorkflowApplicationResponse struct {
-	ID           string                  `json:"id"`
-	CreateTime   string                  `json:"createTime"`
-	UpdateTime   string                  `json:"updateTime"`
-	Name         string                  `json:"name"`
-	Description  string                  `json:"description,omitempty"`
-	StartNodeID  string                  `json:"startNodeId,omitempty"` // 旧架构，保留兼容
-	ClientSecret string                  `json:"clientSecret"`
-	Variables    map[string]interface{}  `json:"variables,omitempty"`
-	Version      uint                    `json:"version"`
-	Status       string                  `json:"status"`              // draft, published, archived
-	GraphData    string                  `json:"graphData,omitempty"` // 新架构：完整的工作流图JSON
-	Nodes        []*WorkflowNodeResponse `json:"nodes,omitempty"`     // 旧架构，保留兼容
+	ID             string                  `json:"id"`
+	CreateTime     string                  `json:"createTime"`
+	UpdateTime     string                  `json:"updateTime"`
+	Name           string                  `json:"name"`
+	Description    string                  `json:"description,omitempty"`
+	StartNodeID    string                  `json:"startNodeId,omitempty"` // 旧架构，保留兼容
+	ClientSecret   string                  `json:"clientSecret"`
+	Variables      map[string]interface{}  `json:"variables,omitempty"`
+	Version        uint                    `json:"version"`
+	Status         string                  `json:"status"`                   // draft, published, archived
+	GraphData      string                  `json:"graphData,omitempty"`      // 新架构：完整的工作流图JSON
+	ViewportConfig map[string]interface{}  `json:"viewportConfig,omitempty"` // 画布视口配置
+	Nodes          []*WorkflowNodeResponse `json:"nodes,omitempty"`          // 旧架构，保留兼容
 }
 
 // CreateWorkflowApplicationRequest 创建工作流应用请求结构
@@ -33,13 +34,14 @@ type CreateWorkflowApplicationRequest struct {
 
 // UpdateWorkflowApplicationRequest 更新工作流应用请求结构
 type UpdateWorkflowApplicationRequest struct {
-	Name        string                 `json:"name,omitempty"` // 改为可选
-	Description string                 `json:"description,omitempty"`
-	StartNodeID string                 `json:"startNodeId,omitempty"` // 旧架构，改为可选
-	Variables   map[string]interface{} `json:"variables,omitempty"`
-	Version     uint                   `json:"version,omitempty"`
-	Status      string                 `json:"status,omitempty"`    // draft, published, archived
-	GraphData   string                 `json:"graphData,omitempty"` // 新架构：完整的工作流图JSON
+	Name           string                 `json:"name,omitempty"` // 改为可选
+	Description    string                 `json:"description,omitempty"`
+	StartNodeID    string                 `json:"startNodeId,omitempty"` // 旧架构，改为可选
+	Variables      map[string]interface{} `json:"variables,omitempty"`
+	Version        uint                   `json:"version,omitempty"`
+	Status         string                 `json:"status,omitempty"`         // draft, published, archived
+	GraphData      string                 `json:"graphData,omitempty"`      // 新架构：完整的工作流图JSON
+	ViewportConfig map[string]interface{} `json:"viewportConfig,omitempty"` // 画布视口配置
 }
 
 // PageWorkflowApplicationRequest 分页查询工作流应用请求结构
@@ -152,7 +154,7 @@ type WorkflowNodeResponse struct {
 	ProcessorCode     string                 `json:"processorCode,omitempty"`
 	NextNodeID        string                 `json:"nextNodeId,omitempty"`
 	ParentNodeID      string                 `json:"parentNodeId,omitempty"`
-	BranchNodes       map[string]uint64      `json:"branchNodes,omitempty"`
+	BranchNodes       map[string]interface{} `json:"branchNodes,omitempty"`
 	ParallelConfig    map[string]interface{} `json:"parallelConfig,omitempty"`
 	APIConfig         map[string]interface{} `json:"apiConfig,omitempty"`
 	Async             bool                   `json:"async"`
@@ -176,7 +178,7 @@ type CreateWorkflowNodeRequest struct {
 	ProcessorCode     string                 `json:"processorCode,omitempty"`
 	NextNodeID        string                 `json:"nextNodeId,omitempty"`
 	ParentNodeID      string                 `json:"parentNodeId,omitempty"`
-	BranchNodes       map[string]uint64      `json:"branchNodes,omitempty"`
+	BranchNodes       map[string]interface{} `json:"branchNodes,omitempty"`
 	ParallelConfig    map[string]interface{} `json:"parallelConfig,omitempty"`
 	APIConfig         map[string]interface{} `json:"apiConfig,omitempty"`
 	Async             *bool                  `json:"async,omitempty"`
@@ -188,18 +190,19 @@ type CreateWorkflowNodeRequest struct {
 }
 
 // UpdateWorkflowNodeRequest 更新工作流节点请求结构
+// 注意：所有字段都是可选的，只更新提交的字段
 type UpdateWorkflowNodeRequest struct {
-	Name              string                 `json:"name" binding:"required"`
-	NodeKey           string                 `json:"nodeKey" binding:"required"`
-	Type              string                 `json:"type" binding:"required"` // user_input, todo_task_generator, condition_checker, api_caller, data_processor, while_loop, end_node, parallel_executor, llm_caller
+	Name              string                 `json:"name,omitempty"`
+	NodeKey           string                 `json:"nodeKey,omitempty"`
+	Type              string                 `json:"type,omitempty"` // user_input, todo_task_generator, condition_checker, api_caller, data_processor, while_loop, end_node, parallel_executor, llm_caller
 	Description       string                 `json:"description,omitempty"`
 	Prompt            string                 `json:"prompt,omitempty"`
-	Config            map[string]interface{} `json:"config" binding:"required"`
+	Config            map[string]interface{} `json:"config,omitempty"`
 	ProcessorLanguage string                 `json:"processorLanguage,omitempty"`
 	ProcessorCode     string                 `json:"processorCode,omitempty"`
 	NextNodeID        string                 `json:"nextNodeId,omitempty"`
 	ParentNodeID      string                 `json:"parentNodeId,omitempty"`
-	BranchNodes       map[string]uint64      `json:"branchNodes,omitempty"`
+	BranchNodes       map[string]interface{} `json:"branchNodes,omitempty"`
 	ParallelConfig    map[string]interface{} `json:"parallelConfig,omitempty"`
 	APIConfig         map[string]interface{} `json:"apiConfig,omitempty"`
 	Async             *bool                  `json:"async,omitempty"`

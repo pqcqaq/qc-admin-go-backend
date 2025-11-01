@@ -566,508 +566,508 @@ func (h *WorkflowHandler) DeleteWorkflowNode(c *gin.Context) {
 
 // ============ Workflow Graph Operations Handlers ============
 
-// ConnectNodes 连接两个节点（普通next_node_id连接）
-// @Summary      连接两个节点
-// @Description  在两个工作流节点之间创建普通连接（next_node_id）
-// @Tags         workflow-graph
-// @Accept       json
-// @Produce      json
-// @Param        body  body      object{fromNodeId=string,toNodeId=string}  true  "节点连接信息"
-// @Success      200   {object}  object{success=bool,message=string}
-// @Failure      400   {object}  object{success=bool,message=string}
-// @Failure      404   {object}  object{success=bool,message=string}
-// @Failure      500   {object}  object{success=bool,message=string}
-// @Router       /workflow/graph/connect [post]
-func (h *WorkflowHandler) ConnectNodes(c *gin.Context) {
-	var req struct {
-		FromNodeID string `json:"fromNodeId" binding:"required"`
-		ToNodeID   string `json:"toNodeId" binding:"required"`
-	}
+// // ConnectNodes 连接两个节点（普通next_node_id连接）
+// // @Summary      连接两个节点
+// // @Description  在两个工作流节点之间创建普通连接（next_node_id）
+// // @Tags         workflow-graph
+// // @Accept       json
+// // @Produce      json
+// // @Param        body  body      object{fromNodeId=string,toNodeId=string}  true  "节点连接信息"
+// // @Success      200   {object}  object{success=bool,message=string}
+// // @Failure      400   {object}  object{success=bool,message=string}
+// // @Failure      404   {object}  object{success=bool,message=string}
+// // @Failure      500   {object}  object{success=bool,message=string}
+// // @Router       /workflow/graph/connect [post]
+// func (h *WorkflowHandler) ConnectNodes(c *gin.Context) {
+// 	var req struct {
+// 		FromNodeID string `json:"fromNodeId" binding:"required"`
+// 		ToNodeID   string `json:"toNodeId" binding:"required"`
+// 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
-		return
-	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+// 		return
+// 	}
 
-	fromNodeID, err := strconv.ParseUint(req.FromNodeID, 10, 64)
-	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("源节点ID格式无效", map[string]any{
-			"provided_id": req.FromNodeID,
-		}))
-		return
-	}
+// 	fromNodeID, err := strconv.ParseUint(req.FromNodeID, 10, 64)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.BadRequestError("源节点ID格式无效", map[string]any{
+// 			"provided_id": req.FromNodeID,
+// 		}))
+// 		return
+// 	}
 
-	toNodeID, err := strconv.ParseUint(req.ToNodeID, 10, 64)
-	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("目标节点ID格式无效", map[string]any{
-			"provided_id": req.ToNodeID,
-		}))
-		return
-	}
+// 	toNodeID, err := strconv.ParseUint(req.ToNodeID, 10, 64)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.BadRequestError("目标节点ID格式无效", map[string]any{
+// 			"provided_id": req.ToNodeID,
+// 		}))
+// 		return
+// 	}
 
-	ctx := middleware.GetRequestContext(c)
-	err = funcs.WorkflowFuncs{}.ConnectNodes(ctx, fromNodeID, toNodeID)
-	if err != nil {
-		middleware.ThrowError(c, middleware.DatabaseError("连接节点失败", err.Error()))
-		return
-	}
+// 	ctx := middleware.GetRequestContext(c)
+// 	err = funcs.WorkflowFuncs{}.ConnectNodes(ctx, fromNodeID, toNodeID)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.DatabaseError("连接节点失败", err.Error()))
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "节点连接成功",
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"success": true,
+// 		"message": "节点连接成功",
+// 	})
+// }
 
-// ConnectBranch 为分支节点添加分支连接
-// @Summary      添加分支连接
-// @Description  为分支节点（如condition_checker）添加分支连接
-// @Tags         workflow-graph
-// @Accept       json
-// @Produce      json
-// @Param        body  body      object{fromNodeId=string,toNodeId=string,branchName=string}  true  "分支连接信息"
-// @Success      200   {object}  object{success=bool,message=string}
-// @Failure      400   {object}  object{success=bool,message=string}
-// @Failure      500   {object}  object{success=bool,message=string}
-// @Router       /workflow/graph/connect-branch [post]
-func (h *WorkflowHandler) ConnectBranch(c *gin.Context) {
-	var req struct {
-		FromNodeID string `json:"fromNodeId" binding:"required"`
-		ToNodeID   string `json:"toNodeId" binding:"required"`
-		BranchName string `json:"branchName" binding:"required"`
-	}
+// // ConnectBranch 为分支节点添加分支连接
+// // @Summary      添加分支连接
+// // @Description  为分支节点（如condition_checker）添加分支连接
+// // @Tags         workflow-graph
+// // @Accept       json
+// // @Produce      json
+// // @Param        body  body      object{fromNodeId=string,toNodeId=string,branchName=string}  true  "分支连接信息"
+// // @Success      200   {object}  object{success=bool,message=string}
+// // @Failure      400   {object}  object{success=bool,message=string}
+// // @Failure      500   {object}  object{success=bool,message=string}
+// // @Router       /workflow/graph/connect-branch [post]
+// func (h *WorkflowHandler) ConnectBranch(c *gin.Context) {
+// 	var req struct {
+// 		FromNodeID string `json:"fromNodeId" binding:"required"`
+// 		ToNodeID   string `json:"toNodeId" binding:"required"`
+// 		BranchName string `json:"branchName" binding:"required"`
+// 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
-		return
-	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+// 		return
+// 	}
 
-	fromNodeID, err := strconv.ParseUint(req.FromNodeID, 10, 64)
-	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("源节点ID格式无效", map[string]any{
-			"provided_id": req.FromNodeID,
-		}))
-		return
-	}
+// 	fromNodeID, err := strconv.ParseUint(req.FromNodeID, 10, 64)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.BadRequestError("源节点ID格式无效", map[string]any{
+// 			"provided_id": req.FromNodeID,
+// 		}))
+// 		return
+// 	}
 
-	toNodeID, err := strconv.ParseUint(req.ToNodeID, 10, 64)
-	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("目标节点ID格式无效", map[string]any{
-			"provided_id": req.ToNodeID,
-		}))
-		return
-	}
+// 	toNodeID, err := strconv.ParseUint(req.ToNodeID, 10, 64)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.BadRequestError("目标节点ID格式无效", map[string]any{
+// 			"provided_id": req.ToNodeID,
+// 		}))
+// 		return
+// 	}
 
-	ctx := middleware.GetRequestContext(c)
-	err = funcs.WorkflowFuncs{}.ConnectBranch(ctx, fromNodeID, toNodeID, req.BranchName)
-	if err != nil {
-		middleware.ThrowError(c, middleware.DatabaseError("添加分支连接失败", err.Error()))
-		return
-	}
+// 	ctx := middleware.GetRequestContext(c)
+// 	err = funcs.WorkflowFuncs{}.ConnectBranch(ctx, fromNodeID, toNodeID, req.BranchName)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.DatabaseError("添加分支连接失败", err.Error()))
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "分支连接添加成功",
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"success": true,
+// 		"message": "分支连接添加成功",
+// 	})
+// }
 
-// DisconnectBranch 删除分支连接
-// @Summary      删除分支连接
-// @Description  删除分支节点的某个分支连接
-// @Tags         workflow-graph
-// @Accept       json
-// @Produce      json
-// @Param        body  body      object{fromNodeId=string,branchName=string}  true  "分支信息"
-// @Success      200   {object}  object{success=bool,message=string}
-// @Failure      400   {object}  object{success=bool,message=string}
-// @Failure      500   {object}  object{success=bool,message=string}
-// @Router       /workflow/graph/disconnect-branch [post]
-func (h *WorkflowHandler) DisconnectBranch(c *gin.Context) {
-	var req struct {
-		FromNodeID string `json:"fromNodeId" binding:"required"`
-		BranchName string `json:"branchName" binding:"required"`
-	}
+// // DisconnectBranch 删除分支连接
+// // @Summary      删除分支连接
+// // @Description  删除分支节点的某个分支连接
+// // @Tags         workflow-graph
+// // @Accept       json
+// // @Produce      json
+// // @Param        body  body      object{fromNodeId=string,branchName=string}  true  "分支信息"
+// // @Success      200   {object}  object{success=bool,message=string}
+// // @Failure      400   {object}  object{success=bool,message=string}
+// // @Failure      500   {object}  object{success=bool,message=string}
+// // @Router       /workflow/graph/disconnect-branch [post]
+// func (h *WorkflowHandler) DisconnectBranch(c *gin.Context) {
+// 	var req struct {
+// 		FromNodeID string `json:"fromNodeId" binding:"required"`
+// 		BranchName string `json:"branchName" binding:"required"`
+// 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
-		return
-	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+// 		return
+// 	}
 
-	fromNodeID, err := strconv.ParseUint(req.FromNodeID, 10, 64)
-	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("源节点ID格式无效", map[string]any{
-			"provided_id": req.FromNodeID,
-		}))
-		return
-	}
+// 	fromNodeID, err := strconv.ParseUint(req.FromNodeID, 10, 64)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.BadRequestError("源节点ID格式无效", map[string]any{
+// 			"provided_id": req.FromNodeID,
+// 		}))
+// 		return
+// 	}
 
-	ctx := middleware.GetRequestContext(c)
-	err = funcs.WorkflowFuncs{}.DisconnectBranch(ctx, fromNodeID, req.BranchName)
-	if err != nil {
-		middleware.ThrowError(c, middleware.DatabaseError("删除分支连接失败", err.Error()))
-		return
-	}
+// 	ctx := middleware.GetRequestContext(c)
+// 	err = funcs.WorkflowFuncs{}.DisconnectBranch(ctx, fromNodeID, req.BranchName)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.DatabaseError("删除分支连接失败", err.Error()))
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "分支连接已删除",
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"success": true,
+// 		"message": "分支连接已删除",
+// 	})
+// }
 
-// AddNodeToParallel 将节点添加到并行执行节点
-// @Summary      添加节点到并行执行
-// @Description  将节点添加到并行执行节点作为子节点
-// @Tags         workflow-graph
-// @Accept       json
-// @Produce      json
-// @Param        body  body      object{parallelNodeId=string,childNodeId=string}  true  "并行节点信息"
-// @Success      200   {object}  object{success=bool,message=string}
-// @Failure      400   {object}  object{success=bool,message=string}
-// @Failure      500   {object}  object{success=bool,message=string}
-// @Router       /workflow/graph/add-to-parallel [post]
-func (h *WorkflowHandler) AddNodeToParallel(c *gin.Context) {
-	var req struct {
-		ParallelNodeID string `json:"parallelNodeId" binding:"required"`
-		ChildNodeID    string `json:"childNodeId" binding:"required"`
-	}
+// // AddNodeToParallel 将节点添加到并行执行节点
+// // @Summary      添加节点到并行执行
+// // @Description  将节点添加到并行执行节点作为子节点
+// // @Tags         workflow-graph
+// // @Accept       json
+// // @Produce      json
+// // @Param        body  body      object{parallelNodeId=string,childNodeId=string}  true  "并行节点信息"
+// // @Success      200   {object}  object{success=bool,message=string}
+// // @Failure      400   {object}  object{success=bool,message=string}
+// // @Failure      500   {object}  object{success=bool,message=string}
+// // @Router       /workflow/graph/add-to-parallel [post]
+// func (h *WorkflowHandler) AddNodeToParallel(c *gin.Context) {
+// 	var req struct {
+// 		ParallelNodeID string `json:"parallelNodeId" binding:"required"`
+// 		ChildNodeID    string `json:"childNodeId" binding:"required"`
+// 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
-		return
-	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+// 		return
+// 	}
 
-	parallelNodeID, err := strconv.ParseUint(req.ParallelNodeID, 10, 64)
-	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("并行节点ID格式无效", map[string]any{
-			"provided_id": req.ParallelNodeID,
-		}))
-		return
-	}
+// 	parallelNodeID, err := strconv.ParseUint(req.ParallelNodeID, 10, 64)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.BadRequestError("并行节点ID格式无效", map[string]any{
+// 			"provided_id": req.ParallelNodeID,
+// 		}))
+// 		return
+// 	}
 
-	childNodeID, err := strconv.ParseUint(req.ChildNodeID, 10, 64)
-	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("子节点ID格式无效", map[string]any{
-			"provided_id": req.ChildNodeID,
-		}))
-		return
-	}
+// 	childNodeID, err := strconv.ParseUint(req.ChildNodeID, 10, 64)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.BadRequestError("子节点ID格式无效", map[string]any{
+// 			"provided_id": req.ChildNodeID,
+// 		}))
+// 		return
+// 	}
 
-	ctx := middleware.GetRequestContext(c)
-	err = funcs.WorkflowFuncs{}.AddNodeToParallel(ctx, parallelNodeID, childNodeID)
-	if err != nil {
-		middleware.ThrowError(c, middleware.DatabaseError("添加节点到并行执行失败", err.Error()))
-		return
-	}
+// 	ctx := middleware.GetRequestContext(c)
+// 	err = funcs.WorkflowFuncs{}.AddNodeToParallel(ctx, parallelNodeID, childNodeID)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.DatabaseError("添加节点到并行执行失败", err.Error()))
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "节点已添加到并行执行",
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"success": true,
+// 		"message": "节点已添加到并行执行",
+// 	})
+// }
 
-// RemoveNodeFromParallel 从并行执行节点中移除子节点
-// @Summary      从并行执行中移除节点
-// @Description  从并行执行节点中移除子节点
-// @Tags         workflow-graph
-// @Accept       json
-// @Produce      json
-// @Param        body  body      object{childNodeId=string}  true  "子节点ID"
-// @Success      200   {object}  object{success=bool,message=string}
-// @Failure      400   {object}  object{success=bool,message=string}
-// @Failure      500   {object}  object{success=bool,message=string}
-// @Router       /workflow/graph/remove-from-parallel [post]
-func (h *WorkflowHandler) RemoveNodeFromParallel(c *gin.Context) {
-	var req struct {
-		ChildNodeID string `json:"childNodeId" binding:"required"`
-	}
+// // RemoveNodeFromParallel 从并行执行节点中移除子节点
+// // @Summary      从并行执行中移除节点
+// // @Description  从并行执行节点中移除子节点
+// // @Tags         workflow-graph
+// // @Accept       json
+// // @Produce      json
+// // @Param        body  body      object{childNodeId=string}  true  "子节点ID"
+// // @Success      200   {object}  object{success=bool,message=string}
+// // @Failure      400   {object}  object{success=bool,message=string}
+// // @Failure      500   {object}  object{success=bool,message=string}
+// // @Router       /workflow/graph/remove-from-parallel [post]
+// func (h *WorkflowHandler) RemoveNodeFromParallel(c *gin.Context) {
+// 	var req struct {
+// 		ChildNodeID string `json:"childNodeId" binding:"required"`
+// 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
-		return
-	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+// 		return
+// 	}
 
-	childNodeID, err := strconv.ParseUint(req.ChildNodeID, 10, 64)
-	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("子节点ID格式无效", map[string]any{
-			"provided_id": req.ChildNodeID,
-		}))
-		return
-	}
+// 	childNodeID, err := strconv.ParseUint(req.ChildNodeID, 10, 64)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.BadRequestError("子节点ID格式无效", map[string]any{
+// 			"provided_id": req.ChildNodeID,
+// 		}))
+// 		return
+// 	}
 
-	ctx := middleware.GetRequestContext(c)
-	err = funcs.WorkflowFuncs{}.RemoveNodeFromParallel(ctx, childNodeID)
-	if err != nil {
-		middleware.ThrowError(c, middleware.DatabaseError("从并行执行中移除节点失败", err.Error()))
-		return
-	}
+// 	ctx := middleware.GetRequestContext(c)
+// 	err = funcs.WorkflowFuncs{}.RemoveNodeFromParallel(ctx, childNodeID)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.DatabaseError("从并行执行中移除节点失败", err.Error()))
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "节点已从并行执行中移除",
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"success": true,
+// 		"message": "节点已从并行执行中移除",
+// 	})
+// }
 
-// GetParallelChildren 获取并行节点的所有子节点
-// @Summary      获取并行节点的子节点
-// @Description  获取并行执行节点的所有子节点列表
-// @Tags         workflow-graph
-// @Accept       json
-// @Produce      json
-// @Param        parallelNodeId  query     string  true  "并行节点ID"
-// @Success      200  {object}  object{success=bool,data=[]models.WorkflowNodeResponse}
-// @Failure      400  {object}  object{success=bool,message=string}
-// @Failure      500  {object}  object{success=bool,message=string}
-// @Router       /workflow/graph/parallel-children [get]
-func (h *WorkflowHandler) GetParallelChildren(c *gin.Context) {
-	parallelNodeIDStr := c.Query("parallelNodeId")
+// // GetParallelChildren 获取并行节点的所有子节点
+// // @Summary      获取并行节点的子节点
+// // @Description  获取并行执行节点的所有子节点列表
+// // @Tags         workflow-graph
+// // @Accept       json
+// // @Produce      json
+// // @Param        parallelNodeId  query     string  true  "并行节点ID"
+// // @Success      200  {object}  object{success=bool,data=[]models.WorkflowNodeResponse}
+// // @Failure      400  {object}  object{success=bool,message=string}
+// // @Failure      500  {object}  object{success=bool,message=string}
+// // @Router       /workflow/graph/parallel-children [get]
+// func (h *WorkflowHandler) GetParallelChildren(c *gin.Context) {
+// 	parallelNodeIDStr := c.Query("parallelNodeId")
 
-	if parallelNodeIDStr == "" {
-		middleware.ThrowError(c, middleware.BadRequestError("并行节点ID不能为空", nil))
-		return
-	}
+// 	if parallelNodeIDStr == "" {
+// 		middleware.ThrowError(c, middleware.BadRequestError("并行节点ID不能为空", nil))
+// 		return
+// 	}
 
-	parallelNodeID, err := strconv.ParseUint(parallelNodeIDStr, 10, 64)
-	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("并行节点ID格式无效", map[string]any{
-			"provided_id": parallelNodeIDStr,
-		}))
-		return
-	}
+// 	parallelNodeID, err := strconv.ParseUint(parallelNodeIDStr, 10, 64)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.BadRequestError("并行节点ID格式无效", map[string]any{
+// 			"provided_id": parallelNodeIDStr,
+// 		}))
+// 		return
+// 	}
 
-	ctx := middleware.GetRequestContext(c)
-	children, err := funcs.WorkflowFuncs{}.GetParallelChildren(ctx, parallelNodeID)
-	if err != nil {
-		middleware.ThrowError(c, middleware.DatabaseError("获取并行子节点失败", err.Error()))
-		return
-	}
+// 	ctx := middleware.GetRequestContext(c)
+// 	children, err := funcs.WorkflowFuncs{}.GetParallelChildren(ctx, parallelNodeID)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.DatabaseError("获取并行子节点失败", err.Error()))
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    children,
-		"count":   len(children),
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"success": true,
+// 		"data":    children,
+// 		"count":   len(children),
+// 	})
+// }
 
-// GetNodeConnections 获取节点的所有连接信息
-// @Summary      获取节点连接信息
-// @Description  获取节点的所有连接信息（包括next、branch、parallel等）
-// @Tags         workflow-graph
-// @Accept       json
-// @Produce      json
-// @Param        nodeId  query     string  true  "节点ID"
-// @Success      200  {object}  object{success=bool,data=object}
-// @Failure      400  {object}  object{success=bool,message=string}
-// @Failure      500  {object}  object{success=bool,message=string}
-// @Router       /workflow/graph/connections [get]
-func (h *WorkflowHandler) GetNodeConnections(c *gin.Context) {
-	nodeIDStr := c.Query("nodeId")
+// // GetNodeConnections 获取节点的所有连接信息
+// // @Summary      获取节点连接信息
+// // @Description  获取节点的所有连接信息（包括next、branch、parallel等）
+// // @Tags         workflow-graph
+// // @Accept       json
+// // @Produce      json
+// // @Param        nodeId  query     string  true  "节点ID"
+// // @Success      200  {object}  object{success=bool,data=object}
+// // @Failure      400  {object}  object{success=bool,message=string}
+// // @Failure      500  {object}  object{success=bool,message=string}
+// // @Router       /workflow/graph/connections [get]
+// func (h *WorkflowHandler) GetNodeConnections(c *gin.Context) {
+// 	nodeIDStr := c.Query("nodeId")
 
-	if nodeIDStr == "" {
-		middleware.ThrowError(c, middleware.BadRequestError("节点ID不能为空", nil))
-		return
-	}
+// 	if nodeIDStr == "" {
+// 		middleware.ThrowError(c, middleware.BadRequestError("节点ID不能为空", nil))
+// 		return
+// 	}
 
-	nodeID, err := strconv.ParseUint(nodeIDStr, 10, 64)
-	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("节点ID格式无效", map[string]any{
-			"provided_id": nodeIDStr,
-		}))
-		return
-	}
+// 	nodeID, err := strconv.ParseUint(nodeIDStr, 10, 64)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.BadRequestError("节点ID格式无效", map[string]any{
+// 			"provided_id": nodeIDStr,
+// 		}))
+// 		return
+// 	}
 
-	ctx := middleware.GetRequestContext(c)
-	connections, err := funcs.WorkflowFuncs{}.GetNodeConnections(ctx, nodeID)
-	if err != nil {
-		middleware.ThrowError(c, middleware.DatabaseError("获取节点连接信息失败", err.Error()))
-		return
-	}
+// 	ctx := middleware.GetRequestContext(c)
+// 	connections, err := funcs.WorkflowFuncs{}.GetNodeConnections(ctx, nodeID)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.DatabaseError("获取节点连接信息失败", err.Error()))
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    connections,
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"success": true,
+// 		"data":    connections,
+// 	})
+// }
 
-// DisconnectNodes 断开节点连接
-// @Summary      断开节点连接
-// @Description  断开工作流节点的连接（删除边）
-// @Tags         workflow-graph
-// @Accept       json
-// @Produce      json
-// @Param        body  body      object{fromNodeId=string}  true  "源节点ID"
-// @Success      200   {object}  object{success=bool,message=string}
-// @Failure      400   {object}  object{success=bool,message=string}
-// @Failure      404   {object}  object{success=bool,message=string}
-// @Failure      500   {object}  object{success=bool,message=string}
-// @Router       /workflow/graph/disconnect [post]
-func (h *WorkflowHandler) DisconnectNodes(c *gin.Context) {
-	var req struct {
-		FromNodeID string `json:"fromNodeId" binding:"required"`
-	}
+// // DisconnectNodes 断开节点连接
+// // @Summary      断开节点连接
+// // @Description  断开工作流节点的连接（删除边）
+// // @Tags         workflow-graph
+// // @Accept       json
+// // @Produce      json
+// // @Param        body  body      object{fromNodeId=string}  true  "源节点ID"
+// // @Success      200   {object}  object{success=bool,message=string}
+// // @Failure      400   {object}  object{success=bool,message=string}
+// // @Failure      404   {object}  object{success=bool,message=string}
+// // @Failure      500   {object}  object{success=bool,message=string}
+// // @Router       /workflow/graph/disconnect [post]
+// func (h *WorkflowHandler) DisconnectNodes(c *gin.Context) {
+// 	var req struct {
+// 		FromNodeID string `json:"fromNodeId" binding:"required"`
+// 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
-		return
-	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+// 		return
+// 	}
 
-	fromNodeID, err := strconv.ParseUint(req.FromNodeID, 10, 64)
-	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("源节点ID格式无效", map[string]any{
-			"provided_id": req.FromNodeID,
-		}))
-		return
-	}
+// 	fromNodeID, err := strconv.ParseUint(req.FromNodeID, 10, 64)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.BadRequestError("源节点ID格式无效", map[string]any{
+// 			"provided_id": req.FromNodeID,
+// 		}))
+// 		return
+// 	}
 
-	ctx := middleware.GetRequestContext(c)
-	err = funcs.WorkflowFuncs{}.DisconnectNodes(ctx, fromNodeID)
-	if err != nil {
-		if err.Error() == "source node not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("源节点未找到", map[string]any{
-				"fromNodeId": fromNodeID,
-			}))
-		} else {
-			middleware.ThrowError(c, middleware.DatabaseError("断开节点连接失败", err.Error()))
-		}
-		return
-	}
+// 	ctx := middleware.GetRequestContext(c)
+// 	err = funcs.WorkflowFuncs{}.DisconnectNodes(ctx, fromNodeID)
+// 	if err != nil {
+// 		if err.Error() == "source node not found" {
+// 			middleware.ThrowError(c, middleware.NotFoundError("源节点未找到", map[string]any{
+// 				"fromNodeId": fromNodeID,
+// 			}))
+// 		} else {
+// 			middleware.ThrowError(c, middleware.DatabaseError("断开节点连接失败", err.Error()))
+// 		}
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "节点连接已断开",
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"success": true,
+// 		"message": "节点连接已断开",
+// 	})
+// }
 
-// UpdateNodePosition 更新节点位置
-// @Summary      更新节点位置
-// @Description  更新工作流节点在画布上的位置
-// @Tags         workflow-graph
-// @Accept       json
-// @Produce      json
-// @Param        body  body      object{nodeId=string,x=number,y=number}  true  "节点位置信息"
-// @Success      200   {object}  object{success=bool,message=string}
-// @Failure      400   {object}  object{success=bool,message=string}
-// @Failure      404   {object}  object{success=bool,message=string}
-// @Failure      500   {object}  object{success=bool,message=string}
-// @Router       /workflow/graph/position [put]
-func (h *WorkflowHandler) UpdateNodePosition(c *gin.Context) {
-	var req struct {
-		NodeID string  `json:"nodeId" binding:"required"`
-		X      float64 `json:"x" binding:"required"`
-		Y      float64 `json:"y" binding:"required"`
-	}
+// // UpdateNodePosition 更新节点位置
+// // @Summary      更新节点位置
+// // @Description  更新工作流节点在画布上的位置
+// // @Tags         workflow-graph
+// // @Accept       json
+// // @Produce      json
+// // @Param        body  body      object{nodeId=string,x=number,y=number}  true  "节点位置信息"
+// // @Success      200   {object}  object{success=bool,message=string}
+// // @Failure      400   {object}  object{success=bool,message=string}
+// // @Failure      404   {object}  object{success=bool,message=string}
+// // @Failure      500   {object}  object{success=bool,message=string}
+// // @Router       /workflow/graph/position [put]
+// func (h *WorkflowHandler) UpdateNodePosition(c *gin.Context) {
+// 	var req struct {
+// 		NodeID string  `json:"nodeId" binding:"required"`
+// 		X      float64 `json:"x" binding:"required"`
+// 		Y      float64 `json:"y" binding:"required"`
+// 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
-		return
-	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+// 		return
+// 	}
 
-	nodeID, err := strconv.ParseUint(req.NodeID, 10, 64)
-	if err != nil {
-		middleware.ThrowError(c, middleware.BadRequestError("节点ID格式无效", map[string]any{
-			"provided_id": req.NodeID,
-		}))
-		return
-	}
+// 	nodeID, err := strconv.ParseUint(req.NodeID, 10, 64)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.BadRequestError("节点ID格式无效", map[string]any{
+// 			"provided_id": req.NodeID,
+// 		}))
+// 		return
+// 	}
 
-	ctx := middleware.GetRequestContext(c)
-	err = funcs.WorkflowFuncs{}.UpdateNodePosition(ctx, nodeID, req.X, req.Y)
-	if err != nil {
-		if err.Error() == "node not found" {
-			middleware.ThrowError(c, middleware.NotFoundError("节点未找到", map[string]any{
-				"nodeId": nodeID,
-			}))
-		} else {
-			middleware.ThrowError(c, middleware.DatabaseError("更新节点位置失败", err.Error()))
-		}
-		return
-	}
+// 	ctx := middleware.GetRequestContext(c)
+// 	err = funcs.WorkflowFuncs{}.UpdateNodePosition(ctx, nodeID, req.X, req.Y)
+// 	if err != nil {
+// 		if err.Error() == "node not found" {
+// 			middleware.ThrowError(c, middleware.NotFoundError("节点未找到", map[string]any{
+// 				"nodeId": nodeID,
+// 			}))
+// 		} else {
+// 			middleware.ThrowError(c, middleware.DatabaseError("更新节点位置失败", err.Error()))
+// 		}
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "节点位置更新成功",
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"success": true,
+// 		"message": "节点位置更新成功",
+// 	})
+// }
 
-// BatchUpdateNodePositions 批量更新节点位置
-// @Summary      批量更新节点位置
-// @Description  批量更新多个工作流节点在画布上的位置
-// @Tags         workflow-graph
-// @Accept       json
-// @Produce      json
-// @Param        body  body      object{positions=object}  true  "节点位置信息"
-// @Success      200   {object}  object{success=bool,message=string}
-// @Failure      400   {object}  object{success=bool,message=string}
-// @Failure      500   {object}  object{success=bool,message=string}
-// @Router       /workflow/graph/positions [put]
-func (h *WorkflowHandler) BatchUpdateNodePositions(c *gin.Context) {
-	var req struct {
-		Positions map[string]map[string]float64 `json:"positions" binding:"required"`
-	}
+// // BatchUpdateNodePositions 批量更新节点位置
+// // @Summary      批量更新节点位置
+// // @Description  批量更新多个工作流节点在画布上的位置
+// // @Tags         workflow-graph
+// // @Accept       json
+// // @Produce      json
+// // @Param        body  body      object{positions=object}  true  "节点位置信息"
+// // @Success      200   {object}  object{success=bool,message=string}
+// // @Failure      400   {object}  object{success=bool,message=string}
+// // @Failure      500   {object}  object{success=bool,message=string}
+// // @Router       /workflow/graph/positions [put]
+// func (h *WorkflowHandler) BatchUpdateNodePositions(c *gin.Context) {
+// 	var req struct {
+// 		Positions map[string]map[string]float64 `json:"positions" binding:"required"`
+// 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
-		return
-	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+// 		return
+// 	}
 
-	ctx := middleware.GetRequestContext(c)
-	err := funcs.WorkflowFuncs{}.BatchUpdateNodePositions(ctx, req.Positions)
-	if err != nil {
-		middleware.ThrowError(c, middleware.DatabaseError("批量更新节点位置失败", err.Error()))
-		return
-	}
+// 	ctx := middleware.GetRequestContext(c)
+// 	err := funcs.WorkflowFuncs{}.BatchUpdateNodePositions(ctx, req.Positions)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.DatabaseError("批量更新节点位置失败", err.Error()))
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "节点位置批量更新成功",
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"success": true,
+// 		"message": "节点位置批量更新成功",
+// 	})
+// }
 
-// BatchDeleteNodes 批量删除节点
-// @Summary      批量删除节点
-// @Description  批量删除多个工作流节点
-// @Tags         workflow-graph
-// @Accept       json
-// @Produce      json
-// @Param        body  body      object{nodeIds=[]string}  true  "节点ID列表"
-// @Success      200   {object}  object{success=bool,message=string}
-// @Failure      400   {object}  object{success=bool,message=string}
-// @Failure      500   {object}  object{success=bool,message=string}
-// @Router       /workflow/graph/batch-delete [post]
-func (h *WorkflowHandler) BatchDeleteNodes(c *gin.Context) {
-	var req struct {
-		NodeIDs []string `json:"nodeIds" binding:"required"`
-	}
+// // BatchDeleteNodes 批量删除节点
+// // @Summary      批量删除节点
+// // @Description  批量删除多个工作流节点
+// // @Tags         workflow-graph
+// // @Accept       json
+// // @Produce      json
+// // @Param        body  body      object{nodeIds=[]string}  true  "节点ID列表"
+// // @Success      200   {object}  object{success=bool,message=string}
+// // @Failure      400   {object}  object{success=bool,message=string}
+// // @Failure      500   {object}  object{success=bool,message=string}
+// // @Router       /workflow/graph/batch-delete [post]
+// func (h *WorkflowHandler) BatchDeleteNodes(c *gin.Context) {
+// 	var req struct {
+// 		NodeIDs []string `json:"nodeIds" binding:"required"`
+// 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
-		return
-	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		middleware.ThrowError(c, middleware.ValidationError("请求数据格式错误", err.Error()))
+// 		return
+// 	}
 
-	nodeIDs := make([]uint64, 0, len(req.NodeIDs))
-	for _, idStr := range req.NodeIDs {
-		id, err := strconv.ParseUint(idStr, 10, 64)
-		if err != nil {
-			middleware.ThrowError(c, middleware.BadRequestError("节点ID格式无效", map[string]any{
-				"provided_id": idStr,
-			}))
-			return
-		}
-		nodeIDs = append(nodeIDs, id)
-	}
+// 	nodeIDs := make([]uint64, 0, len(req.NodeIDs))
+// 	for _, idStr := range req.NodeIDs {
+// 		id, err := strconv.ParseUint(idStr, 10, 64)
+// 		if err != nil {
+// 			middleware.ThrowError(c, middleware.BadRequestError("节点ID格式无效", map[string]any{
+// 				"provided_id": idStr,
+// 			}))
+// 			return
+// 		}
+// 		nodeIDs = append(nodeIDs, id)
+// 	}
 
-	ctx := middleware.GetRequestContext(c)
-	err := funcs.WorkflowFuncs{}.BatchDeleteNodes(ctx, nodeIDs)
-	if err != nil {
-		middleware.ThrowError(c, middleware.DatabaseError("批量删除节点失败", err.Error()))
-		return
-	}
+// 	ctx := middleware.GetRequestContext(c)
+// 	err := funcs.WorkflowFuncs{}.BatchDeleteNodes(ctx, nodeIDs)
+// 	if err != nil {
+// 		middleware.ThrowError(c, middleware.DatabaseError("批量删除节点失败", err.Error()))
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "节点批量删除成功",
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"success": true,
+// 		"message": "节点批量删除成功",
+// 	})
+// }
 
-// ============ WorkflowEdge Handlers ============
+// // ============ WorkflowEdge Handlers ============
 
 // GetAllWorkflowEdges 获取所有工作流边
 // @Summary      获取所有工作流边

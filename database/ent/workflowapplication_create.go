@@ -181,6 +181,12 @@ func (_c *WorkflowApplicationCreate) SetNillableStatus(v *workflowapplication.St
 	return _c
 }
 
+// SetViewportConfig sets the "viewport_config" field.
+func (_c *WorkflowApplicationCreate) SetViewportConfig(v map[string]interface{}) *WorkflowApplicationCreate {
+	_c.mutation.SetViewportConfig(v)
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *WorkflowApplicationCreate) SetID(v uint64) *WorkflowApplicationCreate {
 	_c.mutation.SetID(v)
@@ -407,6 +413,10 @@ func (_c *WorkflowApplicationCreate) createSpec() (*WorkflowApplication, *sqlgra
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(workflowapplication.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
+	}
+	if value, ok := _c.mutation.ViewportConfig(); ok {
+		_spec.SetField(workflowapplication.FieldViewportConfig, field.TypeJSON, value)
+		_node.ViewportConfig = value
 	}
 	if nodes := _c.mutation.NodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

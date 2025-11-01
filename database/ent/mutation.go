@@ -39419,6 +39419,7 @@ type WorkflowApplicationMutation struct {
 	version           *uint
 	addversion        *int
 	status            *workflowapplication.Status
+	viewport_config   *map[string]interface{}
 	clearedFields     map[string]struct{}
 	nodes             map[uint64]struct{}
 	removednodes      map[uint64]struct{}
@@ -40201,6 +40202,55 @@ func (m *WorkflowApplicationMutation) ResetStatus() {
 	m.status = nil
 }
 
+// SetViewportConfig sets the "viewport_config" field.
+func (m *WorkflowApplicationMutation) SetViewportConfig(value map[string]interface{}) {
+	m.viewport_config = &value
+}
+
+// ViewportConfig returns the value of the "viewport_config" field in the mutation.
+func (m *WorkflowApplicationMutation) ViewportConfig() (r map[string]interface{}, exists bool) {
+	v := m.viewport_config
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldViewportConfig returns the old "viewport_config" field's value of the WorkflowApplication entity.
+// If the WorkflowApplication object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkflowApplicationMutation) OldViewportConfig(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldViewportConfig is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldViewportConfig requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldViewportConfig: %w", err)
+	}
+	return oldValue.ViewportConfig, nil
+}
+
+// ClearViewportConfig clears the value of the "viewport_config" field.
+func (m *WorkflowApplicationMutation) ClearViewportConfig() {
+	m.viewport_config = nil
+	m.clearedFields[workflowapplication.FieldViewportConfig] = struct{}{}
+}
+
+// ViewportConfigCleared returns if the "viewport_config" field was cleared in this mutation.
+func (m *WorkflowApplicationMutation) ViewportConfigCleared() bool {
+	_, ok := m.clearedFields[workflowapplication.FieldViewportConfig]
+	return ok
+}
+
+// ResetViewportConfig resets all changes to the "viewport_config" field.
+func (m *WorkflowApplicationMutation) ResetViewportConfig() {
+	m.viewport_config = nil
+	delete(m.clearedFields, workflowapplication.FieldViewportConfig)
+}
+
 // AddNodeIDs adds the "nodes" edge to the WorkflowNode entity by ids.
 func (m *WorkflowApplicationMutation) AddNodeIDs(ids ...uint64) {
 	if m.nodes == nil {
@@ -40397,7 +40447,7 @@ func (m *WorkflowApplicationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkflowApplicationMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 14)
 	if m.create_time != nil {
 		fields = append(fields, workflowapplication.FieldCreateTime)
 	}
@@ -40437,6 +40487,9 @@ func (m *WorkflowApplicationMutation) Fields() []string {
 	if m.status != nil {
 		fields = append(fields, workflowapplication.FieldStatus)
 	}
+	if m.viewport_config != nil {
+		fields = append(fields, workflowapplication.FieldViewportConfig)
+	}
 	return fields
 }
 
@@ -40471,6 +40524,8 @@ func (m *WorkflowApplicationMutation) Field(name string) (ent.Value, bool) {
 		return m.Version()
 	case workflowapplication.FieldStatus:
 		return m.Status()
+	case workflowapplication.FieldViewportConfig:
+		return m.ViewportConfig()
 	}
 	return nil, false
 }
@@ -40506,6 +40561,8 @@ func (m *WorkflowApplicationMutation) OldField(ctx context.Context, name string)
 		return m.OldVersion(ctx)
 	case workflowapplication.FieldStatus:
 		return m.OldStatus(ctx)
+	case workflowapplication.FieldViewportConfig:
+		return m.OldViewportConfig(ctx)
 	}
 	return nil, fmt.Errorf("unknown WorkflowApplication field %s", name)
 }
@@ -40605,6 +40662,13 @@ func (m *WorkflowApplicationMutation) SetField(name string, value ent.Value) err
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
+		return nil
+	case workflowapplication.FieldViewportConfig:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetViewportConfig(v)
 		return nil
 	}
 	return fmt.Errorf("unknown WorkflowApplication field %s", name)
@@ -40720,6 +40784,9 @@ func (m *WorkflowApplicationMutation) ClearedFields() []string {
 	if m.FieldCleared(workflowapplication.FieldVariables) {
 		fields = append(fields, workflowapplication.FieldVariables)
 	}
+	if m.FieldCleared(workflowapplication.FieldViewportConfig) {
+		fields = append(fields, workflowapplication.FieldViewportConfig)
+	}
 	return fields
 }
 
@@ -40754,6 +40821,9 @@ func (m *WorkflowApplicationMutation) ClearField(name string) error {
 		return nil
 	case workflowapplication.FieldVariables:
 		m.ClearVariables()
+		return nil
+	case workflowapplication.FieldViewportConfig:
+		m.ClearViewportConfig()
 		return nil
 	}
 	return fmt.Errorf("unknown WorkflowApplication nullable field %s", name)
@@ -40801,6 +40871,9 @@ func (m *WorkflowApplicationMutation) ResetField(name string) error {
 		return nil
 	case workflowapplication.FieldStatus:
 		m.ResetStatus()
+		return nil
+	case workflowapplication.FieldViewportConfig:
+		m.ResetViewportConfig()
 		return nil
 	}
 	return fmt.Errorf("unknown WorkflowApplication field %s", name)
@@ -45523,7 +45596,7 @@ type WorkflowNodeMutation struct {
 	addnext_node_id       *int64
 	parent_node_id        *uint64
 	addparent_node_id     *int64
-	branch_nodes          *map[string]uint64
+	branch_nodes          *map[string]interface{}
 	parallel_config       *map[string]interface{}
 	api_config            *map[string]interface{}
 	async                 *bool
@@ -46505,12 +46578,12 @@ func (m *WorkflowNodeMutation) ResetParentNodeID() {
 }
 
 // SetBranchNodes sets the "branch_nodes" field.
-func (m *WorkflowNodeMutation) SetBranchNodes(value map[string]uint64) {
+func (m *WorkflowNodeMutation) SetBranchNodes(value map[string]interface{}) {
 	m.branch_nodes = &value
 }
 
 // BranchNodes returns the value of the "branch_nodes" field in the mutation.
-func (m *WorkflowNodeMutation) BranchNodes() (r map[string]uint64, exists bool) {
+func (m *WorkflowNodeMutation) BranchNodes() (r map[string]interface{}, exists bool) {
 	v := m.branch_nodes
 	if v == nil {
 		return
@@ -46521,7 +46594,7 @@ func (m *WorkflowNodeMutation) BranchNodes() (r map[string]uint64, exists bool) 
 // OldBranchNodes returns the old "branch_nodes" field's value of the WorkflowNode entity.
 // If the WorkflowNode object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkflowNodeMutation) OldBranchNodes(ctx context.Context) (v map[string]uint64, err error) {
+func (m *WorkflowNodeMutation) OldBranchNodes(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldBranchNodes is only allowed on UpdateOne operations")
 	}
@@ -47512,7 +47585,7 @@ func (m *WorkflowNodeMutation) SetField(name string, value ent.Value) error {
 		m.SetParentNodeID(v)
 		return nil
 	case workflownode.FieldBranchNodes:
-		v, ok := value.(map[string]uint64)
+		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

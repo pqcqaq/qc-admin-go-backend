@@ -1600,6 +1600,7 @@ var (
 		{Name: "variables", Type: field.TypeJSON, Nullable: true},
 		{Name: "version", Type: field.TypeUint, Default: 1},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "published", "archived"}, Default: "draft"},
+		{Name: "viewport_config", Type: field.TypeJSON, Nullable: true},
 	}
 	// WorkflowApplicationsTable holds the schema information for the "workflow_applications" table.
 	WorkflowApplicationsTable = &schema.Table{

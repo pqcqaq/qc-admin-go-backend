@@ -42,6 +42,8 @@ const (
 	FieldVersion = "version"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldViewportConfig holds the string denoting the viewport_config field in the database.
+	FieldViewportConfig = "viewport_config"
 	// EdgeNodes holds the string denoting the nodes edge name in mutations.
 	EdgeNodes = "nodes"
 	// EdgeEdges holds the string denoting the edges edge name in mutations.
@@ -89,6 +91,7 @@ var Columns = []string{
 	FieldVariables,
 	FieldVersion,
 	FieldStatus,
+	FieldViewportConfig,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

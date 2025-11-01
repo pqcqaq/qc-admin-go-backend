@@ -45,6 +45,8 @@ type WorkflowApplication struct {
 	Version uint `json:"version,omitempty"`
 	// 状态
 	Status workflowapplication.Status `json:"status,omitempty"`
+	// 画布视口配置（zoom, x, y）
+	ViewportConfig map[string]interface{} `json:"viewport_config,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkflowApplicationQuery when eager-loading is set.
 	Edges        WorkflowApplicationEdges `json:"edges"`
@@ -99,7 +101,7 @@ func (*WorkflowApplication) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case workflowapplication.FieldVariables:
+		case workflowapplication.FieldVariables, workflowapplication.FieldViewportConfig:
 			values[i] = new([]byte)
 		case workflowapplication.FieldID, workflowapplication.FieldCreateBy, workflowapplication.FieldUpdateBy, workflowapplication.FieldDeleteBy, workflowapplication.FieldStartNodeID, workflowapplication.FieldVersion:
 			values[i] = new(sql.NullInt64)
@@ -208,6 +210,14 @@ func (_m *WorkflowApplication) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				_m.Status = workflowapplication.Status(value.String)
 			}
+		case workflowapplication.FieldViewportConfig:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field viewport_config", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.ViewportConfig); err != nil {
+					return fmt.Errorf("unmarshal field viewport_config: %w", err)
+				}
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -297,6 +307,9 @@ func (_m *WorkflowApplication) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
+	builder.WriteString(", ")
+	builder.WriteString("viewport_config=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ViewportConfig))
 	builder.WriteByte(')')
 	return builder.String()
 }

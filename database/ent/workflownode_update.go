@@ -335,7 +335,7 @@ func (_u *WorkflowNodeUpdate) ClearParentNodeID() *WorkflowNodeUpdate {
 }
 
 // SetBranchNodes sets the "branch_nodes" field.
-func (_u *WorkflowNodeUpdate) SetBranchNodes(v map[string]uint64) *WorkflowNodeUpdate {
+func (_u *WorkflowNodeUpdate) SetBranchNodes(v map[string]interface{}) *WorkflowNodeUpdate {
 	_u.mutation.SetBranchNodes(v)
 	return _u
 }
@@ -1318,7 +1318,7 @@ func (_u *WorkflowNodeUpdateOne) ClearParentNodeID() *WorkflowNodeUpdateOne {
 }
 
 // SetBranchNodes sets the "branch_nodes" field.
-func (_u *WorkflowNodeUpdateOne) SetBranchNodes(v map[string]uint64) *WorkflowNodeUpdateOne {
+func (_u *WorkflowNodeUpdateOne) SetBranchNodes(v map[string]interface{}) *WorkflowNodeUpdateOne {
 	_u.mutation.SetBranchNodes(v)
 	return _u
 }

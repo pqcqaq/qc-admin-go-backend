@@ -170,6 +170,10 @@ func (WorkflowFuncs) UpdateWorkflowApplication(ctx context.Context, id uint64, r
 		builder = builder.SetStatus(workflowapplication.Status(req.Status))
 	}
 
+	if req.ViewportConfig != nil {
+		builder = builder.SetViewportConfig(req.ViewportConfig)
+	}
+
 	err := builder.Exec(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -286,16 +290,17 @@ func (WorkflowFuncs) GetWorkflowApplicationsWithPagination(ctx context.Context, 
 // ConvertWorkflowApplicationToResponse 将工作流应用实体转换为响应格式
 func (WorkflowFuncs) ConvertWorkflowApplicationToResponse(app *ent.WorkflowApplication) *models.WorkflowApplicationResponse {
 	resp := &models.WorkflowApplicationResponse{
-		ID:           utils.Uint64ToString(app.ID),
-		CreateTime:   utils.FormatDateTime(app.CreateTime),
-		UpdateTime:   utils.FormatDateTime(app.UpdateTime),
-		Name:         app.Name,
-		Description:  app.Description,
-		StartNodeID:  utils.Uint64ToString(app.StartNodeID),
-		ClientSecret: app.ClientSecret,
-		Variables:    app.Variables,
-		Version:      app.Version,
-		Status:       string(app.Status),
+		ID:             utils.Uint64ToString(app.ID),
+		CreateTime:     utils.FormatDateTime(app.CreateTime),
+		UpdateTime:     utils.FormatDateTime(app.UpdateTime),
+		Name:           app.Name,
+		Description:    app.Description,
+		StartNodeID:    utils.Uint64ToString(app.StartNodeID),
+		ClientSecret:   app.ClientSecret,
+		Variables:      app.Variables,
+		Version:        app.Version,
+		Status:         string(app.Status),
+		ViewportConfig: app.ViewportConfig,
 	}
 
 	// // 转换节点列表（旧架构，保留兼容）
@@ -595,521 +600,523 @@ func (WorkflowFuncs) ConvertWorkflowNodeToResponse(node *ent.WorkflowNode) *mode
 	return resp
 }
 
-// ============ Workflow Graph Operations ============
-
-// NodeConnectionRule 节点连接规则
-type NodeConnectionRule struct {
-	CanHaveNextNode      bool // 是否可以有next_node_id
-	CanHaveBranches      bool // 是否可以有分支
-	CanBeParallel        bool // 是否可以作为并行节点的子节点
-	RequiresBranchName   bool // 连接时是否需要分支名称
-	MaxOutputConnections int  // 最大输出连接数 (-1表示无限制)
-}
-
-// getNodeConnectionRule 获取节点类型的连接规则
-func getNodeConnectionRule(nodeType string) NodeConnectionRule {
-	rules := map[string]NodeConnectionRule{
-		"user_input": {
-			CanHaveNextNode:      true,
-			CanHaveBranches:      false,
-			CanBeParallel:        false,
-			RequiresBranchName:   false,
-			MaxOutputConnections: 1,
-		},
-		"todo_task_generator": {
-			CanHaveNextNode:      true,
-			CanHaveBranches:      false,
-			CanBeParallel:        true,
-			RequiresBranchName:   false,
-			MaxOutputConnections: 1,
-		},
-		"condition_checker": {
-			CanHaveNextNode:      false,
-			CanHaveBranches:      true,
-			CanBeParallel:        true,
-			RequiresBranchName:   true,
-			MaxOutputConnections: -1, // 可以有多个分支
-		},
-		"api_caller": {
-			CanHaveNextNode:      true,
-			CanHaveBranches:      false,
-			CanBeParallel:        true,
-			RequiresBranchName:   false,
-			MaxOutputConnections: 1,
-		},
-		"data_processor": {
-			CanHaveNextNode:      true,
-			CanHaveBranches:      false,
-			CanBeParallel:        true,
-			RequiresBranchName:   false,
-			MaxOutputConnections: 1,
-		},
-		"while_loop": {
-			CanHaveNextNode:      true,
-			CanHaveBranches:      false,
-			CanBeParallel:        false,
-			RequiresBranchName:   false,
-			MaxOutputConnections: 1,
-		},
-		"end_node": {
-			CanHaveNextNode:      false,
-			CanHaveBranches:      false,
-			CanBeParallel:        true,
-			RequiresBranchName:   false,
-			MaxOutputConnections: 0,
-		},
-		"parallel_executor": {
-			CanHaveNextNode:      true,
-			CanHaveBranches:      false,
-			CanBeParallel:        false,
-			RequiresBranchName:   false,
-			MaxOutputConnections: 1,
-		},
-		"llm_caller": {
-			CanHaveNextNode:      true,
-			CanHaveBranches:      false,
-			CanBeParallel:        true,
-			RequiresBranchName:   false,
-			MaxOutputConnections: 1,
-		},
-	}
-
-	rule, exists := rules[nodeType]
-	if !exists {
-		// 默认规则
-		return NodeConnectionRule{
-			CanHaveNextNode:      true,
-			CanHaveBranches:      false,
-			CanBeParallel:        true,
-			RequiresBranchName:   false,
-			MaxOutputConnections: 1,
-		}
-	}
-	return rule
-}
-
-// ConnectNodes 连接两个节点（普通连接，用于next_node_id）
-func (WorkflowFuncs) ConnectNodes(ctx context.Context, fromNodeID, toNodeID uint64) error {
-	// 获取源节点
-	fromNode, err := database.Client.WorkflowNode.Get(ctx, fromNodeID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("source node not found")
-		}
-		return err
-	}
-
-	// 检查目标节点是否存在
-	_, err = database.Client.WorkflowNode.Get(ctx, toNodeID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("target node not found")
-		}
-		return err
-	}
-
-	// 获取节点连接规则
-	rule := getNodeConnectionRule(string(fromNode.Type))
-
-	// 检查源节点是否可以有next_node_id
-	if !rule.CanHaveNextNode {
-		return fmt.Errorf("node type '%s' cannot have next_node connection, use branch connection instead", fromNode.Type)
-	}
-
-	// 检查是否已经有连接
-	if fromNode.NextNodeID != 0 {
-		return fmt.Errorf("node already has a next_node connection, disconnect first")
-	}
-
-	// 更新源节点的 next_node_id
-	err = database.Client.WorkflowNode.UpdateOneID(fromNodeID).
-		SetNextNodeID(toNodeID).
-		Exec(ctx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// DisconnectNodes 断开节点的next_node_id连接
-func (WorkflowFuncs) DisconnectNodes(ctx context.Context, fromNodeID uint64) error {
-	// 清除源节点的 next_node_id
-	err := database.Client.WorkflowNode.UpdateOneID(fromNodeID).
-		ClearNextNodeID().
-		Exec(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("source node not found")
-		}
-		return err
-	}
-	return nil
-}
-
-// ConnectBranch 为分支节点（如condition_checker）添加分支连接
-func (WorkflowFuncs) ConnectBranch(ctx context.Context, fromNodeID, toNodeID uint64, branchName string) error {
-	if branchName == "" {
-		return fmt.Errorf("branch name is required")
-	}
-
-	// 获取源节点
-	fromNode, err := database.Client.WorkflowNode.Get(ctx, fromNodeID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("source node not found")
-		}
-		return err
-	}
-
-	// 检查目标节点是否存在
-	_, err = database.Client.WorkflowNode.Get(ctx, toNodeID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("target node not found")
-		}
-		return err
-	}
-
-	// 获取节点连接规则
-	rule := getNodeConnectionRule(string(fromNode.Type))
-
-	// 检查源节点是否可以有分支
-	if !rule.CanHaveBranches {
-		return fmt.Errorf("node type '%s' cannot have branch connections", fromNode.Type)
-	}
-
-	// 获取现有分支
-	branchNodes := fromNode.BranchNodes
-	if branchNodes == nil {
-		branchNodes = make(map[string]uint64)
-	}
-
-	// 添加或更新分支
-	branchNodes[branchName] = toNodeID
-
-	// 更新节点
-	err = database.Client.WorkflowNode.UpdateOneID(fromNodeID).
-		SetBranchNodes(branchNodes).
-		Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// DisconnectBranch 删除分支节点的某个分支连接
-func (WorkflowFuncs) DisconnectBranch(ctx context.Context, fromNodeID uint64, branchName string) error {
-	if branchName == "" {
-		return fmt.Errorf("branch name is required")
-	}
-
-	// 获取源节点
-	fromNode, err := database.Client.WorkflowNode.Get(ctx, fromNodeID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("source node not found")
-		}
-		return err
-	}
-
-	// 获取现有分支
-	branchNodes := fromNode.BranchNodes
-	if branchNodes == nil {
-		return fmt.Errorf("node has no branches")
-	}
-
-	// 检查分支是否存在
-	if _, exists := branchNodes[branchName]; !exists {
-		return fmt.Errorf("branch '%s' not found", branchName)
-	}
-
-	// 删除分支
-	delete(branchNodes, branchName)
-
-	// 更新节点
-	err = database.Client.WorkflowNode.UpdateOneID(fromNodeID).
-		SetBranchNodes(branchNodes).
-		Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AddNodeToParallel 将节点添加到并行执行节点
-func (WorkflowFuncs) AddNodeToParallel(ctx context.Context, parallelNodeID, childNodeID uint64) error {
-	// 获取并行节点
-	parallelNode, err := database.Client.WorkflowNode.Get(ctx, parallelNodeID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("parallel node not found")
-		}
-		return err
-	}
-
-	// 检查是否是并行执行节点
-	if parallelNode.Type != "parallel_executor" {
-		return fmt.Errorf("node is not a parallel_executor, got type '%s'", parallelNode.Type)
-	}
-
-	// 获取子节点
-	childNode, err := database.Client.WorkflowNode.Get(ctx, childNodeID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("child node not found")
-		}
-		return err
-	}
-
-	// 检查子节点类型是否可以作为并行节点
-	rule := getNodeConnectionRule(string(childNode.Type))
-	if !rule.CanBeParallel {
-		return fmt.Errorf("node type '%s' cannot be added to parallel executor", childNode.Type)
-	}
-
-	// 检查子节点是否已经有父节点
-	if childNode.ParentNodeID != 0 {
-		return fmt.Errorf("child node already has a parent node")
-	}
-
-	// 设置子节点的parent_node_id
-	err = database.Client.WorkflowNode.UpdateOneID(childNodeID).
-		SetParentNodeID(parallelNodeID).
-		Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// RemoveNodeFromParallel 从并行执行节点中移除子节点
-func (WorkflowFuncs) RemoveNodeFromParallel(ctx context.Context, childNodeID uint64) error {
-	// 获取子节点
-	childNode, err := database.Client.WorkflowNode.Get(ctx, childNodeID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("child node not found")
-		}
-		return err
-	}
-
-	// 检查是否有父节点
-	if childNode.ParentNodeID == 0 {
-		return fmt.Errorf("node has no parent node")
-	}
-
-	// 清除parent_node_id
-	err = database.Client.WorkflowNode.UpdateOneID(childNodeID).
-		ClearParentNodeID().
-		Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// GetParallelChildren 获取并行节点的所有子节点
-func (WorkflowFuncs) GetParallelChildren(ctx context.Context, parallelNodeID uint64) ([]*models.WorkflowNodeResponse, error) {
-	// 获取并行节点
-	parallelNode, err := database.Client.WorkflowNode.Get(ctx, parallelNodeID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, fmt.Errorf("parallel node not found")
-		}
-		return nil, err
-	}
-
-	// 检查是否是并行执行节点
-	if parallelNode.Type != "parallel_executor" {
-		return nil, fmt.Errorf("node is not a parallel_executor")
-	}
-
-	// 查询所有parent_node_id为该节点的子节点
-	children, err := database.Client.WorkflowNode.Query().
-		Where(workflownode.ParentNodeIDEQ(parallelNodeID)).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// 转换为响应格式
-	childResponses := make([]*models.WorkflowNodeResponse, 0, len(children))
-	for _, child := range children {
-		childResponses = append(childResponses, WorkflowFuncs{}.ConvertWorkflowNodeToResponse(child))
-	}
-
-	return childResponses, nil
-}
-
-// ValidateNodeConnection 验证两个节点是否可以连接
-func (WorkflowFuncs) ValidateNodeConnection(ctx context.Context, fromNodeID, toNodeID uint64, connectionType string) error {
-	// 获取源节点和目标节点
-	fromNode, err := database.Client.WorkflowNode.Get(ctx, fromNodeID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("source node not found")
-		}
-		return err
-	}
-
-	toNode, err := database.Client.WorkflowNode.Get(ctx, toNodeID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("target node not found")
-		}
-		return err
-	}
-
-	// 检查是否在同一个应用中
-	if fromNode.ApplicationID != toNode.ApplicationID {
-		return fmt.Errorf("nodes must be in the same workflow application")
-	}
-
-	// 检查是否形成循环（简单检查：不能连接到自己）
-	if fromNodeID == toNodeID {
-		return fmt.Errorf("cannot connect node to itself")
-	}
-
-	// 根据连接类型验证
-	fromRule := getNodeConnectionRule(string(fromNode.Type))
-	toRule := getNodeConnectionRule(string(toNode.Type))
-
-	switch connectionType {
-	case "next":
-		if !fromRule.CanHaveNextNode {
-			return fmt.Errorf("source node type '%s' cannot have next_node connection", fromNode.Type)
-		}
-	case "branch":
-		if !fromRule.CanHaveBranches {
-			return fmt.Errorf("source node type '%s' cannot have branch connections", fromNode.Type)
-		}
-	case "parallel":
-		if fromNode.Type != "parallel_executor" {
-			return fmt.Errorf("source node must be parallel_executor for parallel connection")
-		}
-		if !toRule.CanBeParallel {
-			return fmt.Errorf("target node type '%s' cannot be added to parallel executor", toNode.Type)
-		}
-	default:
-		return fmt.Errorf("unknown connection type: %s", connectionType)
-	}
-
-	return nil
-}
-
-// GetNodeConnections 获取节点的所有连接信息
-func (WorkflowFuncs) GetNodeConnections(ctx context.Context, nodeID uint64) (map[string]interface{}, error) {
-	node, err := database.Client.WorkflowNode.Get(ctx, nodeID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, fmt.Errorf("node not found")
-		}
-		return nil, err
-	}
-
-	connections := make(map[string]interface{})
-
-	// Next node connection
-	if node.NextNodeID != 0 {
-		connections["next_node_id"] = utils.Uint64ToString(node.NextNodeID)
-	}
-
-	// Parent node (for parallel children)
-	if node.ParentNodeID != 0 {
-		connections["parent_node_id"] = utils.Uint64ToString(node.ParentNodeID)
-	}
-
-	// Branch connections
-	if len(node.BranchNodes) > 0 {
-		branches := make(map[string]string)
-		for branchName, targetID := range node.BranchNodes {
-			branches[branchName] = utils.Uint64ToString(targetID)
-		}
-		connections["branches"] = branches
-	}
-
-	// Parallel children (if this is a parallel executor)
-	if node.Type == "parallel_executor" {
-		children, err := WorkflowFuncs{}.GetParallelChildren(ctx, nodeID)
-		if err == nil && len(children) > 0 {
-			childIDs := make([]string, 0, len(children))
-			for _, child := range children {
-				childIDs = append(childIDs, child.ID)
-			}
-			connections["parallel_children"] = childIDs
-		}
-	}
-
-	return connections, nil
-}
-
-// UpdateNodePosition 更新节点位置
-func (WorkflowFuncs) UpdateNodePosition(ctx context.Context, nodeID uint64, x, y float64) error {
-	err := database.Client.WorkflowNode.UpdateOneID(nodeID).
-		SetPositionX(x).
-		SetPositionY(y).
-		Exec(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("node not found")
-		}
-		return err
-	}
-	return nil
-}
-
-// BatchUpdateNodePositions 批量更新节点位置
-func (WorkflowFuncs) BatchUpdateNodePositions(ctx context.Context, positions map[string]map[string]float64) error {
-	// positions 格式: {"nodeId": {"x": 100, "y": 200}}
-	tx, err := database.Client.Tx(ctx)
-	if err != nil {
-		return err
-	}
-
-	for nodeIDStr, pos := range positions {
-		nodeID := utils.StringToUint64(nodeIDStr)
-		x, xOk := pos["x"]
-		y, yOk := pos["y"]
-
-		if !xOk || !yOk {
-			tx.Rollback()
-			return fmt.Errorf("invalid position data for node %s", nodeIDStr)
-		}
-
-		err = tx.WorkflowNode.UpdateOneID(nodeID).
-			SetPositionX(x).
-			SetPositionY(y).
-			Exec(ctx)
-		if err != nil {
-			tx.Rollback()
-			return err
-		}
-	}
-
-	return tx.Commit()
-}
-
-// BatchDeleteNodes 批量删除节点
-func (WorkflowFuncs) BatchDeleteNodes(ctx context.Context, nodeIDs []uint64) error {
-	tx, err := database.Client.Tx(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, nodeID := range nodeIDs {
-		err = tx.WorkflowNode.DeleteOneID(nodeID).Exec(ctx)
-		if err != nil {
-			tx.Rollback()
-			return err
-		}
-	}
-
-	return tx.Commit()
-}
+// // ============ Workflow Graph Operations ============
+
+// // NodeConnectionRule 节点连接规则
+// type NodeConnectionRule struct {
+// 	CanHaveNextNode      bool // 是否可以有next_node_id
+// 	CanHaveBranches      bool // 是否可以有分支
+// 	CanBeParallel        bool // 是否可以作为并行节点的子节点
+// 	RequiresBranchName   bool // 连接时是否需要分支名称
+// 	MaxOutputConnections int  // 最大输出连接数 (-1表示无限制)
+// }
+
+// // getNodeConnectionRule 获取节点类型的连接规则
+// func getNodeConnectionRule(nodeType string) NodeConnectionRule {
+// 	rules := map[string]NodeConnectionRule{
+// 		"user_input": {
+// 			CanHaveNextNode:      true,
+// 			CanHaveBranches:      false,
+// 			CanBeParallel:        false,
+// 			RequiresBranchName:   false,
+// 			MaxOutputConnections: 1,
+// 		},
+// 		"todo_task_generator": {
+// 			CanHaveNextNode:      true,
+// 			CanHaveBranches:      false,
+// 			CanBeParallel:        true,
+// 			RequiresBranchName:   false,
+// 			MaxOutputConnections: 1,
+// 		},
+// 		"condition_checker": {
+// 			CanHaveNextNode:      false,
+// 			CanHaveBranches:      true,
+// 			CanBeParallel:        true,
+// 			RequiresBranchName:   true,
+// 			MaxOutputConnections: -1, // 可以有多个分支
+// 		},
+// 		"api_caller": {
+// 			CanHaveNextNode:      true,
+// 			CanHaveBranches:      false,
+// 			CanBeParallel:        true,
+// 			RequiresBranchName:   false,
+// 			MaxOutputConnections: 1,
+// 		},
+// 		"data_processor": {
+// 			CanHaveNextNode:      true,
+// 			CanHaveBranches:      false,
+// 			CanBeParallel:        true,
+// 			RequiresBranchName:   false,
+// 			MaxOutputConnections: 1,
+// 		},
+// 		"while_loop": {
+// 			CanHaveNextNode:      true,
+// 			CanHaveBranches:      false,
+// 			CanBeParallel:        false,
+// 			RequiresBranchName:   false,
+// 			MaxOutputConnections: 1,
+// 		},
+// 		"end_node": {
+// 			CanHaveNextNode:      false,
+// 			CanHaveBranches:      false,
+// 			CanBeParallel:        true,
+// 			RequiresBranchName:   false,
+// 			MaxOutputConnections: 0,
+// 		},
+// 		"parallel_executor": {
+// 			CanHaveNextNode:      true,
+// 			CanHaveBranches:      false,
+// 			CanBeParallel:        false,
+// 			RequiresBranchName:   false,
+// 			MaxOutputConnections: 1,
+// 		},
+// 		"llm_caller": {
+// 			CanHaveNextNode:      true,
+// 			CanHaveBranches:      false,
+// 			CanBeParallel:        true,
+// 			RequiresBranchName:   false,
+// 			MaxOutputConnections: 1,
+// 		},
+// 	}
+
+// 	rule, exists := rules[nodeType]
+// 	if !exists {
+// 		// 默认规则
+// 		return NodeConnectionRule{
+// 			CanHaveNextNode:      true,
+// 			CanHaveBranches:      false,
+// 			CanBeParallel:        true,
+// 			RequiresBranchName:   false,
+// 			MaxOutputConnections: 1,
+// 		}
+// 	}
+// 	return rule
+// }
+
+// // ConnectNodes 连接两个节点（普通连接，用于next_node_id）
+// func (WorkflowFuncs) ConnectNodes(ctx context.Context, fromNodeID, toNodeID uint64) error {
+// 	// 获取源节点
+// 	fromNode, err := database.Client.WorkflowNode.Get(ctx, fromNodeID)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return fmt.Errorf("source node not found")
+// 		}
+// 		return err
+// 	}
+
+// 	// 检查目标节点是否存在
+// 	_, err = database.Client.WorkflowNode.Get(ctx, toNodeID)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return fmt.Errorf("target node not found")
+// 		}
+// 		return err
+// 	}
+
+// 	// 获取节点连接规则
+// 	rule := getNodeConnectionRule(string(fromNode.Type))
+
+// 	// 检查源节点是否可以有next_node_id
+// 	if !rule.CanHaveNextNode {
+// 		return fmt.Errorf("node type '%s' cannot have next_node connection, use branch connection instead", fromNode.Type)
+// 	}
+
+// 	// 检查是否已经有连接
+// 	if fromNode.NextNodeID != 0 {
+// 		return fmt.Errorf("node already has a next_node connection, disconnect first")
+// 	}
+
+// 	// 更新源节点的 next_node_id
+// 	err = database.Client.WorkflowNode.UpdateOneID(fromNodeID).
+// 		SetNextNodeID(toNodeID).
+// 		Exec(ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
+
+// // DisconnectNodes 断开节点的next_node_id连接
+// func (WorkflowFuncs) DisconnectNodes(ctx context.Context, fromNodeID uint64) error {
+// 	// 清除源节点的 next_node_id
+// 	err := database.Client.WorkflowNode.UpdateOneID(fromNodeID).
+// 		ClearNextNodeID().
+// 		Exec(ctx)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return fmt.Errorf("source node not found")
+// 		}
+// 		return err
+// 	}
+// 	return nil
+// }
+
+// // ConnectBranch 为分支节点（如condition_checker）添加分支连接
+// func (WorkflowFuncs) ConnectBranch(ctx context.Context, fromNodeID, toNodeID uint64, branchName string) error {
+// 	if branchName == "" {
+// 		return fmt.Errorf("branch name is required")
+// 	}
+
+// 	// 获取源节点
+// 	fromNode, err := database.Client.WorkflowNode.Get(ctx, fromNodeID)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return fmt.Errorf("source node not found")
+// 		}
+// 		return err
+// 	}
+
+// 	// 检查目标节点是否存在
+// 	_, err = database.Client.WorkflowNode.Get(ctx, toNodeID)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return fmt.Errorf("target node not found")
+// 		}
+// 		return err
+// 	}
+
+// 	// 获取节点连接规则
+// 	rule := getNodeConnectionRule(string(fromNode.Type))
+
+// 	// 检查源节点是否可以有分支
+// 	if !rule.CanHaveBranches {
+// 		return fmt.Errorf("node type '%s' cannot have branch connections", fromNode.Type)
+// 	}
+
+// 	// 获取现有分支
+// 	branchNodes := fromNode.BranchNodes
+// 	if branchNodes == nil {
+// 		branchNodes = make(map[string]interface{})
+// 	}
+
+// 	// 添加或更新分支
+// 	branchNodes[branchName] = map[string]interface{}{
+// 		"targetNodeId": toNodeID,
+// 	}
+
+// 	// 更新节点
+// 	err = database.Client.WorkflowNode.UpdateOneID(fromNodeID).
+// 		SetBranchNodes(branchNodes).
+// 		Exec(ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
+// // DisconnectBranch 删除分支节点的某个分支连接
+// func (WorkflowFuncs) DisconnectBranch(ctx context.Context, fromNodeID uint64, branchName string) error {
+// 	if branchName == "" {
+// 		return fmt.Errorf("branch name is required")
+// 	}
+
+// 	// 获取源节点
+// 	fromNode, err := database.Client.WorkflowNode.Get(ctx, fromNodeID)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return fmt.Errorf("source node not found")
+// 		}
+// 		return err
+// 	}
+
+// 	// 获取现有分支
+// 	branchNodes := fromNode.BranchNodes
+// 	if branchNodes == nil {
+// 		return fmt.Errorf("node has no branches")
+// 	}
+
+// 	// 检查分支是否存在
+// 	if _, exists := branchNodes[branchName]; !exists {
+// 		return fmt.Errorf("branch '%s' not found", branchName)
+// 	}
+
+// 	// 删除分支
+// 	delete(branchNodes, branchName)
+
+// 	// 更新节点
+// 	err = database.Client.WorkflowNode.UpdateOneID(fromNodeID).
+// 		SetBranchNodes(branchNodes).
+// 		Exec(ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
+// // AddNodeToParallel 将节点添加到并行执行节点
+// func (WorkflowFuncs) AddNodeToParallel(ctx context.Context, parallelNodeID, childNodeID uint64) error {
+// 	// 获取并行节点
+// 	parallelNode, err := database.Client.WorkflowNode.Get(ctx, parallelNodeID)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return fmt.Errorf("parallel node not found")
+// 		}
+// 		return err
+// 	}
+
+// 	// 检查是否是并行执行节点
+// 	if parallelNode.Type != "parallel_executor" {
+// 		return fmt.Errorf("node is not a parallel_executor, got type '%s'", parallelNode.Type)
+// 	}
+
+// 	// 获取子节点
+// 	childNode, err := database.Client.WorkflowNode.Get(ctx, childNodeID)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return fmt.Errorf("child node not found")
+// 		}
+// 		return err
+// 	}
+
+// 	// 检查子节点类型是否可以作为并行节点
+// 	rule := getNodeConnectionRule(string(childNode.Type))
+// 	if !rule.CanBeParallel {
+// 		return fmt.Errorf("node type '%s' cannot be added to parallel executor", childNode.Type)
+// 	}
+
+// 	// 检查子节点是否已经有父节点
+// 	if childNode.ParentNodeID != 0 {
+// 		return fmt.Errorf("child node already has a parent node")
+// 	}
+
+// 	// 设置子节点的parent_node_id
+// 	err = database.Client.WorkflowNode.UpdateOneID(childNodeID).
+// 		SetParentNodeID(parallelNodeID).
+// 		Exec(ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
+// // RemoveNodeFromParallel 从并行执行节点中移除子节点
+// func (WorkflowFuncs) RemoveNodeFromParallel(ctx context.Context, childNodeID uint64) error {
+// 	// 获取子节点
+// 	childNode, err := database.Client.WorkflowNode.Get(ctx, childNodeID)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return fmt.Errorf("child node not found")
+// 		}
+// 		return err
+// 	}
+
+// 	// 检查是否有父节点
+// 	if childNode.ParentNodeID == 0 {
+// 		return fmt.Errorf("node has no parent node")
+// 	}
+
+// 	// 清除parent_node_id
+// 	err = database.Client.WorkflowNode.UpdateOneID(childNodeID).
+// 		ClearParentNodeID().
+// 		Exec(ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
+// // GetParallelChildren 获取并行节点的所有子节点
+// func (WorkflowFuncs) GetParallelChildren(ctx context.Context, parallelNodeID uint64) ([]*models.WorkflowNodeResponse, error) {
+// 	// 获取并行节点
+// 	parallelNode, err := database.Client.WorkflowNode.Get(ctx, parallelNodeID)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return nil, fmt.Errorf("parallel node not found")
+// 		}
+// 		return nil, err
+// 	}
+
+// 	// 检查是否是并行执行节点
+// 	if parallelNode.Type != "parallel_executor" {
+// 		return nil, fmt.Errorf("node is not a parallel_executor")
+// 	}
+
+// 	// 查询所有parent_node_id为该节点的子节点
+// 	children, err := database.Client.WorkflowNode.Query().
+// 		Where(workflownode.ParentNodeIDEQ(parallelNodeID)).
+// 		All(ctx)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// 转换为响应格式
+// 	childResponses := make([]*models.WorkflowNodeResponse, 0, len(children))
+// 	for _, child := range children {
+// 		childResponses = append(childResponses, WorkflowFuncs{}.ConvertWorkflowNodeToResponse(child))
+// 	}
+
+// 	return childResponses, nil
+// }
+
+// // ValidateNodeConnection 验证两个节点是否可以连接
+// func (WorkflowFuncs) ValidateNodeConnection(ctx context.Context, fromNodeID, toNodeID uint64, connectionType string) error {
+// 	// 获取源节点和目标节点
+// 	fromNode, err := database.Client.WorkflowNode.Get(ctx, fromNodeID)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return fmt.Errorf("source node not found")
+// 		}
+// 		return err
+// 	}
+
+// 	toNode, err := database.Client.WorkflowNode.Get(ctx, toNodeID)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return fmt.Errorf("target node not found")
+// 		}
+// 		return err
+// 	}
+
+// 	// 检查是否在同一个应用中
+// 	if fromNode.ApplicationID != toNode.ApplicationID {
+// 		return fmt.Errorf("nodes must be in the same workflow application")
+// 	}
+
+// 	// 检查是否形成循环（简单检查：不能连接到自己）
+// 	if fromNodeID == toNodeID {
+// 		return fmt.Errorf("cannot connect node to itself")
+// 	}
+
+// 	// 根据连接类型验证
+// 	fromRule := getNodeConnectionRule(string(fromNode.Type))
+// 	toRule := getNodeConnectionRule(string(toNode.Type))
+
+// 	switch connectionType {
+// 	case "next":
+// 		if !fromRule.CanHaveNextNode {
+// 			return fmt.Errorf("source node type '%s' cannot have next_node connection", fromNode.Type)
+// 		}
+// 	case "branch":
+// 		if !fromRule.CanHaveBranches {
+// 			return fmt.Errorf("source node type '%s' cannot have branch connections", fromNode.Type)
+// 		}
+// 	case "parallel":
+// 		if fromNode.Type != "parallel_executor" {
+// 			return fmt.Errorf("source node must be parallel_executor for parallel connection")
+// 		}
+// 		if !toRule.CanBeParallel {
+// 			return fmt.Errorf("target node type '%s' cannot be added to parallel executor", toNode.Type)
+// 		}
+// 	default:
+// 		return fmt.Errorf("unknown connection type: %s", connectionType)
+// 	}
+
+// 	return nil
+// }
+
+// // GetNodeConnections 获取节点的所有连接信息
+// func (WorkflowFuncs) GetNodeConnections(ctx context.Context, nodeID uint64) (map[string]interface{}, error) {
+// 	node, err := database.Client.WorkflowNode.Get(ctx, nodeID)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return nil, fmt.Errorf("node not found")
+// 		}
+// 		return nil, err
+// 	}
+
+// 	connections := make(map[string]interface{})
+
+// 	// Next node connection
+// 	if node.NextNodeID != 0 {
+// 		connections["next_node_id"] = utils.Uint64ToString(node.NextNodeID)
+// 	}
+
+// 	// Parent node (for parallel children)
+// 	if node.ParentNodeID != 0 {
+// 		connections["parent_node_id"] = utils.Uint64ToString(node.ParentNodeID)
+// 	}
+
+// 	// Branch connections
+// 	if len(node.BranchNodes) > 0 {
+// 		branches := make(map[string]string)
+// 		for branchName, targetID := range node.BranchNodes {
+// 			branches[branchName] = utils.Uint64ToString(targetID)
+// 		}
+// 		connections["branches"] = branches
+// 	}
+
+// 	// Parallel children (if this is a parallel executor)
+// 	if node.Type == "parallel_executor" {
+// 		children, err := WorkflowFuncs{}.GetParallelChildren(ctx, nodeID)
+// 		if err == nil && len(children) > 0 {
+// 			childIDs := make([]string, 0, len(children))
+// 			for _, child := range children {
+// 				childIDs = append(childIDs, child.ID)
+// 			}
+// 			connections["parallel_children"] = childIDs
+// 		}
+// 	}
+
+// 	return connections, nil
+// }
+
+// // UpdateNodePosition 更新节点位置
+// func (WorkflowFuncs) UpdateNodePosition(ctx context.Context, nodeID uint64, x, y float64) error {
+// 	err := database.Client.WorkflowNode.UpdateOneID(nodeID).
+// 		SetPositionX(x).
+// 		SetPositionY(y).
+// 		Exec(ctx)
+// 	if err != nil {
+// 		if ent.IsNotFound(err) {
+// 			return fmt.Errorf("node not found")
+// 		}
+// 		return err
+// 	}
+// 	return nil
+// }
+
+// // BatchUpdateNodePositions 批量更新节点位置
+// func (WorkflowFuncs) BatchUpdateNodePositions(ctx context.Context, positions map[string]map[string]float64) error {
+// 	// positions 格式: {"nodeId": {"x": 100, "y": 200}}
+// 	tx, err := database.Client.Tx(ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	for nodeIDStr, pos := range positions {
+// 		nodeID := utils.StringToUint64(nodeIDStr)
+// 		x, xOk := pos["x"]
+// 		y, yOk := pos["y"]
+
+// 		if !xOk || !yOk {
+// 			tx.Rollback()
+// 			return fmt.Errorf("invalid position data for node %s", nodeIDStr)
+// 		}
+
+// 		err = tx.WorkflowNode.UpdateOneID(nodeID).
+// 			SetPositionX(x).
+// 			SetPositionY(y).
+// 			Exec(ctx)
+// 		if err != nil {
+// 			tx.Rollback()
+// 			return err
+// 		}
+// 	}
+
+// 	return tx.Commit()
+// }
+
+// // BatchDeleteNodes 批量删除节点
+// func (WorkflowFuncs) BatchDeleteNodes(ctx context.Context, nodeIDs []uint64) error {
+// 	tx, err := database.Client.Tx(ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	for _, nodeID := range nodeIDs {
+// 		err = tx.WorkflowNode.DeleteOneID(nodeID).Exec(ctx)
+// 		if err != nil {
+// 			tx.Rollback()
+// 			return err
+// 		}
+// 	}
+
+// 	return tx.Commit()
+// }
 
 // CloneWorkflowApplication 克隆工作流应用（包括所有节点）
 func (WorkflowFuncs) CloneWorkflowApplication(ctx context.Context, applicationID uint64, newName string) (*models.WorkflowApplicationResponse, error) {
@@ -1222,7 +1229,7 @@ func (WorkflowFuncs) CloneWorkflowApplication(ctx context.Context, applicationID
 	return WorkflowFuncs{}.GetWorkflowApplicationByID(ctx, newApp.ID)
 }
 
-// ============ WorkflowEdge CRUD ============
+// // ============ WorkflowEdge CRUD ============
 
 // GetAllWorkflowEdges 获取所有工作流边
 func (WorkflowFuncs) GetAllWorkflowEdges(ctx context.Context) ([]*models.WorkflowEdgeResponse, error) {

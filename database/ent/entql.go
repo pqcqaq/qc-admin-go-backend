@@ -785,19 +785,20 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "WorkflowApplication",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			workflowapplication.FieldCreateTime:   {Type: field.TypeTime, Column: workflowapplication.FieldCreateTime},
-			workflowapplication.FieldCreateBy:     {Type: field.TypeUint64, Column: workflowapplication.FieldCreateBy},
-			workflowapplication.FieldUpdateTime:   {Type: field.TypeTime, Column: workflowapplication.FieldUpdateTime},
-			workflowapplication.FieldUpdateBy:     {Type: field.TypeUint64, Column: workflowapplication.FieldUpdateBy},
-			workflowapplication.FieldDeleteTime:   {Type: field.TypeTime, Column: workflowapplication.FieldDeleteTime},
-			workflowapplication.FieldDeleteBy:     {Type: field.TypeUint64, Column: workflowapplication.FieldDeleteBy},
-			workflowapplication.FieldName:         {Type: field.TypeString, Column: workflowapplication.FieldName},
-			workflowapplication.FieldDescription:  {Type: field.TypeString, Column: workflowapplication.FieldDescription},
-			workflowapplication.FieldStartNodeID:  {Type: field.TypeUint64, Column: workflowapplication.FieldStartNodeID},
-			workflowapplication.FieldClientSecret: {Type: field.TypeString, Column: workflowapplication.FieldClientSecret},
-			workflowapplication.FieldVariables:    {Type: field.TypeJSON, Column: workflowapplication.FieldVariables},
-			workflowapplication.FieldVersion:      {Type: field.TypeUint, Column: workflowapplication.FieldVersion},
-			workflowapplication.FieldStatus:       {Type: field.TypeEnum, Column: workflowapplication.FieldStatus},
+			workflowapplication.FieldCreateTime:     {Type: field.TypeTime, Column: workflowapplication.FieldCreateTime},
+			workflowapplication.FieldCreateBy:       {Type: field.TypeUint64, Column: workflowapplication.FieldCreateBy},
+			workflowapplication.FieldUpdateTime:     {Type: field.TypeTime, Column: workflowapplication.FieldUpdateTime},
+			workflowapplication.FieldUpdateBy:       {Type: field.TypeUint64, Column: workflowapplication.FieldUpdateBy},
+			workflowapplication.FieldDeleteTime:     {Type: field.TypeTime, Column: workflowapplication.FieldDeleteTime},
+			workflowapplication.FieldDeleteBy:       {Type: field.TypeUint64, Column: workflowapplication.FieldDeleteBy},
+			workflowapplication.FieldName:           {Type: field.TypeString, Column: workflowapplication.FieldName},
+			workflowapplication.FieldDescription:    {Type: field.TypeString, Column: workflowapplication.FieldDescription},
+			workflowapplication.FieldStartNodeID:    {Type: field.TypeUint64, Column: workflowapplication.FieldStartNodeID},
+			workflowapplication.FieldClientSecret:   {Type: field.TypeString, Column: workflowapplication.FieldClientSecret},
+			workflowapplication.FieldVariables:      {Type: field.TypeJSON, Column: workflowapplication.FieldVariables},
+			workflowapplication.FieldVersion:        {Type: field.TypeUint, Column: workflowapplication.FieldVersion},
+			workflowapplication.FieldStatus:         {Type: field.TypeEnum, Column: workflowapplication.FieldStatus},
+			workflowapplication.FieldViewportConfig: {Type: field.TypeJSON, Column: workflowapplication.FieldViewportConfig},
 		},
 	}
 	graph.Nodes[28] = &sqlgraph.Node{
@@ -5753,6 +5754,11 @@ func (f *WorkflowApplicationFilter) WhereVersion(p entql.UintP) {
 // WhereStatus applies the entql string predicate on the status field.
 func (f *WorkflowApplicationFilter) WhereStatus(p entql.StringP) {
 	f.Where(p.Field(workflowapplication.FieldStatus))
+}
+
+// WhereViewportConfig applies the entql json.RawMessage predicate on the viewport_config field.
+func (f *WorkflowApplicationFilter) WhereViewportConfig(p entql.BytesP) {
+	f.Where(p.Field(workflowapplication.FieldViewportConfig))
 }
 
 // WhereHasNodes applies a predicate to check if query has an edge nodes.
